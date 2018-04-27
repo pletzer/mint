@@ -4,37 +4,54 @@ import argparse
 
 class LatLon:
 
-    def __init__(self, numLats, numLons):
-
-        # create grid
-        self.numLats0 = numLats
-        self.numLons0 = numLons
-        self.numLats1 = numLats + 1
-        self.numLons1 = numLons + 1
-
-        self.dLat = 180.0/float(numLats)
-        self.dLon = 360.0/float(numLons)
-
-
-        # latitudes
-        self.lats = numpy.linspace(-90.0, 90.0, self.numLats1)
-
-        # longitudes: last cell implicitly wraps around 
-        self.lons = numpy.linspace(0., 360.0, self.numLons1)
-
-        self.fillValue = -1.073742e+09
-
-        self.uDataExtensive = self.fillValue * numpy.ones((self.numLats0, self.numLons1), numpy.float64)
-        self.vDataExtensive = self.fillValue * numpy.ones((self.numLats1, self.numLons0), numpy.float64)
-
-        self.uDataIntensive = self.fillValue * numpy.ones((self.numLats0, self.numLons1), numpy.float64)
-        self.vDataIntensive = self.fillValue * numpy.ones((self.numLats1, self.numLons0), numpy.float64)
+    def __init__(self):
+        """
+        Constructor
+        no arguments
+        """
 
         # earth radius
         self.a = 6371.e3
 
+        self.fillValue = -1.073742e+09
+
     def setEarthRadius(self, a):
+        """
+        Set the earth's radius in metre
+        @param a radius
+        """
         self.a = a
+
+    def setNumberOfLonCells(self, numLons):
+        """
+        Set the number of longitudinal cells
+        @param numLons number of cells
+        """
+        self.numLons0 = numLons
+
+    def setNumberOfLatCells(self, numLats):
+        """
+        Set the number of latitudinal cells
+        @param numLats number of cells
+        """
+        self.numLats0 = numLats
+
+    def build(self):
+        """
+        Build the object. Call this after setNumberOfLatCells and setNumberOfLonCells
+        """
+
+        # deltas
+        self.dLat = 180.0/float(self.numLats0)
+        self.dLon = 360.0/float(self.numLons0)
+
+        # latitude/longitude array
+        self.lats = numpy.linspace(-90.0, 90.0, self.numLats0 + 1)
+        self.lons = numpy.linspace(0., 360.0, self.numLons0 + 1)
+
+        # vector field components
+        self.u = self.fillValue * numpy.ones((self.numLats0, self.numLons0 + 1), numpy.float64)
+        self.v = self.fillValue * numpy.ones((self.numLats0 + 1, self.numLons0), numpy.float64)
 
 
     def setStreamFunction(self, expr):
@@ -45,24 +62,47 @@ class LatLon:
         y, x = numpy.meshgrid(self.lats, self.lons, indexing='ij')
         psi = eval(expr)
 
-        # line integrated values
-        self.uDataExtensive[...] = psi[1:, :] - psi[:-1, :]
-        self.vDataExtensive[...] = psi[:, :-1] - psi[:, 1:]
-
         # divide by the edge length to get the intensive variables
         dy = self.a * self.dLat * numpy.pi/180.
         dx = self.a * self.dLon * numpy.pi/180.
-        self.uDataIntensive[...] = self.uDataExtensive[...] / dy
-        self.vDataIntensive[...] = self.vDataExtensive[...] / dx
+        self.u[...] = (psi[1:, :] - psi[:-1, :]) / dy
+        self.v[...] = (psi[:, :-1] - psi[:, 1:]) / dx
 
 
-    def saveToNetcdf(self, filename):
+    def load(self, filename):
+        """
+        Load data from NetCDF file
+        @param filename file name
+        """
+        nc = netCDF4.Dataset(filename, 'r')
+
+        self.a = float(nc.earth_radius)
+
+        self.numLats0 = nc.dimensions['latitude_0'][:]
+        self.numLons0 = nc.dimensions['longitude_0'][:]
+
+        self.lats = numpy.zeros((self.numLats0 + 1,), numpy.float64)
+        self.lons = numpy.zeros((self.numLons0 + 1,), numpy.float64)
+
+        self.lats[:] = nc.variables['latitude'][:]
+        # we're not saving last value because of periodicity
+        self.lons[:-1] = nc.variables['longitude'][:]
+
+        self.u = nc.variables['u'][:]
+        self.v = nc.variables['v'][:]
+
+        nc.close()
+
+
+    def dump(self, filename):
 
         nc = netCDF4.Dataset(filename, 'w')
+
+        nc.earth_radius = str(self.a) + " metres"
         
         # UM does not store the last longitude
-        longitude_dim = nc.createDimension('longitude', self.numLons1 - 1)
-        latitude_dim = nc.createDimension('latitude', self.numLats1)
+        longitude_dim = nc.createDimension('longitude', self.numLons0)
+        latitude_dim = nc.createDimension('latitude', self.numLats0 + 1)
         longitude_0_dim = nc.createDimension('longitude_0', self.numLons0)
         latitude_0_dim = nc.createDimension('latitude_0', self.numLats0)
 
@@ -83,27 +123,28 @@ class LatLon:
         latitude_0_var.standard_name = "latitude"
         longitude_0_var.axis = "X"
         longitude_0_var.units = "degrees_east"
-        longitude_0_var.standard_name = "longitude"
+        longitude_0_var.standard_name = "longitude"        
 
         # write the data
         latitude_var[:] = self.lats
-        longitude_var[:] = self.lons[:-1] # skip the last value
         latitude_0_var[:] = self.lats[:-1] + 0.5*self.dLat
+
+        longitude_var[:] = self.lons[:-1] # skip the last value
         longitude_0_var[:] = self.lons[:-1] + 0.5*self.dLon
 
         u_var = nc.createVariable('u', 'f8', ('latitude_0', 'longitude',), fill_value=self.fillValue)
         u_var.standard_name = 'eastward_wind'
         u_var.units = 'm s-1'
         u_var.grid_mapping = 'latitude_longitude'
-        u_var[:] = self.uDataIntensive[:, :-1]
+        u_var[:] = self.u[:, :-1]
 
         v_var = nc.createVariable('v', 'f8', ('latitude', 'longitude_0',), fill_value=self.fillValue)
         v_var.standard_name = 'northward_wind'
         v_var.units = 'm s-1'
         v_var.grid_mapping = 'latitude_longitude'
-        v_var[:] = self.vDataIntensive[:, :]
+        v_var[:] = self.v[:, :]
 
-    	nc.close()
+        nc.close()
 
 
 #############################################################################
@@ -119,9 +160,12 @@ def main():
     streamFunc = args.strmfc
     outputFile = args.output
 
-    ll = LatLon(numLat, numLon)
+    ll = LatLon()
+    ll.setNumberOfLatCells(numLat)
+    ll.setNumberOfLonCells(numLon)
+    ll.build()
     ll.setStreamFunction(streamFunc)
-    ll.saveToNetcdf(outputFile)
+    ll.dump(outputFile)
 
 if __name__ == '__main__':
     main()
