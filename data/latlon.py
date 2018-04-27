@@ -76,10 +76,10 @@ class LatLon:
         """
         nc = netCDF4.Dataset(filename, 'r')
 
-        self.a = float(nc.earth_radius)
+        #self.a = float(nc.earth_radius)
 
-        self.numLats0 = nc.dimensions['latitude_0'][:]
-        self.numLons0 = nc.dimensions['longitude_0'][:]
+        self.numLats0 = nc.dimensions['latitude_0'].size
+        self.numLons0 = nc.dimensions['longitude_0'].size
 
         self.lats = numpy.zeros((self.numLats0 + 1,), numpy.float64)
         self.lons = numpy.zeros((self.numLons0 + 1,), numpy.float64)
@@ -98,7 +98,7 @@ class LatLon:
 
         nc = netCDF4.Dataset(filename, 'w')
 
-        nc.earth_radius = str(self.a) + " metres"
+        nc.earth_radius = str(self.a)
         
         # UM does not store the last longitude
         longitude_dim = nc.createDimension('longitude', self.numLons0)
