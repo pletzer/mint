@@ -111,7 +111,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-nlat', dest='nlat', type=int, default=2, help='Number of latitude cells')
     parser.add_argument('-nlon', dest='nlon', type=int, default=4, help='Number of longitude cells')
-    parser.add_argument('-strmfc', dest='strmfc', type=str, default='x', help='Stream function')
+    parser.add_argument('-strmfc', dest='strmfc', type=str, default='x/360.', help='Stream function of x (longitude)  and y (latitude)')
     parser.add_argument('-o', dest='output', type=str, default='lalon.nc', help='Output file')
 
     args = parser.parse_args()
