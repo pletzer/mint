@@ -92,6 +92,12 @@ class CubedsphereReader:
         # for finding intersections
         self.p0 = numpy.zeros((3,), numpy.float64)
         self.p1 = numpy.zeros((3,), numpy.float64)
+        self.point = numpy.zeros((3,), numpy.float64)
+        self.pcoords = numpy.zeros((3,), numpy.float64)
+        self.t = vtk.mutable(-1.)
+        self.subId = vtk.mutable(-1)
+        self.cellId = vtk.mutable(-1)
+        self.weights = numpy.zeros((4,), numpy.float64)
 
 
         
@@ -115,18 +121,58 @@ class CubedsphereReader:
         return self.vtk['grid']
 
 
-    def finCellsAlongLine(self, lonlat0, lonlat1, tol=1.e-3):
+    def getIntersectionPoints(self, lonlat0, lonlat1, tol=1.e-10):
         """
-        Find all the intersection points with line
+        Get all the intersection points with given line
         @param lonlat0 starting point of the line
         @param lonlat1 end point of the line
-        @return cells Ids intersected by line
+        @return dictionary {cellId: [(xi0, eta0, t0), (xi1, eta1, t1), ...], } where t0, t1 are the parametric coordinates 
+                along the line
         """
+        res = {}
+        tStart = 0.0
+        loc = self.vtk['locator']
+        cell = vtk.vtkGenericCell()
+
         self.p0[:2] = lonlat0
         self.p1[:2] = lonlat1
-        cellIds = vtk.vtkIdList()
-        self.vtk['locator'].FindCellsAlongLine(self.p0, self.p1, tol, cellIds)
-        return cellIds
+
+        # always add the starting point
+        cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
+        if cId >= 0:
+            res[cId] = res.get(cId, []) + [numpy.array([self.pcoords[0], self.pcoords[1], 1.0])]
+        else:
+            print('Warning: starting point {} not found!'.format(lonlat0))
+
+        # find all intersection points in between
+        found = True
+        while found:
+            found = loc.IntersectWithLine(self.p0, self.p1, tol, self.t, 
+                                          self.point, self.pcoords, self.subId, self.cellId)
+            if found:
+
+                cId = self.cellId.get()
+
+                # correct the parametric coordinate to account for moving the starting point
+                # (self.t.get() is the param coord from self.p0 to lonlat1 with self.p0
+                # moving forward)
+                t = tStart + (self.t.get() - tStart)/(1.0 - tStart)
+
+                # add the contribution 
+                res[cId] = res.get(cId, []) + [numpy.array([self.pcoords[0], self.pcoords[1], t])]
+
+                # reset the start position
+                tStart = t
+                self.p0 = self.point
+
+        # always add the endpoint
+        cId = loc.FindCell(self.p1, tol, cell, self.pcoords, self.weights)
+        if cId >= 0:
+            res[cId] = res.get(cId, []) + [numpy.array([self.pcoords[0], self.pcoords[1], 1.0])]
+        else:
+            print('Warning: end point {} not found!'.format(lonlat1))
+
+        return res
 
 
 
@@ -136,12 +182,22 @@ class CubedsphereReader:
 
 def main():
     import argparse
+    from math import pi
+
     parser = argparse.ArgumentParser(description='Read cubedsphere file')
     parser.add_argument('-i', dest='input', default='', help='Specify input file')
     parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
+    parser.add_argument('-p0', dest='p0', default='0., 0.', help='Starting position for target line')
+    parser.add_argument('-p1', dest='p1', default='2*pi, 0.', help='End position for target line')    
     args = parser.parse_args()
 
     csr = CubedsphereReader(filename=args.input)
+
+    lonlat0 = eval(args.p0)
+    lonlat1 = eval(args.p1)
+    interPoints = csr.getIntersectionPoints(lonlat0, lonlat1)
+    print interPoints
+
     if args.vtk_file:
         csr.saveToVtkFile(args.vtk_file)
 
