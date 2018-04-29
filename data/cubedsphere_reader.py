@@ -11,10 +11,11 @@ class CubedsphereReader:
         self.cell_connectivity = []
 
         lats, lons = None, None
+        connectivity = None
         for varname in nc.variables:
             var = nc.variables[varname]
             if hasattr(var, 'cf_role') and var.cf_role == 'face_node_connectivity':
-                self.cell_connectivity = var[:]
+                connectivity = var[:]
             elif hasattr(var, 'standard_name'):
                 if var.standard_name == 'longitude':
                     lons = var[:]
@@ -26,15 +27,17 @@ class CubedsphereReader:
         self.xyz[:, 0] = lats
         self.xyz[:, 1] = lons
 
-        ncells = self.cell_connectivity.shape[0]
-        # use zero-based indexing from now on
-        self.cell_connectivity -= 1
+        ncells = connectivity.shape[0]
+
+        self.connectivity = numpy.zeros((ncells, 5), numpy.int64)
+        self.connectivity[:, 0] = 4 # points per cell
+        self.connectivity[:, 1:] = connectivity - 1 # zero based
 
         # build unstructured grid
         self.vtk = {
             'point_array': vtk.vtkDoubleArray(),
             'points': vtk.vtkPoints(),
-            'cell_array': vtk.vtkIntArray(),
+            'cell_array': vtk.vtkIdTypeArray(),
             'cells': vtk.vtkCellArray(),
             'grid': vtk.vtkUnstructuredGrid()
         }
@@ -47,21 +50,33 @@ class CubedsphereReader:
         self.vtk['points'].SetNumberOfPoints(nverts)
         self.vtk['points'].SetData(self.vtk['point_array'])
 
-        self.vtk['cell_array'].SetNumberOfComponents(4)
+        self.vtk['cell_array'].SetNumberOfComponents(5)
         self.vtk['cell_array'].SetNumberOfTuples(ncells)
-        self.vtk['cell_array'].SetVoidArray(self.cell_connectivity, 4*ncells, 1)
+        self.vtk['cell_array'].SetVoidArray(self.connectivity, 5*ncells, 1)
+
+        self.vtk['cells'].SetNumberOfCells(ncells)
+        self.vtk['cells'].SetCells(ncells, self.vtk['cell_array'])
 
         self.vtk['grid'].SetPoints(self.vtk['points'])
-        self.vtk['grid'].SetCells(vtk.VTK_QUAD, self.vtk['cells'])
 
+        print self.vtk['cells']
+        self.vtk['grid'].Allocate(ncells, 1)
+        self.vtk['grid'].SetCells(vtk.VTK_QUAD, self.vtk['cells'])
+        
+        print self.vtk['grid']
 
 
         
+    def saveToVtkFile(self, filename):
+        writer = vtk.vtkUnstructuredGridWriter()
+        writer.SetFileName(filename)
+        writer.SetInputData(self.vtk['grid'])
+        writer.Update()
 
 
 
     def getUnstructuredGrid(self):
-        pass
+        return self.vtk['grid']
 
 ###############################################################################
 
@@ -69,9 +84,12 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='Read cubedsphere file')
     parser.add_argument('-i', dest='input', default='', help='Specify input file')
+    parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
     args = parser.parse_args()
 
     csr = CubedsphereReader(filename=args.input)
+    if args.vtk_file:
+        csr.saveToVtkFile(args.vtk_file)
 
 if __name__ == '__main__':
     main()
