@@ -4,6 +4,8 @@ import vtk
 
 class CubedsphereReader:
 
+    TWOPI = 2. * numpy.pi
+
     def __init__(self, filename):
         """
         Constructor
@@ -55,10 +57,16 @@ class CubedsphereReader:
             area013 = 0.5*( (lon10 - lon00)*(lat01 - lat00) - (lat10 - lat00)*(lon01 - lon00) )
             area231 = 0.5*( (lon01 - lon11)*(lat10 - lat11) - (lat01 - lat11)*(lon10 - lon11) )
 
-            if area013 < 0.:
-                print '--- icell = ', icell, ' area013 = ', area013, ' lon-lats = ', (lon00, lat00), (lon10, lat10), (lon01, lat01)
-            if area231 < 0.:
-                print '--- icell = ', icell, ' area231 = ', area231, ' lon-lats = ', (lon11, lat11), (lon01, lat01), (lon10, lat10)
+            if area013 < 0. or area231 < 0.:
+                # this cell straddles the dateline
+                # base longitude is lon00, add/remove 2*pi to reduce the cell deltas
+                index10 = numpy.argmin([abs(lon10 - self.TWOPI - lon00), abs(lon10 - lon00), abs(lon10 + self.TWOPI - lon00)])
+                index11 = numpy.argmin([abs(lon11 - self.TWOPI - lon00), abs(lon11 - lon00), abs(lon11 + self.TWOPI - lon00)])
+                index01 = numpy.argmin([abs(lon01 - self.TWOPI - lon00), abs(lon01 - lon00), abs(lon01 + self.TWOPI - lon00)])
+
+                lon10 += (index10 - 1) * self.TWOPI
+                lon11 += (index11 - 1) * self.TWOPI
+                lon01 += (index01 - 1) * self.TWOPI
 
             k = 4*icell
 
