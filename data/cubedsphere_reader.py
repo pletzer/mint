@@ -5,6 +5,10 @@ import vtk
 class CubedsphereReader:
 
     def __init__(self, filename):
+        """
+        Constructor
+        @param filename UGRID file 
+        """
         
         nc = netCDF4.Dataset(filename, 'r')
 
@@ -24,8 +28,8 @@ class CubedsphereReader:
 
         nverts = len(lons)
         self.xyz = numpy.zeros((nverts, 3), numpy.float64)
-        self.xyz[:, 0] = lats
-        self.xyz[:, 1] = lons
+        self.xyz[:, 0] = lons
+        self.xyz[:, 1] = lats
 
         ncells = connectivity.shape[0]
 
@@ -62,12 +66,14 @@ class CubedsphereReader:
         print self.vtk['cells']
         self.vtk['grid'].Allocate(ncells, 1)
         self.vtk['grid'].SetCells(vtk.VTK_QUAD, self.vtk['cells'])
-        
-        print self.vtk['grid']
 
 
         
     def saveToVtkFile(self, filename):
+        """
+        Save the grid to a VTK file
+        @param filename VTK file
+        """
         writer = vtk.vtkUnstructuredGridWriter()
         writer.SetFileName(filename)
         writer.SetInputData(self.vtk['grid'])
@@ -76,6 +82,10 @@ class CubedsphereReader:
 
 
     def getUnstructuredGrid(self):
+        """
+        Get the unstructured grid
+        @return vtkUnstructuredGrid instance
+        """
         return self.vtk['grid']
 
 ###############################################################################
