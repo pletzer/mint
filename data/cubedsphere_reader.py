@@ -83,6 +83,17 @@ class CubedsphereReader:
 
         self.vtk['grid'].SetPoints(self.vtk['points'])
 
+        # add a cell locator
+        loc = vtk.vtkCellLocator()
+        loc.SetDataSet(self.vtk['grid'])
+        loc.BuildLocator()
+        self.vtk['locator'] = loc
+
+        # for finding intersections
+        self.p0 = numpy.zeros((3,), numpy.float64)
+        self.p1 = numpy.zeros((3,), numpy.float64)
+
+
         
     def saveToVtkFile(self, filename):
         """
@@ -102,6 +113,24 @@ class CubedsphereReader:
         @return vtkUnstructuredGrid instance
         """
         return self.vtk['grid']
+
+
+    def finCellsAlongLine(self, lonlat0, lonlat1, tol=1.e-3):
+        """
+        Find all the intersection points with line
+        @param lonlat0 starting point of the line
+        @param lonlat1 end point of the line
+        @return cells Ids intersected by line
+        """
+        self.p0[:2] = lonlat0
+        self.p1[:2] = lonlat1
+        cellIds = vtk.vtkIdList()
+        self.vtk['locator'].FindCellsAlongLine(self.p0, self.p1, tol, cellIds)
+        return cellIds
+
+
+
+
 
 ###############################################################################
 
