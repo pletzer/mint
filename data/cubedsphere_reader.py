@@ -89,6 +89,8 @@ class CubedsphereReader:
         loc.BuildLocator()
         self.vtk['locator'] = loc
 
+
+
         # for finding intersections
         self.p0 = numpy.zeros((3,), numpy.float64)
         self.p1 = numpy.zeros((3,), numpy.float64)
@@ -121,9 +123,17 @@ class CubedsphereReader:
         return self.vtk['grid']
 
 
-    def getIntersectionPoints(self, lonlat0, lonlat1, tol=1.e-10):
+    def getUnstructuredGridCellLocator(self):
         """
-        Get all the intersection points with given line
+        Get the unstructured grid cell locator
+        @return vtkCellLocator instance
+        """    	
+    	return self.vtk['locator']
+
+
+    def computeLineIntersectionPoints(self, lonlat0, lonlat1, tol=1.e-10):
+        """
+        Compute all the intersection points with given line
         @param lonlat0 starting point of the line
         @param lonlat1 end point of the line
         @return dictionary {cellId: [(xi0, eta0, t0), (xi1, eta1, t1), ...], } where t0, t1 are the parametric coordinates 

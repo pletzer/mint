@@ -7,14 +7,21 @@ class BrokenLineIter:
         Constructor
         @param points list of points
         """
-        self.index = 0
+        self.points = points
         self.numSegs = len(points) - 1
 
         lengths = numpy.array([numpy.linalg.norm(points[i + 1] - points[i]) \
                         for i in range(self.numSegs)])
         self.ts = numpy.array([0.] + list(lengths.cumsum()))
         self.ts /= self.ts[-1]
-        print self.ts
+        self.reset()
+
+
+    def reset(self):
+        """
+        Reset the counter
+        """
+        self.index = -1
 
 
     def __iter__(self):
@@ -24,19 +31,34 @@ class BrokenLineIter:
         """
         Update iterator
         """
-        if self.index < self.numSegs:
-            index = self.index
+        if self.index < self.numSegs - 1:
             self.index += 1
             return self
         else:
             raise StopIteration()
+
+    def getBegPoint(self):
+        """
+        Get the point at the beginning of the line
+        @return point
+        """
+        return self.points[self.index]
+
+
+    def getEndPoint(self):
+        """
+        Get the point at the end of the line
+        @return point
+        """
+        return self.points[self.index + 1]
+
 
     def getBegParamCoord(self):
         """
         Get the parametric coordinate at the beginning of the segment
         @return t value
         """
-        return self.ts[self.index - 1]
+        return self.ts[self.index]
         
 
     def getEndParamCoord(self):
@@ -44,20 +66,21 @@ class BrokenLineIter:
         Get the parametric coordinate at the end of the segment
         @return t value
         """
-        return self.ts[self.index]
+        return self.ts[self.index + 1]
 
     def getIndex(self):
         """
         Get the current index
         @return index
         """
-        return self.index - 1
+        return self.index
 
 
 ###############################################################################
 def test():
     pts = numpy.array([[0., -1.], [0.5, 0.3], [-2., 1.1]])
     bl = BrokenLineIter(points=pts)
+    bl.reset()
     for s in bl:
         print s.getIndex(), s.getBegParamCoord(), s.getEndParamCoord()
 
