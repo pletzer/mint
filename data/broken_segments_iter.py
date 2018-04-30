@@ -125,8 +125,8 @@ class BrokenSegmentsIter:
         # VTK wants 3d positions
         # perturb the position to avoid muyltiple cells
         # to claim the same intersection point
-        pBeg3d[:2] = p0 - 0.67634534*eps
-        pEnd3d[:2] = p1 + 0.48764787*eps
+        pBeg3d[:2] = p0
+        pEnd3d[:2] = p1
 
         res = []
 
@@ -144,7 +144,7 @@ class BrokenSegmentsIter:
         while found:
 
             found = self.locator.IntersectWithLine(pBeg3d, pEnd3d, tol, tbar, 
-                                                   point, xi, subId, cellId)
+                                                   point, xi, subId, cellId, cell)
             if found and tLast < 1.0 - eps:
                 # correct the line param coord for the fact that we
                 # moved the starting point
@@ -176,7 +176,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Break line into segments')
     parser.add_argument('-i', dest='input', default='mesh_C4.nc', help='Specify input file')
-    parser.add_argument('-p', dest='points', default='', nargs='?', help='Points describing broken line in the format "(x0, y0),(x1, y1)..."')
+    parser.add_argument('-p', dest='points', default='', nargs='?', help='Points describing broken line as "(x0, y0),(x1, y1)..."')
     args = parser.parse_args()
 
     csr = CubedsphereReader(filename=args.input)

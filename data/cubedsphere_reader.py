@@ -158,7 +158,7 @@ class CubedsphereReader:
         found = True
         while found:
             found = loc.IntersectWithLine(self.p0, self.p1, tol, self.t, 
-                                          self.point, self.pcoords, self.subId, self.cellId)
+                                          self.point, self.pcoords, self.subId, self.cellId, cell)
             if found:
 
                 cId = self.cellId.get()
