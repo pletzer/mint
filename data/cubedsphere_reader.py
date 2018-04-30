@@ -35,14 +35,12 @@ class CubedsphereReader:
         # 2D cells. Each cell has its own cooordinates. Make
         # sure each cell's area is positive in lat-lon space
         # build unstructured grid
-        self.vtk = {
-            'points': vtk.vtkPoints(),
-            'grid': vtk.vtkUnstructuredGrid()
-        }
 
-        self.vtk['points'].SetNumberOfPoints(4 * ncells)
+        points = vtk.vtkPoints()
+        points.SetNumberOfPoints(4 * ncells)
 
-        self.vtk['grid'].Allocate(1, 1)
+        grid = vtk.vtkUnstructuredGrid()
+        grid.Allocate(1, 1)
         ptIds = vtk.vtkIdList()
         ptIds.SetNumberOfIds(4)
         for icell in range(ncells):
@@ -70,25 +68,31 @@ class CubedsphereReader:
 
             k = 4*icell
 
-            self.vtk['points'].InsertPoint(k + 0, lon00, lat00, 0.)
-            self.vtk['points'].InsertPoint(k + 1, lon10, lat10, 0.)
-            self.vtk['points'].InsertPoint(k + 2, lon11, lat11, 0.)
-            self.vtk['points'].InsertPoint(k + 3, lon01, lat01, 0.)
+            # storing coords as lon, lat, 0
+            points.InsertPoint(k + 0, lon00, lat00, 0.)
+            points.InsertPoint(k + 1, lon10, lat10, 0.)
+            points.InsertPoint(k + 2, lon11, lat11, 0.)
+            points.InsertPoint(k + 3, lon01, lat01, 0.)
 
             ptIds.SetId(0, k + 0)
             ptIds.SetId(1, k + 1)
             ptIds.SetId(2, k + 2)
             ptIds.SetId(3, k + 3)
-            self.vtk['grid'].InsertNextCell(vtk.VTK_QUAD, ptIds)
+            grid.InsertNextCell(vtk.VTK_QUAD, ptIds)
 
-        self.vtk['grid'].SetPoints(self.vtk['points'])
+        grid.SetPoints(points)
 
         # add a cell locator
         loc = vtk.vtkCellLocator()
-        loc.SetDataSet(self.vtk['grid'])
+        loc.SetDataSet(grid)
         loc.BuildLocator()
-        self.vtk['locator'] = loc
 
+        # store
+        self.vtk = {
+            'points': points,
+            'grid': grid,
+            'locator': loc,
+        }
 
 
         # for finding intersections
@@ -131,20 +135,19 @@ class CubedsphereReader:
     	return self.vtk['locator']
 
 
-    def findCell(self, latlon, tol=1.e-10):
+    def findCell(self, lonlat, tol=1.e-10):
         """
         Find cell containing point 
         @param lonlat target point
         @param tol tolerance
         @return cell Id
         """
-        # why do we need to invert order here!
-        self.point[:2] = latlon[1], latlon[0]
+        self.point[:2] = lonlat
         cId = self.vtk['locator'].FindCell(self.point, tol, self.cell, self.pcoords, self.weights)
         return cId
 
 
-    def computeLineIntersectionPoints(self, latlon0, latlon1, tol=1.e-10):
+    def computeLineIntersectionPoints(self, lonlat0, lonlat1, tol=1.e-10):
         """
         Compute all the intersection points with given line
         @param lonlat0 starting point of the line
@@ -157,8 +160,9 @@ class CubedsphereReader:
         loc = self.vtk['locator']
         cell = vtk.vtkGenericCell()
 
-        self.p0[:2] = latlon0
-        self.p1[:2] = latlon1
+        # need to invert the order!!!!!
+        self.p0[:2] = lonlat0[1], lonlat0[0]
+        self.p1[:2] = lonlat1[1], lonlat1[0]
 
         # always add the starting point
         cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
@@ -212,7 +216,7 @@ def main():
     parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
     parser.add_argument('-p0', dest='p0', default='0., 0.', help='Starting position for target line')
     parser.add_argument('-p1', dest='p1', default='0., 2*pi', help='End position for target line')
-    parser.add_argument('-p', dest='point', default='0.3, 5.5', help='Target point')    
+    parser.add_argument('-p', dest='point', default='5.5, 0.3', help='Target point (lon, lat)')    
    
     args = parser.parse_args()
 
