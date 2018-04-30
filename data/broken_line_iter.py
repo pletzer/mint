@@ -7,10 +7,10 @@ class BrokenLineIter:
         Constructor
         @param points list of points
         """
-        self.points = points
+        self.points = [numpy.array(p) for p in points]
         self.numSegs = len(points) - 1
 
-        lengths = numpy.array([numpy.linalg.norm(points[i + 1] - points[i]) \
+        lengths = numpy.array([numpy.linalg.norm(self.points[i + 1] - self.points[i]) \
                         for i in range(self.numSegs)])
         self.ts = numpy.array([0.] + list(lengths.cumsum()))
         self.ts /= self.ts[-1]

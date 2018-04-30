@@ -113,7 +113,7 @@ class BrokenSegmentsIter:
 
         # things we need to define
         cellId = vtk.mutable(-1)
-        subCellId = vtk.mutable(-1)
+        subId = vtk.mutable(-1)
         xi = numpy.zeros((3,), numpy.float64)
         tbar = vtk.mutable(-1.)
         cell = vtk.vtkGenericCell()
@@ -125,6 +125,7 @@ class BrokenSegmentsIter:
         # VTK wants 3d positions
         # perturb the position to avoid muyltiple cells
         # to claim the same intersection point
+        print p0
         pBeg3d[:2] = p0 - 0.67634534*eps
         pEnd3d[:2] = p1 + 0.48764787*eps
 
@@ -149,7 +150,7 @@ class BrokenSegmentsIter:
                 # moved the starting point
                 t = tLast + (tbar.get() - tLast)/(1.0 - tLast)
                 # store
-                res.append( (cellid.get(), xi[:2], t) )
+                res.append( (cellId.get(), xi[:2], t) )
                 # store the last line param coord
                 tLast = t
                 # reset the starting point of the ray
@@ -169,6 +170,7 @@ def main():
     import argparse
     from math import pi
     from cubedsphere_reader import CubedsphereReader
+    from broken_line_iter import BrokenLineIter
 
     parser = argparse.ArgumentParser(description='Break line into segments')
     parser.add_argument('-i', dest='input', default='mesh_C4.nc', help='Specify input file')
@@ -176,8 +178,11 @@ def main():
     args = parser.parse_args()
 
     csr = CubedsphereReader(filename=args.input)
+    points = eval(args.points)
+    bl = BrokenLineIter(points)
+    bs = BrokenSegmentsIter(csr.getUnstructuredGridCellLocator(), bl)
 
-    print args.points
+    
 
 if __name__ == '__main__':
     main()
