@@ -100,7 +100,7 @@ class BrokenSegmentsIter:
         return self.index
 
 
-    def __collectLineGridIntersectionPoints(self, p0, p1, tol=1.e-10):
+    def __collectLineGridIntersectionPoints(self, lonlat, , tol=1.e-10):
         """
         Collect all the line-grid intersection points
         @param p0 starting point of the line
@@ -125,8 +125,9 @@ class BrokenSegmentsIter:
         # VTK wants 3d positions
         # perturb the position to avoid muyltiple cells
         # to claim the same intersection point
-        pBeg3d[:2] = p0
-        pEnd3d[:2] = p1
+        pBeg3d[:] = p0[0], p0[1], 0.0
+        pEnd3d[:] = p1[0], p1[1], 0.0
+        deltaPos = pEnd3d - pBeg3d
 
         res = []
 
@@ -155,7 +156,7 @@ class BrokenSegmentsIter:
                 # store the last line param coord
                 tLast = t
                 # reset the starting point of the ray
-                pBeg3d[:2] = point[:2] + eps
+                pBeg3d[:] = point[:] + eps*deltaPos
             else:
                 found = False
             

@@ -160,11 +160,23 @@ class CubedsphereReader:
         loc = self.vtk['locator']
         cell = vtk.vtkGenericCell()
         eps = 1.2345e-10
+        cellIds = vtk.vtkIdList()
 
         self.p0[:] = lonlat0[0], lonlat0[1], 0.
         self.p1[:] = lonlat1[0], lonlat1[1], 0.
+        pBeg = self.p0.copy()
+        pEnd = self.p1.copy()
 
         deltaPos = self.p1 - self.p0
+
+        pBeg += eps*deltaPos
+        pEnd -= eps*deltaPos
+
+        loc.FindCellsAlongLine(pBeg, pEnd, tol, cellIds)
+        for i in range(cellIds.GetNumberOfIds()):
+            cId = cellIds.GetId(i)
+            print cId
+
 
         # always add the starting point
         cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
@@ -176,9 +188,23 @@ class CubedsphereReader:
         # find all intersection points in between
         found = True
         while found:
+
+
+            print '***looking for intersection {} -> {}'.format(self.p0, self.p1)
             found = loc.IntersectWithLine(self.p0, self.p1, tol, self.t, 
-                                          self.point, self.pcoords, self.subId, self.cellId, cell)
+                                          self.point, self.pcoords, self.subId, self.cellId)
+
+            #pts = vtk.vtkPoints()
+            #cellIds = vtk.vtkIdList()
+            #found = loc.IntersectWithLine(self.p0, self.p1, pts, cellIds)
+
+            print '***found = ', found
             if found:
+
+                print pts
+                print cellIds
+
+            	print '***found point = ', point
 
                 cId = self.cellId.get()
 
