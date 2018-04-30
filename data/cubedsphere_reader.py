@@ -159,10 +159,12 @@ class CubedsphereReader:
         tStart = 0.0
         loc = self.vtk['locator']
         cell = vtk.vtkGenericCell()
+        eps = 1.2345e-10
 
-        # need to invert the order!!!!!
-        self.p0[:2] = lonlat0[1], lonlat0[0]
-        self.p1[:2] = lonlat1[1], lonlat1[0]
+        self.p0[:] = lonlat0[0], lonlat0[1], 0.
+        self.p1[:] = lonlat1[0], lonlat1[1], 0.
+
+        deltaPos = self.p1 - self.p0
 
         # always add the starting point
         cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
@@ -188,9 +190,9 @@ class CubedsphereReader:
                 # add the contribution
                 res.append( (cId, self.pcoords[0], self.pcoords[1], t) ) 
 
-                # reset the start position
+                # reset the starting position
                 tStart = t
-                self.p0[:] = self.point + eps*(self.p1 - self.p0)
+                self.p0[:] = self.point + eps*deltaPos
 
         # always add the endpoint
         cId = loc.FindCell(self.p1, tol, cell, self.pcoords, self.weights)
@@ -214,8 +216,8 @@ def main():
     parser = argparse.ArgumentParser(description='Read cubedsphere file')
     parser.add_argument('-i', dest='input', default='', help='Specify input file')
     parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
-    parser.add_argument('-p0', dest='p0', default='0., 0.', help='Starting position for target line')
-    parser.add_argument('-p1', dest='p1', default='0., 2*pi', help='End position for target line')
+    parser.add_argument('-p0', dest='p0', default='5.50, 0.3', help='Starting position for target line')
+    parser.add_argument('-p1', dest='p1', default='5.55, 0.3', help='End position for target line')
     parser.add_argument('-p', dest='point', default='5.5, 0.3', help='Target point (lon, lat)')    
    
     args = parser.parse_args()
