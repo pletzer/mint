@@ -139,7 +139,7 @@ class CubedsphereReader:
         @return dictionary {cellId: [(xi0, eta0, t0), (xi1, eta1, t1), ...], } where t0, t1 are the parametric coordinates 
                 along the line
         """
-        res = {}
+        res = []
         tStart = 0.0
         loc = self.vtk['locator']
         cell = vtk.vtkGenericCell()
@@ -150,7 +150,7 @@ class CubedsphereReader:
         # always add the starting point
         cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
         if cId >= 0:
-            res[cId] = res.get(cId, []) + [numpy.array([self.pcoords[0], self.pcoords[1], 1.0])]
+            res.append( (cId, self.pcoords[0], self.pcoords[1], 0.0)  )
         else:
             print('Warning: starting point {} not found!'.format(lonlat0))
 
@@ -168,17 +168,17 @@ class CubedsphereReader:
                 # moving forward)
                 t = tStart + (self.t.get() - tStart)/(1.0 - tStart)
 
-                # add the contribution 
-                res[cId] = res.get(cId, []) + [numpy.array([self.pcoords[0], self.pcoords[1], t])]
+                # add the contribution
+                res.append( (cId, self.pcoords[0], self.pcoords[1], t) ) 
 
                 # reset the start position
                 tStart = t
-                self.p0 = self.point
+                self.p0[:] = self.point + eps*(self.p1 - self.p0)
 
         # always add the endpoint
         cId = loc.FindCell(self.p1, tol, cell, self.pcoords, self.weights)
         if cId >= 0:
-            res[cId] = res.get(cId, []) + [numpy.array([self.pcoords[0], self.pcoords[1], 1.0])]
+            res.append( (cId, self.pcoords[0], self.pcoords[1], 1.0) )
         else:
             print('Warning: end point {} not found!'.format(lonlat1))
 
@@ -205,7 +205,7 @@ def main():
 
     lonlat0 = eval(args.p0)
     lonlat1 = eval(args.p1)
-    interPoints = csr.getIntersectionPoints(lonlat0, lonlat1)
+    interPoints = csr.computeLineIntersectionPoints(lonlat0, lonlat1)
     print interPoints
 
     if args.vtk_file:
