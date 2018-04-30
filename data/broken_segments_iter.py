@@ -109,7 +109,7 @@ class BrokenSegmentsIter:
         @return list of [(cellId, xi, t), ...]
         """
 
-        eps = 1.234e-12
+        eps = 1.234e-10
 
         # things we need to define
         cellId = vtk.mutable(-1)
@@ -143,9 +143,10 @@ class BrokenSegmentsIter:
         # find all intersection points in between
         found = True
         while found:
+
             found = self.locator.IntersectWithLine(pBeg3d, pEnd3d, tol, tbar, 
-                                          point, xi, subId, cellId)
-            if found:
+                                                   point, xi, subId, cellId)
+            if found and tLast < 1.0 - eps:
                 # correct the line param coord for the fact that we
                 # moved the starting point
                 t = tLast + (tbar.get() - tLast)/(1.0 - tLast)
@@ -154,9 +155,10 @@ class BrokenSegmentsIter:
                 # store the last line param coord
                 tLast = t
                 # reset the starting point of the ray
-                pBeg3d = point + eps
-
-
+                pBeg3d[:2] = point[:2] + eps
+            else:
+                found = False
+            
         # add last point 
         cId = self.locator.FindCell(pEnd3d, tol, cell, xi, weights)
         if cId >= 0:
@@ -181,6 +183,8 @@ def main():
     points = eval(args.points)
     bl = BrokenLineIter(points)
     bs = BrokenSegmentsIter(csr.getUnstructuredGridCellLocator(), bl)
+    for s in bs:
+        print s.getCellId(), s.getBegCellParamCoord(), s.getEndCellParamCoord(), s.getBegLineParamCoord(), s.getEndLineParamCoord()
 
     
 
