@@ -43,7 +43,7 @@ class BrokenSegmentsIter:
         """
         Update iterator
         """
-        if self.index < self.numSegs:
+        if self.index < self.numSegs - 1:
             index = self.index
             self.index += 1
             self.segment = self.data[self.index]
@@ -125,7 +125,6 @@ class BrokenSegmentsIter:
         # VTK wants 3d positions
         # perturb the position to avoid muyltiple cells
         # to claim the same intersection point
-        print p0
         pBeg3d[:2] = p0 - 0.67634534*eps
         pEnd3d[:2] = p1 + 0.48764787*eps
 
@@ -134,7 +133,7 @@ class BrokenSegmentsIter:
         # add starting point
         cId = self.locator.FindCell(pBeg3d, tol, cell, xi, weights)
         if cId >= 0:
-            res.append( (cId, xi[:2], 0.) )
+            res.append( (cId, xi[:2].copy(), 0.) )
         else:
             print('Warning: starting point {} not found!'.format(p0))
         tLast = 0.0
@@ -151,7 +150,8 @@ class BrokenSegmentsIter:
                 # moved the starting point
                 t = tLast + (tbar.get() - tLast)/(1.0 - tLast)
                 # store
-                res.append( (cellId.get(), xi[:2], t) )
+                cId = cellId.get()
+                res.append( (cId, xi[:2].copy(), t) )
                 # store the last line param coord
                 tLast = t
                 # reset the starting point of the ray
@@ -162,7 +162,7 @@ class BrokenSegmentsIter:
         # add last point 
         cId = self.locator.FindCell(pEnd3d, tol, cell, xi, weights)
         if cId >= 0:
-            res.append( (cId, xi[:2], 1.) )
+            res.append( (cId, xi[:2].copy(), 1.) )
         else:
             print('Warning: end point {} not found!'.format(p1))
 
@@ -182,9 +182,24 @@ def main():
     csr = CubedsphereReader(filename=args.input)
     points = eval(args.points)
     bl = BrokenLineIter(points)
+    
+    count = 0
+    for b in bl:
+        t0 = b.getBegParamCoord()
+        t1 = b.getEndParamCoord()
+        print('line {} t = {} -> {}'.format(count, t0, t1))
+        count += 1
+
     bs = BrokenSegmentsIter(csr.getUnstructuredGridCellLocator(), bl)
+    count = 0
     for s in bs:
-        print s.getCellId(), s.getBegCellParamCoord(), s.getEndCellParamCoord(), s.getBegLineParamCoord(), s.getEndLineParamCoord()
+        cellId = s.getCellId()
+        xia = s.getBegCellParamCoord()
+        xib = s.getEndCellParamCoord()
+        ta = s.getBegLineParamCoord()
+        tb = s.getEndLineParamCoord()
+        print('seg {} in cell {} t = {} -> {} xi = {} -> {}'.format(count, cellId, ta, tb, xia, xib))
+        count += 1
 
     
 
