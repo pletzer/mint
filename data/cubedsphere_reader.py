@@ -100,7 +100,7 @@ class CubedsphereReader:
         self.subId = vtk.mutable(-1)
         self.cellId = vtk.mutable(-1)
         self.weights = numpy.zeros((4,), numpy.float64)
-
+        self.cell = vtk.vtkGenericCell()
 
         
     def saveToVtkFile(self, filename):
@@ -131,21 +131,34 @@ class CubedsphereReader:
     	return self.vtk['locator']
 
 
-    def computeLineIntersectionPoints(self, lonlat0, lonlat1, tol=1.e-10):
+    def findCell(self, latlon, tol=1.e-10):
+        """
+        Find cell containing point 
+        @param lonlat target point
+        @param tol tolerance
+        @return cell Id
+        """
+        # why do we need to invert order here!
+        self.point[:2] = latlon[1], latlon[0]
+        cId = self.vtk['locator'].FindCell(self.point, tol, self.cell, self.pcoords, self.weights)
+        return cId
+
+
+    def computeLineIntersectionPoints(self, latlon0, latlon1, tol=1.e-10):
         """
         Compute all the intersection points with given line
         @param lonlat0 starting point of the line
         @param lonlat1 end point of the line
-        @return dictionary {cellId: [(xi0, eta0, t0), (xi1, eta1, t1), ...], } where t0, t1 are the parametric coordinates 
-                along the line
+        @return list [(cellId0, xi0, eta0, t0), (cellId1, xi1, eta1, t1), ...],
+                     where t0, t1 are the parametric coordinates along the line
         """
         res = []
         tStart = 0.0
         loc = self.vtk['locator']
         cell = vtk.vtkGenericCell()
 
-        self.p0[:2] = lonlat0
-        self.p1[:2] = lonlat1
+        self.p0[:2] = latlon0
+        self.p1[:2] = latlon1
 
         # always add the starting point
         cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
@@ -198,14 +211,21 @@ def main():
     parser.add_argument('-i', dest='input', default='', help='Specify input file')
     parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
     parser.add_argument('-p0', dest='p0', default='0., 0.', help='Starting position for target line')
-    parser.add_argument('-p1', dest='p1', default='2*pi, 0.', help='End position for target line')    
+    parser.add_argument('-p1', dest='p1', default='0., 2*pi', help='End position for target line')
+    parser.add_argument('-p', dest='point', default='0.3, 5.5', help='Target point')    
+   
     args = parser.parse_args()
 
     csr = CubedsphereReader(filename=args.input)
 
-    lonlat0 = eval(args.p0)
-    lonlat1 = eval(args.p1)
-    interPoints = csr.computeLineIntersectionPoints(lonlat0, lonlat1)
+    point = eval(args.point)
+    cId = csr.findCell(point)
+    print 'point {} is in cell {}'.format(point, cId)
+
+
+    latlon0 = eval(args.p0)
+    latlon1 = eval(args.p1)
+    interPoints = csr.computeLineIntersectionPoints(latlon0, latlon1)
     print interPoints
 
     if args.vtk_file:
