@@ -16,6 +16,7 @@ class BrokenSegmentsIter:
         self.locator = locator
         self.data = []
         brokenLine.reset()
+        self.totalT = 0.0
         for bl in brokenLine:
             t0, t1 = bl.getBegParamCoord(), bl.getEndParamCoord()
             dt = t1 - t0
@@ -26,13 +27,22 @@ class BrokenSegmentsIter:
                 cIda, xia, lama = res[i]
                 cIdb, xib, lamb = res[i + 1]
                 if cIda != cIdb:
-                    print('Warning: the cell {} != {} should not change between beg/end of segment'.format(cIda, cIdb))
+                    print('Warning: cell {} != {} should not change between beg/end of segment'.format(cIda, cIdb))
                 ta = t0 + lama*dt
                 tb = t0 + lamb*dt
+                self.totalT += tb - ta
                 self.data.append( (cIda, xia, xib, ta, tb) )
 
         self.numSegs = len(self.data)
         self.reset()
+
+
+    def getIntegratedParamCoord(self):
+        """
+        Get the integrated linear parametric coordinates
+        @return value
+        """
+        return self.totalT
 
 
     def reset(self):
@@ -241,6 +251,8 @@ def main():
         tb = s.getEndLineParamCoord()
         print('seg {} in cell {} t = {} -> {} xi = {} -> {}'.format(count, cellId, ta, tb, xia, xib))
         count += 1
+
+    print('Integrated t = {}'.format(s.getIntegratedParamCoord()))
 
     
 
