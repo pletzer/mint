@@ -163,7 +163,7 @@ class CubedsphereReader:
         grid = self.vtk['grid']
         loc = self.vtk['locator']
         cell = vtk.vtkGenericCell()
-        eps = 1.2345e-10
+        eps = 1.2345e-12
         cellIds = vtk.vtkIdList()
         ptIds = vtk.vtkIdList()
         npts = vtk.mutable(0)
@@ -172,6 +172,13 @@ class CubedsphereReader:
 
         self.p0[:] = lonlat0[0], lonlat0[1], 0.
         self.p1[:] = lonlat1[0], lonlat1[1], 0.
+
+        # perturb the points so we don't hit nodes and edges
+        self.p0[0] += eps*1.86512432134
+        self.p0[1] -= eps*2.76354653243
+        self.p1[0] -= eps*1.96524543545
+        self.p1[1] += eps*0.82875646565
+
         pBeg = self.p0.copy()
         pEnd = self.p1.copy()
 
