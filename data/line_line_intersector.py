@@ -2,33 +2,59 @@ import numpy
 
 class LineLineIntersector:
 
-	def __init__(self):
-		
-		self.mat = numpy.zeros((2,2), numpy.float64)
-		self.rhs = numpy.zeros((2,), numpy.float64)
-		self.sol = []
+    def __init__(self):
+        """
+        Constructor
+        no args
+        """
+        
+        self.mat = numpy.zeros((2,2), numpy.float64)
+        self.rhs = numpy.zeros((2,), numpy.float64)
+        self.sol = []
 
 
-	def reset(self):
-		self.rhs *= 0.0
+    def reset(self):
+        """
+        Rest the matrix system
+        """
+        self.rhs *= 0.0
 
 
-	def setLine1(self, p0, p1):
-		self.rhs -= p0
-		self.mat[:, 0] = p1 - p0
+    def setLine1(self, p0, p1):
+        """
+        Set the first line
+        @param p0 starting point
+        @param p1 end point
+        """
+        self.rhs -= p0
+        self.mat[:, 0] = p1 - p0
 
 
-	def setLine2(self, q0, q1):
-		self.rhs += q0
-		self.mat[:, 1] = q0 - q1
+    def setLine2(self, q0, q1):
+        """
+        Set the second line
+        @param q0 starting point
+        @param q1 end point
+        """
+        self.rhs += q0
+        self.mat[:, 1] = q0 - q1
 
 
-	def solve(self):
-		self.sol = numpy.linalg.solve(self.mat, self.rhs)
+    def solve(self):
+        """
+        Solve the system
+        """
+        print self.mat
+        print self.rhs
+        self.sol = numpy.linalg.solve(self.mat, self.rhs)
 
 
-	def getParamCoords(self):
-		return self.sol
+    def getParamCoords(self):
+        """
+        Get the parametric coordinates of the solution vector
+        @return vector
+        """
+        return self.sol
 
 ###############################################################################
 def test1():
@@ -40,11 +66,12 @@ def test1():
     lli = LineLineIntersector()
     lli.reset()
     lli.setLine1(p0, p1)
-    lli.setLine2(q0, p0)
+    lli.setLine2(q0, q1)
     lli.solve()
-    xi, eta = lli.getParamCoords()
-    assert(abs(xi - 1.) < tol)
-    assert(abs(eta - 1./3.) < tol)
+    xi1, xi2 = lli.getParamCoords()
+    print xi1, xi2
+    assert(abs(xi1 - 1./2.) < tol)
+    assert(abs(xi2 - 1./3.) < tol)
 
 if __name__ == '__main__':
     test1()
