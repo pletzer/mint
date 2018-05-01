@@ -21,17 +21,20 @@ class BrokenSegmentsIter:
             t0, t1 = bl.getBegParamCoord(), bl.getEndParamCoord()
             dt = t1 - t0
             p0, p1 = bl.getBegPoint(), bl.getEndPoint()
-            res = self.__collectLineGridIntersectionPoints(p0, p1)
+            res = self.__collectLineGridSegments(p0, p1)
+            print '*** res = ', res
             # expect 2 or more points
             for i in range(len(res) - 1):
                 cIda, xia, lama = res[i]
                 cIdb, xib, lamb = res[i + 1]
-                if cIda != cIdb:
-                    print('Warning: cell {} != {} should not change between beg/end of segment'.format(cIda, cIdb))
                 ta = t0 + lama*dt
                 tb = t0 + lamb*dt
                 self.totalT += tb - ta
                 self.data.append( (cIda, xia, xib, ta, tb) )
+                if cIda != cIdb:
+                    print('Warning: cell {} != {} should not change between beg/end of segment'.format(cIda, cIdb))
+                    print('         t = {} -> {} xia = {} xib = {}'.format(ta, tb, xia, xib))
+
 
         self.numSegs = len(self.data)
         self.reset()
@@ -118,14 +121,62 @@ class BrokenSegmentsIter:
         return self.index
 
 
-    def __collectLineGridIntersectionPoints(self, p0, p1, tol=1.e-10):
+    def __collectIntersectionPoints(self, pBeg, pEnd, tol=1.e-10):
+        """
+        Collect all the intersection points
+        @param pBeg starting point
+        @param pEnd end point
+        @return [(point, lambda), ...]
+        @note lambda is the linear parametric coordinate along the line
+        """
+
+        res = []
+        eps = 1.73654365e-12
+
+        intersector = LineLineIntersector()
+        cellIds = vtk.vtkIdList()
+        ptIds = vtk.vtkIdList()
+
+        # find all the cells intersected by the line
+        self.locator.FindCellsAlongLine(pBeg, pEnd, tol, cellIds)
+
+        # collect the intersection points in between
+        for i in range(cellIds.GetNumberOfIds()):
+            cId = cellIds.GetId(i)
+            self.grid.GetCellPoints(cId, ptIds)
+            # iterate over the quads' edges
+            for j0 in range(4):
+
+                j1 = (j0 + 1) % 4
+                v0 = numpy.array(self.grid.GetPoint(ptIds.GetId(j0)))
+                v1 = numpy.array(self.grid.GetPoint(ptIds.GetId(j1)))
+
+                # look for an intersection
+                intersector.reset()
+                intersector.setLine1(pBeg[:2], pEnd[:2])
+                intersector.setLine2(v0[:2], v1[:2])
+                intersector.solve()
+                lambRay, lambEdg = intersector.getParamCoords()
+
+                if lambRay >= 0. - eps and lambRay <= 1. + eps and \
+                    lambEdg >= 0. - eps and lambEdg <= 1. + eps:
+
+                    point = pBeg + lambRay*(pEnd - pBeg)
+                    res.append( (point, lambRay) )
+
+        return res
+
+
+    def __collectLineGridSegments(self, p0, p1, tol=1.e-10):
         """
         Collect all the line-grid intersection points
         @param p0 starting point of the line
         @param p1 end point of the line 
         @param tol tolerance
-        @return list of [(cellId, xi, t), ...]
+        @return list of [ (cellId, point, xi, t), ...]
         """
+
+        res = []
 
         eps = 1.234e-12
 
@@ -141,7 +192,6 @@ class BrokenSegmentsIter:
         point = numpy.zeros((3,), numpy.float64)
         closestPoint = numpy.zeros((3,), numpy.float64)
         weights = numpy.array((4,), numpy.float64)
-        intersector = LineLineIntersector()
 
         # VTK wants 3d positions
         pBeg[:] = p0[0], p0[1], 0.0
@@ -156,58 +206,41 @@ class BrokenSegmentsIter:
 
         deltaPos = pEnd - pBeg
 
-        res = []
-
         # add starting point
         cId = self.locator.FindCell(pBeg, tol, cell, xi, weights)
         if cId >= 0:
             res.append( (cId, xi[:2].copy(), 0.) )
         else:
             print('Warning: starting point {} not found!'.format(p0))
+
         tLast = 0.0
+        cIdLast = cId
+        fullSegment = False
 
         # find all intersection points in between
         pBeg += eps*deltaPos
         pEnd -= eps*deltaPos
 
-        # find all the cells intersected by the line
-        self.locator.FindCellsAlongLine(pBeg, pEnd, tol, cellIds)
+        intersections = self.__collectIntersectionPoints(pBeg, pEnd, tol)
 
-        # iterate over the intersected cells
-        for i in range(cellIds.GetNumberOfIds()):
+        # find the cell id of the neighbouring cells
+        for point, lambRay in intersections:
 
-            cId = cellIds.GetId(i)
+            # move upstream
+            point -= eps*deltaPos
+            cIdUp = self.locator.FindCell(point, tol, cell, xi, weights)
+            if cIdUp >= 0:
+                res.append( (cIdUp, xi[:2].copy(), lambRay) )
+            else:
+                print('Warning: no up side cell found for point {}'.format(point))
 
-            # get the point Ids of this cell
-            self.grid.GetCellPoints(cId, ptIds)
-
-            # iterate over the quads' edges
-            for j in range(4):
-
-                v0 = numpy.array(self.grid.GetPoint(ptIds.GetId(j)))
-                v1 = numpy.array(self.grid.GetPoint(ptIds.GetId((j + 1) % 4)))
-
-                # look for an intersection
-                intersector.reset()
-                intersector.setLine1(pBeg[:2], pEnd[:2])
-                intersector.setLine2(v0[:2], v1[:2])
-                intersector.solve()
-                lambRay, lambEdg = intersector.getParamCoords()
-
-                if lambRay >= 0. - eps and lambRay <= 1. + eps and \
-                    lambEdg >= 0. - eps and lambEdg <= 1. + eps:
-
-                    # found valid intersection, compute the cell 
-                    # parametric coords
-                    point = pBeg + lambRay*(pEnd - pBeg)
-                    found = self.grid.GetCell(cId).EvaluatePosition(point, closestPoint, 
-                                                                    subId, xi, 
-                                                                    dist, weights)
-                    if found:
-                        # add
-                        res.append( (cId, xi[:2].copy(), lambRay) )
-                    else:
-                        print('Warning: found intersection point {} but cell {} does not contain it'.format(point, cId))
+            # move downstream
+            point += 2*eps*deltaPos
+            cIdDn = self.locator.FindCell(point, tol, cell, xi, weights)
+            if cIdDn >= 0:
+                res.append( (cIdDn, xi[:2].copy(), lambRay) )
+            else:
+                print('Warning: no down side cell found for point {}'.format(point))
 
             
         # add last point 
@@ -219,6 +252,7 @@ class BrokenSegmentsIter:
 
         return res
 
+
 def main():
     import argparse
     from math import pi
@@ -227,7 +261,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Break line into segments')
     parser.add_argument('-i', dest='input', default='mesh_C4.nc', help='Specify input file')
-    parser.add_argument('-p', dest='points', default='', nargs='?', help='Points describing broken line as "(x0, y0),(x1, y1)..."')
+    parser.add_argument('-p', dest='points', default='(0., 0.),(2*pi,0.)', help='Points describing broken line as "(x0, y0),(x1, y1)..."')
     args = parser.parse_args()
 
     csr = CubedsphereReader(filename=args.input)
