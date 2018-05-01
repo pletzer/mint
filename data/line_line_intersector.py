@@ -10,7 +10,7 @@ class LineLineIntersector:
         
         self.mat = numpy.zeros((2,2), numpy.float64)
         self.rhs = numpy.zeros((2,), numpy.float64)
-        self.sol = []
+        self.sol = numpy.zeros((2,), numpy.float64)
 
 
     def reset(self):
@@ -44,8 +44,6 @@ class LineLineIntersector:
         """
         Solve the system
         """
-        print self.mat
-        print self.rhs
         self.sol = numpy.linalg.solve(self.mat, self.rhs)
 
 
@@ -58,6 +56,7 @@ class LineLineIntersector:
 
 ###############################################################################
 def test1():
+    # standard
     tol = 1.e-10
     p0 = numpy.array([0., 0.])
     p1 = numpy.array([2., 0.])
@@ -73,5 +72,43 @@ def test1():
     assert(abs(xi1 - 1./2.) < tol)
     assert(abs(xi2 - 1./3.) < tol)
 
+def test2():
+    # degenerate solution
+    tol = 1.e-10
+    p0 = numpy.array([0., 0.])
+    p1 = numpy.array([2., 0.])
+    q0 = numpy.array([0., 0.])
+    q1 = numpy.array([1., 0.])
+    lli = LineLineIntersector()
+    lli.reset()
+    lli.setLine1(p0, p1)
+    lli.setLine2(q0, q1)
+    try:
+        lli.solve()
+        xi1, xi2 = lli.getParamCoords()
+    except:
+        # error expected
+        pass
+
+def test3():
+    # no solution
+    tol = 1.e-10
+    p0 = numpy.array([0., 0.])
+    p1 = numpy.array([2., 0.])
+    q0 = numpy.array([0., 1.])
+    q1 = numpy.array([1., 1.])
+    lli = LineLineIntersector()
+    lli.reset()
+    lli.setLine1(p0, p1)
+    lli.setLine2(q0, q1)
+    try:
+        lli.solve()
+        xi1, xi2 = lli.getParamCoords()
+    except:
+        # error expected
+        pass
+
 if __name__ == '__main__':
     test1()
+    test2()
+    test3()
