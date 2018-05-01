@@ -1,6 +1,7 @@
 import netCDF4
 import numpy
 import vtk
+from line_line_intersector import LineLineIntersector
 
 class CubedsphereReader:
 
@@ -11,6 +12,8 @@ class CubedsphereReader:
         Constructor
         @param filename UGRID file 
         """
+
+        self.intersector = LineLineIntersector()
         
         # read UGRID file
         nc = netCDF4.Dataset(filename, 'r')
@@ -157,10 +160,15 @@ class CubedsphereReader:
         """
         res = []
         tStart = 0.0
+        grid = self.vtk['grid']
         loc = self.vtk['locator']
         cell = vtk.vtkGenericCell()
         eps = 1.2345e-10
         cellIds = vtk.vtkIdList()
+        ptIds = vtk.vtkIdList()
+        npts = vtk.mutable(0)
+        dist = vtk.mutable(0.)
+        closestPoint = numpy.zeros((3,), numpy.float64)
 
         self.p0[:] = lonlat0[0], lonlat0[1], 0.
         self.p1[:] = lonlat1[0], lonlat1[1], 0.
@@ -169,15 +177,6 @@ class CubedsphereReader:
 
         deltaPos = self.p1 - self.p0
 
-        pBeg += eps*deltaPos
-        pEnd -= eps*deltaPos
-
-        loc.FindCellsAlongLine(pBeg, pEnd, tol, cellIds)
-        for i in range(cellIds.GetNumberOfIds()):
-            cId = cellIds.GetId(i)
-            print cId
-
-
         # always add the starting point
         cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
         if cId >= 0:
@@ -185,40 +184,43 @@ class CubedsphereReader:
         else:
             print('Warning: starting point {} not found!'.format(lonlat0))
 
-        # find all intersection points in between
-        found = True
-        while found:
+        # find the in between intersection points
+        pBeg += eps*deltaPos
+        pEnd -= eps*deltaPos
 
+        loc.FindCellsAlongLine(pBeg, pEnd, tol, cellIds)
+        for i in range(cellIds.GetNumberOfIds()):
+            cId = cellIds.GetId(i)
+            # iterate over the edges of the cell
+            grid.GetCellPoints(cId, ptIds)
+            for j in range(ptIds.GetNumberOfIds()):
 
-            print '***looking for intersection {} -> {}'.format(self.p0, self.p1)
-            found = loc.IntersectWithLine(self.p0, self.p1, tol, self.t, 
-                                          self.point, self.pcoords, self.subId, self.cellId)
+                q0 = numpy.array(grid.GetPoint(ptIds.GetId(j)))
+                q1 = numpy.array(grid.GetPoint(ptIds.GetId((j + 1) % 4)))
+                # need to perturb the verts
+                # ... here
 
-            #pts = vtk.vtkPoints()
-            #cellIds = vtk.vtkIdList()
-            #found = loc.IntersectWithLine(self.p0, self.p1, pts, cellIds)
+                # compute the intersection between the ray and the edge
+                self.intersector.reset()
+                self.intersector.setLine1(pBeg[:2], pEnd[:2])
+                self.intersector.setLine2(q0[:2], q1[:2])
+                self.intersector.solve()
+                lamb1, lamb2 = self.intersector.getParamCoords()
+                if lamb1 >= 0. - eps and lamb1 <= 1. + eps and \
+                    lamb2 >= 0. - eps and lamb2 <= 1. + eps:
+                    # found intersection
 
-            print '***found = ', found
-            if found:
+                    # target point
+                    point = pBeg + lamb1*(pEnd - pBeg)
 
-                print pts
-                print cellIds
+                    # find the cell parametric coords
+                    found = grid.GetCell(cId).EvaluatePosition(point, closestPoint, 
+                                                               self.subId, self.pcoords, 
+                                                               dist, self.weights)
+                    if found:
+                        # add 
+                        res.append( (cId, self.pcoords[0], self.pcoords[1], lamb1) )
 
-            	print '***found point = ', point
-
-                cId = self.cellId.get()
-
-                # correct the parametric coordinate to account for moving the starting point
-                # (self.t.get() is the param coord from self.p0 to lonlat1 with self.p0
-                # moving forward)
-                t = tStart + (self.t.get() - tStart)/(1.0 - tStart)
-
-                # add the contribution
-                res.append( (cId, self.pcoords[0], self.pcoords[1], t) ) 
-
-                # reset the starting position
-                tStart = t
-                self.p0[:] = self.point + eps*deltaPos
 
         # always add the endpoint
         cId = loc.FindCell(self.p1, tol, cell, self.pcoords, self.weights)
