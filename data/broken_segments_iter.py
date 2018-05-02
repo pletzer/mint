@@ -22,19 +22,16 @@ class BrokenSegmentsIter:
             dt = t1 - t0
             p0, p1 = bl.getBegPoint(), bl.getEndPoint()
             res = self.__collectLineGridSegments(p0, p1)
-            print '*** res = ', res
             # expect 2 or more points
             for i in range(len(res) - 1):
                 cIda, xia, lama = res[i]
                 cIdb, xib, lamb = res[i + 1]
-                ta = t0 + lama*dt
-                tb = t0 + lamb*dt
-                self.totalT += tb - ta
-                self.data.append( (cIda, xia, xib, ta, tb) )
-                if cIda != cIdb:
-                    print('Warning: cell {} != {} should not change between beg/end of segment'.format(cIda, cIdb))
-                    print('         t = {} -> {} xia = {} xib = {}'.format(ta, tb, xia, xib))
-
+                if cIda == cIdb:
+                    # segment is contained within cell
+                    ta = t0 + lama*dt
+                    tb = t0 + lamb*dt
+                    self.totalT += tb - ta
+                    self.data.append( (cIda, xia, xib, ta, tb) )
 
         self.numSegs = len(self.data)
         self.reset()
@@ -126,7 +123,7 @@ class BrokenSegmentsIter:
         Collect all the intersection points
         @param pBeg starting point
         @param pEnd end point
-        @return [(point, lambda), ...]
+        @return [(cellId, lambda, point), ...]
         @note lambda is the linear parametric coordinate along the line
         """
 
@@ -162,7 +159,7 @@ class BrokenSegmentsIter:
                     lambEdg >= 0. - eps and lambEdg <= 1. + eps:
 
                     point = pBeg + lambRay*(pEnd - pBeg)
-                    res.append( (point, lambRay) )
+                    res.append( (cId, lambRay, point) )
 
         return res
 
@@ -224,23 +221,13 @@ class BrokenSegmentsIter:
         intersections = self.__collectIntersectionPoints(pBeg, pEnd, tol)
 
         # find the cell id of the neighbouring cells
-        for point, lambRay in intersections:
+        for cId, lambRay, point in intersections:
 
-            # move upstream
-            point -= eps*deltaPos
-            cIdUp = self.locator.FindCell(point, tol, cell, xi, weights)
-            if cIdUp >= 0:
-                res.append( (cIdUp, xi[:2].copy(), lambRay) )
+            found = self.grid.GetCell(cId).EvaluatePosition(point, closestPoint, subId, xi, dist, weights)
+            if found:
+                res.append( (cId, xi[:2].copy(), lambRay) )
             else:
-                print('Warning: no up side cell found for point {}'.format(point))
-
-            # move downstream
-            point += 2*eps*deltaPos
-            cIdDn = self.locator.FindCell(point, tol, cell, xi, weights)
-            if cIdDn >= 0:
-                res.append( (cIdDn, xi[:2].copy(), lambRay) )
-            else:
-                print('Warning: no down side cell found for point {}'.format(point))
+                print('Warning: param coord search failed point {} in cell {}'.format(point, cId))
 
             
         # add last point 
