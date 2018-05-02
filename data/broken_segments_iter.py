@@ -14,13 +14,19 @@ class BrokenSegmentsIter:
 
         self.grid = grid
         self.locator = locator
-        self.data = []
+
+        # {(ta, tb) : (cellId, xia, xib, coeff), ...}
+        data = {}
+
         brokenLine.reset()
         for bl in brokenLine:
             t0, t1 = bl.getBegParamCoord(), bl.getEndParamCoord()
             dt = t1 - t0
             p0, p1 = bl.getBegPoint(), bl.getEndPoint()
+
+            # res is  [ (cellId, xi, t), ...]
             res = self.__collectLineGridSegments(p0, p1)
+
             # expect 2 or more points
             for i in range(len(res) - 1):
                 cIda, xia, lama = res[i]
@@ -30,29 +36,29 @@ class BrokenSegmentsIter:
                     ta = t0 + lama*dt
                     tb = t0 + lamb*dt
                     if tb > ta:
-                        self.data.append( (cIda, xia, xib, ta, tb) )
+                        data[(ta, tb)] = [cIda, xia, xib, 1.0]
                     elif ta > tb:
-                        self.data.append( (cIda, xib, xia, tb, ta) )
+                        data[(tb, ta)] = [cIda, xib, xia, 1.0]
 
-        # sort the segments by ta (index 3)
-        self.data.sort(lambda x, y: cmp(x[3:5], y[3:5]))
+        # turn data into a list [[(ta, tb), [cId, xia, xib, coeff]],...]
+        self.data = [[k, v] for k, v in data.items()]
 
-        # remove duplicate/overlapping segments
-        tol = 1.e-10
-        n = len(self.data)
-        if n > 1:
-            for i in range(n - 2, -1, -1):
-                if self.data[i][4] > self.data[i + 1][3] + tol:
-                    del self.data[i]
-                    #pass
+        # sort 
+        self.data.sort( lambda x, y: cmp(x[0], y[0]) )
 
-        # compute total T
-        self.totalT = 0.0        
-        for _0, _1, _2, ta, tb in self.data:
-            self.totalT += tb - ta
-
+        # assign coefficients that account for duplicity, ie segments 
+        # that are shared between two cells
+        self.__assignCoefficientsToSegments()
 
         self.numSegs = len(self.data)
+
+        self.totalT = 0
+        for tatb, cxiaxibc in self.data:
+            ta, tb = tatb
+            coeff = cxiaxibc[3]
+            self.totalT += (tb - ta) * coeff
+
+        # reset the iterator
         self.reset()
 
 
@@ -94,7 +100,7 @@ class BrokenSegmentsIter:
         Get the current cell Id
         @return index
         """
-        return self.segment[0]
+        return self.segment[1][0]
 
 
     def getBegCellParamCoord(self):
@@ -102,7 +108,7 @@ class BrokenSegmentsIter:
         Get the current cell parametric coordinates at the beginning of segment
         @return 2d array
         """
-        return self.segment[1]
+        return self.segment[1][1]
         
 
     def getEndCellParamCoord(self):
@@ -110,7 +116,7 @@ class BrokenSegmentsIter:
         Get the current cell parametric coordinates at the end of segment
         @return 2d array
         """
-        return self.segment[2]
+        return self.segment[1][2]
  
 
     def getBegLineParamCoord(self):
@@ -118,7 +124,7 @@ class BrokenSegmentsIter:
         Get the current line parametric coordinates at the beginning of segment
         @return 2d array
         """
-        return self.segment[3]
+        return self.segment[0][0]
         
 
     def getEndLineParamCoord(self):
@@ -126,7 +132,14 @@ class BrokenSegmentsIter:
         Get the current line parametric coordinates at the end of segment
         @return 2d array
         """
-        return self.segment[4]
+        return self.segment[0][1]
+
+    def getCoefficient(self):
+        """
+        Get the coefficient accounting for duplicates
+        @return coefficient
+        """
+        return self.segment[1][3]
  
 
     def getIndex(self):
@@ -135,6 +148,18 @@ class BrokenSegmentsIter:
         @return index
         """
         return self.index
+
+
+    def __assignCoefficientsToSegments(self):
+        n = len(self.data)
+        for i in range(n - 1):
+            s0 = self.data[i]
+            s1 = self.data[i + 1]
+            ta0, tb0 = s0[0]
+            ta1, tb1 = s1[0]
+            overlap = max(0., tb0 - ta1)
+            s0[1][3] = 1.0 - overlap/(tb0 - ta0)
+            s1[1][3] = 1.0 - overlap/(tb1 - ta1)
 
 
     def __collectIntersectionPoints(self, pBeg, pEnd, tol=1.e-10):
@@ -154,7 +179,7 @@ class BrokenSegmentsIter:
         ptIds = vtk.vtkIdList()
 
         # find all the cells intersected by the line
-        self.locator.FindCellsAlongLine(pBeg, pEnd, tol, cellIds)
+        self.locator.FindCellsAlongLine(pBeg, pEnd, 1.e-3, cellIds)
 
         # collect the intersection points in between
         for i in range(cellIds.GetNumberOfIds()):
@@ -183,13 +208,13 @@ class BrokenSegmentsIter:
         return res
 
 
-    def __collectLineGridSegments(self, p0, p1, tol=1.e-10):
+    def __collectLineGridSegments(self, p0, p1, tol=1.-10):
         """
         Collect all the line-grid intersection points
         @param p0 starting point of the line
         @param p1 end point of the line 
         @param tol tolerance
-        @return list of [ (cellId, point, xi, t), ...]
+        @return list of [ (cellId, xi, t), ...]
         """
 
         res = []
@@ -213,12 +238,13 @@ class BrokenSegmentsIter:
         pBeg[:] = p0[0], p0[1], 0.0
         pEnd[:] = p1[0], p1[1], 0.0
 
-        # perturb the position to avoid multiple cells
-        # claiming the same intersection point
+        # perturb the position to avoid a singular
+        # system when looking for edge-line 
+        # intersections
         pBeg[0] += eps*1.86512432134
-        pBeg[1] -= eps*2.76354653243
-        pEnd[0] -= eps*1.96524543545
-        pEnd[1] += eps*0.82875646565
+        pBeg[1] += -eps*2.76354653243
+        pEnd[0] += eps*1.96524543545
+        pEnd[1] += -eps*0.82875646565
 
         deltaPos = pEnd - pBeg
 
@@ -237,7 +263,8 @@ class BrokenSegmentsIter:
         pBeg += eps*deltaPos
         pEnd -= eps*deltaPos
 
-        intersections = self.__collectIntersectionPoints(pBeg, pEnd, tol)
+        # let's be generous with the collection of cells
+        intersections = self.__collectIntersectionPoints(pBeg, pEnd, tol=1.e-2)
 
         # find the cell id of the neighbouring cells
         for cId, lambRay, point in intersections:
