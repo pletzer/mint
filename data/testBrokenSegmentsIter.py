@@ -30,3 +30,7 @@ if __name__ == '__main__':
     test(filename='mesh_C4.nc', points=[(0., 1.1),(1., 1.1)])
     print('Test2')
     test(filename='mesh_C4.nc', points=[(0., 0.1),(2., 0.1)])
+    print('Test3')
+    test(filename='mesh_C4.nc', points=[(0., 1.1),(2., 1.1)])
+    print('Test4')
+    test(filename='mesh_C4.nc', points=[(0., 1.),(2*pi, 1.)])
