@@ -16,7 +16,6 @@ class BrokenSegmentsIter:
         self.locator = locator
         self.data = []
         brokenLine.reset()
-        self.totalT = 0.0
         for bl in brokenLine:
             t0, t1 = bl.getBegParamCoord(), bl.getEndParamCoord()
             dt = t1 - t0
@@ -31,11 +30,25 @@ class BrokenSegmentsIter:
                     ta = t0 + lama*dt
                     tb = t0 + lamb*dt
                     if tb > ta:
-                        self.totalT += tb - ta
                         self.data.append( (cIda, xia, xib, ta, tb) )
                     elif ta > tb:
-                        self.totalT += ta - tb
                         self.data.append( (cIda, xib, xia, tb, ta) )
+
+        # sort the segments by ta (index 3)
+        self.data.sort(lambda x, y: cmp(x[3], y[3]))
+
+        # remove duplicate/overlapping segments
+        tol = 1.e-10
+        n = len(self.data)
+        if n > 1:
+            for i in range(n - 2, -1, -1):
+                if self.data[i][4] > self.data[i + 1][3] + tol:
+                    del self.data[i + 1]
+
+        # compute total T
+        self.totalT = 0.0        
+        for _0, _1, _2, ta, tb in self.data:
+            self.totalT += tb - ta
 
 
         self.numSegs = len(self.data)

@@ -35,4 +35,4 @@ if __name__ == '__main__':
     print('Test4')
     test(filename='mesh_C4.nc', points=[(0., 1.),(2*pi, 1.)])
     print('Test5')
-    test(filename='mesh_C4.nc', points=[(0., 1.5),(2*pi, 1.5)])
+    test(filename='mesh_C16.nc', points=[(0., 1.4),(2*pi, 1.4)])
