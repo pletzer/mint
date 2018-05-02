@@ -30,8 +30,13 @@ class BrokenSegmentsIter:
                     # segment is contained within cell
                     ta = t0 + lama*dt
                     tb = t0 + lamb*dt
-                    self.totalT += tb - ta
-                    self.data.append( (cIda, xia, xib, ta, tb) )
+                    if tb > ta:
+                        self.totalT += tb - ta
+                        self.data.append( (cIda, xia, xib, ta, tb) )
+                    elif ta > tb:
+                        self.totalT += ta - tb
+                        self.data.append( (cIda, xib, xia, tb, ta) )
+
 
         self.numSegs = len(self.data)
         self.reset()
