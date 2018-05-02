@@ -1,14 +1,14 @@
 from math import pi
-from cubedsphere_reader import CubedsphereReader
+from ugrid_reader import UgridReader
 from broken_line_iter import BrokenLineIter
 from broken_segments_iter import BrokenSegmentsIter
 
 def test(filename, points):
 
-    csr = CubedsphereReader(filename=filename)
+    ur = UgridReader(filename=filename)
     bl = BrokenLineIter(points)
-    bs = BrokenSegmentsIter(csr.getUnstructuredGrid(), 
-                            csr.getUnstructuredGridCellLocator(), 
+    bs = BrokenSegmentsIter(ur.getUnstructuredGrid(), 
+                            ur.getUnstructuredGridCellLocator(), 
                             bl)
     count = 0
     for s in bs:
@@ -36,3 +36,5 @@ if __name__ == '__main__':
     test(filename='mesh_C4.nc', points=[(0., 1.),(2*pi, 1.)])
     print('Test5')
     test(filename='mesh_C16.nc', points=[(0., 1.4),(2*pi, 1.4)])
+    print('Test6')
+    test(filename='mesh_C4.nc', points=[(0., 1.),(0., -1.),(2*pi, -1.)])

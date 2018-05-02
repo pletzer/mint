@@ -3,7 +3,7 @@ import numpy
 import vtk
 from line_line_intersector import LineLineIntersector
 
-class CubedsphereReader:
+class UgridReader:
 
     TWOPI = 2. * numpy.pi
 
@@ -145,16 +145,16 @@ def main():
     import argparse
     from math import pi
 
-    parser = argparse.ArgumentParser(description='Read cubedsphere file')
+    parser = argparse.ArgumentParser(description='Read ugrid file')
     parser.add_argument('-i', dest='input', default='', help='Specify input file')
     parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
    
     args = parser.parse_args()
 
-    csr = CubedsphereReader(filename=args.input)
+    ur = UgridReader(filename=args.input)
 
     if args.vtk_file:
-        csr.saveToVtkFile(args.vtk_file)
+        ur.saveToVtkFile(args.vtk_file)
 
 if __name__ == '__main__':
     main()

@@ -35,7 +35,7 @@ class BrokenSegmentsIter:
                         self.data.append( (cIda, xib, xia, tb, ta) )
 
         # sort the segments by ta (index 3)
-        self.data.sort(lambda x, y: cmp(x[3], y[3]))
+        self.data.sort(lambda x, y: cmp(x[3:5], y[3:5]))
 
         # remove duplicate/overlapping segments
         tol = 1.e-10
@@ -43,7 +43,8 @@ class BrokenSegmentsIter:
         if n > 1:
             for i in range(n - 2, -1, -1):
                 if self.data[i][4] > self.data[i + 1][3] + tol:
-                    del self.data[i + 1]
+                    del self.data[i]
+                    #pass
 
         # compute total T
         self.totalT = 0.0        
@@ -261,7 +262,7 @@ class BrokenSegmentsIter:
 def main():
     import argparse
     from math import pi
-    from cubedsphere_reader import CubedsphereReader
+    from ugrid_reader import UgridReader
     from broken_line_iter import BrokenLineIter
 
     parser = argparse.ArgumentParser(description='Break line into segments')
@@ -269,7 +270,7 @@ def main():
     parser.add_argument('-p', dest='points', default='(0., 0.),(2*pi,0.)', help='Points describing broken line as "(x0, y0),(x1, y1)..."')
     args = parser.parse_args()
 
-    csr = CubedsphereReader(filename=args.input)
+    ur = UgridReader(filename=args.input)
     points = eval(args.points)
     bl = BrokenLineIter(points)
     
@@ -280,7 +281,8 @@ def main():
         print('line {} t = {} -> {}'.format(count, t0, t1))
         count += 1
 
-    bs = BrokenSegmentsIter(csr.getUnstructuredGrid(), csr.getUnstructuredGridCellLocator(), bl)
+    bs = BrokenSegmentsIter(ur.getUnstructuredGrid(), 
+                            ur.getUnstructuredGridCellLocator(), bl)
     count = 0
     for s in bs:
         cellId = s.getCellId()
