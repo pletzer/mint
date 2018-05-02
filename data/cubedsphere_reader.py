@@ -43,7 +43,7 @@ class CubedsphereReader:
         points.SetNumberOfPoints(4 * ncells)
 
         grid = vtk.vtkUnstructuredGrid()
-        grid.Allocate(1, 1)
+        grid.Allocate(ncells, 1)
         ptIds = vtk.vtkIdList()
         ptIds.SetNumberOfIds(4)
         for icell in range(ncells):
@@ -69,18 +69,19 @@ class CubedsphereReader:
                 lon11 += (index11 - 1) * self.TWOPI
                 lon01 += (index01 - 1) * self.TWOPI
 
-            k = 4*icell
+            k0 = 4*icell
+            k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 
 
             # storing coords as lon, lat, 0
-            points.InsertPoint(k + 0, lon00, lat00, 0.)
-            points.InsertPoint(k + 1, lon10, lat10, 0.)
-            points.InsertPoint(k + 2, lon11, lat11, 0.)
-            points.InsertPoint(k + 3, lon01, lat01, 0.)
+            points.InsertPoint(k0, lon00, lat00, 0.)
+            points.InsertPoint(k1, lon10, lat10, 0.)
+            points.InsertPoint(k2, lon11, lat11, 0.)
+            points.InsertPoint(k3, lon01, lat01, 0.)
 
-            ptIds.SetId(0, k + 0)
-            ptIds.SetId(1, k + 1)
-            ptIds.SetId(2, k + 2)
-            ptIds.SetId(3, k + 3)
+            ptIds.SetId(0, k0)
+            ptIds.SetId(1, k1)
+            ptIds.SetId(2, k2)
+            ptIds.SetId(3, k3)
             grid.InsertNextCell(vtk.VTK_QUAD, ptIds)
 
         grid.SetPoints(points)
@@ -138,110 +139,6 @@ class CubedsphereReader:
     	return self.vtk['locator']
 
 
-    def findCell(self, lonlat, tol=1.e-10):
-        """
-        Find cell containing point 
-        @param lonlat target point
-        @param tol tolerance
-        @return cell Id
-        """
-        self.point[:2] = lonlat
-        cId = self.vtk['locator'].FindCell(self.point, tol, self.cell, self.pcoords, self.weights)
-        return cId
-
-
-    def computeLineIntersectionPoints(self, lonlat0, lonlat1, tol=1.e-10):
-        """
-        Compute all the intersection points with given line
-        @param lonlat0 starting point of the line
-        @param lonlat1 end point of the line
-        @return list [(cellId0, xi0, eta0, t0), (cellId1, xi1, eta1, t1), ...],
-                     where t0, t1 are the parametric coordinates along the line
-        """
-        res = []
-        tStart = 0.0
-        grid = self.vtk['grid']
-        loc = self.vtk['locator']
-        cell = vtk.vtkGenericCell()
-        eps = 1.2345e-12
-        cellIds = vtk.vtkIdList()
-        ptIds = vtk.vtkIdList()
-        npts = vtk.mutable(0)
-        dist = vtk.mutable(0.)
-        closestPoint = numpy.zeros((3,), numpy.float64)
-
-        self.p0[:] = lonlat0[0], lonlat0[1], 0.
-        self.p1[:] = lonlat1[0], lonlat1[1], 0.
-
-        # perturb the points so we don't hit nodes and edges
-        self.p0[0] += eps*1.86512432134
-        self.p0[1] -= eps*2.76354653243
-        self.p1[0] -= eps*1.96524543545
-        self.p1[1] += eps*0.82875646565
-
-        pBeg = self.p0.copy()
-        pEnd = self.p1.copy()
-
-        deltaPos = self.p1 - self.p0
-
-        # always add the starting point
-        cId = loc.FindCell(self.p0, tol, cell, self.pcoords, self.weights)
-        if cId >= 0:
-            res.append( (cId, self.pcoords[0], self.pcoords[1], 0.0)  )
-        else:
-            print('Warning: starting point {} not found!'.format(lonlat0))
-
-        # find the in between intersection points
-        pBeg += eps*deltaPos
-        pEnd -= eps*deltaPos
-
-        loc.FindCellsAlongLine(pBeg, pEnd, tol, cellIds)
-        for i in range(cellIds.GetNumberOfIds()):
-            cId = cellIds.GetId(i)
-            # iterate over the edges of the cell
-            grid.GetCellPoints(cId, ptIds)
-            for j in range(ptIds.GetNumberOfIds()):
-
-                q0 = numpy.array(grid.GetPoint(ptIds.GetId(j)))
-                q1 = numpy.array(grid.GetPoint(ptIds.GetId((j + 1) % 4)))
-                # need to perturb the verts
-                # ... here
-
-                # compute the intersection between the ray and the edge
-                self.intersector.reset()
-                self.intersector.setLine1(pBeg[:2], pEnd[:2])
-                self.intersector.setLine2(q0[:2], q1[:2])
-                self.intersector.solve()
-                lamb1, lamb2 = self.intersector.getParamCoords()
-                if lamb1 >= 0. - eps and lamb1 <= 1. + eps and \
-                    lamb2 >= 0. - eps and lamb2 <= 1. + eps:
-                    # found intersection
-
-                    # target point
-                    point = pBeg + lamb1*(pEnd - pBeg)
-
-                    # find the cell parametric coords
-                    found = grid.GetCell(cId).EvaluatePosition(point, closestPoint, 
-                                                               self.subId, self.pcoords, 
-                                                               dist, self.weights)
-                    if found:
-                        # add 
-                        res.append( (cId, self.pcoords[0], self.pcoords[1], lamb1) )
-
-
-        # always add the endpoint
-        cId = loc.FindCell(self.p1, tol, cell, self.pcoords, self.weights)
-        if cId >= 0:
-            res.append( (cId, self.pcoords[0], self.pcoords[1], 1.0) )
-        else:
-            print('Warning: end point {} not found!'.format(lonlat1))
-
-        return res
-
-
-
-
-
 ###############################################################################
 
 def main():
@@ -251,23 +148,10 @@ def main():
     parser = argparse.ArgumentParser(description='Read cubedsphere file')
     parser.add_argument('-i', dest='input', default='', help='Specify input file')
     parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
-    parser.add_argument('-p0', dest='p0', default='5.50, 0.3', help='Starting position for target line')
-    parser.add_argument('-p1', dest='p1', default='5.55, 0.3', help='End position for target line')
-    parser.add_argument('-p', dest='point', default='5.5, 0.3', help='Target point (lon, lat)')    
    
     args = parser.parse_args()
 
     csr = CubedsphereReader(filename=args.input)
-
-    point = eval(args.point)
-    cId = csr.findCell(point)
-    print 'point {} is in cell {}'.format(point, cId)
-
-
-    latlon0 = eval(args.p0)
-    latlon1 = eval(args.p1)
-    interPoints = csr.computeLineIntersectionPoints(latlon0, latlon1)
-    print interPoints
 
     if args.vtk_file:
         csr.saveToVtkFile(args.vtk_file)
