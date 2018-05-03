@@ -104,7 +104,7 @@ class RegridEdges:
 
     def applyWeights(self, srcData):
         """
-        Apply the interpolation weights to the field
+        Apply the interpolation weigths to the field
         @param srcData line integrals on the source grid edges
         @return line integrals on the destination grid
         """

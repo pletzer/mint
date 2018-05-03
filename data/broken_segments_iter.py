@@ -205,12 +205,12 @@ class BrokenSegmentsIter:
         return res
 
 
-    def __collectLineGridSegments(self, p0, p1, tol=1.-10):
+    def __collectLineGridSegments(self, p0, p1, tol=1.e-2):
         """
         Collect all the line-grid intersection points
         @param p0 starting point of the line
         @param p1 end point of the line 
-        @param tol tolerance
+        @param tol tolerance for determining if point is in cell
         @return list of [ (cellId, xi, t), ...]
         """
 
@@ -246,19 +246,20 @@ class BrokenSegmentsIter:
         deltaPos = pEnd - pBeg
 
         # add starting point
-        cId = self.locator.FindCell(pBeg, tol, cell, xi, weights)
+        cId = self.locator.FindCell(pBeg, eps, cell, xi, weights)
         if cId >= 0:
             res.append( (cId, xi[:2].copy(), 0.) )
         else:
-            print('Warning: starting point {} not found!'.format(p0))
+            pass
+            #print('Warning: starting point {} not found!'.format(p0))
 
         tLast = 0.0
         cIdLast = cId
         fullSegment = False
 
         # find all intersection points in between
-        pBeg += eps*deltaPos
-        pEnd -= eps*deltaPos
+        #pBeg += eps*deltaPos
+        #pEnd -= eps*deltaPos
 
         # let's be generous with the collection of cells
         intersections = self.__collectIntersectionPoints(pBeg, pEnd, tol=1.e-2)
@@ -274,11 +275,12 @@ class BrokenSegmentsIter:
 
             
         # add last point 
-        cId = self.locator.FindCell(pEnd, tol, cell, xi, weights)
+        cId = self.locator.FindCell(pEnd, eps, cell, xi, weights)
         if cId >= 0:
             res.append( (cId, xi[:2].copy(), 1.) )
         else:
-            print('Warning: end point {} not found!'.format(p1))
+            pass
+            #print('Warning: end point {} not found!'.format(p1))
 
         return res
 

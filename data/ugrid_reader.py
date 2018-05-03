@@ -95,18 +95,6 @@ class UgridReader:
             'locator': loc,
         }
 
-
-        # for finding intersections
-        self.p0 = numpy.zeros((3,), numpy.float64)
-        self.p1 = numpy.zeros((3,), numpy.float64)
-        self.point = numpy.zeros((3,), numpy.float64)
-        self.pcoords = numpy.zeros((3,), numpy.float64)
-        self.t = vtk.mutable(-1.)
-        self.subId = vtk.mutable(-1)
-        self.cellId = vtk.mutable(-1)
-        self.weights = numpy.zeros((4,), numpy.float64)
-        self.cell = vtk.vtkGenericCell()
-
         
     def saveToVtkFile(self, filename):
         """
