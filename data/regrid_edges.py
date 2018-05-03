@@ -59,11 +59,13 @@ class RegridEdges:
 
 
     def getSrcLonLat(self):
-        return self.srcLonLatPts.reshape((self.getNumSrcCells(), 4, 2))
+        xy = self.srcLonLatPts.reshape((self.getNumSrcCells(), 4, 2))
+        return xy[..., 0], xy[..., 1]
 
 
     def getDstLonLat(self):
-        return self.dstLonLatPts.reshape((self.getNumDstCells(), 4, 2))
+        xy = self.dstLonLatPts.reshape((self.getNumDstCells(), 4, 2))
+        return xy[..., 0], xy[..., 1]
 
 
     def computeWeights(self):
@@ -131,10 +133,16 @@ class RegridEdges:
         return res
 
 ###############################################################################
-def main():
-    pass
+def edgeIntegralFromStreamFunction(streamFuncData):
+    edgeVel = numpy.zeros(streamFuncData.shape, numpy.float64)
+    for i0 in range(4):
+        i1 = (i0 + 1) % 4
+        pm = 1 - 2*(i0 // 2) # + for i0 = 0, 1, - for i0 = 2, 3
+        edgeVel[:, i0] = pm * (streamFuncData[:, i1] - streamFuncData[:, i0])
+    return edgeVel
 
-if __name__ == '__main__':
+
+def main():
     from math import pi, sin, cos, log, exp
     import argparse
 
@@ -151,21 +159,25 @@ if __name__ == '__main__':
     rgrd.computeWeights()
 
     # compute stream function on cell vertices
-    xy = rgrd.getSrcLonLat()
-    x, y = xy[..., 0], xy[..., 1]
+    x, y = rgrd.getSrcLonLat()
     srcPsi = eval(args.srcStreamFunc)
 
     # compute edge integrals
-    srcEdgeVel = numpy.zeros(srcPsi.shape, numpy.float64)
-    for i0 in range(4):
-        i1 = (i0 + 1) % 4
-        pm = 1 - 2*(i0 // 2) # + for i0 = 0, 1, - for i0 = 2, 3
-        srcEdgeVel[:, i0] = pm * (srcPsi[:, i1] - srcPsi[:, i0])
-
+    srcEdgeVel = edgeIntegralFromStreamFunction(srcPsi)
 
     # apply the weights 
     dstEdgeVel = rgrd.applyWeights(srcEdgeVel)
 
+    # compute the exact edge field on the destination grid
+    x, y = rgrd.getDstLonLat()
+    dstPsi = eval(args.srcStreamFunc)
+    dstEdgeVelExact = edgeIntegralFromStreamFunction(dstPsi)
 
+    # compute the error
+    error = (dstEdgeVelExact - srcEdgeVel).sum()
+    print('Sum of interpolation errors: {}'.format(error))
+
+if __name__ == '__main__':
+    main()
 
 
