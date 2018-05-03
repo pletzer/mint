@@ -33,7 +33,6 @@ class BrokenSegmentsIter:
             # {(ta, tb) : (cellId, xia, xib, coeff), ...}
             data = {}
             for cId, v in c2s.items():
-                print v
                 v.sort()
                 n = len(v)
                 for i in range(n - 1):

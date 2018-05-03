@@ -2,53 +2,54 @@ from ugrid_reader import UgridReader
 from broken_line_iter import BrokenLineIter
 from broken_segments_iter import BrokenSegmentsIter
 import numpy
+import vtk
 
 
 class RegridEdges:
 
     ZERO4x4 = numpy.zeros((4,4), numpy.float64)
 
-	def __init__(self):
+    def __init__(self):
         """
         Constructor
         no args
         """
-		
-		# (dstCellId, srcCellId) -> weight as a 4x4 matrix
-		self.weights = {}
+        
+        # (dstCellId, srcCellId) -> weight as a 4x4 matrix
+        self.weights = {}
 
-		self.srcGrid = None
-		self.srcLoc = None
+        self.srcGrid = None
+        self.srcLoc = None
 
-		self.dstGrid = None
+        self.dstGrid = None
 
 
-	def setSrcGridFile(self, filename):
+    def setSrcGridFile(self, filename):
         """
         Set source grid
         @param file name containing UGRID description of the grid
         """ 
-		ur = UgridReader(filename)
-		self.srcGrid = ur.getUnstructuredGrid()
-		seld.srcLoc = ur.getUnstructuredGridLocator()
+        ur = UgridReader(filename)
+        self.srcGrid = ur.getUnstructuredGrid()
+        self.srcLoc = ur.getUnstructuredGridCellLocator()
 
 
-	def setDstGridFile(self, filename):
+    def setDstGridFile(self, filename):
         """
         Set destination grid
         @param file name containing UGRID description of the grid
-        """	
-		ur = UgridReader(filename)
-		self.dstGrid = ur.getUnstructuredGrid()
+        """    
+        ur = UgridReader(filename)
+        self.dstGrid = ur.getUnstructuredGrid()
 
 
-	def computeWeights(self):
-		"""
-		Compute the interpolation weights
-		"""
+    def computeWeights(self):
+        """
+        Compute the interpolation weights
+        """
 
         dstPtIds = vtk.vtkIdList()
-		
+        
         numSrcCells = self.srcGrid.GetNumberOfCells()
         numDstCells = self.dstGrid.GetNumberOfCells()
 
@@ -59,9 +60,6 @@ class RegridEdges:
             self.dstGrid.GetCellPoints(dstCellId, dstPtIds)
             for i0 in range(4):
                 i1 = (i0 + 1) % 4
-
-                dstK = (i0, dstCellId)
-                self.weights[dstK] = {}
 
                 # get the start/end points of the dst edge
                 dstVertId0 = dstPtIds.GetId(i0)
@@ -77,7 +75,7 @@ class RegridEdges:
 
                 # compute the contribution to this edge
                 for seg in bsi:
-                	srcCellId = seg.getCellId()
+                    srcCellId = seg.getCellId()
                     xia = seg.getBegCellParamCoord()
                     xib = seg.getEndCellParamCoord()
 
@@ -88,22 +86,22 @@ class RegridEdges:
 
                     # compute the weights from each src edge
                     ws = numpy.array([dxi[0]*(1.0 - xiMid[1]),
-                    	              dxi[1]*(0.0 + xiMid[0]),
-                    	              dxi[0]*(0.0 + xiMid[1]),
-                    	              dxi[1]*(1.0 - xiMid[0])])
+                                      dxi[1]*(0.0 + xiMid[0]),
+                                      dxi[0]*(0.0 + xiMid[1]),
+                                      dxi[1]*(1.0 - xiMid[0])])
 
                     self.weights[k] = self.weights.get(k, self.ZERO4x4)
                     self.weights[k][i0, :] += ws
 
 
-	def applyWeights(self, srcData):
-		"""
-		Apply the interpolation weights to the field
-		@param srcData line integrals on the source grid edges
-		@return line integrals on the destination grid
-		"""
-		numDstCells = self.dstGrid.GetNumberOfCells()
-		res = zeros.zeros((numDstCells, 4), numpy.float64)
+    def applyWeights(self, srcData):
+        """
+        Apply the interpolation weights to the field
+        @param srcData line integrals on the source grid edges
+        @return line integrals on the destination grid
+        """
+        numDstCells = self.dstGrid.GetNumberOfCells()
+        res = zeros.zeros((numDstCells, 4), numpy.float64)
         for k in self.weights:
             dstCellId, srcCellId, k
             res[dstCellId, :] = self.weights[k].dot(srcData[srcCellId, :])
