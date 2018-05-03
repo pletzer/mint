@@ -36,26 +36,34 @@ class RegridEdges:
 		
         numSrcCells = self.srcGrid.GetNumberOfCells()
         numDstCells = self.dstGrid.GetNumberOfCells()
-        # iterate over the dst grid edges
-        for idstC in range(numDstCells):
+
+        # iterate over the dst grid cells
+        for dstCellId in range(numDstCells):
+
             # iterate over the four edges of each dst cell
-            self.dstGrid.GetCellPoints(idstC, dstPtIds)
+            self.dstGrid.GetCellPoints(dstCellId, dstPtIds)
             for i0 in range(4):
                 i1 = (i0 + 1) % 4
+
                 # get the start/end points of the dst edge
                 dstVertId0 = dstPtIds.GetId(i0)
                 dstVertId1 = dstPtIds.GetId(i1)
-                p0 = self.dstGrid.GetPoint(dstVertId0)
-                p1 = self.dstGrid.GetPoint(dstVertId1)
+                dstEdgePt0 = self.dstGrid.GetPoint(dstVertId0)
+                dstEdgePt1 = self.dstGrid.GetPoint(dstVertId1)
 
                 # compute the intersections
-                bli = BrokenLineIter([p0, p1])
+                bli = BrokenLineIter([dstEdgePt0, dstEdgePt1])
+
+                # find the intersection with the source grid
                 bsi = BrokenSegmentsIter(self.srcGrid, self.srcLoc, bli)
 
                 # compute the contribution to this edge
                 for s in bsi:
-                    pass
-
+                	srcCellId = s.getCellId()
+                	k = (dstCellId, srcCellId)
+                    xia = s.getBegCellParamCoord()
+                    xib = s.getEndCellParamCoord()
+                    self.weights[k] = self.weights.get(k, 0.) + basisIntegral(i0, xia, xib)
 
 
 	def applyWeights(self, srcData):

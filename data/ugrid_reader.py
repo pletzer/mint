@@ -1,7 +1,6 @@
 import netCDF4
 import numpy
 import vtk
-from line_line_intersector import LineLineIntersector
 
 class UgridReader:
 
@@ -12,8 +11,6 @@ class UgridReader:
         Constructor
         @param filename UGRID file 
         """
-
-        self.intersector = LineLineIntersector()
         
         # read UGRID file
         nc = netCDF4.Dataset(filename, 'r')
