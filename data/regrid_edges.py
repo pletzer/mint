@@ -3,6 +3,7 @@ from broken_line_iter import BrokenLineIter
 from broken_segments_iter import BrokenSegmentsIter
 import numpy
 import vtk
+import ctypes
 
 
 class RegridEdges:
@@ -41,6 +42,13 @@ class RegridEdges:
         """    
         ur = UgridReader(filename)
         self.dstGrid = ur.getUnstructuredGrid()
+
+    def getNumSrcCells(self):
+        return self.srcGrid.GetNumberOfCells()
+
+
+    def getNumDstCells(self):
+        return self.dstGrid.GetNumberOfCells()
 
 
     def computeWeights(self):
@@ -117,10 +125,35 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Regriod edge field')
     parser.add_argument('-s', dest='src', default='mesh_C4.nc', help='Specify UGRID source grid file')
     parser.add_argument('-d', dest='dst', default='mesh_C4.nc', help='Specify UGRID destination grid file')
+    parser.add_argument('-S', dest='srcStreamFunc', default='x', 
+                        help='Stream function on source grid as a function of x (longitude) and y (latitude)')
     args = parser.parse_args()
 
     rgrd = RegridEdges()
     rgrd.setSrcGridFile(args.src)
     rgrd.setDstGridFile(args.dst)
     rgrd.computeWeights()
+
+    """
+    arr = numpy.zeros((rgrd.srcGrid.GetNumberOfPoints()*3,), numpy.float64)
+    ptArray = rgrd.srcGrid.GetPoints().GetData()
+    #ptArray.ExportToVoidPointer(arr.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
+    ptArray.ExportToVoidPointer(arr)
+    print arr
+
+    numSrcCells = rgrd.getNumSrcCells()
+    streamFuncOnVerts = numpy.zeros((numSrcCells, 4), numpy.float64)
+
+    ptAddressStr = rgrd.srcGrid.GetPoints().GetVoidPointer(0)
+    print ptAddressStr.split('_')[1]
+    ptAddress = int('0x' + ptAddressStr.split('_')[1], 16) # convert Hex to integer
+    print ptAddress
+    data_pointer = ctypes.cast(ptAddress, ctypes.POINTER(ctypes.c_double))
+    ptArray = numpy.ctypeslib.as_array(data_pointer, shape=(rgrd.srcGrid.GetNumberOfPoints(),))
+    print ptArray
+    """
+
+
+
+
 

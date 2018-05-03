@@ -8,6 +8,7 @@ class BrokenSegmentsIter:
     def __init__(self, grid, locator, brokenLine):
         """
         Constructor
+        @param grid instance of vtkUnstructuredGrid
         @param locator vtkCellLocator instance attached to the above grid
         @param brokenLine instance of BrokenLineIter
         """
