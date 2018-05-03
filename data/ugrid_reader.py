@@ -36,8 +36,16 @@ class UgridReader:
         # sure each cell's area is positive in lat-lon space
         # build unstructured grid
 
+        pointArray = numpy.zeros((4 * ncells, 3))
+
+        pointData = vtk.vtkDoubleArray()
+        pointData.SetNumberOfComponents(3)
+        pointData.SetNumberOfTuples(4 * ncells)
+        pointData.SetVoidArray(pointArray, 4 * ncells * 3, 1)
+
         points = vtk.vtkPoints()
         points.SetNumberOfPoints(4 * ncells)
+        points.SetData(pointData)
 
         grid = vtk.vtkUnstructuredGrid()
         grid.Allocate(ncells, 1)
@@ -70,16 +78,17 @@ class UgridReader:
             k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 
 
             # storing coords as lon, lat, 0
-            points.InsertPoint(k0, lon00, lat00, 0.)
-            points.InsertPoint(k1, lon10, lat10, 0.)
-            points.InsertPoint(k2, lon11, lat11, 0.)
-            points.InsertPoint(k3, lon01, lat01, 0.)
+            pointArray[k0, :] = lon00, lat00, 0.
+            pointArray[k1, :] = lon10, lat10, 0.
+            pointArray[k2, :] = lon11, lat11, 0.
+            pointArray[k3, :] = lon01, lat01, 0.
 
             ptIds.SetId(0, k0)
             ptIds.SetId(1, k1)
             ptIds.SetId(2, k2)
             ptIds.SetId(3, k3)
             grid.InsertNextCell(vtk.VTK_QUAD, ptIds)
+
 
         grid.SetPoints(points)
 
@@ -90,6 +99,8 @@ class UgridReader:
 
         # store
         self.vtk = {
+            'pointArray': pointArray,
+            'pointData': pointData,
             'points': points,
             'grid': grid,
             'locator': loc,
