@@ -106,6 +106,14 @@ class UgridReader:
             'locator': loc,
         }
 
+
+    def getLonLatPoints(self):
+        """
+        Get the longitudes and latitudes in radian at the cell vertices
+        @return array
+        """
+        return self.vtk['pointArray'][:, :2]
+
         
     def saveToVtkFile(self, filename):
         """

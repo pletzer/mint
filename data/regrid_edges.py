@@ -24,6 +24,10 @@ class RegridEdges:
 
         self.dstGrid = None
 
+        self.srcLonLatPts = None
+
+        self.dstLonLatPts = None
+
 
     def setSrcGridFile(self, filename):
         """
@@ -33,6 +37,7 @@ class RegridEdges:
         ur = UgridReader(filename)
         self.srcGrid = ur.getUnstructuredGrid()
         self.srcLoc = ur.getUnstructuredGridCellLocator()
+        self.srcLonLatPts = ur.getLonLatPoints()
 
 
     def setDstGridFile(self, filename):
@@ -42,6 +47,8 @@ class RegridEdges:
         """    
         ur = UgridReader(filename)
         self.dstGrid = ur.getUnstructuredGrid()
+        self.dstLonLatPts = ur.getLonLatPoints()
+
 
     def getNumSrcCells(self):
         return self.srcGrid.GetNumberOfCells()
@@ -49,6 +56,14 @@ class RegridEdges:
 
     def getNumDstCells(self):
         return self.dstGrid.GetNumberOfCells()
+
+
+    def getSrcLonLat(self):
+        return self.srcLonLatPts.reshape((self.getNumSrcCells(), 4, 2))
+
+
+    def getDstLonLat(self):
+        return self.dstLonLatPts.reshape((self.getNumDstCells(), 4, 2))
 
 
     def computeWeights(self):
@@ -105,13 +120,13 @@ class RegridEdges:
     def applyWeights(self, srcData):
         """
         Apply the interpolation weigths to the field
-        @param srcData line integrals on the source grid edges
+        @param srcData line integrals on the source grid edges, dimensioned (ncells, 4)
         @return line integrals on the destination grid
         """
         numDstCells = self.dstGrid.GetNumberOfCells()
-        res = zeros.zeros((numDstCells, 4), numpy.float64)
+        res = numpy.zeros((numDstCells, 4), numpy.float64)
         for k in self.weights:
-            dstCellId, srcCellId, k
+            dstCellId, srcCellId = k
             res[dstCellId, :] = self.weights[k].dot(srcData[srcCellId, :])
         return res
 
@@ -120,13 +135,14 @@ def main():
     pass
 
 if __name__ == '__main__':
+    from math import pi, sin, cos, log, exp
     import argparse
 
     parser = argparse.ArgumentParser(description='Regriod edge field')
     parser.add_argument('-s', dest='src', default='mesh_C4.nc', help='Specify UGRID source grid file')
     parser.add_argument('-d', dest='dst', default='mesh_C4.nc', help='Specify UGRID destination grid file')
     parser.add_argument('-S', dest='srcStreamFunc', default='x', 
-                        help='Stream function on source grid as a function of x (longitude) and y (latitude)')
+                        help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
     args = parser.parse_args()
 
     rgrd = RegridEdges()
@@ -134,25 +150,21 @@ if __name__ == '__main__':
     rgrd.setDstGridFile(args.dst)
     rgrd.computeWeights()
 
-    """
-    arr = numpy.zeros((rgrd.srcGrid.GetNumberOfPoints()*3,), numpy.float64)
-    ptArray = rgrd.srcGrid.GetPoints().GetData()
-    #ptArray.ExportToVoidPointer(arr.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
-    ptArray.ExportToVoidPointer(arr)
-    print arr
+    # compute stream function on cell vertices
+    xy = rgrd.getSrcLonLat()
+    x, y = xy[..., 0], xy[..., 1]
+    srcPsi = eval(args.srcStreamFunc)
 
-    numSrcCells = rgrd.getNumSrcCells()
-    streamFuncOnVerts = numpy.zeros((numSrcCells, 4), numpy.float64)
+    # compute edge integrals
+    srcEdgeVel = numpy.zeros(srcPsi.shape, numpy.float64)
+    for i0 in range(4):
+        i1 = (i0 + 1) % 4
+        pm = 1 - 2*(i0 // 2) # + for i0 = 0, 1, - for i0 = 2, 3
+        srcEdgeVel[:, i0] = pm * (srcPsi[:, i1] - srcPsi[:, i0])
 
-    ptAddressStr = rgrd.srcGrid.GetPoints().GetVoidPointer(0)
-    print ptAddressStr.split('_')[1]
-    ptAddress = int('0x' + ptAddressStr.split('_')[1], 16) # convert Hex to integer
-    print ptAddress
-    data_pointer = ctypes.cast(ptAddress, ctypes.POINTER(ctypes.c_double))
-    ptArray = numpy.ctypeslib.as_array(data_pointer, shape=(rgrd.srcGrid.GetNumberOfPoints(),))
-    print ptArray
-    """
 
+    # apply the weights 
+    dstEdgeVel = rgrd.applyWeights(srcEdgeVel)
 
 
 
