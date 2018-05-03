@@ -15,9 +15,6 @@ class BrokenSegmentsIter:
         self.grid = grid
         self.locator = locator
 
-        # {(ta, tb) : (cellId, xia, xib, coeff), ...}
-        data = {}
-
         brokenLine.reset()
         for bl in brokenLine:
             t0, t1 = bl.getBegParamCoord(), bl.getEndParamCoord()
@@ -27,18 +24,22 @@ class BrokenSegmentsIter:
             # res is  [ (cellId, xi, t), ...]
             res = self.__collectLineGridSegments(p0, p1)
 
-            # expect 2 or more points
-            for i in range(len(res) - 1):
-                cIda, xia, lama = res[i]
-                cIdb, xib, lamb = res[i + 1]
-                if cIda == cIdb:
-                    # segment is contained within cell
-                    ta = t0 + lama*dt
-                    tb = t0 + lamb*dt
-                    if tb > ta:
-                        data[(ta, tb)] = [cIda, xia, xib, 1.0]
-                    elif ta > tb:
-                        data[(tb, ta)] = [cIda, xib, xia, 1.0]
+            # re-arrange the data cellId -> [[t0, xi0], [t1, xi1], ...]
+            c2s = {}
+            for e in res:
+                cId, xi, t = e
+                c2s[cId] = c2s.get(cId, []) + [(t, xi)]                
+
+            # {(ta, tb) : (cellId, xia, xib, coeff), ...}
+            data = {}
+            for cId, v in c2s.items():
+                print v
+                v.sort()
+                n = len(v)
+                for i in range(n - 1):
+                    ta, xia = v[i]
+                    tb, xib = v[i + 1]
+                    data[(ta, tb)] = [cId, xia, xib, 1.0]
 
         # turn data into a list [[(ta, tb), [cId, xia, xib, coeff]],...]
         self.data = [[k, v] for k, v in data.items()]
@@ -241,9 +242,9 @@ class BrokenSegmentsIter:
         # perturb the position to avoid a singular
         # system when looking for edge-line 
         # intersections
-        pBeg[0] += eps*1.86512432134
-        pBeg[1] += -eps*2.76354653243
-        pEnd[0] += eps*1.96524543545
+        pBeg[0] += -eps*1.86512432134
+        pBeg[1] += +eps*2.76354653243
+        pEnd[0] += +eps*1.96524543545
         pEnd[1] += -eps*0.82875646565
 
         deltaPos = pEnd - pBeg
