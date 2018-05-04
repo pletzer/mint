@@ -1,23 +1,18 @@
-from regrid_base import RegridBase
-from ugrid_reader import UgridReader
-from broken_line_iter import BrokenLineIter
-from broken_segments_iter import BrokenSegmentsIter
-import numpy
+from regrid_base impport RegridBase
+import numpy 
 import vtk
-import ctypes
 
 
-class RegridEdges(RegridBase):
-    """
-    Class for regridding edge field to edge field using a cell by cell approach
-    """
+class RegridAvgVerts(RegridBase):
+
+    EPS = 1.e-12
 
     def __init__(self):
         """
         Constructor
         no args
         """
-        super(RegridEdges, self).__init__()
+        super(RegridAvgVerts, self).__init__()
 
 
     def computeWeights(self):
@@ -26,6 +21,9 @@ class RegridEdges(RegridBase):
         """
 
         dstPtIds = vtk.vtkIdList()
+        cell = vtk.vtkGenericCell()
+        xi = numpy.array((3,), numpy.float64)
+        weights = numpy.array((4,), numpy.float64)
         
         numSrcCells = self.srcGrid.GetNumberOfCells()
         numDstCells = self.dstGrid.GetNumberOfCells()
@@ -33,42 +31,20 @@ class RegridEdges(RegridBase):
         # iterate over the dst grid cells
         for dstCellId in range(numDstCells):
 
-            # iterate over the four edges of each dst cell
+            # iterate over the four vertices of the dst cell
             self.dstGrid.GetCellPoints(dstCellId, dstPtIds)
             for i0 in range(4):
-                i1 = (i0 + 1) % 4
 
-                # get the start/end points of the dst edge
-                dstVertId0 = dstPtIds.GetId(i0)
-                dstVertId1 = dstPtIds.GetId(i1)
-                dstEdgePt0 = self.dstGrid.GetPoint(dstVertId0)
-                dstEdgePt1 = self.dstGrid.GetPoint(dstVertId1)
+                dstVert = self.dstGrid.GetPoint(dstPtIds.GetId(i0))
 
-                # compute the intersections
-                bli = BrokenLineIter([dstEdgePt0, dstEdgePt1])
-
-                # find the intersection with the source grid
-                bsi = BrokenSegmentsIter(self.srcGrid, self.srcLoc, bli)
-
-                # compute the contribution to this edge
-                for seg in bsi:
-                    srcCellId = seg.getCellId()
-                    xia = seg.getBegCellParamCoord()
-                    xib = seg.getEndCellParamCoord()
-
-                    dxi = xib - xia
-                    xiMid = 0.5*(xia + xib)
-
+                # bilinear interpolation
+                srcCellId = self.srcLoc.FindCell(dstVert, self.EPS, cell, weights)
+                if srcCellId >= 0:
                     k = (dstCellId, srcCellId)
-
-                    # compute the weights from each src edge
-                    ws = numpy.array([dxi[0]*(1.0 - xiMid[1]),
-                                      dxi[1]*(0.0 + xiMid[0]),
-                                      dxi[0]*(0.0 + xiMid[1]),
-                                      dxi[1]*(1.0 - xiMid[0])])
-
-                    self.weights[k] = self.weights.get(k, self.ZERO4x4)
-                    self.weights[k][i0, :] += ws
+                    if not self.weights.has_key(k):
+                        # initialize the weights
+                        self.weights[k] = self.ZERO4x4
+                    self.weights[k][i0, :] = weights
 
 
 ###############################################################################
@@ -85,7 +61,7 @@ def main():
     from math import pi, sin, cos, log, exp
     import argparse
 
-    parser = argparse.ArgumentParser(description='Regriod edge field')
+    parser = argparse.ArgumentParser(description='Regriod edge field by averaging vertex values on edges')
     parser.add_argument('-s', dest='src', default='mesh_C4.nc', help='Specify UGRID source grid file')
     parser.add_argument('-d', dest='dst', default='mesh_C4.nc', help='Specify UGRID destination grid file')
     parser.add_argument('-S', dest='srcStreamFunc', default='x', 
