@@ -173,7 +173,7 @@ class BrokenSegmentsIter:
         """
 
         res = []
-        eps = 1.73654365e-12
+        eps = 1.73654365e-10
 
         intersector = LineLineIntersector()
         cellIds = vtk.vtkIdList()
@@ -184,8 +184,11 @@ class BrokenSegmentsIter:
 
         # collect the intersection points in between
         for i in range(cellIds.GetNumberOfIds()):
+
             cId = cellIds.GetId(i)
+
             self.grid.GetCellPoints(cId, ptIds)
+
             # iterate over the quads' edges
             for j0 in range(4):
 
