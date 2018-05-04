@@ -72,6 +72,11 @@ class RegridEdges(RegridBase):
                         self.weights[k] = self.ZERO4x4
                     self.weights[k][i0, :] += ws
 
+                totalT = seg.getIntegratedParamCoord()
+                if abs(totalT - 1.0) > 1.e-6:
+                    print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} point {} -> {}'.format(\
+                        totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
+
 
 ###############################################################################
 def edgeIntegralFromStreamFunction(streamFuncData):
