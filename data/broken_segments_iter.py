@@ -13,6 +13,11 @@ class BrokenSegmentsIter:
         @param brokenLine instance of BrokenLineIter
         """
 
+        # small tolerances 
+        self.eps = 1.73654365e-12
+        self.eps100 = 100. * self.eps
+
+
         self.grid = grid
         self.locator = locator
 
@@ -152,6 +157,20 @@ class BrokenSegmentsIter:
 
 
     def __assignCoefficientsToSegments(self):
+
+        n = len(self.data)
+
+        # remove zero length segments
+        for i in range(n - 1, -1, -1):
+            s = self.data[i]
+            ta, tb = s[0]
+            if abs(tb - ta) < self.eps100:
+                del self.data[i]
+
+        # reduce contribution for overlapping segmmnts. If two 
+        # segments overlap then the coefficient of first segment
+        # is set to 1.0 - overlap/(tb - ta). Assumes overlap 
+        # can only happen for pairs of segment
         n = len(self.data)
         for i0 in range(n - 1):
             i1 = i0 + 1
@@ -160,8 +179,7 @@ class BrokenSegmentsIter:
             ta0, tb0 = s0[0]
             ta1, tb1 = s1[0]
             overlap = max(0., min(tb0, tb1) - max(ta1, ta0))
-            s0[1][3] -= 0.5*overlap/(tb0 - ta0)
-            s1[1][3] -= 0.5*overlap/(tb1 - ta1)
+            s0[1][3] = 1.0 - overlap/(tb0 - ta0)
 
 
     def __collectIntersectionPoints(self, pBeg, pEnd, tol=1.e-10):
@@ -174,8 +192,6 @@ class BrokenSegmentsIter:
         """
 
         res = []
-        eps = 1.73654365e-12
-        eps100 = 100*eps
 
         intersector = LineLineIntersector()
         cellIds = vtk.vtkIdList()
@@ -201,8 +217,8 @@ class BrokenSegmentsIter:
                 # look for an intersection
                 lambRay, lambEdg = intersector.solve(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
 
-                if lambRay >= 0. - eps100 and lambRay <= 1. + eps100 and \
-                    lambEdg >= 0. - eps100 and lambEdg <= 1. + eps100:
+                if lambRay >= 0. - self.eps100 and lambRay <= 1. + self.eps100 and \
+                    lambEdg >= 0. - self.eps100 and lambEdg <= 1. + self.eps100:
 
                     point = pBeg + lambRay*(pEnd - pBeg)
                     res.append( (cId, lambRay, point) )
@@ -220,8 +236,6 @@ class BrokenSegmentsIter:
         """
 
         res = []
-
-        eps = 1.234e-12
 
         # things we need to define
         ptIds = vtk.vtkIdList()
@@ -243,15 +257,15 @@ class BrokenSegmentsIter:
         # perturb the position to avoid a singular
         # system when looking for edge-line 
         # intersections
-        pBeg[0] += -eps*1.86512432134
-        pBeg[1] += +eps*2.76354653243
-        pEnd[0] += +eps*1.96524543545
-        pEnd[1] += -eps*0.82875646565
+        pBeg[0] += -self.eps * 1.86512432134
+        pBeg[1] += +self.eps * 2.76354653243
+        pEnd[0] += +self.eps * 1.96524543545
+        pEnd[1] += -self.eps * 0.82875646565
 
         deltaPos = pEnd - pBeg
 
         # add starting point
-        cId = self.locator.FindCell(pBeg, eps, cell, xi, weights)
+        cId = self.locator.FindCell(pBeg, self.eps, cell, xi, weights)
         if cId >= 0:
             res.append( (cId, xi[:2].copy(), 0.) )
         else:
@@ -280,7 +294,7 @@ class BrokenSegmentsIter:
 
             
         # add last point 
-        cId = self.locator.FindCell(pEnd, eps, cell, xi, weights)
+        cId = self.locator.FindCell(pEnd, self.eps, cell, xi, weights)
         if cId >= 0:
             res.append( (cId, xi[:2].copy(), 1.) )
         else:
