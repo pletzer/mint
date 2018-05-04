@@ -173,7 +173,8 @@ class BrokenSegmentsIter:
         """
 
         res = []
-        eps = 1.73654365e-10
+        eps = 1.73654365e-12
+        eps100 = 100*eps
 
         intersector = LineLineIntersector()
         cellIds = vtk.vtkIdList()
@@ -199,8 +200,8 @@ class BrokenSegmentsIter:
                 # look for an intersection
                 lambRay, lambEdg = intersector.solve(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
 
-                if lambRay >= 0. - eps and lambRay <= 1. + eps and \
-                    lambEdg >= 0. - eps and lambEdg <= 1. + eps:
+                if lambRay >= 0. - eps100 and lambRay <= 1. + eps100 and \
+                    lambEdg >= 0. - eps100 and lambEdg <= 1. + eps100:
 
                     point = pBeg + lambRay*(pEnd - pBeg)
                     res.append( (cId, lambRay, point) )

@@ -39,6 +39,8 @@ if __name__ == '__main__':
     test(filename='mesh_C16.nc', points=[(0., 1.4),(2*pi, 1.4)])
     print('Test6')
     test(filename='mesh_C4.nc', points=[(0., 1.),(0., -1.),(2*pi, -1.)])
-    """
     print('Test7')
     test(filename='mesh_C4.nc', points=[(3.9269908169872414, -0.6154797086703874,),(3.5342917352885173, -0.7458526607730738,)])
+    """
+    print('Test8')
+    test(filename='mesh_C4.nc', points=[(3.5342917352885173, 0.7458526607730737,),(3.9269908169872414, 0.6154797086703873,)])
