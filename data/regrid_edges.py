@@ -113,7 +113,11 @@ def main():
     dstEdgeVelExact = edgeIntegralFromStreamFunction(dstPsi)
 
     # compute the error
-    error = numpy.fabs((dstEdgeVelExact - srcEdgeVel)).sum()
+    diff = numpy.fabs(dstEdgeVelExact - dstEdgeVel)
+    maxError = diff.max()
+    minError = diff.min()
+    print('Min/max error              : {}/{}'.format(minError, maxError))
+    error = numpy.fabs(diff).sum()
     print('Sum of interpolation errors: {}'.format(error))
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from regrid_base impport RegridBase
+from regrid_base import RegridBase
 import numpy 
 import vtk
 
@@ -22,8 +22,8 @@ class RegridAvgVerts(RegridBase):
 
         dstPtIds = vtk.vtkIdList()
         cell = vtk.vtkGenericCell()
-        xi = numpy.array((3,), numpy.float64)
-        weights = numpy.array((4,), numpy.float64)
+        pcoords = numpy.zeros((3,), numpy.float64)
+        weights = numpy.zeros((4,), numpy.float64)
         
         numSrcCells = self.srcGrid.GetNumberOfCells()
         numDstCells = self.dstGrid.GetNumberOfCells()
@@ -38,7 +38,7 @@ class RegridAvgVerts(RegridBase):
                 dstVert = self.dstGrid.GetPoint(dstPtIds.GetId(i0))
 
                 # bilinear interpolation
-                srcCellId = self.srcLoc.FindCell(dstVert, self.EPS, cell, weights)
+                srcCellId = self.srcLoc.FindCell(dstVert, self.EPS, cell, pcoords, weights)
                 if srcCellId >= 0:
                     k = (dstCellId, srcCellId)
                     if not self.weights.has_key(k):
@@ -68,7 +68,7 @@ def main():
                         help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
     args = parser.parse_args()
 
-    rgrd = RegridEdges()
+    rgrd = RegridAvgVerts()
     rgrd.setSrcGridFile(args.src)
     rgrd.setDstGridFile(args.dst)
     rgrd.computeWeights()
@@ -89,8 +89,13 @@ def main():
     dstEdgeVelExact = edgeIntegralFromStreamFunction(dstPsi)
 
     # compute the error
-    error = numpy.fabs((dstEdgeVelExact - srcEdgeVel)).sum()
+    diff = numpy.fabs(dstEdgeVelExact - dstEdgeVel)
+    maxError = diff.max()
+    minError = diff.min()
+    print('Min/max error              : {}/{}'.format(minError, maxError))
+    error = numpy.fabs(diff).sum()
     print('Sum of interpolation errors: {}'.format(error))
+
 
 if __name__ == '__main__':
     main()
