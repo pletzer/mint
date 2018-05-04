@@ -27,21 +27,30 @@ def test(filename, points):
 
 
 if __name__ == '__main__':
-    print('Test1')
+    print('Test1 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(0., 1.1),(1., 1.1)])
-    print('Test2')
+    print('Test2 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(0., 0.1),(2., 0.1)])
-    print('Test3')
+    print('Test3 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(0., 1.1),(2., 1.1)])
-    print('Test4')
+    print('Test4 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(0., 1.),(2*pi, 1.)])
-    print('Test5')
+    print('Test5 ' + '-'*40)
     test(filename='mesh_C16.nc', points=[(0., 1.4),(2*pi, 1.4)])
-    print('Test6')
+    print('Test6 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(0., 1.),(0., -1.),(2*pi, -1.)])
-    print('Test7')
+    print('Test7 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(3.9269908169872414, -0.6154797086703874,),(3.5342917352885173, -0.7458526607730738,)])
-    print('Test8')
+    print('Test8 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(3.5342917352885173, 0.7458526607730737,),(3.9269908169872414, 0.6154797086703873,)])
-    print('Test9')
+    print('Test9 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(0.7853981633974483, -1.04089353704597, 0.0), (0.3926990816987242, -0.7458526607730738, 0.0)])
+    print('Test10' + '-'*40)
+    test(filename='mesh_C4.nc', points=[(-0.0, -1.1780972450961724, 0.0), (0.7853981633974483, -1.04089353704597, 0.0)])
+    print('Test11' + '-'*40)
+    test(filename='mesh_C4.nc', points=[(0.0, 1.1780972450961724, 0.0), (0.7853981633974483, 1.04089353704597, 0.0)])
+
+
+
+
+

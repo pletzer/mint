@@ -36,22 +36,24 @@ class RegridEdges(RegridBase):
             # iterate over the four edges of each dst cell
             self.dstGrid.GetCellPoints(dstCellId, dstPtIds)
             for i0 in range(4):
+
                 i1 = (i0 + 1) % 4
 
                 # get the start/end points of the dst edge
-                dstVertId0 = dstPtIds.GetId(i0)
-                dstVertId1 = dstPtIds.GetId(i1)
-                dstEdgePt0 = self.dstGrid.GetPoint(dstVertId0)
-                dstEdgePt1 = self.dstGrid.GetPoint(dstVertId1)
+                id0 = dstPtIds.GetId(i0)
+                id1 = dstPtIds.GetId(i1)
+                dstEdgePt0 = self.dstGrid.GetPoint(id0)
+                dstEdgePt1 = self.dstGrid.GetPoint(id1)
 
-                # compute the intersections
+                # represent the edge as a broken line
                 bli = BrokenLineIter([dstEdgePt0, dstEdgePt1])
 
-                # find the intersection with the source grid
+                # compute the intersections of the dst edge with the src grid
                 bsi = BrokenSegmentsIter(self.srcGrid, self.srcLoc, bli)
 
-                # compute the contribution to this edge
+                # compute the contributions to this edge
                 for seg in bsi:
+
                     srcCellId = seg.getCellId()
                     xia = seg.getBegCellParamCoord()
                     xib = seg.getEndCellParamCoord()
@@ -62,20 +64,31 @@ class RegridEdges(RegridBase):
                     k = (dstCellId, srcCellId)
 
                     # compute the weights from each src edge
-                    ws = numpy.array([dxi[0]*(1.0 - xiMid[1]),
-                                      dxi[1]*(0.0 + xiMid[0]),
-                                      dxi[0]*(0.0 + xiMid[1]),
-                                      dxi[1]*(1.0 - xiMid[0])])
+                    ws = numpy.array([+ dxi[0] * (1.0 - xiMid[1]),
+                                      + dxi[1] * (0.0 + xiMid[0]),
+                                      - dxi[0] * (0.0 + xiMid[1]),
+                                      - dxi[1] * (1.0 - xiMid[0])])
 
                     if not self.weights.has_key(k):
                         # initialize the weights
-                        self.weights[k] = self.ZERO4x4
+                        self.weights[k] = self.ZERO4x4.copy()
+
                     self.weights[k][i0, :] += ws
 
                 totalT = seg.getIntegratedParamCoord()
-                if abs(totalT - 1.0) > 1.e-6:
+                if abs(totalT - 1.0) > 1.e-10:
                     print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} points=[{}, {}]'.format(\
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
+
+        # DEBUG
+        """
+        print 'self.weights[(7, 7L)] = {}'.format(self.weights[(7, 7L)])
+        print 'self.weights[(7, 11L)] = {}'.format(self.weights[(7, 11L)])
+        print 'self.weights[(7, 20L)] = {}'.format(self.weights[(7, 20L)])
+        print 'self.weights[(7, 3L)] = {}'.format(self.weights[(7, 3L)])
+        print 'self.weights[(7, 6L)] = {}'.format(self.weights[(7, 6L)])
+        """
+
 
 
 ###############################################################################
