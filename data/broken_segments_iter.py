@@ -29,7 +29,7 @@ class BrokenSegmentsIter:
             c2s = {}
             for e in res:
                 cId, xi, t = e
-                c2s[cId] = c2s.get(cId, []) + [(t, xi)]                
+                c2s[cId] = c2s.get(cId, []) + [(t, xi)]
 
             # {(ta, tb) : (cellId, xia, xib, coeff), ...}
             data = {}
@@ -153,14 +153,15 @@ class BrokenSegmentsIter:
 
     def __assignCoefficientsToSegments(self):
         n = len(self.data)
-        for i in range(n - 1):
-            s0 = self.data[i]
-            s1 = self.data[i + 1]
+        for i0 in range(n - 1):
+            i1 = i0 + 1
+            s0 = self.data[i0]
+            s1 = self.data[i1]
             ta0, tb0 = s0[0]
             ta1, tb1 = s1[0]
-            overlap = max(0., tb0 - ta1)
-            s0[1][3] = 1.0 - overlap/(tb0 - ta0)
-            s1[1][3] = 1.0 - overlap/(tb1 - ta1)
+            overlap = max(0., min(tb0, tb1) - max(ta1, ta0))
+            s0[1][3] -= 0.5*overlap/(tb0 - ta0)
+            s1[1][3] -= 0.5*overlap/(tb1 - ta1)
 
 
     def __collectIntersectionPoints(self, pBeg, pEnd, tol=1.e-10):

@@ -17,7 +17,8 @@ def test(filename, points):
         xib = s.getEndCellParamCoord()
         ta = s.getBegLineParamCoord()
         tb = s.getEndLineParamCoord()
-        print('seg {} in cell {} t = {} -> {} xi = {} -> {}'.format(count, cellId, ta, tb, xia, xib))
+        coeff = s.getCoefficient()
+        print('seg {} in cell {} t = {} -> {} xi = {} -> {} coeff = {}'.format(count, cellId, ta, tb, xia, xib, coeff))
         count += 1
 
     totalT = s.getIntegratedParamCoord()
@@ -26,7 +27,6 @@ def test(filename, points):
 
 
 if __name__ == '__main__':
-    """
     print('Test1')
     test(filename='mesh_C4.nc', points=[(0., 1.1),(1., 1.1)])
     print('Test2')
@@ -41,6 +41,5 @@ if __name__ == '__main__':
     test(filename='mesh_C4.nc', points=[(0., 1.),(0., -1.),(2*pi, -1.)])
     print('Test7')
     test(filename='mesh_C4.nc', points=[(3.9269908169872414, -0.6154797086703874,),(3.5342917352885173, -0.7458526607730738,)])
-    """
     print('Test8')
     test(filename='mesh_C4.nc', points=[(3.5342917352885173, 0.7458526607730737,),(3.9269908169872414, 0.6154797086703873,)])
