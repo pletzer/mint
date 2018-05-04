@@ -23,7 +23,7 @@ class RegridAvgVerts(RegridBase):
         dstPtIds = vtk.vtkIdList()
         cell = vtk.vtkGenericCell()
         pcoords = numpy.zeros((3,), numpy.float64)
-        weights = numpy.zeros((4,), numpy.float64)
+        ws = numpy.zeros((4,), numpy.float64)
         
         numSrcCells = self.srcGrid.GetNumberOfCells()
         numDstCells = self.dstGrid.GetNumberOfCells()
@@ -38,13 +38,13 @@ class RegridAvgVerts(RegridBase):
                 dstVert = self.dstGrid.GetPoint(dstPtIds.GetId(i0))
 
                 # bilinear interpolation
-                srcCellId = self.srcLoc.FindCell(dstVert, self.EPS, cell, pcoords, weights)
+                srcCellId = self.srcLoc.FindCell(dstVert, self.EPS, cell, pcoords, ws)
                 if srcCellId >= 0:
                     k = (dstCellId, srcCellId)
                     if not self.weights.has_key(k):
                         # initialize the weights
                         self.weights[k] = self.ZERO4x4
-                    self.weights[k][i0, :] = weights
+                    self.weights[k][i0, :] = ws
 
 
 ###############################################################################
@@ -61,7 +61,7 @@ def main():
     from math import pi, sin, cos, log, exp
     import argparse
 
-    parser = argparse.ArgumentParser(description='Regriod edge field by averaging vertex values on edges')
+    parser = argparse.ArgumentParser(description='Regrid edge field by averaging vertex values on edges')
     parser.add_argument('-s', dest='src', default='mesh_C4.nc', help='Specify UGRID source grid file')
     parser.add_argument('-d', dest='dst', default='mesh_C4.nc', help='Specify UGRID destination grid file')
     parser.add_argument('-S', dest='srcStreamFunc', default='x', 
