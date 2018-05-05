@@ -96,6 +96,9 @@ def main():
     error = numpy.fabs(diff).sum()
     print('Sum of interpolation errors: {}'.format(error))
 
+    rgrd.saveDstLoopData(dstEdgeVel, 'dstAvgVertsLoops.vtk')
+
+
 
 if __name__ == '__main__':
     main()

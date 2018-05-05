@@ -76,9 +76,17 @@ class RegridEdges(RegridBase):
                     self.weights[k][i0, :] += ws
 
                 totalT = seg.getIntegratedParamCoord()
-                if abs(totalT - 1.0) > 1.e-10:
+                if abs(totalT - 1.0) > 1.e-6:
                     print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} points=[{}, {}]'.format(\
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
+
+        # DEBUG
+        print '*** self.weights[22, 22L] = ', self.weights[22, 22L]
+        print '*** self.weights[22, 23L] = ', self.weights[22, 23L]
+        print '*** self.weights[22, 18L] = ', self.weights[22, 18L]
+        print '*** self.weights[22, 21L] = ', self.weights[22, 21L]
+        print '*** self.weights[22, 26L] = ', self.weights[22, 26L]
+
 
 
 ###############################################################################
@@ -130,7 +138,7 @@ def main():
     error = numpy.fabs(diff).sum()
     print('Sum of interpolation errors: {}'.format(error))
 
-    rgrd.saveDstLoopData(dstEdgeVel, 'dstLoops.vtk')
+    rgrd.saveDstLoopData(dstEdgeVel, 'dstEdgesLoops.vtk')
 
 if __name__ == '__main__':
     main()

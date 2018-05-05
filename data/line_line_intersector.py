@@ -7,10 +7,10 @@ class LineLineIntersector:
         Constructor
         no args
         """
-        
+        self.eps = 1.234e-12
         self.mat = numpy.zeros((2,2), numpy.float64)
+        self.invMatTimesDet = numpy.zeros((2,2), numpy.float64)
         self.rhs = numpy.zeros((2,), numpy.float64)
-        self.sol = numpy.zeros((2,), numpy.float64)
 
 
     def solve(self, p0, p1, q0, q1):
@@ -22,10 +22,15 @@ class LineLineIntersector:
         @param q1 end point of second line
         @return solution
         """
-        self.rhs = q0 - p0
+        self.rhs[:] = q0 - p0
         self.mat[:, 0] = p1 - p0
         self.mat[:, 1] = q0 - q1
-        return numpy.linalg.solve(self.mat, self.rhs)
+        self.invMatTimesDet[0, 0] = self.mat[1, 1]
+        self.invMatTimesDet[1, 1] = self.mat[0, 0]
+        self.invMatTimesDet[0, 1] = -self.mat[0, 1]
+        self.invMatTimesDet[1, 0] = -self.mat[1, 0]
+        det = self.mat[0, 0]*self.mat[1, 1] - self.mat[0, 1]*self.mat[1, 0]
+        return self.invMatTimesDet.dot(self.rhs)/det
 
 ###############################################################################
 def test1():
