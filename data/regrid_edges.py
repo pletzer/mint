@@ -81,13 +81,13 @@ class RegridEdges(RegridBase):
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
 
         # DEBUG
-        """
-        print 'self.weights[(7, 7L)] = {}'.format(self.weights[(7, 7L)])
-        print 'self.weights[(7, 11L)] = {}'.format(self.weights[(7, 11L)])
-        print 'self.weights[(7, 20L)] = {}'.format(self.weights[(7, 20L)])
-        print 'self.weights[(7, 3L)] = {}'.format(self.weights[(7, 3L)])
-        print 'self.weights[(7, 6L)] = {}'.format(self.weights[(7, 6L)])
-        """
+        #"""
+        print 'self.weights[(74, 74L)] = {}'.format(self.weights[(74, 74L)])
+        print 'self.weights[(74, 70L)] = {}'.format(self.weights[(74, 70L)])
+        print 'self.weights[(74, 73L)] = {}'.format(self.weights[(74, 73L)])
+        print 'self.weights[(74, 77L)] = {}'.format(self.weights[(74, 77L)])
+        print 'self.weights[(74, 78L)] = {}'.format(self.weights[(74, 78L)])
+        #"""
 
 
 
@@ -139,6 +139,8 @@ def main():
     print('Min/max error              : {}/{}'.format(minError, maxError))
     error = numpy.fabs(diff).sum()
     print('Sum of interpolation errors: {}'.format(error))
+
+    rgrd.saveDstLoopData(dstEdgeVel, 'dstLoops.vtk')
 
 if __name__ == '__main__':
     main()

@@ -87,3 +87,25 @@ class RegridBase(object):
         return res
 
 
+    def saveDstLoopData(self, dstData, filename):
+        """
+        Save destination loop integrals cell by cell
+        @param dstData array of size numDstCells * 4 
+        @param filename file name
+        """
+        numDstCells = self.getNumDstCells()
+        self.dstLoopData = dstData[:, 0] + dstData[:, 1] - dstData[:, 2] - dstData[:, 3]
+        self.dstData = vtk.vtkDoubleArray()
+        self.dstData.SetNumberOfComponents(1)
+        self.dstData.SetNumberOfTuples(numDstCells)
+        self.dstData.SetVoidArray(self.dstLoopData, numDstCells, 1)
+        self.dstGrid.GetCellData().SetScalars(self.dstData)
+
+        writer= vtk.vtkUnstructuredGridWriter()
+        writer.SetFileName(filename)
+        writer.SetInputData(self.dstGrid)
+        writer.Update()
+
+
+
+
