@@ -76,14 +76,14 @@ class RegridBase(object):
     def applyWeights(self, srcData):
         """
         Apply the interpolation weigths to the field
-        @param srcData line integrals on the source grid edges, dimensioned (ncells, 4)
-        @return line integrals on the destination grid
+        @param srcData line integrals on the source grid edges, dimensioned (numSrcCells, 4)
+        @return line integrals on the destination grid, array dimensioned (numDstCells, 4)
         """
-        numDstCells = self.dstGrid.GetNumberOfCells()
-        res = numpy.zeros((numDstCells, 4), numpy.float64)
+        # allocate space
+        res = numpy.zeros((self.getNumDstCells(), 4), numpy.float64)
         for k in self.weights:
             dstCellId, srcCellId = k
-            res[dstCellId, :] = self.weights[k].dot(srcData[srcCellId, :])
+            res[dstCellId, :] += self.weights[k].dot(srcData[srcCellId, :])
         return res
 
 

@@ -80,16 +80,6 @@ class RegridEdges(RegridBase):
                     print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} points=[{}, {}]'.format(\
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
 
-        # DEBUG
-        #"""
-        print 'self.weights[(74, 74L)] = {}'.format(self.weights[(74, 74L)])
-        print 'self.weights[(74, 70L)] = {}'.format(self.weights[(74, 70L)])
-        print 'self.weights[(74, 73L)] = {}'.format(self.weights[(74, 73L)])
-        print 'self.weights[(74, 77L)] = {}'.format(self.weights[(74, 77L)])
-        print 'self.weights[(74, 78L)] = {}'.format(self.weights[(74, 78L)])
-        #"""
-
-
 
 ###############################################################################
 def edgeIntegralFromStreamFunction(streamFuncData):
