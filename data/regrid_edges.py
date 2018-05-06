@@ -85,7 +85,7 @@ class RegridEdges(RegridBase):
         print '*** self.weights[22, 23L] = ', self.weights[22, 23L]
         print '*** self.weights[22, 18L] = ', self.weights[22, 18L]
         print '*** self.weights[22, 21L] = ', self.weights[22, 21L]
-        print '*** self.weights[22, 26L] = ', self.weights[22, 26L]
+        #print '*** self.weights[22, 26L] = ', self.weights[22, 26L]
 
 
 

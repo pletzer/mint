@@ -215,7 +215,11 @@ class BrokenSegmentsIter:
                 v1 = numpy.array(self.grid.GetPoint(ptIds.GetId(j1)))
 
                 # look for an intersection
-                lambRay, lambEdg = intersector.solve(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
+                intersector.setPoints(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
+                if not intersector.hasSolution(self.eps):
+                    continue
+
+                lambRay, lambEdg = intersector.solve()
 
                 if lambRay >= 0. - self.eps100 and lambRay <= 1. + self.eps100 and \
                     lambEdg >= 0. - self.eps100 and lambEdg <= 1. + self.eps100:
