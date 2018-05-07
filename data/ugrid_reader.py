@@ -1,8 +1,9 @@
 import netCDF4
 import numpy
 import vtk
+from reader_base import ReaderBase
 
-class UgridReader:
+class UgridReader(ReaderBase):
 
     TWOPI = 2. * numpy.pi
 
@@ -11,11 +12,11 @@ class UgridReader:
         Constructor
         @param filename UGRID file 
         """
+
+        super(UgridReader, self).__init__()
         
         # read UGRID file
         nc = netCDF4.Dataset(filename, 'r')
-
-        self.cell_connectivity = []
 
         lats, lons = None, None
         connectivity = None
@@ -37,17 +38,18 @@ class UgridReader:
         # build unstructured grid
 
         pointArray = numpy.zeros((4 * ncells, 3))
+        self.vtk['pointArray'] = pointArray
 
-        pointData = vtk.vtkDoubleArray()
+        pointData = self.vtk['pointData']
         pointData.SetNumberOfComponents(3)
         pointData.SetNumberOfTuples(4 * ncells)
         pointData.SetVoidArray(pointArray, 4 * ncells * 3, 1)
 
-        points = vtk.vtkPoints()
+        points = self.vtk['points']
         points.SetNumberOfPoints(4 * ncells)
         points.SetData(pointData)
 
-        grid = vtk.vtkUnstructuredGrid()
+        grid = self.vtk['grid']
         grid.Allocate(ncells, 1)
         ptIds = vtk.vtkIdList()
         ptIds.SetNumberOfIds(4)
@@ -93,54 +95,9 @@ class UgridReader:
         grid.SetPoints(points)
 
         # add a cell locator
-        loc = vtk.vtkCellLocator()
+        loc = self.vtk['locator']
         loc.SetDataSet(grid)
         loc.BuildLocator()
-
-        # store
-        self.vtk = {
-            'pointArray': pointArray,
-            'pointData': pointData,
-            'points': points,
-            'grid': grid,
-            'locator': loc,
-        }
-
-
-    def getLonLatPoints(self):
-        """
-        Get the longitudes and latitudes in radian at the cell vertices
-        @return array
-        """
-        return self.vtk['pointArray'][:, :2]
-
-        
-    def saveToVtkFile(self, filename):
-        """
-        Save the grid to a VTK file
-        @param filename VTK file
-        """
-        writer = vtk.vtkUnstructuredGridWriter()
-        writer.SetFileName(filename)
-        writer.SetInputData(self.vtk['grid'])
-        writer.Update()
-
-
-
-    def getUnstructuredGrid(self):
-        """
-        Get the unstructured grid
-        @return vtkUnstructuredGrid instance
-        """
-        return self.vtk['grid']
-
-
-    def getUnstructuredGridCellLocator(self):
-        """
-        Get the unstructured grid cell locator
-        @return vtkCellLocator instance
-        """    	
-    	return self.vtk['locator']
 
 
 ###############################################################################
@@ -150,8 +107,8 @@ def main():
     from math import pi
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
-    parser.add_argument('-i', dest='input', default='', help='Specify input file')
-    parser.add_argument('-V', dest='vtk_file', default='', help='Save grid in VTK file')
+    parser.add_argument('-i', dest='input', default='mesh_C4.nc', help='Specify input file')
+    parser.add_argument('-V', dest='vtk_file', default='cs.vtk', help='Save grid in VTK file')
    
     args = parser.parse_args()
 
