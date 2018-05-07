@@ -3,8 +3,9 @@ import numpy
 import vtk
 
 
-class RegridAvgVerts(RegridBase):
+class RegridVerts(RegridBase):
 
+    # tolerance for finding cell
     EPS = 1.e-12
 
     def __init__(self):
@@ -12,12 +13,13 @@ class RegridAvgVerts(RegridBase):
         Constructor
         no args
         """
-        super(RegridAvgVerts, self).__init__()
+        super(RegridVerts, self).__init__()
 
 
     def computeWeights(self):
         """
         Compute the interpolation weights
+        assuming the field values are stored on vertices
         """
 
         dstPtIds = vtk.vtkIdList()
@@ -68,7 +70,7 @@ def main():
                         help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
     args = parser.parse_args()
 
-    rgrd = RegridAvgVerts()
+    rgrd = RegridVerts()
     rgrd.setSrcGridFile(args.src)
     rgrd.setDstGridFile(args.dst)
     rgrd.computeWeights()

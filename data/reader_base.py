@@ -29,6 +29,19 @@ class ReaderBase(object):
         return self.vtk['pointArray'][:, :2]
 
         
+    def loadFromVtkFile(self, filename):
+        """
+        Load the grid and gfields form a VTK file
+        @param filename VTK file
+        """
+        self.reader = vtk.vtkUnstructuredGridReader()
+        self.reader.SetFileName(filename)
+        self.reader.Update()
+        self.vtk['grid'] = reader.GetOutput()
+        self.vtk['locator'].SetDataSet(self.vtk['grid'])
+        self.vtk['locator'].BuildLocator()
+
+
     def saveToVtkFile(self, filename):
         """
         Save the grid to a VTK file
