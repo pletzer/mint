@@ -5,7 +5,6 @@ from reader_base import ReaderBase
 
 class UgridReader(ReaderBase):
 
-    TWOPI = 2. * numpy.pi
 
     def __init__(self, filename):
         """
