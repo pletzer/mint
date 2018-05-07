@@ -77,7 +77,7 @@ class RegridEdges(RegridBase):
 
                     self.weights[k][i0, :] += ws
 
-                totalT = seg.getIntegratedParamCoord()
+                totalT = bsi.getIntegratedParamCoord()
                 if abs(totalT - 1.0) > 1.e-6:
                     print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} points=[{}, {}]'.format(\
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
@@ -87,7 +87,7 @@ class RegridEdges(RegridBase):
         print '*** self.weights[22, 23L] = ', self.weights[22, 23L]
         print '*** self.weights[22, 18L] = ', self.weights[22, 18L]
         print '*** self.weights[22, 21L] = ', self.weights[22, 21L]
-        #print '*** self.weights[22, 26L] = ', self.weights[22, 26L]
+        print '*** self.weights[22, 26L] = ', self.weights.get((22, 26L), [])
 
 
 

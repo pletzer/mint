@@ -220,7 +220,7 @@ class BrokenSegmentsIter:
                 if not intersector.hasSolution(self.eps):
                     continue
 
-                lambRay, lambEdg = intersector.solve()
+                lambRay, lambEdg = intersector.getSolution()
 
                 if lambRay >= 0. - self.eps100 and lambRay <= 1. + self.eps100 and \
                     lambEdg >= 0. - self.eps100 and lambEdg <= 1. + self.eps100:

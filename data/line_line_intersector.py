@@ -61,13 +61,9 @@ class LineLineIntersector:
         return False
 
 
-    def solve(self):
+    def getSolution(self):
         """
-        Solve the system
-        @param p0 starting point of first line
-        @param p1 end point of first line
-        @param q0 starting point of second line
-        @param q1 end point of second line
+        Get the solution
         @return solution
         """
         return self.solTimesDet / self.det
