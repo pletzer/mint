@@ -83,10 +83,10 @@ class RegridEdges(RegridBase):
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
 
         # DEBUG
-        print '*** self.weights[22, 22L] = ', self.weights[22, 22L]
-        print '*** self.weights[22, 23L] = ', self.weights[22, 23L]
-        print '*** self.weights[22, 18L] = ', self.weights[22, 18L]
-        print '*** self.weights[22, 21L] = ', self.weights[22, 21L]
+        print '*** self.weights[22, 22L] = ', self.weights.get((22, 22L), [])
+        print '*** self.weights[22, 23L] = ', self.weights.get((22, 23L), [])
+        print '*** self.weights[22, 18L] = ', self.weights.get((22, 18L), [])
+        print '*** self.weights[22, 21L] = ', self.weights.get((22, 21L), [])
         print '*** self.weights[22, 26L] = ', self.weights.get((22, 26L), [])
 
 

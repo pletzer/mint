@@ -40,7 +40,7 @@ class BrokenSegmentsIter:
             # {(ta, tb) : (cellId, xia, xib, coeff), ...}
             data = {}
             for cId, v in c2s.items():
-                v.sort()
+                v.sort(lambda x, y: cmp(x[0], y[0]))
                 n = len(v)
                 for i in range(n - 1):
                     ta, xia = v[i]
@@ -261,10 +261,12 @@ class BrokenSegmentsIter:
         # perturb the position to avoid a singular
         # system when looking for edge-line 
         # intersections
+        #"""
         pBeg[0] += -self.eps * 1.86512432134
         pBeg[1] += +self.eps * 2.76354653243
         pEnd[0] += +self.eps * 1.96524543545
         pEnd[1] += -self.eps * 0.82875646565
+        #"""
 
         deltaPos = pEnd - pBeg
 

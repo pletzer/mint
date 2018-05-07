@@ -22,6 +22,7 @@ class LineLineIntersector:
         @param q0 starting point of second line
         @param q1 end point of second line
         """
+        self.p0, self.p1, self.q0, self.q1 = p0, p1, q0, q1
         self.rhs[:] = q0 - p0
         self.mat[:, 0] = p1 - p0
         self.mat[:, 1] = q0 - q1
@@ -56,9 +57,23 @@ class LineLineIntersector:
         @param tol tolerance
         @return True if there is one or more solutions
         """
-        if abs(self.getDet()) > tol or self.solTimesDet.dot(self.solTimesDet) < tol:
+        if abs(self.getDet()) > tol:
             return True
-        return False
+        if abs(self.solTimesDet.dot(self.solTimesDet)) < tol:
+            # determinant is zero, p1 - p0 and q1 - q0 are on
+            # the same ray
+            dp = self.p1 - self.p0
+            dq = self.q1 - self.q0
+            if dp.dot(dq) > tol and \
+               ((self.p0 - self.q1).dot(dp) > tol or (self.q0 - self.p1).dot(dq) > tol):
+               # dq and dp are in the same direction
+               return False
+            if dp.dot(dq) < -tol and \
+               ((self.q0 - self.p0).dot(dq) > tol or (self.q1 - self.p1).dot(dp) > tol):
+               # dq and dp are opposite
+               return False
+        # there might be a solution, not quite sure
+        return True
 
 
     def getSolution(self):
