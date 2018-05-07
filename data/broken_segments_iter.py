@@ -16,6 +16,7 @@ class BrokenSegmentsIter:
         # small tolerances 
         self.eps = 1.73654365e-12
         self.eps100 = 100. * self.eps
+        self.tol = 1.e-2 # to determine if a point is inside a cell
 
 
         self.grid = grid
@@ -182,7 +183,7 @@ class BrokenSegmentsIter:
             s0[1][3] = 1.0 - overlap/(tb0 - ta0)
 
 
-    def __collectIntersectionPoints(self, pBeg, pEnd, tol=1.e-10):
+    def __collectIntersectionPoints(self, pBeg, pEnd):
         """
         Collect all the intersection points
         @param pBeg starting point
@@ -198,7 +199,7 @@ class BrokenSegmentsIter:
         ptIds = vtk.vtkIdList()
 
         # find all the cells intersected by the line
-        self.locator.FindCellsAlongLine(pBeg, pEnd, 1.e-3, cellIds)
+        self.locator.FindCellsAlongLine(pBeg, pEnd, self.tol, cellIds)
 
         # collect the intersection points in between
         for i in range(cellIds.GetNumberOfIds()):
@@ -230,12 +231,11 @@ class BrokenSegmentsIter:
         return res
 
 
-    def __collectLineGridSegments(self, p0, p1, tol=1.e-2):
+    def __collectLineGridSegments(self, p0, p1):
         """
         Collect all the line-grid intersection points
         @param p0 starting point of the line
         @param p1 end point of the line 
-        @param tol tolerance for determining if point is in cell
         @return list of [ (cellId, xi, t), ...]
         """
 
@@ -285,7 +285,7 @@ class BrokenSegmentsIter:
         #pEnd -= eps*deltaPos
 
         # let's be generous with the collection of cells
-        intersections = self.__collectIntersectionPoints(pBeg, pEnd, tol=1.e-2)
+        intersections = self.__collectIntersectionPoints(pBeg, pEnd)
 
         # find the cell id of the neighbouring cells
         for cId, lambRay, point in intersections:

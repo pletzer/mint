@@ -27,6 +27,9 @@ def test(filename, points):
 
 
 if __name__ == '__main__':
+    print('Test0 ' + '-'*40)
+    eps = 1.73654365e-10
+    test(filename='mesh_C4.nc', points=[(pi/2., 0.-eps),(pi/2. + 2.*pi/16., 0.+eps)])
     print('Test1 ' + '-'*40)
     test(filename='mesh_C4.nc', points=[(0., 1.1),(1., 1.1)])
     print('Test2 ' + '-'*40)
