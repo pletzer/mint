@@ -98,7 +98,7 @@ def main():
     error = numpy.fabs(diff).sum()
     print('Sum of interpolation errors: {}'.format(error))
 
-    rgrd.saveDstLoopData(dstEdgeVel, 'dstAvgVertsLoops.vtk')
+    rgrd.saveDstLoopData(dstEdgeVel, 'dstVertsLoops.vtk')
 
 
 
