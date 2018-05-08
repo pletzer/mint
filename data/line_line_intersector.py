@@ -158,6 +158,20 @@ def testNoOverlap():
     assert(abs(det) < 1.e-10)
     assert(not lli.hasSolution(1.e-10))
 
+def testNoOverlap2():
+    # no solution
+    tol = 1.e-10
+    p0 = numpy.array([numpy.pi/2., 0.])
+    p1 = numpy.array([0., 0.])
+    q0 = numpy.array([-2., 0.])
+    q1 = numpy.array([-1., 0.])
+    lli = LineLineIntersector()
+    lli.setPoints(p0, p1, q0, q1)
+    det = lli.getDet()
+    assert(abs(det) < 1.e-10)
+    assert(not lli.hasSolution(1.e-10))
+
+
 def testPartialOverlap():
     # no solution
     tol = 1.e-10
@@ -254,6 +268,7 @@ if __name__ == '__main__':
     test2()
     test3()
     testNoOverlap()
+    testNoOverlap2()
     testPartialOverlap()
     testPartialOverlap2()
     testPartialOverlap3()
