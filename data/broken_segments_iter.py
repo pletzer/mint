@@ -196,15 +196,45 @@ class BrokenSegmentsIter:
 
         intersector = LineLineIntersector()
         cellIds = vtk.vtkIdList()
+        cellIds1 = vtk.vtkIdList()
+        cellIds2 = vtk.vtkIdList()
         ptIds = vtk.vtkIdList()
+
+        dp = pEnd - pBeg
 
         # find all the cells intersected by the line
         self.locator.FindCellsAlongLine(pBeg, pEnd, self.tol, cellIds)
+        """
+        # direction of the ray
+        u = dp / numpy.sqrt(dp.dot(dp))
+        # up
+        z = numpy.array([0., 0., 1.])
+        # direction perpendicular to the ray
+        v = numpy.cross(z, u)
+        pBeg1, pEnd1 = pBeg + self.tol*v, pEnd + self.tol*v
+        pBeg2, pEnd2 = pBeg - self.tol*v, pEnd - self.tol*v
+        self.locator.FindCellsAlongLine(pBeg1, pEnd1, self.tol, cellIds1)
+        self.locator.FindCellsAlongLine(pBeg2, pEnd2, self.tol, cellIds2)
+        # add the cell from cellIds1 and cellIds2 to cellids
+        for i in range(cellIds1.GetNumberOfIds()):
+            cellIds.InsertUniqueId(cellIds1.GetId(i))
+        for i in range(cellIds2.GetNumberOfIds()):
+            cellIds.InsertUniqueId(cellIds2.GetId(i))
+        """
+
+        verbose = False
 
         # collect the intersection points in between
         for i in range(cellIds.GetNumberOfIds()):
 
             cId = cellIds.GetId(i)
+
+            # DEBUG
+            diffBeg = numpy.array([1.9634954084936207, 0.36548975596819283, 0.] - pBeg)
+            diffEnd = numpy.array([1.5707963267948966, 0.39269908169872414, 0.] - pEnd)
+            if abs(diffBeg.dot(diffBeg)) < 1.e-8 and abs(diffEnd.dot(diffEnd)) < 1.e-8:
+                print '...... cId = {} {}->{}'.format(cId, pBeg, pEnd)
+                verbose = True
 
             self.grid.GetCellPoints(cId, ptIds)
 
@@ -218,15 +248,38 @@ class BrokenSegmentsIter:
                 # look for an intersection
                 intersector.setPoints(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
                 if not intersector.hasSolution(self.eps):
+                    if verbose:
+                        print ']]]] no intersection between {}->{} and {}->{}'.format(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
                     continue
 
-                lambRay, lambEdg = intersector.getSolution()
+                if abs(intersector.getDet()) > self.eps:
+                    # normal intersection, 1 solution
+                    lambRay, lambEdg = intersector.getSolution()
 
-                if lambRay >= 0. - self.eps100 and lambRay <= 1. + self.eps100 and \
-                    lambEdg >= 0. - self.eps100 and lambEdg <= 1. + self.eps100:
+                    # is it valid? Intersection must be within (p0, p1) and (q0, q1)
+                    if lambRay >= 0. - self.eps100 and lambRay <= 1. + self.eps100 and \
+                        lambEdg >= 0. - self.eps100 and lambEdg <= 1. + self.eps100:
 
-                    point = pBeg + lambRay*(pEnd - pBeg)
-                    res.append( (cId, lambRay, point) )
+                        point = pBeg + lambRay*dp
+                        if verbose:
+                            print '#### normal point, add {} (lambda={})'.format(point, lambRay)
+                        res.append( (cId, lambRay, point) )
+
+                else:
+                    # det is almost zero
+                    # looks like the two lines (p0, p1) and (q0, q1) are overlapping
+                    # add the starting/ending points 
+                    lama, lamb = intersector.getBegEndParamCoords()
+                    pa = pBeg + lama*dp
+                    pb = pBeg + lamb*dp
+                    if verbose:
+                        print '>>>  {}->{} and {}->{} are parallel, add {}->{} (lambda {}->{})'.format(pBeg[:2], pEnd[:2], v0[:2], v1[:2], pa, pb, lama, lamb)
+                    res.append( (cId, lama, pa) )
+                    res.append( (cId, lamb, pb) )
+
+            if verbose:
+                print '&&&& res = ', res
+            verbose = False
 
         return res
 
@@ -261,12 +314,12 @@ class BrokenSegmentsIter:
         # perturb the position to avoid a singular
         # system when looking for edge-line 
         # intersections
-        #"""
+        """
         pBeg[0] += -self.eps * 1.86512432134
         pBeg[1] += +self.eps * 2.76354653243
         pEnd[0] += +self.eps * 1.96524543545
         pEnd[1] += -self.eps * 0.82875646565
-        #"""
+        """
 
         deltaPos = pEnd - pBeg
 

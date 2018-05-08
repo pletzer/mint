@@ -72,11 +72,20 @@ class LineLineIntersector:
 
     def getBegEndPoints(self):
         """
-        Compute the begin/end parametric coordinates
+        Get the begin/end points of overlap
+        @return tuple
         """
         dp = self.p1 - self.p0
         return self.p0 + self.lamBeg*dp, \
                self.p0 + self.lamEnd*dp
+
+
+    def getBegEndParamCoords(self):
+        """
+        Get the begin/end parametric coordinates of overlap
+        @return tuple
+        """
+        return self.lamBeg, self.lamEnd
 
 
     def hasSolution(self, tol):
