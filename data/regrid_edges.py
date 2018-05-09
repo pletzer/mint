@@ -58,7 +58,8 @@ class RegridEdges(RegridBase):
                     xia = seg.getBegCellParamCoord()
                     xib = seg.getEndCellParamCoord()
 
-                    #if dstCellId == 22: print '==== dst cell {} couples to src cell {} along edge {}->{}'.format(dstCellId, srcCellId, dstEdgePt0, dstEdgePt1)
+                    if dstCellId == 6: print '--- dst cell {} couples to src cell {} along edge {}->{}'.format(dstCellId, srcCellId, dstEdgePt0, dstEdgePt1)
+                    if dstCellId == 6: print '---                                    xi {}->{}'.format(xia, xib)
 
                     dxi = xib - xia
                     xiMid = 0.5*(xia + xib)
@@ -83,11 +84,10 @@ class RegridEdges(RegridBase):
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
 
         # DEBUG
-        print '*** self.weights[22, 22L] = ', self.weights.get((22, 22L), [])
-        print '*** self.weights[22, 23L] = ', self.weights.get((22, 23L), [])
-        print '*** self.weights[22, 18L] = ', self.weights.get((22, 18L), [])
-        print '*** self.weights[22, 21L] = ', self.weights.get((22, 21L), [])
-        print '*** self.weights[22, 26L] = ', self.weights.get((22, 26L), [])
+        print '*** self.weights[6, 6L] = ', self.weights.get((6, 6L), [])
+        print '*** self.weights[6, 7L] = ', self.weights.get((6, 7L), [])
+        print '*** self.weights[6, 10L] = ', self.weights.get((6, 10L), [])
+        print '*** self.weights[6, 2L] = ', self.weights.get((6, 2L), [])
 
 
 
@@ -96,7 +96,7 @@ def edgeIntegralFromStreamFunction(streamFuncData):
     edgeVel = numpy.zeros(streamFuncData.shape, numpy.float64)
     for i0 in range(4):
         i1 = (i0 + 1) % 4
-        pm = 1 - 2*(i0 // 2) # + for i0 = 0, 1, - for i0 = 2, 3
+        pm = 1 #- 2*(i0 // 2) # + for i0 = 0, 1, - for i0 = 2, 3
         edgeVel[:, i0] = pm * (streamFuncData[:, i1] - streamFuncData[:, i0])
     return edgeVel
 

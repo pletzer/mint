@@ -84,6 +84,10 @@ class RegridBase(object):
         for k in self.weights:
             dstCellId, srcCellId = k
             res[dstCellId, :] += self.weights[k].dot(srcData[srcCellId, :])
+            if dstCellId == 6:
+            	print '................. srcCellId = ', srcCellId
+            	print '..................srcData[srcCellId, :] = ', srcData[srcCellId, :]
+            	print '================= res[dstCellId, :] = ', res[dstCellId, :]
         return res
 
 
@@ -93,8 +97,12 @@ class RegridBase(object):
         @param dstData array of size numDstCells * 4 
         @param filename file name
         """
+        print '>>>>>> dstData[6, :] = ', dstData[6, :]
+        print '>>>>>> dstData.sum(axis=1)[6] = ', dstData.sum(axis=1)[6]
+
+
         numDstCells = self.getNumDstCells()
-        self.dstLoopData = dstData[:, 0] + dstData[:, 1] - dstData[:, 2] - dstData[:, 3]
+        self.dstLoopData = dstData.sum(axis=1)
         self.dstData = vtk.vtkDoubleArray()
         self.dstData.SetNumberOfComponents(1)
         self.dstData.SetNumberOfTuples(numDstCells)
