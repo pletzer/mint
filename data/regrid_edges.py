@@ -58,7 +58,7 @@ class RegridEdges(RegridBase):
                     xia = seg.getBegCellParamCoord()
                     xib = seg.getEndCellParamCoord()
 
-                    if dstCellId == 22: print '==== dst cell {} couples to src cell {} along edge {}->{}'.format(dstCellId, srcCellId, dstEdgePt0, dstEdgePt1)
+                    #if dstCellId == 22: print '==== dst cell {} couples to src cell {} along edge {}->{}'.format(dstCellId, srcCellId, dstEdgePt0, dstEdgePt1)
 
                     dxi = xib - xia
                     xiMid = 0.5*(xia + xib)

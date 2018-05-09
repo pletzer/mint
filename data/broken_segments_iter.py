@@ -31,6 +31,13 @@ class BrokenSegmentsIter:
             # res is  [ (cellId, xi, t), ...]
             res = self.__collectLineGridSegments(p0, p1)
 
+            # DEBUG
+            diffBeg = numpy.array([1.9634954084936207, 0.36548975596819283, 0.] - p0)
+            diffEnd = numpy.array([1.5707963267948966, 0.39269908169872414, 0.] - p1)
+            verbose = False
+            if abs(diffBeg.dot(diffBeg)) < 1.e-8 and abs(diffEnd.dot(diffEnd)) < 1.e-8:
+                verbose = True
+
             # re-arrange the data cellId -> [[t0, xi0], [t1, xi1], ...]
             c2s = {}
             for e in res:
@@ -46,6 +53,8 @@ class BrokenSegmentsIter:
                     ta, xia = v[i]
                     tb, xib = v[i + 1]
                     data[(ta, tb)] = [cId, xia, xib, 1.0]
+            if verbose:
+                print '%%%% data = ', data
 
         # turn data into a list [[(ta, tb), [cId, xia, xib, coeff]],...]
         self.data = [[k, v] for k, v in data.items()]
@@ -222,19 +231,10 @@ class BrokenSegmentsIter:
             cellIds.InsertUniqueId(cellIds2.GetId(i))
         """
 
-        verbose = False
-
         # collect the intersection points in between
         for i in range(cellIds.GetNumberOfIds()):
 
             cId = cellIds.GetId(i)
-
-            # DEBUG
-            diffBeg = numpy.array([1.9634954084936207, 0.36548975596819283, 0.] - pBeg)
-            diffEnd = numpy.array([1.5707963267948966, 0.39269908169872414, 0.] - pEnd)
-            if abs(diffBeg.dot(diffBeg)) < 1.e-8 and abs(diffEnd.dot(diffEnd)) < 1.e-8:
-                print '...... cId = {} {}->{}'.format(cId, pBeg, pEnd)
-                verbose = True
 
             self.grid.GetCellPoints(cId, ptIds)
 
@@ -248,8 +248,6 @@ class BrokenSegmentsIter:
                 # look for an intersection
                 intersector.setPoints(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
                 if not intersector.hasSolution(self.eps):
-                    if verbose:
-                        print ']]]] no intersection between {}->{} and {}->{}'.format(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
                     continue
 
                 if abs(intersector.getDet()) > self.eps:
@@ -261,8 +259,6 @@ class BrokenSegmentsIter:
                         lambEdg >= 0. - self.eps100 and lambEdg <= 1. + self.eps100:
 
                         point = pBeg + lambRay*dp
-                        if verbose:
-                            print '#### normal point, add {} (lambda={})'.format(point, lambRay)
                         res.append( (cId, lambRay, point) )
 
                 else:
@@ -272,14 +268,8 @@ class BrokenSegmentsIter:
                     lama, lamb = intersector.getBegEndParamCoords()
                     pa = pBeg + lama*dp
                     pb = pBeg + lamb*dp
-                    if verbose:
-                        print '>>>  {}->{} and {}->{} are parallel, add {}->{} (lambda {}->{})'.format(pBeg[:2], pEnd[:2], v0[:2], v1[:2], pa, pb, lama, lamb)
                     res.append( (cId, lama, pa) )
                     res.append( (cId, lamb, pb) )
-
-            if verbose:
-                print '&&&& res = ', res
-            verbose = False
 
         return res
 
