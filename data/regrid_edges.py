@@ -57,6 +57,7 @@ class RegridEdges(RegridBase):
                     srcCellId = seg.getCellId()
                     xia = seg.getBegCellParamCoord()
                     xib = seg.getEndCellParamCoord()
+                    coeff = seg.getCoefficient()
 
                     if dstCellId == 71: print '--- dst cell {} couples to src cell {} along edge {}->{}'.format(dstCellId, srcCellId, dstEdgePt0, dstEdgePt1)
                     if dstCellId == 71: print '---                                    xi {}->{}'.format(xia, xib)
@@ -67,10 +68,10 @@ class RegridEdges(RegridBase):
                     k = (dstCellId, srcCellId)
 
                     # compute the weights from each src edge
-                    ws = numpy.array([+ dxi[0] * (1.0 - xiMid[1]),
-                                      + dxi[1] * (0.0 + xiMid[0]),
-                                      - dxi[0] * (0.0 + xiMid[1]),
-                                      - dxi[1] * (1.0 - xiMid[0])])
+                    ws = numpy.array([+ dxi[0] * (1.0 - xiMid[1]) * coeff,
+                                      + dxi[1] * (0.0 + xiMid[0]) * coeff,
+                                      - dxi[0] * (0.0 + xiMid[1]) * coeff,
+                                      - dxi[1] * (1.0 - xiMid[0]) * coeff])
 
                     if not self.weights.has_key(k):
                         # initialize the weights
