@@ -75,7 +75,7 @@ class RegridBase(object):
 
     def applyWeights(self, srcData):
         """
-        Apply the interpolation weigths to the field
+        Apply the interpolation weights to the field
         @param srcData line integrals on the source grid edges, dimensioned (numSrcCells, 4)
         @return line integrals on the destination grid, array dimensioned (numDstCells, 4)
         """
@@ -84,7 +84,7 @@ class RegridBase(object):
         for k in self.weights:
             dstCellId, srcCellId = k
             res[dstCellId, :] += self.weights[k].dot(srcData[srcCellId, :])
-            if dstCellId == 6:
+            if dstCellId == 71:
             	print '................. srcCellId = ', srcCellId
             	print '..................srcData[srcCellId, :] = ', srcData[srcCellId, :]
             	print '================= res[dstCellId, :] = ', res[dstCellId, :]
@@ -97,8 +97,8 @@ class RegridBase(object):
         @param dstData array of size numDstCells * 4 
         @param filename file name
         """
-        print '>>>>>> dstData[6, :] = ', dstData[6, :]
-        print '>>>>>> dstData.sum(axis=1)[6] = ', dstData.sum(axis=1)[6]
+        print '>>>>>> dstData[71, :] = ', dstData[71, :]
+        print '>>>>>> dstData.sum(axis=1)[71] = ', dstData.sum(axis=1)[71]
 
 
         numDstCells = self.getNumDstCells()

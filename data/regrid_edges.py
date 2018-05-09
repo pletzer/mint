@@ -58,8 +58,8 @@ class RegridEdges(RegridBase):
                     xia = seg.getBegCellParamCoord()
                     xib = seg.getEndCellParamCoord()
 
-                    if dstCellId == 6: print '--- dst cell {} couples to src cell {} along edge {}->{}'.format(dstCellId, srcCellId, dstEdgePt0, dstEdgePt1)
-                    if dstCellId == 6: print '---                                    xi {}->{}'.format(xia, xib)
+                    if dstCellId == 71: print '--- dst cell {} couples to src cell {} along edge {}->{}'.format(dstCellId, srcCellId, dstEdgePt0, dstEdgePt1)
+                    if dstCellId == 71: print '---                                    xi {}->{}'.format(xia, xib)
 
                     dxi = xib - xia
                     xiMid = 0.5*(xia + xib)
@@ -84,10 +84,11 @@ class RegridEdges(RegridBase):
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
 
         # DEBUG
-        print '*** self.weights[6, 6L] = ', self.weights.get((6, 6L), [])
-        print '*** self.weights[6, 7L] = ', self.weights.get((6, 7L), [])
-        print '*** self.weights[6, 10L] = ', self.weights.get((6, 10L), [])
-        print '*** self.weights[6, 2L] = ', self.weights.get((6, 2L), [])
+        print '*** self.weights[71, 71L] = ', self.weights.get((71, 71L), [])
+        print '*** self.weights[71, 34L] = ', self.weights.get((71, 34L), [])
+        print '*** self.weights[71, 67L] = ', self.weights.get((71, 67L), [])
+        print '*** self.weights[71, 70L] = ', self.weights.get((71, 70L), [])
+        print '*** self.weights[71, 75L] = ', self.weights.get((71, 75L), [])
 
 
 

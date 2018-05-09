@@ -32,8 +32,8 @@ class BrokenSegmentsIter:
             res = self.__collectLineGridSegments(p0, p1)
 
             # DEBUG
-            diffBeg = numpy.array([1.9634954084936207, 0.36548975596819283, 0.] - p0)
-            diffEnd = numpy.array([1.5707963267948966, 0.39269908169872414, 0.] - p1)
+            diffBeg = numpy.array([3.9269908169872414, 1.04089353704597, 0.]) - p0
+            diffEnd = numpy.array([3.141592653589793, 1.1780972450961724, 0.]) - p1
             verbose = False
             if abs(diffBeg.dot(diffBeg)) < 1.e-8 and abs(diffEnd.dot(diffEnd)) < 1.e-8:
                 verbose = True
