@@ -31,13 +31,6 @@ class BrokenSegmentsIter:
             # res is  [ (cellId, xi, t), ...]
             res = self.__collectLineGridSegments(p0, p1)
 
-            # DEBUG
-            diffBeg = numpy.array([3.9269908169872414, 1.04089353704597, 0.]) - p0
-            diffEnd = numpy.array([3.141592653589793, 1.1780972450961724, 0.]) - p1
-            verbose = False
-            if abs(diffBeg.dot(diffBeg)) < 1.e-8 and abs(diffEnd.dot(diffEnd)) < 1.e-8:
-                verbose = True
-
             # re-arrange the data cellId -> [[t0, xi0], [t1, xi1], ...]
             c2s = {}
             for e in res:
@@ -53,8 +46,6 @@ class BrokenSegmentsIter:
                     ta, xia = v[i]
                     tb, xib = v[i + 1]
                     data[(ta, tb)] = [cId, xia, xib, 1.0]
-            if verbose:
-                print '%%%% data = ', data
 
         # turn data into a list [[(ta, tb), [cId, xia, xib, coeff]],...]
         self.data = [[k, v] for k, v in data.items()]

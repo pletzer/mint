@@ -81,13 +81,10 @@ class RegridBase(object):
         """
         # allocate space
         res = numpy.zeros((self.getNumDstCells(), 4), numpy.float64)
+        # itererate over the desCellId, srcCellId pairs
         for k in self.weights:
             dstCellId, srcCellId = k
             res[dstCellId, :] += self.weights[k].dot(srcData[srcCellId, :])
-            if dstCellId == 71:
-            	print '................. srcCellId = ', srcCellId
-            	print '..................srcData[srcCellId, :] = ', srcData[srcCellId, :]
-            	print '================= res[dstCellId, :] = ', res[dstCellId, :]
         return res
 
 
@@ -97,10 +94,6 @@ class RegridBase(object):
         @param dstData array of size numDstCells * 4 
         @param filename file name
         """
-        print '>>>>>> dstData[71, :] = ', dstData[71, :]
-        print '>>>>>> dstData.sum(axis=1)[71] = ', dstData.sum(axis=1)[71]
-
-
         numDstCells = self.getNumDstCells()
         self.dstLoopData = dstData.sum(axis=1)
         self.dstData = vtk.vtkDoubleArray()
