@@ -7,7 +7,7 @@ class LineLineIntersector:
         Constructor
         no args
         """
-        self.eps = 1.234e-12
+        self.eps = 1.234e-14
         self.mat = numpy.zeros((2,2), numpy.float64)
         self.invMatTimesDet = numpy.zeros((2,2), numpy.float64)
         self.invMatTimesDetDotRhs = numpy.zeros((2,), numpy.float64)

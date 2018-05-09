@@ -14,9 +14,9 @@ class BrokenSegmentsIter:
         """
 
         # small tolerances 
-        self.eps = 1.73654365e-12
+        self.eps = 1.73654365e-14
         self.eps100 = 100. * self.eps
-        self.tol = 1.e-2 # to determine if a point is inside a cell
+        self.tol = 1.e-3 # to determine if a point is inside a cell
 
 
         self.grid = grid
@@ -196,31 +196,12 @@ class BrokenSegmentsIter:
 
         intersector = LineLineIntersector()
         cellIds = vtk.vtkIdList()
-        cellIds1 = vtk.vtkIdList()
-        cellIds2 = vtk.vtkIdList()
         ptIds = vtk.vtkIdList()
 
         dp = pEnd - pBeg
 
         # find all the cells intersected by the line
         self.locator.FindCellsAlongLine(pBeg, pEnd, self.tol, cellIds)
-        """
-        # direction of the ray
-        u = dp / numpy.sqrt(dp.dot(dp))
-        # up
-        z = numpy.array([0., 0., 1.])
-        # direction perpendicular to the ray
-        v = numpy.cross(z, u)
-        pBeg1, pEnd1 = pBeg + self.tol*v, pEnd + self.tol*v
-        pBeg2, pEnd2 = pBeg - self.tol*v, pEnd - self.tol*v
-        self.locator.FindCellsAlongLine(pBeg1, pEnd1, self.tol, cellIds1)
-        self.locator.FindCellsAlongLine(pBeg2, pEnd2, self.tol, cellIds2)
-        # add the cell from cellIds1 and cellIds2 to cellids
-        for i in range(cellIds1.GetNumberOfIds()):
-            cellIds.InsertUniqueId(cellIds1.GetId(i))
-        for i in range(cellIds2.GetNumberOfIds()):
-            cellIds.InsertUniqueId(cellIds2.GetId(i))
-        """
 
         # collect the intersection points in between
         for i in range(cellIds.GetNumberOfIds()):
@@ -292,16 +273,6 @@ class BrokenSegmentsIter:
         pBeg[:] = p0[0], p0[1], 0.0
         pEnd[:] = p1[0], p1[1], 0.0
 
-        # perturb the position to avoid a singular
-        # system when looking for edge-line 
-        # intersections
-        """
-        pBeg[0] += -self.eps * 1.86512432134
-        pBeg[1] += +self.eps * 2.76354653243
-        pEnd[0] += +self.eps * 1.96524543545
-        pEnd[1] += -self.eps * 0.82875646565
-        """
-
         deltaPos = pEnd - pBeg
 
         # add starting point
@@ -316,9 +287,9 @@ class BrokenSegmentsIter:
         cIdLast = cId
         fullSegment = False
 
+        #
         # find all intersection points in between
-        #pBeg += eps*deltaPos
-        #pEnd -= eps*deltaPos
+        #
 
         # let's be generous with the collection of cells
         intersections = self.__collectIntersectionPoints(pBeg, pEnd)
