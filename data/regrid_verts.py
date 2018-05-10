@@ -46,6 +46,7 @@ class RegridVerts(RegridBase):
                     if not self.weights.has_key(k):
                         # initialize the weights
                         self.weights[k] = self.ZERO4x4.copy()
+                    # a point can only be in one cell, so no need to use +=
                     self.weights[k][i0, :] = ws
 
 
