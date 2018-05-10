@@ -45,16 +45,19 @@ class RegridBase(object):
         self.dstLonLatPts = None
 
 
-    def setSrcGridFile(self, filename, format='ugrid'):
+    def setSrcGridFile(self, filename, format='ugrid', padding=0):
         """
         Set source grid
         @param file name containing UGRID description of the grid
+        @param format either 'ugrid' or 'um'
+        @param padding number of additional lon cells to add to the high end
+                       (only for grid in UM format)
         """ 
         ur = None
         if format == 'ugrid':
             ur = UgridReader(filename)
         else:
-            ur = LatLonReader(filename)
+            ur = LatLonReader(filename, padding=padding)
         self.srcGrid = ur.getUnstructuredGrid()
         self.srcLoc = ur.getUnstructuredGridCellLocator()
         self.srcLonLatPts = ur.getLonLatPoints()
