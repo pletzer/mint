@@ -6,10 +6,12 @@ from reader_base import ReaderBase
 class LatLonReader(ReaderBase):
 
 
-    def __init__(self, filename):
+    def __init__(self, filename, padding=0):
         """
         Constructor
-        @param filename UGRID file 
+        @param filename UM netCDF file
+        @param padding number of extra cells to add on the high end of longitudes
+        @note padding add extra cells on the high end of longitudes
         """
 
         super(LatLonReader, self).__init__()
@@ -42,14 +44,17 @@ class LatLonReader(ReaderBase):
         ncells_lat, ncells_lon = len(lats_0), len(lons_0)
         ncells = ncells_lat * ncells_lon
 
-        toRads = 1.0
+        # covnersion to radians
+        toRad = 1.0
+        periodicity_length = 360.0
         if lons_units.find('degree') >= 0:
             toRad = numpy.pi / 180.0
+            periodicity_length = numpy.pi
 
         # construct the unstructured grid as a collection of 
-        # 2D cells. build unstructured grid
+        # 2D cells
 
-        pointArray = numpy.zeros((4 * ncells, 3))
+        pointArray = numpy.zeros((4 * (ncells + padding), 3))
         self.vtk['pointArray'] = pointArray
 
         pointData = self.vtk['pointData']
@@ -71,14 +76,17 @@ class LatLonReader(ReaderBase):
 
             j1 = j0 + 1
 
-            for i0 in range(ncells_lon):
+            for i in range(ncells_lon + padding):
 
-                i1 = (i0 + 1) % ncells_lon
+                i0 = (i + 0) % ncells_lon
+                i1 = (i + 1) % ncells_lon
+                offset0 = periodicity_length * ((i + 0) // ncells_lon)
+                offset1 = periodicity_length * ((i + 1) // ncells_lon)
 
-                lon00, lat00 = lons[i0]*toRad, lats[j0]*toRad
-                lon10, lat10 = lons[i1]*toRad, lats[j0]*toRad
-                lon11, lat11 = lons[i1]*toRad, lats[j1]*toRad
-                lon01, lat01 = lons[i0]*toRad, lats[j1]*toRad
+                lon00, lat00 = lons[i0]*toRad + offset0, lats[j0]*toRad
+                lon10, lat10 = lons[i1]*toRad + offset1, lats[j0]*toRad
+                lon11, lat11 = lons[i1]*toRad + offset1, lats[j1]*toRad
+                lon01, lat01 = lons[i0]*toRad + offset0, lats[j1]*toRad
 
                 k0 = 4*icell
                 k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 
