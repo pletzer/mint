@@ -42,7 +42,7 @@ class LatLonReader(ReaderBase):
                     lats_units = var.units
 
         ncells_lat, ncells_lon = len(lats_0), len(lons_0)
-        ncells = ncells_lat * ncells_lon
+        ncells = ncells_lat * (ncells_lon + padding)
 
         # covnersion to radians
         toRad = 1.0
@@ -54,7 +54,7 @@ class LatLonReader(ReaderBase):
         # construct the unstructured grid as a collection of 
         # 2D cells
 
-        pointArray = numpy.zeros((4 * (ncells + padding), 3))
+        pointArray = numpy.zeros((4 * ncells, 3))
         self.vtk['pointArray'] = pointArray
 
         pointData = self.vtk['pointData']
