@@ -3,14 +3,14 @@ import vtk
 from line_line_intersector import LineLineIntersector
 
 
-class BrokenSegmentsIter:
+class PolysegmentIter:
 
     def __init__(self, grid, locator, brokenLine):
         """
         Constructor
         @param grid instance of vtkUnstructuredGrid
         @param locator vtkCellLocator instance attached to the above grid
-        @param brokenLine instance of BrokenLineIter
+        @param brokenLine instance of PolylineIter
         """
 
         # small tolerances 
@@ -320,7 +320,7 @@ def main():
     import argparse
     from math import pi
     from ugrid_reader import UgridReader
-    from broken_line_iter import BrokenLineIter
+    from polyline_iter import PolylineIter
 
     parser = argparse.ArgumentParser(description='Break line into segments')
     parser.add_argument('-i', dest='input', default='mesh_C4.nc', help='Specify input file')
@@ -329,7 +329,7 @@ def main():
 
     ur = UgridReader(filename=args.input)
     points = eval(args.points)
-    bl = BrokenLineIter(points)
+    bl = PolylineIter(points)
     
     count = 0
     for b in bl:
@@ -338,7 +338,7 @@ def main():
         print('line {} t = {} -> {}'.format(count, t0, t1))
         count += 1
 
-    bs = BrokenSegmentsIter(ur.getUnstructuredGrid(), 
+    bs = PolysegmentIter(ur.getUnstructuredGrid(), 
                             ur.getUnstructuredGridCellLocator(), bl)
     count = 0
     for s in bs:

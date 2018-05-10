@@ -1,14 +1,14 @@
 from math import pi
 from ugrid_reader import UgridReader
 from latlon_reader import LatLonReader
-from broken_line_iter import BrokenLineIter
-from broken_segments_iter import BrokenSegmentsIter
+from polyline_iter import PolylineIter
+from polysegment_iter import PolysegmentIter
 
 def test(filename, points):
 
     ur = UgridReader(filename=filename)
-    bl = BrokenLineIter(points)
-    bs = BrokenSegmentsIter(ur.getUnstructuredGrid(), 
+    bl = PolylineIter(points)
+    bs = PolysegmentIter(ur.getUnstructuredGrid(), 
                             ur.getUnstructuredGridCellLocator(), 
                             bl)
     count = 0
@@ -29,8 +29,8 @@ def test(filename, points):
 def testUm(filename, points, padding):
 
     ur = LatLonReader(filename=filename, padding=padding)
-    bl = BrokenLineIter(points)
-    bs = BrokenSegmentsIter(ur.getUnstructuredGrid(), 
+    bl = PolylineIter(points)
+    bs = PolysegmentIter(ur.getUnstructuredGrid(), 
                             ur.getUnstructuredGridCellLocator(), 
                             bl)
     count = 0

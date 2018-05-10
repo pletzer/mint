@@ -1,6 +1,6 @@
 import numpy
 
-class BrokenLineIter:
+class PolylineIter:
 
     def __init__(self, points):
         """
@@ -79,7 +79,7 @@ class BrokenLineIter:
 ###############################################################################
 def test():
     pts = numpy.array([[0., -1.], [0.5, 0.3], [-2., 1.1]])
-    bl = BrokenLineIter(points=pts)
+    bl = PolylineIter(points=pts)
     bl.reset()
     for s in bl:
         print s.getIndex(), s.getBegParamCoord(), s.getEndParamCoord()

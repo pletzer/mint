@@ -1,6 +1,6 @@
 from regrid_base import RegridBase, edgeIntegralFromStreamFunction
-from broken_line_iter import BrokenLineIter
-from broken_segments_iter import BrokenSegmentsIter
+from polyline_iter import PolylineIter
+from polysegment_iter import PolysegmentIter
 import numpy
 import vtk
 
@@ -44,10 +44,10 @@ class RegridEdges(RegridBase):
                 dstEdgePt1 = self.dstGrid.GetPoint(id1)
 
                 # represent the edge as a broken line
-                bli = BrokenLineIter([dstEdgePt0, dstEdgePt1])
+                bli = PolylineIter([dstEdgePt0, dstEdgePt1])
 
                 # compute the intersections of the dst edge with the src grid
-                bsi = BrokenSegmentsIter(self.srcGrid, self.srcLoc, bli)
+                bsi = PolysegmentIter(self.srcGrid, self.srcLoc, bli)
 
                 # compute the contributions to this edge
                 for seg in bsi:
