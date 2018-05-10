@@ -2,6 +2,23 @@ from ugrid_reader import UgridReader
 import numpy
 import vtk
 
+    
+def edgeIntegralFromStreamFunction(streamFuncData):
+    """
+    Compute edge integrals from a stream function given as a vertex field
+    defined cell by cell 
+    @param streamFuncData arrays of size (numCells, 4)
+    @return edge data
+    """
+    # four edges per cell
+    edgeVel = numpy.zeros(streamFuncData.shape, numpy.float64)
+    for i0 in range(4):
+        # edge direction is counter-clockwise
+        i1 = (i0 + 1) % 4
+        edgeVel[:, i0] = streamFuncData[:, i1] - streamFuncData[:, i0]
+    return edgeVel
+
+
 
 class RegridBase(object):
     """
@@ -106,7 +123,6 @@ class RegridBase(object):
         writer.SetFileName(filename)
         writer.SetInputData(self.dstGrid)
         writer.Update()
-
 
 
 

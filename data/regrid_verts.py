@@ -1,4 +1,4 @@
-from regrid_base import RegridBase
+from regrid_base import RegridBase, edgeIntegralFromStreamFunction
 import numpy 
 import vtk
 
@@ -50,15 +50,6 @@ class RegridVerts(RegridBase):
 
 
 ###############################################################################
-def edgeIntegralFromStreamFunction(streamFuncData):
-    edgeVel = numpy.zeros(streamFuncData.shape, numpy.float64)
-    for i0 in range(4):
-        i1 = (i0 + 1) % 4
-        pm = 1 - 2*(i0 // 2) # + for i0 = 0, 1, - for i0 = 2, 3
-        edgeVel[:, i0] = pm * (streamFuncData[:, i1] - streamFuncData[:, i0])
-    return edgeVel
-
-
 def main():
     from math import pi, sin, cos, log, exp
     import argparse
