@@ -121,11 +121,14 @@ def main():
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
     parser.add_argument('-i', dest='input', default='ll.nc', help='Specify UM input netCDF file')
+    parser.add_argument('-p', dest='padding', type=int, default=0, 
+                              help='Specify by how much the grid should be padded on the high lon side')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
+
    
     args = parser.parse_args()
 
-    lr = LatLonReader(filename=args.input)
+    lr = LatLonReader(filename=args.input, padding=args.padding)
 
     if args.vtk_file:
         lr.saveToVtkFile(args.vtk_file)
