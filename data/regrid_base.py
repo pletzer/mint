@@ -1,4 +1,5 @@
 from ugrid_reader import UgridReader
+from latlon_reader import LatLonReader
 import numpy
 import vtk
 
@@ -22,8 +23,8 @@ def edgeIntegralFromStreamFunction(streamFuncData):
 
 class RegridBase(object):
     """
-	Base class for cell by cell regridding
-	"""
+    Base class for cell by cell regridding
+    """
 
     ZERO4x4 = numpy.zeros((4,4), numpy.float64)
 
@@ -44,23 +45,31 @@ class RegridBase(object):
         self.dstLonLatPts = None
 
 
-    def setSrcGridFile(self, filename):
+    def setSrcGridFile(self, filename, format='ugrid'):
         """
         Set source grid
         @param file name containing UGRID description of the grid
         """ 
-        ur = UgridReader(filename)
+        ur = None
+        if format == 'ugrid':
+            ur = UgridReader(filename)
+        else:
+            ur = LatLonReader(filename)
         self.srcGrid = ur.getUnstructuredGrid()
         self.srcLoc = ur.getUnstructuredGridCellLocator()
         self.srcLonLatPts = ur.getLonLatPoints()
 
 
-    def setDstGridFile(self, filename):
+    def setDstGridFile(self, filename, format='ugrid'):
         """
         Set destination grid
         @param file name containing UGRID description of the grid
         """    
-        ur = UgridReader(filename)
+        ur = None
+        if format == 'ugrid':
+            ur = UgridReader(filename)
+        else:
+            ur = LatLonReader(filename)
         self.dstGrid = ur.getUnstructuredGrid()
         self.dstLonLatPts = ur.getLonLatPoints()
 

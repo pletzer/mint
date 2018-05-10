@@ -94,20 +94,23 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Regriod edge field')
-    parser.add_argument('-s', dest='src', default='mesh_C4.nc', help='Specify UGRID source grid file')
-    parser.add_argument('-d', dest='dst', default='mesh_C4.nc', help='Specify UGRID destination grid file')
-    parser.add_argument('-S', dest='srcStreamFunc', default='x', 
+    parser.add_argument('-s', dest='src', default='um:um.nc', help='Specify source grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
+    parser.add_argument('-d', dest='dst', default='ugrid:mesh_C4.nc', help='Specify destination grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
+    parser.add_argument('-f', dest='streamFunc', default='x', 
                         help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
     args = parser.parse_args()
 
+    srcFormat, srcFilename = args.src.split(':')
+    dstFormat, dstFilename = args.dst.split(':')
+
     rgrd = RegridEdges()
-    rgrd.setSrcGridFile(args.src)
-    rgrd.setDstGridFile(args.dst)
+    rgrd.setSrcGridFile(srcFilename, format=srcFormat)
+    rgrd.setDstGridFile(dstFilename, format=dstFormat)
     rgrd.computeWeights()
 
     # compute stream function on cell vertices
     x, y = rgrd.getSrcLonLat()
-    srcPsi = eval(args.srcStreamFunc)
+    srcPsi = eval(args.streamFunc)
 
     # compute edge integrals
     srcEdgeVel = edgeIntegralFromStreamFunction(srcPsi)
@@ -117,7 +120,7 @@ def main():
 
     # compute the exact edge field on the destination grid
     x, y = rgrd.getDstLonLat()
-    dstPsi = eval(args.srcStreamFunc)
+    dstPsi = eval(args.streamFunc)
     dstEdgeVelExact = edgeIntegralFromStreamFunction(dstPsi)
 
     # compute the error
