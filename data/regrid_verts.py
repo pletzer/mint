@@ -57,6 +57,8 @@ def main():
 
     parser = argparse.ArgumentParser(description='Regriod edge field')
     parser.add_argument('-s', dest='src', default='um:um.nc', help='Specify source grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
+    parser.add_argument('-p', dest='padding', type=int, default=0, 
+                              help='Specify by how much the source grid should be padded on the high lon side (only for UM grids)')
     parser.add_argument('-d', dest='dst', default='ugrid:mesh_C4.nc', help='Specify destination grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
     parser.add_argument('-f', dest='streamFunc', default='x', 
                         help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
@@ -66,7 +68,7 @@ def main():
     dstFormat, dstFilename = args.dst.split(':')
 
     rgrd = RegridVerts()
-    rgrd.setSrcGridFile(srcFilename, format=srcFormat)
+    rgrd.setSrcGridFile(srcFilename, format=srcFormat, padding=args.padding)
     rgrd.setDstGridFile(dstFilename, format=dstFormat)
     rgrd.computeWeights()
 
