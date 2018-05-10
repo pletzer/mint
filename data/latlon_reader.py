@@ -49,7 +49,7 @@ class LatLonReader(ReaderBase):
         periodicity_length = 360.0
         if lons_units.find('degree') >= 0:
             toRad = numpy.pi / 180.0
-            periodicity_length = numpy.pi
+            periodicity_length = 2.*numpy.pi
 
         # construct the unstructured grid as a collection of 
         # 2D cells
