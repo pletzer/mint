@@ -124,11 +124,17 @@ def main():
     parser.add_argument('-p', dest='padding', type=int, default=0, 
                               help='Specify by how much the grid should be padded on the high lon side')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
+    parser.add_argument('-f', dest='streamFunc', default='x', 
+                        help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
 
    
     args = parser.parse_args()
 
     lr = LatLonReader(filename=args.input, padding=args.padding)
+    x, y = lr.getLonLat()
+    streamData = eval(args.streamFunc)
+    edgeVel = lr.getEdgeFieldFromStreamData(streamData)
+    lr.setEdgeField('edge_integrated_velocity', edgeVel)
 
     if args.vtk_file:
         lr.saveToVtkFile(args.vtk_file)

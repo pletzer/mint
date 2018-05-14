@@ -47,24 +47,6 @@ class RegridBase(object):
         self.dstLonLatPts = reader.getLonLatPoints()
 
 
-    def getNumSrcCells(self):
-        return self.srcGrid.GetNumberOfCells()
-
-
-    def getNumDstCells(self):
-        return self.dstGrid.GetNumberOfCells()
-
-
-    def getSrcLonLat(self):
-        xy = self.srcLonLatPts.reshape((self.getNumSrcCells(), 4, 2))
-        return xy[..., 0], xy[..., 1]
-
-
-    def getDstLonLat(self):
-        xy = self.dstLonLatPts.reshape((self.getNumDstCells(), 4, 2))
-        return xy[..., 0], xy[..., 1]
-
-
     def computeWeights(self):
         """
         Compute the interpolation weights
@@ -93,7 +75,7 @@ class RegridBase(object):
         @param dstData array of size numDstCells * 4 
         @param filename file name
         """
-        numDstCells = self.getNumDstCells()
+        numDstCells = self.dstGrid.GetNumberOfCells()
         self.dstLoopData = dstData.sum(axis=1)
         self.dstData = vtk.vtkDoubleArray()
         self.dstData.SetNumberOfComponents(1)

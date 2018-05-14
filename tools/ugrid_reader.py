@@ -106,15 +106,25 @@ def main():
     from math import pi
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
-    parser.add_argument('-i', dest='input', default='mesh_C4.nc', help='Specify input file')
-    parser.add_argument('-V', dest='vtk_file', default='cs.vtk', help='Save grid in VTK file')
+    parser.add_argument('-i', dest='input', default='ll.nc', help='Specify UM input netCDF file')
+    parser.add_argument('-p', dest='padding', type=int, default=0, 
+                              help='Specify by how much the grid should be padded on the high lon side')
+    parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
+    parser.add_argument('-f', dest='streamFunc', default='x', 
+                        help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
+
    
     args = parser.parse_args()
 
     ur = UgridReader(filename=args.input)
+    x, y = ur.getLonLat()
+    streamData = eval(args.streamFunc)
+    edgeVel = ur.getEdgeFieldFromStreamData(streamData)
+    ur.setEdgeField('edge_integrated_velocity', edgeVel)
 
     if args.vtk_file:
         ur.saveToVtkFile(args.vtk_file)
+
 
 if __name__ == '__main__':
     main()

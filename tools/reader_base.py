@@ -69,19 +69,50 @@ class ReaderBase(object):
         """    	
     	return self.vtk['locator']
 
+    def getNumberOfCells(self):
+        """
+        Get the number of cells 
+        @return number
+        """
+        return self.vtk['grid'].GetNumberOfCells()
 
-    def edgeFieldFromStreamFunction(self, streamFuncData):
+
+    def getLonLat(self):
         """
-        Set the edge integrated values from nodal stream function
+        Get the longitudes and latitudes as separate arrays
+        @return lon and lat arrays of size (numCells, 4)
+        """
+        xy = self.vtk['pointArray'].reshape((self.getNumberOfCells(), 4, 3))
+        return xy[..., 0], xy[..., 1]
+
+
+    def setEdgeField(self, name, data):
+        """
+        Set edge field
+        @param name name of the field
+        @param data array of size (numCells, 4)
+        """
+        self.edgeArray = data
+        self.edgeData = vtk.vtkDoubleArray()
+        self.edgeData.SetName(name)
+        self.edgeData.SetNumberOfComponents(4)
+        numCells = self.getNumberOfCells()
+        self.edgeData.SetNumberOfTuples(numCells)
+        self.edgeData.SetVoidArray(self.edgeArray, numCells*4, 1)
+        self.vtk['grid'].GetCellData().AddArray(self.edgeData)
+
+
+    def getEdgeFieldFromStreamData(self, streamFuncData):
+        """
+        Set the edge integrated values from nodal stream function data
         @param streamFuncData stream function data
-        @return edge field defined for each grid cell
         """
-        numCells = self.vtk['grid'].GetNumberOfCells()
-        edgeVel = numpy.zeros((numCells, 4), numpy.float64)
+        numCells = self.getNumberOfCells()
+        edgeArray = numpy.zeros((numCells, 4), numpy.float64)
         for i0 in range(4):
             # edge direction is counter-clockwise
             i1 = (i0 + 1) % 4
-            edgeVel[:, i0] = streamFuncData[:, i1] - streamFuncData[:, i0]
-        return edgeVel
+            edgeArray[:, i0] = streamFuncData[:, i1] - streamFuncData[:, i0]
+        return edgeArray
 
 
