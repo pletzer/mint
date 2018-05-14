@@ -69,3 +69,19 @@ class ReaderBase(object):
         """    	
     	return self.vtk['locator']
 
+
+    def edgeFieldFromStreamFunction(self, streamFuncData):
+        """
+        Set the edge integrated values from nodal stream function
+        @param streamFuncData stream function data
+        @return edge field defined for each grid cell
+        """
+        numCells = self.vtk['grid'].GetNumberOfCells()
+        edgeVel = numpy.zeros((numCells, 4), numpy.float64)
+        for i0 in range(4):
+            # edge direction is counter-clockwise
+            i1 = (i0 + 1) % 4
+            edgeVel[:, i0] = streamFuncData[:, i1] - streamFuncData[:, i0]
+        return edgeVel
+
+

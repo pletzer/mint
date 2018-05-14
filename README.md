@@ -33,7 +33,7 @@ In directory `tools/`:
  ```
  python latlon_reader.py -i um100x60.nc -s "x*cos(y)" -p 20 -V um100x60.vtk
  ```
- Note: `x*cos(y)` sets the stream function with x, y the longitude, repsectively, latitudes in radians. Argument -p 20 padds the grid on the high longitude 
+ Note: `x*cos(y)` sets the stream function with x, y the longitude, respectively, latitudes in radians. Argument -p 20 padds the grid on the high longitude 
  side by adding a row of 20 cells.
 
 

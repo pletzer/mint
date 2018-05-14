@@ -3,23 +3,6 @@ from latlon_reader import LatLonReader
 import numpy
 import vtk
 
-    
-def edgeIntegralFromStreamFunction(streamFuncData):
-    """
-    Compute edge integrals from a stream function given as a vertex field
-    defined cell by cell 
-    @param streamFuncData arrays of size (numCells, 4)
-    @return edge data
-    """
-    # four edges per cell
-    edgeVel = numpy.zeros(streamFuncData.shape, numpy.float64)
-    for i0 in range(4):
-        # edge direction is counter-clockwise
-        i1 = (i0 + 1) % 4
-        edgeVel[:, i0] = streamFuncData[:, i1] - streamFuncData[:, i0]
-    return edgeVel
-
-
 
 class RegridBase(object):
     """
@@ -45,36 +28,23 @@ class RegridBase(object):
         self.dstLonLatPts = None
 
 
-    def setSrcGridFile(self, filename, format='ugrid', padding=0):
+    def setSrcGrid(self, reader):
         """
         Set source grid
-        @param file name containing UGRID description of the grid
-        @param format either 'ugrid' or 'um'
-        @param padding number of additional lon cells to add to the high end
-                       (only for grid in UM format)
+        @param reader instance of ReraderBase
         """ 
-        ur = None
-        if format == 'ugrid':
-            ur = UgridReader(filename)
-        else:
-            ur = LatLonReader(filename, padding=padding)
-        self.srcGrid = ur.getUnstructuredGrid()
-        self.srcLoc = ur.getUnstructuredGridCellLocator()
-        self.srcLonLatPts = ur.getLonLatPoints()
+        self.srcGrid = reader.getUnstructuredGrid()
+        self.srcLoc = reader.getUnstructuredGridCellLocator()
+        self.srcLonLatPts = reader.getLonLatPoints()
 
 
-    def setDstGridFile(self, filename, format='ugrid'):
+    def setDstGrid(self, reader):
         """
         Set destination grid
-        @param file name containing UGRID description of the grid
+        @param reader instance of ReaderBase
         """    
-        ur = None
-        if format == 'ugrid':
-            ur = UgridReader(filename)
-        else:
-            ur = LatLonReader(filename)
-        self.dstGrid = ur.getUnstructuredGrid()
-        self.dstLonLatPts = ur.getLonLatPoints()
+        self.dstGrid = reader.getUnstructuredGrid()
+        self.dstLonLatPts = reader.getLonLatPoints()
 
 
     def getNumSrcCells(self):

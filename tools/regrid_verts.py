@@ -1,4 +1,6 @@
-from regrid_base import RegridBase, edgeIntegralFromStreamFunction
+from ugrid_reader import UgridReader
+from latlon_reader import LatLonReader
+from regrid_base import RegridBase
 import numpy 
 import vtk
 
@@ -67,9 +69,23 @@ def main():
     srcFormat, srcFilename = args.src.split(':')
     dstFormat, dstFilename = args.dst.split(':')
 
+    srcReader = None
+    if srcFormat.lower() == 'ugrid':
+        srcReader = UgridReader(srcFilename)
+    else:
+        # UM lat-lon
+        srcReader = LatLonReader(srcFilename, padding=args.padding)
+
+    dstReader = None
+    if dstFormat.lower() == 'ugrid':
+        dstReader = UgridReader(dstFilename)
+    else:
+        # UM lat-lon
+        dstReader = LatLonReader(dstFilename)
+
     rgrd = RegridVerts()
-    rgrd.setSrcGridFile(srcFilename, format=srcFormat, padding=args.padding)
-    rgrd.setDstGridFile(dstFilename, format=dstFormat)
+    rgrd.setSrcGrid(srcReader)
+    rgrd.setDstGrid(dstReader)
     rgrd.computeWeights()
 
     # compute stream function on cell vertices
@@ -77,7 +93,7 @@ def main():
     srcPsi = eval(args.streamFunc)
 
     # compute edge integrals
-    srcEdgeVel = edgeIntegralFromStreamFunction(srcPsi)
+    srcEdgeVel = srcReader.edgeFieldFromStreamFunction(srcPsi)
 
     # apply the weights 
     dstEdgeVel = rgrd.applyWeights(srcEdgeVel)
@@ -85,7 +101,7 @@ def main():
     # compute the exact edge field on the destination grid
     x, y = rgrd.getDstLonLat()
     dstPsi = eval(args.streamFunc)
-    dstEdgeVelExact = edgeIntegralFromStreamFunction(dstPsi)
+    dstEdgeVelExact = dstReader.edgeFieldFromStreamFunction(dstPsi)
 
     # compute the error
     diff = numpy.fabs(dstEdgeVelExact - dstEdgeVel)
@@ -96,7 +112,6 @@ def main():
     print('Sum of interpolation errors: {}'.format(error))
 
     rgrd.saveDstLoopData(dstEdgeVel, 'dstVertsLoops.vtk')
-
 
 
 if __name__ == '__main__':
