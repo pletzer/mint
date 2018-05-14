@@ -36,17 +36,23 @@ In directory `tools/`:
 
  3. Read the source grid, generate edge data and save the result as a VTK file
  ```
- python latlon_reader.py -i um100x60.nc -stream "x*cos(y)" -p 20 -V um100x60.vtk
+ python latlon_reader.py -i um100x60.nc -stream "x*cos(y)" -p 30 -V um100x60.vtk
  ```
- Note: `x*cos(y)` sets the stream function where x, y are the longitude, respectively, latitudes in radians. Argument -p 20 padds the grid on the high longitude 
- side by adding 20 cells. This is required to ensure that all destination grid cells are fully contained within source grid cells -
- padding should be applied when the destination grid has cells that cross the dateline. 
+ Note: `x*cos(y)` sets the stream function where x, y are the longitude, respectively, latitudes in radians. The vector field integral on edges is the difference of stream function values between the edge vertices. Argument -p 20 padds the grid on the high longitude 
+ side by adding 20 cells. Padding is required to ensure that all destination grid cells are fully contained within source grid cells and
+  should be applied whenever the destination grid has cells that cross the dateline. 
 
 
  4. Regrid the above field from the UM source grid to a cubed-sphere and save the result in a VTK file
  ```
  python regrid_edges.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs.vtk -o regrid.vtk
  ```
+
+ The above should print very small values, e.g.,
+ ```
+ Min/avg/max cell loop integrals: 7.07767178199e-16/2.29485108361e-12/1.50344181549e-11
+ ```
+indicating that the loop integrals are nearly zero for each cell, thus satisfying Stokes's theorem.
 
 
 
