@@ -81,14 +81,6 @@ class RegridEdges(RegridBase):
                     print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} points=[{}, {}]'.format(\
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
 
-        # DEBUG
-        #print '*** self.weights[71, 71L] = ', self.weights.get((71, 71L), [])
-        #print '*** self.weights[71, 34L] = ', self.weights.get((71, 34L), [])
-        #print '*** self.weights[71, 67L] = ', self.weights.get((71, 67L), [])
-        #print '*** self.weights[71, 70L] = ', self.weights.get((71, 70L), [])
-        #print '*** self.weights[71, 75L] = ', self.weights.get((71, 75L), [])
-
-
 
 ###############################################################################
 def main():
@@ -99,6 +91,7 @@ def main():
     parser.add_argument('-s', dest='src', default='src.vtk', help='Specify source file in VTK unstructured grid format')
     parser.add_argument('-v', dest='varname', default='edge_integrated_velocity', help='Specify edge staggered field variable name in source VTK file')
     parser.add_argument('-d', dest='dst', default='dst.vtk', help='Specify destination file in VTK unstructured grid format')
+    parser.add_argument('-o', dest='output', default='', help='Specify output VTK file where regridded edge data is saved')
     args = parser.parse_args()
 
     rgrd = RegridEdges()
@@ -122,7 +115,8 @@ def main():
     avgAbsLoop = absCellIntegrals.sum() / float(absCellIntegrals.shape[0])
 
     print('Min/avg/max cell loop integrals: {}/{}/{}'.format(minAbsLoop, avgAbsLoop, maxAbsLoop))
-    rgrd.saveDstLoopData(dstEdgeVel, 'dstEdgesLoops.vtk')
+    if args.output:
+        rgrd.saveDstEdgeData(args.varname, dstEdgeVel, args.output)
 
 if __name__ == '__main__':
     main()

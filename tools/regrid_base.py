@@ -103,19 +103,30 @@ class RegridBase(object):
         return self.__getNumpyArrayFromVtkDoubleArray(numCells, 1, cellData)
 
 
-    def saveDstLoopData(self, dstData, filename):
+    def saveDstEdgeData(self, varname, dstData, filename):
         """
-        Save destination loop integrals cell by cell
+        Save destination edge data cell by cell on the destination grid
+        @param variable name 
         @param dstData array of size numDstCells * 4 
         @param filename file name
         """
         numDstCells = self.dstGrid.GetNumberOfCells()
-        self.dstLoopData = dstData.sum(axis=1)
-        self.dstData = vtk.vtkDoubleArray()
-        self.dstData.SetNumberOfComponents(1)
-        self.dstData.SetNumberOfTuples(numDstCells)
-        self.dstData.SetVoidArray(self.dstLoopData, numDstCells, 1)
-        self.dstGrid.GetCellData().SetScalars(self.dstData)
+        self.dstEdgeArray = dstData.copy()
+        self.dstLoopArray = dstData.sum(axis=1)
+
+        self.dstEdgeData = vtk.vtkDoubleArray()
+        self.dstEdgeData.SetNumberOfComponents(4)
+        self.dstEdgeData.SetNumberOfTuples(numDstCells)
+        self.dstEdgeData.SetVoidArray(self.dstEdgeArray, numDstCells * 4, 1)
+        self.dstEdgeData.SetName(varname)
+        self.dstGrid.GetCellData().AddArray(self.dstEdgeData)
+
+        self.dstLoopData = vtk.vtkDoubleArray()
+        self.dstLoopData.SetNumberOfComponents(1)
+        self.dstLoopData.SetNumberOfTuples(numDstCells)
+        self.dstLoopData.SetVoidArray(self.dstLoopArray, numDstCells, 1)
+        self.dstLoopData.SetName('loop_integrals_of_' + varname)
+        self.dstGrid.GetCellData().AddArray(self.dstLoopData)
 
         writer= vtk.vtkUnstructuredGridWriter()
         writer.SetFileName(filename)
