@@ -82,8 +82,9 @@ class RegridBase(object):
         @param srcData line integrals on the source grid edges, dimensioned (numSrcCells, 4)
         @return line integrals on the destination grid, array dimensioned (numDstCells, 4)
         """
+        numDstCells = self.dstGrid.GetNumberOfCells()
         # allocate space
-        res = numpy.zeros((self.getNumDstCells(), 4), numpy.float64)
+        res = numpy.zeros((numDstCells, 4), numpy.float64)
         # itererate over the desCellId, srcCellId pairs
         for k in self.weights:
             dstCellId, srcCellId = k
@@ -99,11 +100,7 @@ class RegridBase(object):
         """
         cellData = self.srcGrid.GetCellData().GetAbstractArray(name)
         numCells = self.srcGrid.GetNumberOfCells()
-        addr = int(data.GetVoidPointer(0).split('_')[1], 16)
-        ArrayType = ctypes.c_double * numCells * 4
-        arr = numpy.frombuffer(ArrayType.from_address(add))
-        #arr = numpy.ndarray((numCells, 4), dtype=numpy.float64, buffer=ctypes.c_void_p.from_address(address))
-        return arr.reshape((numCells, 4))
+        return self.__getNumpyArrayFromVtkDoubleArray(numCells, 1, cellData)
 
 
     def saveDstLoopData(self, dstData, filename):

@@ -97,7 +97,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Regriod edge field')
     parser.add_argument('-s', dest='src', default='src.vtk', help='Specify source file in VTK unstructured grid format')
-    parser.add_argument('-v', dest='var', default='edge_integrated_velocity', help='Specify edge staggered field variable name in source VTK file')
+    parser.add_argument('-v', dest='varname', default='edge_integrated_velocity', help='Specify edge staggered field variable name in source VTK file')
     parser.add_argument('-d', dest='dst', default='dst.vtk', help='Specify destination file in VTK unstructured grid format')
     args = parser.parse_args()
 
@@ -106,29 +106,22 @@ def main():
     rgrd.setDstFile(args.dst)
     rgrd.computeWeights()
 
-    # compute stream function on cell vertices
-    x, y = rgrd.getSrcLonLat()
-    srcPsi = eval(args.streamFunc)
-
     # compute edge integrals
-    srcEdgeVel = srcReader.edgeFieldFromStreamFunction(srcPsi)
+    srcEdgeVel = rgrd.getSrcEdgeData(args.varname)
 
-    # apply the weights 
+    # regrid/apply the weights 
     dstEdgeVel = rgrd.applyWeights(srcEdgeVel)
 
-    # compute the exact edge field on the destination grid
-    x, y = rgrd.getDstLonLat()
-    dstPsi = eval(args.streamFunc)
-    dstEdgeVelExact = dstReader.edgeFieldFromStreamFunction(dstPsi)
+    # loop integrals for each cell
+    cellLoops = dstEdgeVel.sum(axis=1)
 
-    # compute the error
-    diff = numpy.fabs(dstEdgeVelExact - dstEdgeVel)
-    maxError = diff.max()
-    minError = diff.min()
-    print('Min/max error              : {}/{}'.format(minError, maxError))
-    error = numpy.fabs(diff).sum()
-    print('Sum of interpolation errors: {}'.format(error))
+    # statistics
+    absCellIntegrals = numpy.abs(cellLoops)
+    minAbsLoop = absCellIntegrals.min()
+    maxAbsLoop = absCellIntegrals.max()
+    avgAbsLoop = absCellIntegrals.sum() / float(absCellIntegrals.shape[0])
 
+    print('Min/avg/max cell loop integrals: {}/{}/{}'.format(minAbsLoop, avgAbsLoop, maxAbsLoop))
     rgrd.saveDstLoopData(dstEdgeVel, 'dstEdgesLoops.vtk')
 
 if __name__ == '__main__':
