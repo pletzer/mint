@@ -57,61 +57,36 @@ def main():
     from math import pi, sin, cos, log, exp
     import argparse
 
-    parser = argparse.ArgumentParser(description='Regriod edge field')
-    parser.add_argument('-s', dest='src', default='um:um.nc', help='Specify source grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
-    parser.add_argument('-p', dest='padding', type=int, default=0, 
-                              help='Specify by how much the source grid should be padded on the high lon side (only for UM grids)')
-    parser.add_argument('-d', dest='dst', default='ugrid:mesh_C4.nc', help='Specify destination grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
-    parser.add_argument('-f', dest='streamFunc', default='x', 
-                        help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
+    parser = argparse.ArgumentParser(description='Regriod edge field as if it were a nodal field')
+    parser.add_argument('-s', dest='src', default='src.vtk', help='Specify source file in VTK unstructured grid format')
+    parser.add_argument('-v', dest='varname', default='edge_integrated_velocity', help='Specify edge staggered field variable name in source VTK file')
+    parser.add_argument('-d', dest='dst', default='dst.vtk', help='Specify destination file in VTK unstructured grid format')
+    parser.add_argument('-o', dest='output', default='', help='Specify output VTK file where regridded edge data is saved')
     args = parser.parse_args()
 
-    srcFormat, srcFilename = args.src.split(':')
-    dstFormat, dstFilename = args.dst.split(':')
-
-    srcReader = None
-    if srcFormat.lower() == 'ugrid':
-        srcReader = UgridReader(srcFilename)
-    else:
-        # UM lat-lon
-        srcReader = LatLonReader(srcFilename, padding=args.padding)
-
-    dstReader = None
-    if dstFormat.lower() == 'ugrid':
-        dstReader = UgridReader(dstFilename)
-    else:
-        # UM lat-lon
-        dstReader = LatLonReader(dstFilename)
-
     rgrd = RegridVerts()
-    rgrd.setSrcGrid(srcReader)
-    rgrd.setDstGrid(dstReader)
+    rgrd.setSrcFile(args.src)
+    rgrd.setDstFile(args.dst)
     rgrd.computeWeights()
 
-    # compute stream function on cell vertices
-    x, y = rgrd.getSrcLonLat()
-    srcPsi = eval(args.streamFunc)
-
     # compute edge integrals
-    srcEdgeVel = srcReader.edgeFieldFromStreamFunction(srcPsi)
+    srcEdgeVel = rgrd.getSrcEdgeData(args.varname)
 
-    # apply the weights 
+    # regrid/apply the weights 
     dstEdgeVel = rgrd.applyWeights(srcEdgeVel)
 
-    # compute the exact edge field on the destination grid
-    x, y = rgrd.getDstLonLat()
-    dstPsi = eval(args.streamFunc)
-    dstEdgeVelExact = dstReader.edgeFieldFromStreamFunction(dstPsi)
+    # loop integrals for each cell
+    cellLoops = dstEdgeVel.sum(axis=1)
 
-    # compute the error
-    diff = numpy.fabs(dstEdgeVelExact - dstEdgeVel)
-    maxError = diff.max()
-    minError = diff.min()
-    print('Min/max error              : {}/{}'.format(minError, maxError))
-    error = numpy.fabs(diff).sum()
-    print('Sum of interpolation errors: {}'.format(error))
+    # statistics
+    absCellIntegrals = numpy.abs(cellLoops)
+    minAbsLoop = absCellIntegrals.min()
+    maxAbsLoop = absCellIntegrals.max()
+    avgAbsLoop = absCellIntegrals.sum() / float(absCellIntegrals.shape[0])
 
-    rgrd.saveDstLoopData(dstEdgeVel, 'dstVertsLoops.vtk')
+    print('Min/avg/max cell loop integrals: {}/{}/{}'.format(minAbsLoop, avgAbsLoop, maxAbsLoop))
+    if args.output:
+        rgrd.saveDstEdgeData(args.varname, dstEdgeVel, args.output)
 
 
 if __name__ == '__main__':
