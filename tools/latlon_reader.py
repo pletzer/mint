@@ -107,37 +107,37 @@ class LatLonReader(ReaderBase):
 
         grid.SetPoints(points)
 
-        # build cell locator
-        loc = self.vtk['locator']
-        loc.SetDataSet(grid)
-        loc.BuildLocator()
-
 
 ###############################################################################
 
 def main():
     import argparse
-    from math import pi
+    from numpy import pi, cos, sin, exp
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
     parser.add_argument('-i', dest='input', default='ll.nc', help='Specify UM input netCDF file')
     parser.add_argument('-p', dest='padding', type=int, default=0, 
                               help='Specify by how much the grid should be padded on the high lon side')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
-    parser.add_argument('-f', dest='streamFunc', default='x', 
+    parser.add_argument('-stream', dest='streamFunc', default='x', 
                         help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
 
    
     args = parser.parse_args()
 
-    lr = LatLonReader(filename=args.input, padding=args.padding)
-    x, y = lr.getLonLat()
-    streamData = eval(args.streamFunc)
-    edgeVel = lr.getEdgeFieldFromStreamData(streamData)
-    lr.setEdgeField('edge_integrated_velocity', edgeVel)
+    reader = LatLonReader(filename=args.input, padding=args.padding)
+
+    if args.streamFunc:
+        # compute the edge velocity if user provides the stream function
+        x, y = reader.getLonLat()
+        streamData = eval(args.streamFunc)
+        edgeVel = reader.getEdgeFieldFromStreamData(streamData)
+        reader.setEdgeField('edge_integrated_velocity', edgeVel)
+        loopIntegrals = reader.getLoopIntegralsFromStreamData(streamData)
+        reader.setLoopIntegrals('cell_loop_integrals', loopIntegrals)
 
     if args.vtk_file:
-        lr.saveToVtkFile(args.vtk_file)
+        reader.saveToVtkFile(args.vtk_file)
 
 if __name__ == '__main__':
     main()

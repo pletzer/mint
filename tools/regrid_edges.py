@@ -96,34 +96,14 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Regriod edge field')
-    parser.add_argument('-s', dest='src', default='um:um.nc', help='Specify source grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
-    parser.add_argument('-p', dest='padding', type=int, default=0, 
-                              help='Specify by how much the source grid should be padded on the high lon side (only for UM grids)')
-    parser.add_argument('-d', dest='dst', default='ugrid:mesh_C4.nc', help='Specify destination grid file as FORMAT:FILENAME.nc where FORMAT is "ugrid" or "um"')
-    parser.add_argument('-f', dest='streamFunc', default='x', 
-                        help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
+    parser.add_argument('-s', dest='src', default='src.vtk', help='Specify source file in VTK unstructured grid format')
+    parser.add_argument('-v', dest='var', default='edge_integrated_velocity', help='Specify edge staggered field variable name in source VTK file')
+    parser.add_argument('-d', dest='dst', default='dst.vtk', help='Specify destination file in VTK unstructured grid format')
     args = parser.parse_args()
 
-    srcFormat, srcFilename = args.src.split(':')
-    dstFormat, dstFilename = args.dst.split(':')
-
-    srcReader = None
-    if srcFormat.lower() == 'ugrid':
-        srcReader = UgridReader(srcFilename)
-    else:
-        # UM lat-lon
-        srcReader = LatLonReader(srcFilename, padding=args.padding)
-
-    dstReader = None
-    if dstFormat.lower() == 'ugrid':
-        dstReader = UgridReader(dstFilename)
-    else:
-        # UM lat-lon
-        dstReader = LatLonReader(dstFilename)
-
     rgrd = RegridEdges()
-    rgrd.setSrcGrid(srcReader)
-    rgrd.setDstGrid(dstReader)
+    rgrd.setSrcFile(args.src)
+    rgrd.setDstFile(args.dst)
     rgrd.computeWeights()
 
     # compute stream function on cell vertices

@@ -24,22 +24,31 @@ You will need to have:
 
 In directory `tools/`:
 
- 1. Generate lat-lon grid following the Unified Model NetCDF conventions
+ 1. Generate lat-lon grid compliying to the Unified Model NetCDF conventions
  ```
  python latlon.py -nlon 100 -nlat 60 -o um100x60.nc
  ```
 
- 2. Generate edge data on the lat-lon grid and save the result as a VTK file
+ 2. Convert the destination grid to VTK file format
  ```
- python latlon_reader.py -i um100x60.nc -s "x*cos(y)" -p 20 -V um100x60.vtk
+ python ugrid_reader.py -i ../data/cubedsphere10.nc -V cs.vtk
  ```
- Note: `x*cos(y)` sets the stream function with x, y the longitude, respectively, latitudes in radians. Argument -p 20 padds the grid on the high longitude 
- side by adding a row of 20 cells.
+
+ 3. Read the source grid, generate edge data and save the result as a VTK file
+ ```
+ python latlon_reader.py -i um100x60.nc -stream "x*cos(y)" -p 20 -V um100x60.vtk
+ ```
+ Note: `x*cos(y)` sets the stream function where x, y are the longitude, respectively, latitudes in radians. Argument -p 20 padds the grid on the high longitude 
+ side by adding a row of 20 cells. This is required to ensure that all destination grid cells are fully contained within source grid cells
+ when the destination grid has cells that cross the dateline. 
 
 
- 3. Regrid the above field to a cubed-sphere and save the result in a VTK file
+ 4. Regrid the above field from the UM source grid to a cubed-sphere and save the result in a VTK file
  ```
- python regrid_edges.py -s um100x60.vtk -d ../cubedsphere40.nc -V cubedsphere40.vtk
+ python regrid_edges.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs.vtk
+ ```
+
+
 
 
 

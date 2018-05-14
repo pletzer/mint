@@ -17,7 +17,6 @@ class ReaderBase(object):
             'pointData': vtk.vtkDoubleArray(),
             'points': vtk.vtkPoints(),
             'grid': vtk.vtkUnstructuredGrid(),
-            'locator': vtk.vtkCellLocator(),
         }
 
 
@@ -38,8 +37,6 @@ class ReaderBase(object):
         self.reader.SetFileName(filename)
         self.reader.Update()
         self.vtk['grid'] = reader.GetOutput()
-        self.vtk['locator'].SetDataSet(self.vtk['grid'])
-        self.vtk['locator'].BuildLocator()
 
 
     def saveToVtkFile(self, filename):
@@ -61,13 +58,6 @@ class ReaderBase(object):
         """
         return self.vtk['grid']
 
-
-    def getUnstructuredGridCellLocator(self):
-        """
-        Get the unstructured grid cell locator
-        @return vtkCellLocator instance
-        """    	
-    	return self.vtk['locator']
 
     def getNumberOfCells(self):
         """
@@ -104,7 +94,7 @@ class ReaderBase(object):
 
     def getEdgeFieldFromStreamData(self, streamFuncData):
         """
-        Set the edge integrated values from nodal stream function data
+        Get the edge integrated values from the nodal stream function data
         @param streamFuncData stream function data
         """
         numCells = self.getNumberOfCells()
@@ -114,5 +104,33 @@ class ReaderBase(object):
             i1 = (i0 + 1) % 4
             edgeArray[:, i0] = streamFuncData[:, i1] - streamFuncData[:, i0]
         return edgeArray
+
+    def getLoopIntegralsFromStreamData(self, streamFuncData):
+        """
+        Get the cell loop integral from nodal the stream function data
+        @param streamFuncData stream function data
+        """
+        numCells = self.getNumberOfCells()
+        cellArray = numpy.zeros((numCells,), numpy.float64)
+        for i0 in range(4):
+            # edge direction is counter-clockwise
+            i1 = (i0 + 1) % 4
+            cellArray[:] += streamFuncData[:, i1] - streamFuncData[:, i0]
+        return cellArray
+
+    def setLoopIntegrals(self, name, data):
+        """
+        Set cell loop integral field
+        @param name name of the field
+        @param data array of size (numCells,)
+        """
+        self.cellArray = data
+        self.cellData = vtk.vtkDoubleArray()
+        self.cellData.SetName(name)
+        self.cellData.SetNumberOfComponents(1)
+        numCells = self.getNumberOfCells()
+        self.cellData.SetNumberOfTuples(numCells)
+        self.cellData.SetVoidArray(self.cellArray, numCells*1, 1)
+        self.vtk['grid'].GetCellData().AddArray(self.cellData)
 
 
