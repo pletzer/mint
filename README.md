@@ -64,8 +64,12 @@ does not produce zero loop integrals:
 python regrid_verts.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs.vtk -o regrid2.vtk
 Min/avg/max cell loop integrals: 0.000201184844794/0.0902900913509/0.477269661097
 ```
+
+Error of bilinear regridding:
 ![alt Error of bilinear regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_vertsError.png)
 
+Error of mimetic regridding:
+![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
 
 
 
