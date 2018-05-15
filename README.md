@@ -42,6 +42,10 @@ In directory `tools/`:
  side by adding 20 cells. Padding is required to ensure that all destination grid cells are fully contained within source grid cells and
   should be applied whenever the destination grid has cells that cross the dateline. 
 
+The figure below shows the source (red) and destination (green) grids. Notice how the lat-lon grid was extended to accommodate the 
+cubed-sphere cells near the poles.
+![alt Source (red) and destination (green) grids](https://raw.githubusercontent.com/pletzer/mint/master/figures/srcAndDstGrids.png)
+
 
  4. Regrid the above field from the UM source grid to a cubed-sphere and save the result in a VTK file
  ```
@@ -54,8 +58,13 @@ In directory `tools/`:
  ```
 indicating that the loop integrals are nearly zero for each cell, thus satisfying Stokes's theorem.
 
-
-![alt Source (red) and destination (green) grids](https://raw.githubusercontent.com/pletzer/mint/master/figures/srcAndDstGrids.png)
+It is important to note that treating the the edge field as a nodal field, i.e. applying bilinear regridding 
+does not produce zero loop integrals:
+```
+python regrid_verts.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs.vtk -o regrid2.vtk
+Min/avg/max cell loop integrals: 0.000201184844794/0.0902900913509/0.477269661097
+```
+![alt Error of bilinear regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_vertsError.png)
 
 
 
