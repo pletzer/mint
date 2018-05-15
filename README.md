@@ -55,6 +55,7 @@ In directory `tools/`:
 indicating that the loop integrals are nearly zero for each cell, thus satisfying Stokes's theorem.
 
 
+![alt Source (red) and destination (green) grids](https://raw.githubusercontent.com/pletzer/mint/master/figures/srcAndDstGrids.png)
 
 
 
