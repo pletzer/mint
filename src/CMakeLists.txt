@@ -4,10 +4,12 @@ include_directories(
 )
 
 set(LIB_FILES
+  CmdLineArgParser.cpp
   mntLatLon.cpp
 )
 
 set(HEADER_FILES
+  CmdLineArgParser.h
   mntLatLon.h
 )
 
