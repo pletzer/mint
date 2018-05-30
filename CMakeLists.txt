@@ -37,3 +37,4 @@ find_package(netCDF REQUIRED)
 enable_testing()
 
 add_subdirectory(src)
+add_subdirectory(tools)

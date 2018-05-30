@@ -1,4 +1,3 @@
-#include <netcdf.h>
 #include <vector>
 #include <string>
 
