@@ -19,14 +19,14 @@ struct mntLatLon_t {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_LatLon_new(mntLatLon_t** self);
+int mnt_latlon_new(mntLatLon_t** self);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_LatLon_del(mntLatLon_t** self);
+int mnt_latlon_del(mntLatLon_t** self);
 
 /**
  * Set the number of latitude cells
@@ -34,7 +34,7 @@ int mnt_LatLon_del(mntLatLon_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_LatLon_setNumberOfLatCells(mntLatLon_t** self, size_t n);
+int mnt_latlon_setNumberOfLatCells(mntLatLon_t** self, size_t n);
 
 /**
  * Set the number of longitude cells
@@ -42,14 +42,14 @@ int mnt_LatLon_setNumberOfLatCells(mntLatLon_t** self, size_t n);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_LatLon_setNumberOfLonCells(mntLatLon_t** self, size_t n);
+int mnt_latlon_setNumberOfLonCells(mntLatLon_t** self, size_t n);
 
 /**
  * Build the grid
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_LatLon_build(mntLatLon_t** self);
+int mnt_latlon_build(mntLatLon_t** self);
 
 /**
  * Load a grid from file
@@ -57,7 +57,7 @@ int mnt_LatLon_build(mntLatLon_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_LatLon_load(mntLatLon_t** self, const std::string& filename);
+int mnt_latlon_load(mntLatLon_t** self, const std::string& filename);
 
 /**
  * Dump the grid to file
@@ -65,6 +65,6 @@ int mnt_LatLon_load(mntLatLon_t** self, const std::string& filename);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_LatLon_dump(mntLatLon_t** self, const std::string& filename);
+int mnt_latlon_dump(mntLatLon_t** self, const std::string& filename);
 
 
