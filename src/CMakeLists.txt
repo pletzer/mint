@@ -1,5 +1,6 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${NETCDF_INCLUDE_DIR}
 )
 
 set(LIB_FILES
@@ -10,7 +11,7 @@ set(HEADER_FILES
   mntLatLon.h
 )
 
-add_library(mint SHARED ${LIB_FILES})
+add_library(mint ${LIB_FILES})
 target_link_libraries(mint ${NETCDF_LIBRARIES})
 
 # Install headers
