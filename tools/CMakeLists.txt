@@ -4,5 +4,10 @@ include_directories(
 )
 
 add_executable(latlon latlon.cxx)
-target_link_libraries(latlon mint ${NETCDF_LIBRARY} ${HDF5_LIBRARIES} ${CURL_LIBRARIES})
+target_link_libraries(latlon 
+	                  mint 
+	                  ${NETCDF_LIBRARY} 
+	                  ${HDF5_HL_LIBRARIES}
+	                  ${HDF5_LIBRARIES} 
+	                  ${CURL_LIBRARIES})
 

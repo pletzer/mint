@@ -32,7 +32,11 @@ endif()
 # Required version
 cmake_minimum_required(VERSION 2.8.8)
 
-find_package(netCDF REQUIRED)
+find_package(HDF5)
+find_package(CURL)
+# netcdf needs to be set manually
+# using -D NETCDF_INCLUDE_DIR and 
+# -D NETCDF_LIBRARY
 
 enable_testing()
 
