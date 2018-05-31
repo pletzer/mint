@@ -5,6 +5,8 @@ include_directories(
 
 set(LIB_FILES
   CmdLineArgParser.cpp
+  MvVector.cpp
+  MvMat_double.cpp
   mntLatLon.cpp
 )
 
