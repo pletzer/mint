@@ -27,8 +27,8 @@ void test2() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(lli.hasSolution(tol));
 }
 
 void test3() {
@@ -41,8 +41,8 @@ void test3() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(! lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(! lli.hasSolution(tol));
 }
 
 
@@ -56,8 +56,8 @@ void testNoOverlap() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(! lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(! lli.hasSolution(tol));
 }
 
 
@@ -71,8 +71,8 @@ void testNoOverlap2() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(! lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(! lli.hasSolution(tol));
 }
 
 
@@ -86,8 +86,8 @@ void testPartialOverlap() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(lli.hasSolution(tol));
     std::pair< Vector<double>, Vector<double> > p = lli.getBegEndPoints();
     Vector<double> pa = p.first;
     Vector<double> pb = p.second;
@@ -104,8 +104,8 @@ void testPartialOverlap() {
     }
     u /= dot(dp10, dp10);
 
-    assert(std::abs(dot(dpap0, u)) < 1.e-10);
-    assert(std::abs(dot(dpbq1, u)) < 1.e-10);
+    assert(std::abs(dot(dpap0, u)) < tol);
+    assert(std::abs(dot(dpbq1, u)) < tol);
 }
 
 
@@ -119,8 +119,8 @@ void testPartialOverlap2() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(std::abs(det) < 1.e-10);
-    assert(lli.hasSolution(1.e-10));
+    assert(std::abs(det) < tol);
+    assert(lli.hasSolution(tol));
     std::pair< Vector<double>, Vector<double> > p = lli.getBegEndPoints();
     Vector<double> pa = p.first;
     Vector<double> pb = p.second;
@@ -137,8 +137,8 @@ void testPartialOverlap2() {
     }
     u /= sqrt(dot(dp10, dp10));
 
-    assert(abs(dot(dpaq0, u)) < 1.e-10);
-    assert(abs(dot(dpbp1, u)) < 1.e-10);
+    assert(abs(dot(dpaq0, u)) < tol);
+    assert(abs(dot(dpbp1, u)) < tol);
 }
 
 void testPartialOverlap3() {
@@ -151,8 +151,8 @@ void testPartialOverlap3() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(lli.hasSolution(tol));
     std::pair< Vector<double>, Vector<double> > pab = lli.getBegEndPoints();
     Vector<double> pa = pab.first;
     Vector<double> pb = pab.second;
@@ -168,8 +168,8 @@ void testPartialOverlap3() {
         dp10[i] = p1[i] - p0[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpap0, u)) < 1.e-10);
-    assert(abs(dot(dpbq0, u)) < 1.e-10);
+    assert(abs(dot(dpap0, u)) < tol);
+    assert(abs(dot(dpbq0, u)) < tol);
 }
 
 
@@ -183,8 +183,8 @@ void testQInsideP() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(lli.hasSolution(tol));
     std::pair< Vector<double>, Vector<double> > pab = lli.getBegEndPoints();
     Vector<double> pa = pab.first;
     Vector<double> pb = pab.second;
@@ -200,8 +200,8 @@ void testQInsideP() {
         dpbq1[i] = pb[i] - q1[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpaq0, u)) < 1.e-10);
-    assert(abs(dot(dpbq1, u)) < 1.e-10);
+    assert(abs(dot(dpaq0, u)) < tol);
+    assert(abs(dot(dpbq1, u)) < tol);
 }
 
 void testPInsideQ() {
@@ -214,8 +214,8 @@ void testPInsideQ() {
     LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < 1.e-10);
-    assert(lli.hasSolution(1.e-10));
+    assert(abs(det) < tol);
+    assert(lli.hasSolution(tol));
     std::pair< Vector<double>, Vector<double> > pab = lli.getBegEndPoints();
     Vector<double> pa = pab.first;
     Vector<double> pb = pab.second;
@@ -231,8 +231,8 @@ void testPInsideQ() {
         dpbp1[i] = pb[i] - p1[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpap0, u)) < 1.e-10);
-    assert(abs(dot(dpbp1, u)) < 1.e-10);
+    assert(abs(dot(dpap0, u)) < tol);
+    assert(abs(dot(dpbp1, u)) < tol);
 }
 
 
