@@ -1,5 +1,7 @@
 #include <mntLineLineIntersector.h>
+#undef NDEBUG // turn on asserts
 #include <cassert>
+#include <cmath>
 
 void test1() {
     // standard
@@ -15,105 +17,142 @@ void test1() {
     assert(abs(xi[1] - 1./3.) < tol);
 }
 
+void test2() {
+    // degenerate solution
+    double tol = 1.e-10;
+    double p0[] = {0., 0.};
+    double p1[] = {2., 0.};
+    double q0[] = {0., 0.};
+    double q1[] = {1., 0.};
+    LineLineIntersector lli;
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(lli.hasSolution(1.e-10));
+}
+
+void test3() {
+    // no solution
+    double tol = 1.e-10;
+    double p0[] =   {0., 0.};
+    double p1[] =   {2., 0.};
+    double q0[] =   {0., 1.};
+    double q1[] =   {1., 1.};
+    LineLineIntersector lli;
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(! lli.hasSolution(1.e-10));
+}
+
+
+void testNoOverlap() {
+    // no solution
+    double tol = 1.e-10;
+    double p0[] =   {0., 0.};
+    double p1[] =   {M_PI/2., 0.};
+    double q0[] =   {-2., 0.};
+    double q1[] =   {-1., 0.};
+    LineLineIntersector lli;
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(! lli.hasSolution(1.e-10));
+}
+
+
+void testNoOverlap2() {
+    // no solution
+    double tol = 1.e-10;
+    double p0[] =   {M_PI /2., 0.};
+    double p1[] =   {0., 0.};
+    double q0[] =   {-2., 0.};
+    double q1[] =   {-1., 0.};
+    LineLineIntersector lli;
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(! lli.hasSolution(1.e-10));
+}
+
+
+void testPartialOverlap() {
+    // no solution
+    double tol = 1.e-10;
+    double p0[] = {0., 0.};
+    double p1[] =  {M_PI /2., 0.};
+    double q0[] =  {-2., 0.};
+    double q1[] =  {0.5, 0.};
+    LineLineIntersector lli;
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(lli.hasSolution(1.e-10));
+    std::pair< Vector<double>, Vector<double> > p = lli.getBegEndPoints();
+    Vector<double> pa = p.first;
+    Vector<double> pb = p.second;
+
+    Vector<double> dp10(2);
+    Vector<double> dpap0(2);
+    Vector<double> dpbq1(2);
+    Vector<double> u(2);
+    for (size_t i = 0; i < 2; ++i) {
+        dp10[i] = p1[i] - p0[i];
+        dpap0[i] = pa[i] - p0[i];
+        dpbq1[i] = pb[i] - q1[i];
+        u[i] = p1[i] - p0[i];
+    }
+    u /= dot(dp10, dp10);
+
+    assert(std::abs(dot(dpap0, u)) < 1.e-10);
+    assert(std::abs(dot(dpbq1, u)) < 1.e-10);
+}
+
+
+void testPartialOverlap2() {
+    // no solution
+    double tol = 1.e-10;
+    double p0[] =  {0., 0.};
+    double p1[] =  {M_PI /2., 0.};
+    double q0[] =  {0.1, 0.};
+    double q1[] =  {M_PI , 0.};
+    LineLineIntersector lli;
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(std::abs(det) < 1.e-10);
+    assert(lli.hasSolution(1.e-10));
+    std::pair< Vector<double>, Vector<double> > p = lli.getBegEndPoints();
+    Vector<double> pa = p.first;
+    Vector<double> pb = p.second;
+
+    Vector<double> dp10(2);
+    Vector<double> dpaq0(2);
+    Vector<double> dpbp1(2);
+    Vector<double> u(2);
+    for (size_t i = 0; i < 2; ++i) {
+        dp10[i] = p1[i] - p0[i];
+        dpaq0[i] = pa[i] - q0[i];
+        dpbp1[i] = pb[i] - p1[i];
+        u[i] = p1[i] - p0[i];
+    }
+    u /= sqrt(dot(dp10, dp10));
+
+    assert(abs(dot(dpaq0, u)) < 1.e-10);
+    assert(abs(dot(dpbp1, u)) < 1.e-10);
+}
+
 /*
 
-def test2():
-    # degenerate solution
-    tol = 1.e-10
-    p0 = numpy.array([0., 0.])
-    p1 = numpy.array([2., 0.])
-    q0 = numpy.array([0., 0.])
-    q1 = numpy.array([1., 0.])
-    lli = LineLineIntersector()
-    lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(lli.hasSolution(1.e-10))
-
-def test3():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([0., 0.])
-    p1 = numpy.array([2., 0.])
-    q0 = numpy.array([0., 1.])
-    q1 = numpy.array([1., 1.])
-    lli = LineLineIntersector()
-    lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(not lli.hasSolution(1.e-10))
-
-def testNoOverlap():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([0., 0.])
-    p1 = numpy.array([numpy.pi/2., 0.])
-    q0 = numpy.array([-2., 0.])
-    q1 = numpy.array([-1., 0.])
-    lli = LineLineIntersector()
-    lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(not lli.hasSolution(1.e-10))
-
-def testNoOverlap2():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([numpy.pi/2., 0.])
-    p1 = numpy.array([0., 0.])
-    q0 = numpy.array([-2., 0.])
-    q1 = numpy.array([-1., 0.])
-    lli = LineLineIntersector()
-    lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(not lli.hasSolution(1.e-10))
-
-
-def testPartialOverlap():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([0., 0.])
-    p1 = numpy.array([numpy.pi/2., 0.])
-    q0 = numpy.array([-2., 0.])
-    q1 = numpy.array([0.5, 0.])
-    lli = LineLineIntersector()
-    lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(lli.hasSolution(1.e-10))
-    pa, pb = lli.getBegEndPoints()
-    u = (p1 - p0)/numpy.sqrt((p1 - p0).dot(p1 - p0))
-    assert(abs((pa - p0).dot(u)) < 1.e-10)
-    assert(abs((pb - q1).dot(u)) < 1.e-10)
-
-def testPartialOverlap2():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([0., 0.])
-    p1 = numpy.array([numpy.pi/2., 0.])
-    q0 = numpy.array([0.1, 0.])
-    q1 = numpy.array([numpy.pi, 0.])
-    lli = LineLineIntersector()
-    lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(lli.hasSolution(1.e-10))
-    pa, pb = lli.getBegEndPoints()
-    u = (p1 - p0)/numpy.sqrt((p1 - p0).dot(p1 - p0))
-    assert(abs((pa - q0).dot(u)) < 1.e-10)
-    assert(abs((pb - p1).dot(u)) < 1.e-10)
-
 def testPartialOverlap3():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([numpy.pi/2., 0.])
-    p1 = numpy.array([0., 0.])
-    q0 = numpy.array([0.1, 0.])
-    q1 = numpy.array([numpy.pi, 0.])
-    lli = LineLineIntersector()
+    // no solution
+    double tol = 1.e-10
+    double p0[] =   {M_PI /2., 0.};
+    double p1[] =   {0., 0.};
+    double q0[] =   {0.1, 0.};
+    double q1[] =   {M_PI , 0.};
+    LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
+    double det = lli.getDet()
     assert(abs(det) < 1.e-10)
     assert(lli.hasSolution(1.e-10))
     pa, pb = lli.getBegEndPoints()
@@ -124,15 +163,15 @@ def testPartialOverlap3():
 
 
 def testQInsideP():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([0., 0.])
-    p1 = numpy.array([1., 0.])
-    q0 = numpy.array([0.1, 0.])
-    q1 = numpy.array([0.8, 0.])
-    lli = LineLineIntersector()
+    // no solution
+    double tol = 1.e-10
+    double p0[] =   {0., 0.};
+    double p1[] =   {1., 0.};
+    double q0[] =   {0.1, 0.};
+    double q1[] =   {0.8, 0.};
+    LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
+    double det = lli.getDet()
     assert(abs(det) < 1.e-10)
     assert(lli.hasSolution(1.e-10))
     pa, pb = lli.getBegEndPoints()
@@ -142,15 +181,15 @@ def testQInsideP():
     assert(abs((pb - q1).dot(u)) < 1.e-10)
 
 def testPInsideQ():
-    # no solution
-    tol = 1.e-10
-    p0 = numpy.array([0.1, 0.])
-    p1 = numpy.array([0.9, 0.])
-    q0 = numpy.array([0., 0.])
-    q1 = numpy.array([1., 0.])
-    lli = LineLineIntersector()
+    // no solution
+    double tol = 1.e-10
+    double p0[] =   {0.1, 0.};
+    double p1[] =   {0.9, 0.};
+    double q0[] =   {0., 0.};
+    double q1[] =   {1., 0.};
+    LineLineIntersector lli;
     lli.setPoints(p0, p1, q0, q1)
-    det = lli.getDet()
+    double det = lli.getDet()
     assert(abs(det) < 1.e-10)
     assert(lli.hasSolution(1.e-10))
     pa, pb = lli.getBegEndPoints()
@@ -163,8 +202,8 @@ def testPInsideQ():
 
 int main(int argc, char** argv) {
     test1();
+    test2();
 /*
-    test2()
     test3()
     testNoOverlap()
     testNoOverlap2()
