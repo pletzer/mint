@@ -203,15 +203,16 @@ def testPInsideQ():
 int main(int argc, char** argv) {
     test1();
     test2();
-/*
-    test3()
-    testNoOverlap()
-    testNoOverlap2()
-    testPartialOverlap()
-    testPartialOverlap2()
-    testPartialOverlap3()
-    testQInsideP()
-    testPInsideQ()
+
+    test3();
+    testNoOverlap();
+    testNoOverlap2();
+    testPartialOverlap();
+    testPartialOverlap2();
+    /*
+    testPartialOverlap3();
+    testQInsideP();
+    testPInsideQ();
     */
     return 0;
 }
