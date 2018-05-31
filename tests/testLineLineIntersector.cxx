@@ -141,78 +141,113 @@ void testPartialOverlap2() {
     assert(abs(dot(dpbp1, u)) < 1.e-10);
 }
 
-/*
-
-def testPartialOverlap3():
+void testPartialOverlap3() {
     // no solution
-    double tol = 1.e-10
+    double tol = 1.e-10;
     double p0[] =   {M_PI /2., 0.};
     double p1[] =   {0., 0.};
     double q0[] =   {0.1, 0.};
     double q1[] =   {M_PI , 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1)
-    double det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(lli.hasSolution(1.e-10))
-    pa, pb = lli.getBegEndPoints()
-    u = (p1 - p0)/numpy.sqrt((p1 - p0).dot(p1 - p0))
-    print pa, pb
-    assert(abs((pa - p0).dot(u)) < 1.e-10)
-    assert(abs((pb - q0).dot(u)) < 1.e-10)
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(lli.hasSolution(1.e-10));
+    std::pair< Vector<double>, Vector<double> > pab = lli.getBegEndPoints();
+    Vector<double> pa = pab.first;
+    Vector<double> pb = pab.second;
+
+    Vector<double> u(2);
+    Vector<double> dpap0(2);
+    Vector<double> dpbq0(2);
+    Vector<double> dp10(2);
+    for (size_t i = 0; i < 2; ++i) {
+        u[i] = p1[i] - p0[i];
+        dpap0[i] = pa[i] - p0[i];
+        dpbq0[i] = pb[i] - q0[i];
+        dp10[i] = p1[i] - p0[i];
+    }
+    u /= sqrt(dot(dp10, dp10));
+    assert(abs(dot(dpap0, u)) < 1.e-10);
+    assert(abs(dot(dpbq0, u)) < 1.e-10);
+}
 
 
-def testQInsideP():
+void testQInsideP() {
     // no solution
-    double tol = 1.e-10
+    double tol = 1.e-10;
     double p0[] =   {0., 0.};
     double p1[] =   {1., 0.};
     double q0[] =   {0.1, 0.};
     double q1[] =   {0.8, 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1)
-    double det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(lli.hasSolution(1.e-10))
-    pa, pb = lli.getBegEndPoints()
-    #print pa, pb
-    u = (p1 - p0)/numpy.sqrt((p1 - p0).dot(p1 - p0))
-    assert(abs((pa - q0).dot(u)) < 1.e-10)
-    assert(abs((pb - q1).dot(u)) < 1.e-10)
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(lli.hasSolution(1.e-10));
+    std::pair< Vector<double>, Vector<double> > pab = lli.getBegEndPoints();
+    Vector<double> pa = pab.first;
+    Vector<double> pb = pab.second;
 
-def testPInsideQ():
+    Vector<double> u(2);
+    Vector<double> dp10(2);
+    Vector<double> dpaq0(2);
+    Vector<double> dpbq1(2);
+    for (size_t i = 0; i < 2; ++i) {
+        u[i] = p1[i] - p0[i];
+        dp10[i] = p1[i] - p0[i];
+        dpaq0[i] = pa[i] - q0[i];
+        dpbq1[i] = pb[i] - q1[i];
+    }
+    u /= sqrt(dot(dp10, dp10));
+    assert(abs(dot(dpaq0, u)) < 1.e-10);
+    assert(abs(dot(dpbq1, u)) < 1.e-10);
+}
+
+void testPInsideQ() {
     // no solution
-    double tol = 1.e-10
+    double tol = 1.e-10;
     double p0[] =   {0.1, 0.};
     double p1[] =   {0.9, 0.};
     double q0[] =   {0., 0.};
     double q1[] =   {1., 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1)
-    double det = lli.getDet()
-    assert(abs(det) < 1.e-10)
-    assert(lli.hasSolution(1.e-10))
-    pa, pb = lli.getBegEndPoints()
-    #print pa, pb
-    u = (p1 - p0)/numpy.sqrt((p1 - p0).dot(p1 - p0))
-    assert(abs((pa - p0).dot(u)) < 1.e-10)
-    assert(abs((pb - p1).dot(u)) < 1.e-10)
+    lli.setPoints(p0, p1, q0, q1);
+    double det = lli.getDet();
+    assert(abs(det) < 1.e-10);
+    assert(lli.hasSolution(1.e-10));
+    std::pair< Vector<double>, Vector<double> > pab = lli.getBegEndPoints();
+    Vector<double> pa = pab.first;
+    Vector<double> pb = pab.second;
 
-*/
+    Vector<double> u(2);
+    Vector<double> dp10(2);
+    Vector<double> dpap0(2);
+    Vector<double> dpbp1(2);
+    for (size_t i = 0; i < 2; ++i) {
+        u[i] = p1[i] - p0[i];
+        dp10[i] = p1[i] - p0[i];
+        dpap0[i] = pa[i] - p0[i];
+        dpbp1[i] = pb[i] - p1[i];
+    }
+    u /= sqrt(dot(dp10, dp10));
+    assert(abs(dot(dpap0, u)) < 1.e-10);
+    assert(abs(dot(dpbp1, u)) < 1.e-10);
+}
+
 
 int main(int argc, char** argv) {
+
     test1();
     test2();
-
     test3();
     testNoOverlap();
     testNoOverlap2();
     testPartialOverlap();
     testPartialOverlap2();
-    /*
     testPartialOverlap3();
     testQInsideP();
     testPInsideQ();
-    */
+
     return 0;
 }
