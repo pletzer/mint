@@ -33,7 +33,7 @@ class PolysegmentIter:
             cId = self.cellIds[i]
             c2Inds[cId] = c2Inds.get(cId, []) + [i]
 
-        # {(ta, tb) : (cellId, xia, xib, coeff), ...}
+        # {(ta, tb) : (cellId, xia, xib), ...}
         data = {}
         for cId, inds in c2Inds.items():
             v = [(self.ts[i], self.xis[i]) for i in inds]
@@ -42,7 +42,7 @@ class PolysegmentIter:
             for i in range(n - 1):
                 ta, xia = v[i]
                 tb, xib = v[i + 1]
-                data[(ta, tb)] = [cId, xia, xib, 1.0]
+                data[(ta, tb)] = [cId, xia, xib]
 
         # turn data into a list
         data = [[k, v] for k, v in data.items()]
@@ -54,7 +54,7 @@ class PolysegmentIter:
         self.segTbs = [e[0][1] for e in data]
         self.segXias = [e[1][1] for e in data]
         self.segXibs = [e[1][2] for e in data]
-        self.segCoeffs = [e[1][3] for e in data]
+        self.segCoeffs = [1.0 for e in data]
 
         # assign coefficients that account for duplicity, ie segments 
         # that are shared between two cells
