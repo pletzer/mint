@@ -45,14 +45,11 @@ class RegridEdges(RegridBase):
                 dstEdgePt0 = self.dstGrid.GetPoint(id0)
                 dstEdgePt1 = self.dstGrid.GetPoint(id1)
 
-                # represent the edge as a broken line
-                bli = PolylineIter([dstEdgePt0, dstEdgePt1])
-
                 # compute the intersections of the dst edge with the src grid
-                bsi = PolysegmentIter(self.srcGrid, self.srcLoc, bli)
+                psi = PolysegmentIter(self.srcGrid, self.srcLoc, dstEdgePt0, dstEdgePt1)
 
                 # compute the contributions to this edge
-                for seg in bsi:
+                for seg in psi:
 
                     srcCellId = seg.getCellId()
                     xia = seg.getBegCellParamCoord()
@@ -76,7 +73,7 @@ class RegridEdges(RegridBase):
 
                     self.weights[k][i0, :] += ws
 
-                totalT = bsi.getIntegratedParamCoord()
+                totalT = psi.getIntegratedParamCoord()
                 if abs(totalT - 1.0) > 1.e-6:
                     print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} points=[{}, {}]'.format(\
                         totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))

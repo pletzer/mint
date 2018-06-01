@@ -66,17 +66,17 @@ int mnt_regridedges_build(mntLatLon_t** self) {
             dstEdgePt1 = (*self)->dstGrid.GetPoint(id1);
 
             // break the edge into sub-edges
-            mntPolysegmentIter bsi = mntPolysegmentIter((*self)->srcGrid, 
-                                                        (*self)->srcLoc,
-                                                        dstEdgePt0, dstEdgePt1);
+            mntPolysegmentIter polySegIter = PolysegmentIter((*self)->srcGrid, 
+                                                             (*self)->srcLoc,
+                                                             dstEdgePt0, dstEdgePt1);
 
-            size_t numSegs = bsi.getNumSegs();
+            size_t numSegs = polySegIter.getNumSegs();
             for (size_t iseg = 0; iseg < numSegs; ++iseg) {
 
-                vtkIdType srcCellId = bsi.getCellId();
-                const MvVector<double>& xia = bsi.getBegCellParamCoord();
-                const MvVector<double>& xib = seg.getEndCellParamCoord();
-                const double& coeff = bsi.getCoefficient();
+                const vtkIdType srcCellId = polySegIter.getCellId();
+                const Vector<double>& xia = polySegIter.getBegCellParamCoord();
+                const Vector<double>& xib = polySegIter.getEndCellParamCoord();
+                const double coeff = bsi.getCoefficient();
 
                 MvVector<double> dxi = xib - xia;
                 MvVector<double> xiMid = 0.5*(xia + xib);
@@ -103,14 +103,17 @@ int mnt_regridedges_build(mntLatLon_t** self) {
                 for (size_t j = 0; j < it.second.size(1); ++j)
                     it.second(i0, j) += ws[j];
 
-                bsi.next();
+                // next segment
+                polySegIter.next();
 
             }
 
-            double totalT = bsi.getIntegratedParamCoord();
-            if abs(totalT - 1.0) > 1.e-6:
-                    print('Warning: total t of segment: {:.3f} != 1 (diff={:.1g}), dst cell {} points=[{}, {}]'.format(\
-                        totalT, totalT - 1.0, dstCellId, dstEdgePt0, dstEdgePt1))
+            double totalT = polySegIter.getIntegratedParamCoord();
+            if (std::abs(totalT - 1.0) > 1.e-6) {
+                std::cerr << "Warning: total t of segment: " << totalT, " != 1 (diff=" << totalT - 1.0 
+                          << " dst cell " << dstCellId << " dstEdgePt=" 
+                          << dstEdgePt << " dstEdgePt1=" << dstEdgePt1 << '\n';
+            }
 
         }
     }

@@ -5,12 +5,13 @@ from line_line_intersector import LineLineIntersector
 
 class PolysegmentIter:
 
-    def __init__(self, grid, locator, brokenLine):
+    def __init__(self, grid, locator, p0, p1, t0=0., t1=1.):
         """
         Constructor
         @param grid instance of vtkUnstructuredGrid
         @param locator vtkCellLocator instance attached to the above grid
-        @param brokenLine instance of PolylineIter
+        @param p0 start point
+        @param p1 end point
         """
 
         # small tolerances 
@@ -22,30 +23,26 @@ class PolysegmentIter:
         self.grid = grid
         self.locator = locator
 
-        brokenLine.reset()
-        for bl in brokenLine:
-            t0, t1 = bl.getBegParamCoord(), bl.getEndParamCoord()
-            dt = t1 - t0
-            p0, p1 = bl.getBegPoint(), bl.getEndPoint()
+        dt = t1 - t0
 
-            # res is  [ (cellId, xi, t), ...]
-            res = self.__collectLineGridSegments(p0, p1)
+        # res is  [ (cellId, xi, t), ...]
+        res = self.__collectLineGridSegments(p0, p1)
 
-            # re-arrange the data cellId -> [[t0, xi0], [t1, xi1], ...]
-            c2s = {}
-            for e in res:
-                cId, xi, t = e
-                c2s[cId] = c2s.get(cId, []) + [(t, xi)]
+        # re-arrange the data cellId -> [[t0, xi0], [t1, xi1], ...]
+        c2s = {}
+        for e in res:
+            cId, xi, t = e
+            c2s[cId] = c2s.get(cId, []) + [(t, xi)]
 
-            # {(ta, tb) : (cellId, xia, xib, coeff), ...}
-            data = {}
-            for cId, v in c2s.items():
-                v.sort(lambda x, y: cmp(x[0], y[0]))
-                n = len(v)
-                for i in range(n - 1):
-                    ta, xia = v[i]
-                    tb, xib = v[i + 1]
-                    data[(ta, tb)] = [cId, xia, xib, 1.0]
+        # {(ta, tb) : (cellId, xia, xib, coeff), ...}
+        data = {}
+        for cId, v in c2s.items():
+            v.sort(lambda x, y: cmp(x[0], y[0]))
+            n = len(v)
+            for i in range(n - 1):
+                ta, xia = v[i]
+                tb, xib = v[i + 1]
+                data[(ta, tb)] = [cId, xia, xib, 1.0]
 
         # turn data into a list [[(ta, tb), [cId, xia, xib, coeff]],...]
         self.data = [[k, v] for k, v in data.items()]
@@ -329,28 +326,37 @@ def main():
 
     ur = UgridReader(filename=args.input)
     points = eval(args.points)
-    bl = PolylineIter(points)
+    pli = PolylineIter(points)
     
-    count = 0
-    for b in bl:
-        t0 = b.getBegParamCoord()
-        t1 = b.getEndParamCoord()
-        print('line {} t = {} -> {}'.format(count, t0, t1))
-        count += 1
+    countLine = 0
+    tTotal = 0.
+    for line in pli:
+        t0 = line.getBegParamCoord()
+        t1 = line.getEndParamCoord()
+        p0 = line.getBegPoint()
+        p1 = line.getEndPoint()
+        print('line {} t = {} -> {}'.format(countLine, t0, t1))
 
-    bs = PolysegmentIter(ur.getUnstructuredGrid(), 
-                            ur.getUnstructuredGridCellLocator(), bl)
-    count = 0
-    for s in bs:
-        cellId = s.getCellId()
-        xia = s.getBegCellParamCoord()
-        xib = s.getEndCellParamCoord()
-        ta = s.getBegLineParamCoord()
-        tb = s.getEndLineParamCoord()
-        print('seg {} in cell {} t = {} -> {} xi = {} -> {}'.format(count, cellId, ta, tb, xia, xib))
-        count += 1
+        psi = PolysegmentIter(ur.getUnstructuredGrid(), 
+                              ur.getUnstructuredGridCellLocator(), 
+                              p0, p1, t0, t1)
 
-    print('Integrated t = {}'.format(s.getIntegratedParamCoord()))
+        countSeg = 0
+        for seg in psi:
+            cellId = seg.getCellId()
+            xia = seg.getBegCellParamCoord()
+            xib = seg.getEndCellParamCoord()
+            ta = seg.getBegLineParamCoord()
+            tb = seg.getEndLineParamCoord()
+            print('\tseg {} in cell {} t = {} -> {} xi = {} -> {}'.format(countSeg, cellId, ta, tb, xia, xib))
+
+            countSeg += 1
+
+        tTotal += psi.getIntegratedParamCoord()
+        countLine += 1
+
+
+    print('Integrated t = {}'.format(tTotal))
 
     
 
