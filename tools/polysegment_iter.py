@@ -34,7 +34,7 @@ class PolysegmentIter:
             c2Inds[cId] = c2Inds.get(cId, []) + [i]
 
         # {(ta, tb) : (cellId, xia, xib), ...}
-        data = {}
+        data = []
         for cId, inds in c2Inds.items():
             v = [(self.ts[i], self.xis[i]) for i in inds]
             v.sort(lambda x, y: cmp(x[0], y[0]))
@@ -42,10 +42,8 @@ class PolysegmentIter:
             for i in range(n - 1):
                 ta, xia = v[i]
                 tb, xib = v[i + 1]
-                data[(ta, tb)] = [cId, xia, xib]
+                data.append( [(ta, tb), [cId, xia, xib]] )
 
-        # turn data into a list
-        data = [[k, v] for k, v in data.items()]
         # sort by t values
         data.sort( lambda x, y: cmp(x[0], y[0]) )
 
