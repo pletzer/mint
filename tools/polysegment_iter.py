@@ -41,12 +41,13 @@ class PolysegmentIter:
         self.segCoeffs = []
 
         for cId, inds in c2Inds.items():
-            v = [(self.ts[i], self.xis[i]) for i in inds]
-            v.sort(lambda x, y: cmp(x[0], y[0]))
-            n = len(v)
+            inds.sort(lambda i, j: cmp(self.ts[i], self.ts[j]))
+            n = len(inds)
             for i in range(n - 1):
-                ta, xia = v[i]
-                tb, xib = v[i + 1]
+                i0 = inds[i]
+                i1 = inds[i + 1]
+                ta, xia = self.ts[i0], self.xis[i0]
+                tb, xib = self.ts[i1], self.xis[i1]
                 self.segCellIds.append(cId)
                 self.segTas.append(ta)
                 self.segTbs.append(tb)
