@@ -39,21 +39,19 @@ struct PolysegmentIter {
 
         // re-arrange the data cellId -> [indx0, indx1, ...]
         // indx is index in the cellIds, xis and ts arrays
-        std::map< vtkIdType, std::vector<size_t> > c2s;
+        std::map< vtkIdType, std::vector<size_t> > c2Inds;
         for (size_t i = 0; i < cellIds.size(); ++i) {
             vtkIdType cId = cellIds[i];
-            const std::vector<double>& xi = this->xis[i];
-            double t = this->ts[i];
             std:map< vtkIdType, std::vector<size_t> >::iterator it = c2s.find(cId);
-            if (it != c2s.end()) {
+            if (it != c2Inds.end()) {
                 // append
                 it->second.push_back(i);
             }
             else {
                 // create new entry
-                std::vector<size_t> v(1, i);
-                std::pair< vtkIdType, std::vector<size_t> > p(cId, v);
-                c2s.insert(p);
+                std::vector<size_t> index(1, i);
+                std::pair< vtkIdType, std::vector<size_t> > p(cId, index);
+                c2Inds.insert(p);
             }
         }
 

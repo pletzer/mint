@@ -44,23 +44,28 @@ class PolysegmentIter:
                 tb, xib = v[i + 1]
                 data[(ta, tb)] = [cId, xia, xib, 1.0]
 
+        # turn data into a list
+        data = [[k, v] for k, v in data.items()]
+        # sort by t values
+        data.sort( lambda x, y: cmp(x[0], y[0]) )
 
-        # turn data into a list [[(ta, tb), [cId, xia, xib, coeff]],...]
-        self.data = [[k, v] for k, v in data.items()]
-
-        # sort 
-        self.data.sort( lambda x, y: cmp(x[0], y[0]) )
+        self.segCellIds = [e[1][0] for e in data]
+        self.segTas = [e[0][0] for e in data]
+        self.segTbs = [e[0][1] for e in data]
+        self.segXias = [e[1][1] for e in data]
+        self.segXibs = [e[1][2] for e in data]
+        self.segCoeffs = [e[1][3] for e in data]
 
         # assign coefficients that account for duplicity, ie segments 
         # that are shared between two cells
         self.__assignCoefficientsToSegments()
 
-        self.numSegs = len(self.data)
+        self.numSegs = len(self.segCellIds)
 
         self.totalT = 0
-        for tatb, cxiaxibc in self.data:
-            ta, tb = tatb
-            coeff = cxiaxibc[3]
+        for i in range(self.numSegs):
+            ta, tb = self.segTas[i], self.segTbs[i]
+            coeff = self.segCoeffs[i]
             self.totalT += (tb - ta) * coeff
 
         # reset the iterator
@@ -80,7 +85,6 @@ class PolysegmentIter:
         Reset the counter
         """
         self.index = -1
-        self.segment = None
 
 
     def __iter__(self):
@@ -92,9 +96,7 @@ class PolysegmentIter:
         Update iterator
         """
         if self.index < self.numSegs - 1:
-            index = self.index
             self.index += 1
-            self.segment = self.data[self.index]
             return self
         else:
             raise StopIteration()
@@ -105,7 +107,7 @@ class PolysegmentIter:
         Get the current cell Id
         @return index
         """
-        return self.segment[1][0]
+        return self.segCellIds[self.index]
 
 
     def getBegCellParamCoord(self):
@@ -113,7 +115,7 @@ class PolysegmentIter:
         Get the current cell parametric coordinates at the beginning of segment
         @return 2d array
         """
-        return self.segment[1][1]
+        return self.segXias[self.index]
         
 
     def getEndCellParamCoord(self):
@@ -121,7 +123,7 @@ class PolysegmentIter:
         Get the current cell parametric coordinates at the end of segment
         @return 2d array
         """
-        return self.segment[1][2]
+        return self.segXibs[self.index]
  
 
     def getBegLineParamCoord(self):
@@ -129,7 +131,7 @@ class PolysegmentIter:
         Get the current line parametric coordinates at the beginning of segment
         @return 2d array
         """
-        return self.segment[0][0]
+        return self.segTas[self.index]
         
 
     def getEndLineParamCoord(self):
@@ -137,14 +139,15 @@ class PolysegmentIter:
         Get the current line parametric coordinates at the end of segment
         @return 2d array
         """
-        return self.segment[0][1]
+        return self.segTbs[self.index]
+
 
     def getCoefficient(self):
         """
         Get the coefficient accounting for duplicates
         @return coefficient
         """
-        return self.segment[1][3]
+        return self.segCoeffs[self.index]
  
 
     def getIndex(self):
@@ -157,28 +160,30 @@ class PolysegmentIter:
 
     def __assignCoefficientsToSegments(self):
 
-        n = len(self.data)
+        n = len(self.segCellIds)
 
         # remove zero length segments
         for i in range(n - 1, -1, -1):
-            s = self.data[i]
-            ta, tb = s[0]
+            ta, tb = self.segTas[i], self.segTbs[i]
             if abs(tb - ta) < self.eps100:
-                del self.data[i]
+                del self.segCellIds[i]
+                del self.segTas[i]
+                del self.segTbs[i]
+                del self.segXias[i]
+                del self.segXibs[i]
+                del self.segCoeffs[i]
 
-        # reduce contribution for overlapping segmmnts. If two 
+        # reduce contribution for overlapping segments. If two 
         # segments overlap then the coefficient of first segment
         # is set to 1.0 - overlap/(tb - ta). Assumes overlap 
         # can only happen for pairs of segment
-        n = len(self.data)
+        n = len(self.segCellIds)
         for i0 in range(n - 1):
             i1 = i0 + 1
-            s0 = self.data[i0]
-            s1 = self.data[i1]
-            ta0, tb0 = s0[0]
-            ta1, tb1 = s1[0]
+            ta0, tb0 = self.segTas[i0], self.segTbs[i0]
+            ta1, tb1 = self.segTas[i1], self.segTbs[i1]
             overlap = max(0., min(tb0, tb1) - max(ta1, ta0))
-            s0[1][3] = 1.0 - overlap/(tb0 - ta0)
+            self.segCoeffs[i0] = 1.0 - overlap/(tb0 - ta0)
 
 
     def __collectIntersectionPoints(self, pBeg, pEnd):
