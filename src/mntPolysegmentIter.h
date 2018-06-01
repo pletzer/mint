@@ -23,7 +23,8 @@ struct PolysegmentIter {
      * @param p1 end point
      */
     PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
-                    const double p0[], const double p1[]) {
+                    const double p0[], const double p1[], 
+                    double t0=00, double t1=1.0) {
 
         // small tolerances 
         this->eps = 1.73654365e-14;
@@ -34,8 +35,6 @@ struct PolysegmentIter {
         this->grid = grid;
         this->locator = locator;
 
-        double t0 = 0.;
-        double t1 = 1.;
         double dt = t1 - t0;
 
         // cellIds, xis and ts are output

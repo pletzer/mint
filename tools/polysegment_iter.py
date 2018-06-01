@@ -5,7 +5,7 @@ from line_line_intersector import LineLineIntersector
 
 class PolysegmentIter:
 
-    def __init__(self, grid, locator, p0, p1, t0=0., t1=1.):
+    def __init__(self, grid, locator, p0, p1):
         """
         Constructor
         @param grid instance of vtkUnstructuredGrid
@@ -22,8 +22,6 @@ class PolysegmentIter:
 
         self.grid = grid
         self.locator = locator
-
-        dt = t1 - t0
 
         # res is  [ (cellId, xi, t), ...]
         res = self.__collectLineGridSegments(p0, p1)
@@ -339,7 +337,7 @@ def main():
 
         psi = PolysegmentIter(ur.getUnstructuredGrid(), 
                               ur.getUnstructuredGridCellLocator(), 
-                              p0, p1, t0, t1)
+                              p0, p1)
 
         countSeg = 0
         for seg in psi:
