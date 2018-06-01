@@ -23,13 +23,15 @@ class PolysegmentIter:
         self.grid = grid
         self.locator = locator
 
-        # res is  [ (cellId, xi, t), ...]
-        res = self.__collectLineGridSegments(p0, p1)
+        self.cellIds = []
+        self.xis = []
+        self.ts = []
+        self.__collectLineGridSegments(p0, p1)
 
         # re-arrange the data cellId -> [[t0, xi0], [t1, xi1], ...]
         c2s = {}
-        for e in res:
-            cId, xi, t = e
+        for i in range(len(self.cellIds)):
+            cId, xi, t = self.cellIds[i], self.xis[i], self.ts[i]
             c2s[cId] = c2s.get(cId, []) + [(t, xi)]
 
         # {(ta, tb) : (cellId, xia, xib, coeff), ...}
@@ -246,10 +248,7 @@ class PolysegmentIter:
         Collect all the line-grid intersection points
         @param p0 starting point of the line
         @param p1 end point of the line 
-        @return list of [ (cellId, xi, t), ...]
         """
-
-        res = []
 
         # things we need to define
         ptIds = vtk.vtkIdList()
@@ -273,7 +272,9 @@ class PolysegmentIter:
         # add starting point
         cId = self.locator.FindCell(pBeg, self.eps, cell, xi, weights)
         if cId >= 0:
-            res.append( (cId, xi[:2].copy(), 0.) )
+            self.cellIds.append(cId)
+            self.xis.append(xi[:2].copy())
+            self.ts.append(0.)
         else:
             pass
             #print('Warning: starting point {} not found!'.format(p0))
@@ -294,7 +295,9 @@ class PolysegmentIter:
 
             found = self.grid.GetCell(cId).EvaluatePosition(point, closestPoint, subId, xi, dist, weights)
             if found:
-                res.append( (cId, xi[:2].copy(), lambRay) )
+                self.cellIds.append(cId)
+                self.xis.append(xi[:2].copy())
+                self.ts.append(lambRay)
             else:
                 print('Warning: param coord search failed point {} in cell {}'.format(point, cId))
 
@@ -302,12 +305,12 @@ class PolysegmentIter:
         # add last point 
         cId = self.locator.FindCell(pEnd, self.eps, cell, xi, weights)
         if cId >= 0:
-            res.append( (cId, xi[:2].copy(), 1.) )
+            self.cellIds.append(cId)
+            self.xis.append(xi[:2].copy())
+            self.ts.append(1.)
         else:
             pass
             #print('Warning: end point {} not found!'.format(p1))
-
-        return res
 
 #################################################################################################
 
