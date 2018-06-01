@@ -33,8 +33,13 @@ class PolysegmentIter:
             cId = self.cellIds[i]
             c2Inds[cId] = c2Inds.get(cId, []) + [i]
 
-        # {(ta, tb) : (cellId, xia, xib), ...}
-        data = []
+        self.segCellIds = []
+        self.segTas = []
+        self.segTbs = []
+        self.segXias = []
+        self.segXibs = []
+        self.segCoeffs = []
+
         for cId, inds in c2Inds.items():
             v = [(self.ts[i], self.xis[i]) for i in inds]
             v.sort(lambda x, y: cmp(x[0], y[0]))
@@ -42,17 +47,22 @@ class PolysegmentIter:
             for i in range(n - 1):
                 ta, xia = v[i]
                 tb, xib = v[i + 1]
-                data.append( [(ta, tb), [cId, xia, xib]] )
+                self.segCellIds.append(cId)
+                self.segTas.append(ta)
+                self.segTbs.append(tb)
+                self.segXias.append(xia)
+                self.segXibs.append(xib)
+                self.segCoeffs.append(1.0)
 
-        # sort by t values
-        data.sort( lambda x, y: cmp(x[0], y[0]) )
-
-        self.segCellIds = [e[1][0] for e in data]
-        self.segTas = [e[0][0] for e in data]
-        self.segTbs = [e[0][1] for e in data]
-        self.segXias = [e[1][1] for e in data]
-        self.segXibs = [e[1][2] for e in data]
-        self.segCoeffs = [1.0 for e in data]
+        n = len(self.segCellIds)
+        inds = [i for i in range(n)]
+        # sort by ta values
+        inds.sort(lambda i, j: cmp(self.segTas[i], self.segTas[j]))
+        self.segCellIds = [self.segCellIds[i] for i in inds]
+        self.segTas = [self.segTas[i] for i in inds]
+        self.segTbs = [self.segTbs[i] for i in inds]
+        self.segXias = [self.segXias[i] for i in inds]
+        self.segXibs = [self.segXibs[i] for i in inds]
 
         # assign coefficients that account for duplicity, ie segments 
         # that are shared between two cells
