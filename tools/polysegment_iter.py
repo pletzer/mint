@@ -28,21 +28,22 @@ class PolysegmentIter:
         self.ts = []
         self.__collectLineGridSegments(p0, p1)
 
-        # re-arrange the data cellId -> [[t0, xi0], [t1, xi1], ...]
-        c2s = {}
+        c2Inds = {}
         for i in range(len(self.cellIds)):
-            cId, xi, t = self.cellIds[i], self.xis[i], self.ts[i]
-            c2s[cId] = c2s.get(cId, []) + [(t, xi)]
+            cId = self.cellIds[i]
+            c2Inds[cId] = c2Inds.get(cId, []) + [i]
 
         # {(ta, tb) : (cellId, xia, xib, coeff), ...}
         data = {}
-        for cId, v in c2s.items():
+        for cId, inds in c2Inds.items():
+            v = [(self.ts[i], self.xis[i]) for i in inds]
             v.sort(lambda x, y: cmp(x[0], y[0]))
             n = len(v)
             for i in range(n - 1):
                 ta, xia = v[i]
                 tb, xib = v[i + 1]
                 data[(ta, tb)] = [cId, xia, xib, 1.0]
+
 
         # turn data into a list [[(ta, tb), [cId, xia, xib, coeff]],...]
         self.data = [[k, v] for k, v in data.items()]
