@@ -296,7 +296,6 @@ class PolysegmentIter:
         # find all intersection points in between
         #
 
-        # let's be generous with the collection of cells
         intersections = self.__collectIntersectionPoints(pBeg, pEnd)
 
         # find the cell id of the neighbouring cells

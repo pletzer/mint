@@ -1,7 +1,8 @@
-#include <PolysegmentIter.h>
+#include <mntPolysegmentIter.h>
+#include <vtkIdList.h>
 
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
-                                 const double p0[], const double p1[],) {
+                                 const double p0[], const double p1[]) {
 
     // small tolerances 
     this->eps = 1.73654365e-14;
@@ -25,7 +26,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
         vtkIdType cId = this->cellIds[i];
         std:map< vtkIdType, std::vector<size_t> >::iterator it = c2Inds.find(cId);
         if (it != c2Inds.end()) {
-            // append
+            // push_back
             it->second.push_back(i);
         }
         else {
@@ -79,7 +80,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     std::vector< std::vector<double> > sXibs = this->segXibs;
     for (size_t i = 0; i < n; ++i) {
         size_t k = inds[i];
-        this->segCellIds[i] = sCellids[k];
+        this->segCellIds[i] = sCellIds[k];
         this->segTas[i] = sTas[k];
         this->segTbs[i] = sTbs[k];
         this->segXias[i] = sXias[k];
@@ -130,7 +131,6 @@ PolysegmentIter::getCellId() const {
     return this->segCellIds[this->index];
 }
 
-
 const std::vector<double>& 
 PolysegmentIter::getBegCellParamCoord() const {
     return this->segXias[this->index];
@@ -156,13 +156,13 @@ PolysegmentIter::getEndLineParamCoord() const {
      
 
 double 
-PolysegmentIter::getCoefficient() {
+PolysegmentIter::getCoefficient() const {
     return this->segCoeffs[this->index];
 }
  
 
 size_t
-PolysegmentIter::getIndex() {
+PolysegmentIter::getIndex() const {
     return this->index;
 }
 
@@ -173,7 +173,7 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     size_t n = this->segCellIds.size();
 
     // remove zero length segments
-    for (size_t i = n - 1; i >= -1, --i) {
+    for (int i = n - 1; i >= 0; --i) {
         double ta = this->segTas[i];
         double tb = this->segTbs[i];
         if (std::abs(tb - ta) < this->eps100) {
@@ -205,67 +205,83 @@ PolysegmentIter::__assignCoefficientsToSegments() {
 
 void
 PolysegmentIter::__collectIntersectionPoints(const double pBeg[], 
-                                             const double pEnd[]) {
-        """
-        Collect all the intersection points
-        @param pBeg starting point
-        @param pEnd end point
-        @return [(cellId, lambda, point), ...]
-        @note lambda is the linear parametric coordinate along the line
-        """
+                                             const double pEnd[],
+                                             std::vector<vtkIdType>& cIds,
+                                             std::vector<double>& lambRays,
+                                             std::vector< std::vector<double> >& points) {
 
-        res = []
+    LineLineIntersector intersector();
+    vtkIdList* cellIds = vtkIdList::New();
+    vtkIdList* ptIds = vtkIdList::New();
 
-        intersector = LineLineIntersector()
-        cellIds = vtk.vtkIdList()
-        ptIds = vtk.vtkIdList()
+    std::vector<double> v0(3);
+    std::vector<double> v1(3);
 
-        dp = pEnd - pBeg
+    double dp[] = {pEnd[0] - pBeg[0], pEnd[1] - pBeg[1], pEnd[2] - pBeg[2]};
 
-        // find all the cells intersected by the line
-        this->locator.FindCellsAlongLine(pBeg, pEnd, this->tol, cellIds)
+    // find all the cells intersected by the line
+    this->locator->FindCellsAlongLine(&pBeg[0], &pEnd[0], this->tol, cellIds);
 
-        // collect the intersection points in between
-        for i in range(cellIds.GetNumberOfIds()):
+    // collect the intersection points in between
+    for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
-            cId = cellIds.GetId(i)
+        vtkIdType cId = cellIds->GetId(i);
 
-            this->grid.GetCellPoints(cId, ptIds)
+        this->grid->GetCellPoints(cId, ptIds);
 
-            // iterate over the quads' edges
-            for j0 in range(4):
+        // iterate over the quads' edges
+        for (vtkIdType j0 = 0; j0 < 4; ++j0) {
 
-                j1 = (j0 + 1) % 4
-                v0 = numpy.array(this->grid.GetPoint(ptIds.GetId(j0)))
-                v1 = numpy.array(this->grid.GetPoint(ptIds.GetId(j1)))
+            vtkIdType j1 = (j0 + 1) % 4;
 
-                // look for an intersection
-                intersector.setPoints(pBeg[:2], pEnd[:2], v0[:2], v1[:2])
-                if not intersector.hasSolution(this->eps):
-                    continue
+            this->grid->GetPoint(ptIds->GetId(j0), &v0[0]);
+            this->grid->GetPoint(ptIds->GetId(j1), &v1[0]);
 
-                if abs(intersector.getDet()) > this->eps:
-                    // normal intersection, 1 solution
-                    lambRay, lambEdg = intersector.getSolution()
+            // look for an intersection
+            intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0]);
+            if (! intersector.hasSolution(this->eps)) {
+                continue;
+            }
 
-                    // is it valid? Intersection must be within (p0, p1) and (q0, q1)
-                    if lambRay >= 0. - this->eps100 and lambRay <= 1. + this->eps100 and \
-                        lambEdg >= 0. - this->eps100 and lambEdg <= 1. + this->eps100:
+            if (std::abs(intersector.getDet()) > this->eps) {
+                // normal intersection, 1 solution
+                std::vector<double> sol = intersector.getSolution();
+                double lambRay = sol[0];
+                double lambEdg = sol[1];
 
-                        point = pBeg + lambRay*dp
-                        res.append( (cId, lambRay, point) )
+                // is it valid? Intersection must be within (p0, p1) and (q0, q1)
+                if (lambRay >= (0. - this->eps100) && lambRay <= (1. + this->eps100)  && 
+                    lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100) {
 
-                else:
-                    // det is almost zero
-                    // looks like the two lines (p0, p1) and (q0, q1) are overlapping
-                    // add the starting/ending points 
-                    lama, lamb = intersector.getBegEndParamCoords()
-                    pa = pBeg + lama*dp
-                    pb = pBeg + lamb*dp
-                    res.append( (cId, lama, pa) )
-                    res.append( (cId, lamb, pb) )
+                    double p[] = {pBeg[0] + lambRay*dp[0], pBeg[1] + lambRay*dp[1]};
+                    cIds.push_back(cId);
+                    lambRays.push_back(lambRay);
+                    points.push_back(std::vector<double>(p, p+2)); // is this a copy?
+                }
+            else {
+                // det is almost zero
+                // looks like the two lines (p0, p1) and (q0, q1) are overlapping
+                // add the starting/ending points
+                std::vector<double> sol = intersector.getBegEndParamCoords();
+                double lama = sol[0];
+                double lamb = sol[1];
+                double pa[] = {pBeg[0] + lama*dp[0], pBeg[1] + lama*dp[1]};
+                double pb[] = {pBeg[0] + lamb*dp[0], pBeg[1] + lamb*dp[1]};
+                cIds.push_back(cId);
+                lambRays.push_back(lama);
+                points.push_back(std::vector<double>(pa, pa + 2));
+                cIds.push_back(cId);
+                lambRays.push_back(lamb);
+                points.push_back(std::vector<double>(pb, pb + 2));
+            }
+        }
 
-        return res
+    }
+
+    // clean up
+    cellIds->Delete();
+    ptIds->Delete();
+  
 }
 
 
@@ -277,7 +293,6 @@ PolysegmentIter::__collectLineGridSegments(const double p0[],
     vtkGenericCell* cell = vtkGenericCell::New();
     vtkIdList* cellIds = vtkIdList::New();
     double xi[] = {0., 0., 0.};
-    double point[] = {0., 0., 0.};
     double closestPoint[] = {0., 0., 0.};
     double weights[] = {0., 0., 0., 0.};
 
@@ -300,30 +315,44 @@ PolysegmentIter::__collectLineGridSegments(const double p0[],
     // find all intersection points in between
     //
 
-    // let's be generous with the collection of cells
-    intersections = this->__collectIntersectionPoints(pBeg, pEnd);
+    std::vector<vtkIdType> cIds;
+    std::vector<double> lambRays;
+    std::vector< std::vector<double> > points;
+    this->__collectIntersectionPoints(pBeg, pEnd, cIds, lambRays, points);
 
-        # find the cell id of the neighbouring cells
-        for cId, lambRay, point in intersections:
+    // find the cell id of the neighbouring cells
+    size_t nXPts = cIds.size();
+    for (size_t i = 0; i < nXPts; ++i) {
 
-            found = this->grid.GetCell(cId).EvaluatePosition(point, closestPoint, subId, xi, dist, weights)
-            if found:
-                this->cellIds.append(cId)
-                this->xis.append(xi[:2].copy())
-                this->ts.append(lambRay)
-            else:
-                print('Warning: param coord search failed point {} in cell {}'.format(point, cId))
+        vtkIdType cId = cIds[i];
+        double lambRay = lambRays[i];
+        const std::vector<double>& point = points[i];
 
-            
-        # add last point 
-        cId = this->locator.FindCell(pEnd, this->eps, cell, xi, weights)
-        if cId >= 0:
-            this->cellIds.append(cId)
-            this->xis.append(xi[:2].copy())
-            this->ts.append(1.)
-        else:
-            pass
-            #print('Warning: end point {} not found!'.format(p1))
+        int found = this->grid.GetCell(cId).EvaluatePosition(&point[0], closestPoint, 
+                                                             &subId, &xi[], &dist, weights);
+        if (found) {
+            this->cellIds.push_back(cId);
+            this->xis.push_back(std::vector<double>(xi, xi + 2));
+            this->ts.push_back(lambRay);
+        }
+        else {
+            std::cerr << "Warning: param coord search failed for point " << point[0] << ", " << point[1] 
+                                                                         << " in cell " << cId << '\n';
+        }
+    }
+ 
+    // add last point 
+    vtkTypeId cId = this->locator.FindCell(pEnd, this->eps, cell, xi, weights);
+    if (cId >= 0) {
+        this->cellIds.push_back(cId);
+        this->xis.push_back(std::vector(xi, xi + 2));
+        this->ts.push_back(1.);
+    }
+
+    // clean up
+    ptIds->Delete();
+    cell->Delete();
+    cellIds->Delete();
 
 }
 

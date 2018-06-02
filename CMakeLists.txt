@@ -11,6 +11,10 @@ set(VERSION_MINOR "1")
 set(VERSION_PATCH "0")
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
+# Required version
+cmake_minimum_required(VERSION 3.1)
+set(CMAKE_CXX_STANDARD 11)
+
 #set(DEBUG_CMAKE TRUE)
 
 ###################################################
@@ -29,14 +33,15 @@ endif()
 
 ###################################################
 
-# Required version
-cmake_minimum_required(VERSION 2.8.8)
 
+find_package(VTK REQUIRED)
 find_package(HDF5)
 find_package(CURL)
 # netcdf needs to be set manually
 # using -D NETCDF_INCLUDE_DIR and 
-# -D NETCDF_LIBRARY
+# -D NETCDF_LIBRARYinclude(${VTK_USE_FILE})
+
+include(${VTK_USE_FILE})
 
 enable_testing()
 

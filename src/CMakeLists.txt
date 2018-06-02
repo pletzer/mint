@@ -8,11 +8,14 @@ set(LIB_FILES
   MvVector.cpp
   MvMat_double.cpp
   mntLatLon.cpp
+  mntPolysegmentIter.cpp
 )
 
 set(HEADER_FILES
   CmdLineArgParser.h
   mntLatLon.h
+  mntLineLineIntersector.h
+  mntPolysegmentIter.h
 )
 
 add_library(mint ${LIB_FILES})
