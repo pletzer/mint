@@ -282,8 +282,6 @@ class PolysegmentIter:
         pBeg[:] = p0[0], p0[1], 0.0
         pEnd[:] = p1[0], p1[1], 0.0
 
-        deltaPos = pEnd - pBeg
-
         # add starting point
         cId = self.locator.FindCell(pBeg, self.eps, cell, xi, weights)
         if cId >= 0:
@@ -293,10 +291,6 @@ class PolysegmentIter:
         else:
             pass
             #print('Warning: starting point {} not found!'.format(p0))
-
-        tLast = 0.0
-        cIdLast = cId
-        fullSegment = False
 
         #
         # find all intersection points in between

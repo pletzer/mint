@@ -262,73 +262,13 @@ struct PolysegmentIter {
         return res
 
 
-    def __collectLineGridSegments(self, p0, p1):
-        """
-        Collect all the line-grid intersection points
-        @param p0 starting point of the line
-        @param p1 end point of the line 
-        @return list of [ (cellId, xi, t), ...]
-        """
-
-        res = []
-
-        // things we need to define
-        ptIds = vtk.vtkIdList()
-        cell = vtk.vtkGenericCell()
-        cellIds = vtk.vtkIdList()
-        subId = vtk.mutable(-1)
-        dist = vtk.mutable(0.)
-        xi = numpy.zeros((3,), numpy.float64)
-        pBeg = numpy.zeros((3,), numpy.float64)
-        pEnd = numpy.zeros((3,), numpy.float64)
-        point = numpy.zeros((3,), numpy.float64)
-        closestPoint = numpy.zeros((3,), numpy.float64)
-        weights = numpy.array((4,), numpy.float64)
-
-        // VTK wants 3d positions
-        pBeg[:] = p0[0], p0[1], 0.0
-        pEnd[:] = p1[0], p1[1], 0.0
-
-        deltaPos = pEnd - pBeg
-
-        // add starting point
-        cId = this->locator.FindCell(pBeg, this->eps, cell, xi, weights)
-        if cId >= 0:
-            res.append( (cId, xi[:2].copy(), 0.) )
-        else:
-            pass
-            #print('Warning: starting point {} not found!'.format(p0))
-
-        tLast = 0.0
-        cIdLast = cId
-        fullSegment = False
-
-        #
-        // find all intersection points in between
-        #
-
-        // let's be generous with the collection of cells
-        intersections = this->__collectIntersectionPoints(pBeg, pEnd)
-
-        // find the cell id of the neighbouring cells
-        for cId, lambRay, point in intersections:
-
-            found = this->grid.GetCell(cId).EvaluatePosition(point, closestPoint, subId, xi, dist, weights)
-            if found:
-                res.append( (cId, xi[:2].copy(), lambRay) )
-            else:
-                print('Warning: param coord search failed point {} in cell {}'.format(point, cId))
-
-            
-        // add last point 
-        cId = this->locator.FindCell(pEnd, this->eps, cell, xi, weights)
-        if cId >= 0:
-            res.append( (cId, xi[:2].copy(), 1.) )
-        else:
-            pass
-            #print('Warning: end point {} not found!'.format(p1))
-
-        return res
+/**
+ * Collect and store all the line-grid intersection points
+ * @param p0 starting point of the line
+ * @param p1 end point of the line 
+ */
+void __collectLineGridSegments(const double p0[], 
+                               const double p1[]);
 
     // cell Ids for each intersection point
     std::vector<vtkIdType> cellIds;
@@ -339,11 +279,18 @@ struct PolysegmentIter {
     // 1d line parametric coordinates for each intersection point
     std::vector<double> ts;
 
-    // array of coefficients, one for each segment
-    std::vector<double> coeffs;
+    // grid cell Ids for each segment
+    std::vector<vtkIdType> segCellIds;
 
-    // create list of [(i0, i1), ...] tuples
-    std::vector< std::pair<size_t, size_t> > segIndices;
+    // starten parametric line coordinates
+    std::vector<double> segTas;
+    std::vector<double> segTbs;
 
+    // start/end cell parametric coordinates
+    std::vector< std::vector<double> > segXias;
+    std::vector< std::vector<double> > segXibs;
+
+    // duplicity coefficient
+    std::vector<double> segCoeffs;
 
 };
