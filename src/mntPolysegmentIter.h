@@ -148,7 +148,9 @@ struct PolysegmentIter {
     double eps;
     double eps100;
     double tol;
+    double totalT;
 
     size_t index;
+    size_t numSegs;
 
 };

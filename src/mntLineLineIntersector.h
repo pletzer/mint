@@ -105,8 +105,7 @@ struct LineLineIntersector {
      * @return pair
      */
     const std::pair< Vector<double>, Vector<double> > getBegEndParamCoords() const {
-       std::pair< double, double > p(this->lamBeg, this->lamEnd);
-       return p;
+       return std::pair< double, double >(this->lamBeg, this->lamEnd);
     }
 
 

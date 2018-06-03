@@ -1,5 +1,6 @@
 #include <mntPolysegmentIter.h>
 #include <vtkIdList.h>
+#include <MvVector.h>
 
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
                                  const double p0[], const double p1[]) {
@@ -210,7 +211,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                                              std::vector<double>& lambRays,
                                              std::vector< std::vector<double> >& points) {
 
-    LineLineIntersector intersector();
+    LineLineIntersector intersector;
     vtkIdList* cellIds = vtkIdList::New();
     vtkIdList* ptIds = vtkIdList::New();
 
@@ -220,7 +221,9 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
     double dp[] = {pEnd[0] - pBeg[0], pEnd[1] - pBeg[1], pEnd[2] - pBeg[2]};
 
     // find all the cells intersected by the line
-    this->locator->FindCellsAlongLine(&pBeg[0], &pEnd[0], this->tol, cellIds);
+    this->locator->FindCellsAlongLine((double*) &pBeg[0], 
+                                      (double*) &pEnd[0], 
+                                      this->tol, cellIds);
 
     // collect the intersection points in between
     for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
@@ -251,7 +254,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
                 // is it valid? Intersection must be within (p0, p1) and (q0, q1)
                 if (lambRay >= (0. - this->eps100) && lambRay <= (1. + this->eps100)  && 
-                    lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100) {
+                    lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100)) {
 
                     double p[] = {pBeg[0] + lambRay*dp[0], pBeg[1] + lambRay*dp[1]};
                     cIds.push_back(cId);
@@ -262,9 +265,9 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 // det is almost zero
                 // looks like the two lines (p0, p1) and (q0, q1) are overlapping
                 // add the starting/ending points
-                std::vector<double> sol = intersector.getBegEndParamCoords();
-                double lama = sol[0];
-                double lamb = sol[1];
+                const std::pair<double, double> sol = intersector.getBegEndParamCoords();
+                double lama = sol.first;
+                double lamb = sol.second;
                 double pa[] = {pBeg[0] + lama*dp[0], pBeg[1] + lama*dp[1]};
                 double pb[] = {pBeg[0] + lamb*dp[0], pBeg[1] + lamb*dp[1]};
                 cIds.push_back(cId);
