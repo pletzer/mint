@@ -104,7 +104,7 @@ struct LineLineIntersector {
      * Get the begin/end parametric coordinates of overlap
      * @return pair
      */
-    const std::pair< Vector<double>, Vector<double> > getBegEndParamCoords() const {
+    const std::pair< double, double > getBegEndParamCoords() const {
        return std::pair< double, double >(this->lamBeg, this->lamEnd);
     }
 

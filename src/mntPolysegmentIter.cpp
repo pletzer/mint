@@ -1,5 +1,6 @@
 #include <mntPolysegmentIter.h>
 #include <vtkIdList.h>
+#include <vtkGenericCell.h>
 #include <MvVector.h>
 
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
@@ -210,7 +211,6 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                                              std::vector<vtkIdType>& cIds,
                                              std::vector<double>& lambRays,
                                              std::vector< std::vector<double> >& points) {
-
     LineLineIntersector intersector;
     vtkIdList* cellIds = vtkIdList::New();
     vtkIdList* ptIds = vtkIdList::New();
@@ -259,8 +259,9 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                     double p[] = {pBeg[0] + lambRay*dp[0], pBeg[1] + lambRay*dp[1]};
                     cIds.push_back(cId);
                     lambRays.push_back(lambRay);
-                    points.push_back(std::vector<double>(p, p+2)); // is this a copy?
+                    points.push_back(std::vector<double>(p, p + 2)); // is this a copy?
                 }
+            }
             else {
                 // det is almost zero
                 // looks like the two lines (p0, p1) and (q0, q1) are overlapping
@@ -277,9 +278,8 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 lambRays.push_back(lamb);
                 points.push_back(std::vector<double>(pb, pb + 2));
             }
-        }
-
-    }
+        } // end of edge loop
+    } // end of cell loop
 
     // clean up
     cellIds->Delete();
@@ -289,8 +289,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
 
 void 
-PolysegmentIter::__collectLineGridSegments(const double p0[],
-                                           const double p1[]) {
+PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[]) {
     // things we need to define
     vtkIdList* ptIds = vtkIdList::New();
     vtkGenericCell* cell = vtkGenericCell::New();
@@ -299,7 +298,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[],
     double closestPoint[] = {0., 0., 0.};
     double weights[] = {0., 0., 0., 0.};
 
-    vtkIdType subId;
+    int subId;
     double dist;
     
     // VTK wants 3d positions
@@ -307,7 +306,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[],
     double pEnd[] = {p1[0], p1[1], 0.};
 
     // add starting point
-    vtkTypeId cId = this->locator.FindCell(pBeg, this->eps, cell, xi, weights);
+    vtkIdType cId = this->locator->FindCell(pBeg, this->eps, cell, xi, weights);
     if (cId >= 0) {
         this->cellIds.push_back(cId);
         this->xis.push_back(std::vector<double>(xi, xi + 2));
@@ -331,8 +330,8 @@ PolysegmentIter::__collectLineGridSegments(const double p0[],
         double lambRay = lambRays[i];
         const std::vector<double>& point = points[i];
 
-        int found = this->grid.GetCell(cId).EvaluatePosition(&point[0], closestPoint, 
-                                                             &subId, &xi[], &dist, weights);
+        int found = this->grid->GetCell(cId)->EvaluatePosition((double*) &point[0], closestPoint, 
+                                                                subId, xi, dist, weights);
         if (found) {
             this->cellIds.push_back(cId);
             this->xis.push_back(std::vector<double>(xi, xi + 2));
@@ -344,11 +343,11 @@ PolysegmentIter::__collectLineGridSegments(const double p0[],
         }
     }
  
-    // add last point 
-    vtkTypeId cId = this->locator.FindCell(pEnd, this->eps, cell, xi, weights);
+    // add end point 
+    cId = this->locator->FindCell(pEnd, this->eps, cell, xi, weights);
     if (cId >= 0) {
         this->cellIds.push_back(cId);
-        this->xis.push_back(std::vector(xi, xi + 2));
+        this->xis.push_back(std::vector<double>(xi, xi + 2));
         this->ts.push_back(1.);
     }
 
