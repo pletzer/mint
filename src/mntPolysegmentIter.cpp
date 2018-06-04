@@ -210,17 +210,29 @@ PolysegmentIter::__assignCoefficientsToSegments() {
 
     size_t n = this->segCellIds.size();
 
-    // remove zero length segments
-    for (int i = n - 1; i >= 0; --i) {
-        double ta = this->segTas[i];
-        double tb = this->segTbs[i];
-        if (std::abs(tb - ta) < this->eps100) {
-            this->segCellIds.erase(this->segCellIds.begin() + i);
-            this->segTas.erase(this->segTas.begin() + i);
-            this->segTbs.erase(this->segTbs.begin() + i);
-            this->segXias.erase(this->segXias.begin() + i);
-            this->segXibs.erase(this->segXibs.begin() + i);
-            this->segCoeffs.erase(this->segCoeffs.begin() + i);
+    // copy
+    std::vector<vtkIdType> sCellIds = this->segCellIds;
+    std::vector<double> sTas = this->segTas;
+    std::vector<double> sTbs = this->segTbs;
+    std::vector< std::vector<double> > sXias = this->segXias;
+    std::vector< std::vector<double> > sXibs = this->segXibs;
+    std::vector<double> sCoeffs = this->segCoeffs;
+    this->segCellIds.resize(0);
+    this->segTas.resize(0);
+    this->segTbs.resize(0);
+    this->segXias.resize(0);
+    this->segXibs.resize(0);
+    this->segCoeffs.resize(0);
+    for (size_t i = 0; i < n; ++i) {
+        double ta = sTas[i];
+        double tb = sTbs[i];
+        if (std::abs(tb - ta) > this->eps100) {
+            this->segCellIds.push_back(sCellIds[i]);
+            this->segTas.push_back(sTas[i]);
+            this->segTbs.push_back(sTbs[i]);
+            this->segXias.push_back(sXias[i]);
+            this->segXibs.push_back(sXibs[i]);
+            this->segCoeffs.push_back(sCoeffs[i]);
         }
     }
 
