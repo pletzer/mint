@@ -14,6 +14,7 @@ set(LIB_FILES
 set(HEADER_FILES
   CmdLineArgParser.h
   mntLatLon.h
+  mntGrid.h
   mntLineLineIntersector.h
   mntPolysegmentIter.h
 )
