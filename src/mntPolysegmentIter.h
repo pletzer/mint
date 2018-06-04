@@ -45,6 +45,13 @@ struct PolysegmentIter {
      */
     bool next();
 
+    /**
+     * Get number of segments
+     * @return number
+     */
+    size_t getNumberOfSegments() const;
+
+
 
     /**
      * Get the current cell Id

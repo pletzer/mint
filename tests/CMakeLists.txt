@@ -10,4 +10,9 @@ target_link_libraries(testLineLineIntersector
 	                  ${HDF5_HL_LIBRARIES}
 	                  ${HDF5_LIBRARIES} 
 	                  ${CURL_LIBRARIES})
+add_executable(testPolysegmentIter testPolysegmentIter.cxx)
+target_link_libraries(testPolysegmentIter
+                      mint
+                      ${VTK_LIBRARIES}
+                     )
 

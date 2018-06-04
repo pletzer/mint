@@ -150,7 +150,7 @@ PolysegmentIter::getIntegratedParamCoord() const {
 
 void 
 PolysegmentIter::reset() {
-    this->index = -1;
+    this->index = 0;
 }
 
 
@@ -204,6 +204,10 @@ PolysegmentIter::getIndex() const {
     return this->index;
 }
 
+size_t
+PolysegmentIter::getNumberOfSegments() const {
+    return this->numSegs;
+}
 
 void
 PolysegmentIter::__assignCoefficientsToSegments() {
