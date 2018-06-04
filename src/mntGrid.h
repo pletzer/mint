@@ -24,9 +24,9 @@ struct mntGrid_t {
 extern "C" 
 int mnt_grid_new(mntGrid_t** self) {
     *self = new mntGrid_t();
-    (*self)->pointData = vtkDoubleArray::New();
-    (*self)->points = vtkPoints::New();
-    (*self)->grid = vtkUnstructuredGrid::New();
+    (*self)->pointData = NULL;
+    (*self)->points = NULL;
+    (*self)->grid = NULL;
     (*self)->reader = NULL;
     (*self)->writer = NULL;
     return 0;
@@ -40,10 +40,14 @@ int mnt_grid_new(mntGrid_t** self) {
 extern "C"
 int mnt_grid_del(mntGrid_t** self) {
 	if ((*self)->writer) (*self)->writer->Delete();
-	if ((*self)->reader) (*self)->reader->Delete();
-    (*self)->grid->Delete();
-    (*self)->points->Delete();
-    (*self)->pointData->Delete();
+	if ((*self)->reader) {
+        (*self)->reader->Delete();
+    }
+    else {
+        if ((*self)->grid) (*self)->grid->Delete();
+    }
+    if ((*self)->points) (*self)->points->Delete();
+    if ((*self)->pointData) (*self)->pointData->Delete();
     delete *self;
     return 0;
 }
@@ -57,6 +61,10 @@ int mnt_grid_del(mntGrid_t** self) {
  */
 extern "C"
 int mnt_grid_setpoints(mntGrid_t** self, int ncells, const double points[]) {
+
+    (*self)->pointData = vtkDoubleArray::New();
+    (*self)->points = vtkPoints::New();
+    (*self)->grid = vtkUnstructuredGrid::New();
 
     int save = 1;
     (*self)->pointData->SetNumberOfComponents(3);
@@ -104,6 +112,9 @@ int mnt_grid_get(mntGrid_t** self, vtkUnstructuredGrid** grid_ptr) {
  */
 extern "C"
 int mnt_grid_load(mntGrid_t** self, const char* filename) {
+    if ((*self)->grid) {
+        (*self)->grid->Delete();
+    }
     (*self)->reader = vtkUnstructuredGridReader::New();
 	(*self)->reader->SetFileName(filename);
 	(*self)->reader->Update();
