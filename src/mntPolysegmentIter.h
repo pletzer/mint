@@ -41,8 +41,9 @@ struct PolysegmentIter {
 
     /**
      * Next segment
+     * @return true if valid, false otherwise
      */
-    void next();
+    bool next();
 
 
     /**

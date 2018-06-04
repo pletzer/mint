@@ -11,75 +11,106 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     this->eps100 = 100. * this->eps;
     this->tol = 1.e-3; // to determine if a point is inside a cell
 
-
+    // set the grid and the grid locator
     this->grid = grid;
     this->locator = locator;
 
     // cellIds, xis and ts are output
-    this->cellIds.resize(0);
-    this->xis.resize(0);
-    this->ts.resize(0);
+    this->cellIds.resize(0); // cell of each intersection point
+    this->xis.resize(0);     // cell parametric coords for each intersection point
+    this->ts.resize(0);      // linear param coord for each intersction point
     this->__collectLineGridSegments(p0, p1);
 
-    // re-arrange the data cellId -> [indx0, indx1, ...]
+    // gather the intersection points attached to a cell: cellId -> [indx0, indx1, ...] 
     // indx is index in the cellIds, xis and ts arrays
     std::map< vtkIdType, std::vector<size_t> > c2Inds;
     for (size_t i = 0; i < this->cellIds.size(); ++i) {
         vtkIdType cId = this->cellIds[i];
         std:map< vtkIdType, std::vector<size_t> >::iterator it = c2Inds.find(cId);
         if (it != c2Inds.end()) {
-            // push_back
+            // push_back into existing list value
             it->second.push_back(i);
         }
         else {
-            // create new entry
+            // create new list value entry
             std::vector<size_t> index(1, i);
             std::pair< vtkIdType, std::vector<size_t> > p(cId, index);
             c2Inds.insert(p);
         }
     }
 
+    //
+    // build the subsegments
+    //
+
+    // arrays of cell Ids, start/end t values, start/end xi param coords, and 
+    // duplicity coefficients for each subsegment
     this->segCellIds.resize(0);
     this->segTas.resize(0);
     this->segTbs.resize(0);
     this->segXias.resize(0);
     this->segXibs.resize(0);
     this->segCoeffs.resize(0);
-    // sort by t values
-    TCmpFunctor f(this->ts);
+
+    // iterate over all the cells for which we have intersction points
     for (std::map< vtkIdType, std::vector<size_t> >::const_iterator it = c2Inds.begin();
         it != c2Inds.end(); ++it) {
-        std::sort(it->second.begin(), it->second.end(), f);
-        size_t n = it->second.size();
+
+        // cell Id
+        vtkIdType cId = it->first;
+
+        // index array into this->ts, this->cellIds and this->xis
+        std::vector<size_t> inds = it->second;
+
+        // compute the corresponding linear param coord t's
+        size_t n = inds.size();
+        std::vector<double> tVals(n);
+        for (size_t i = 0; i < n; ++i) {
+            tVals[i] = this->ts[ inds[i] ];
+        }
+
+        // sort the indices inds by t values
+        std::sort(inds.begin(), inds.end(), TCmpFunctor(tVals));
+
+        // create subsegments. Each subsegment has start and end points. Both
+        // the start/end points are in the same cell.
         for (size_t i = 0; i < n - 1; ++i) {
-            size_t ia = it->second[i    ];
-            size_t ib = it->second[i + 1];
+            size_t ia = inds[i    ];
+            size_t ib = inds[i + 1];
             double ta = this->ts[ia];
             double tb = this->ts[ib];
             const std::vector<double>& xia = this->xis[ia];
             const std::vector<double>& xib = this->xis[ib];
-            this->segCellIds.push_back(it->first);
+
+            // add the cell index, start linear param coord, etc.
+            this->segCellIds.push_back(cId);
             this->segTas.push_back(ta);
             this->segTbs.push_back(tb);
             this->segXias.push_back(xia);
             this->segXibs.push_back(xib);
+            // will deal with duplicity later
             this->segCoeffs.push_back(1.0);
         }
     }
 
+    // sort all the segments by start linear param coord t values
+
     size_t n = this->segCellIds.size();
     std::vector<size_t> inds(n);
-    for (size_t i = 0; i < n; ++i)
+    std::vector<double> tVals(n);
+    for (size_t i = 0; i < n; ++i) {
         inds[i] = i;
+        tVals[i] = this->segTas[i];
+    }
+    std::sort(inds.begin(), inds.end(), TCmpFunctor(tVals));
 
-    // sort arrays by ta values
-    std::sort(inds.begin(), inds.end(), f);
-
+    // copy
     std::vector<vtkIdType> sCellIds = this->segCellIds;
     std::vector<double> sTas = this->segTas;
     std::vector<double> sTbs = this->segTbs;
     std::vector< std::vector<double> > sXias = this->segXias;
     std::vector< std::vector<double> > sXibs = this->segXibs;
+    // no need to sort this->segCoeffs since all the values are one
     for (size_t i = 0; i < n; ++i) {
         size_t k = inds[i];
         this->segCellIds[i] = sCellIds[k];
@@ -90,11 +121,14 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     }
 
     // assign coefficients that account for duplicity, ie segments 
-    // that are shared between two cells
+    // that are shared between two cells. Output is this->segCoeffs
     this->__assignCoefficientsToSegments();
 
     this->numSegs = this->segCellIds.size();
 
+    // compute the total, integrated linear param coord
+    // should amoount to 1 is the target is entirely 
+    // contained within the source grid
     this->totalT = 0.0;
     for (size_t i = 0; i < this->numSegs; ++i) {
         double ta = this->segTas[i];
@@ -120,11 +154,13 @@ PolysegmentIter::reset() {
 }
 
 
-void 
+bool
 PolysegmentIter::next() {
     if (this->index < this->numSegs - 1) {
         this->index++;
+        return true;
     }
+    return false;
 }
 
 
