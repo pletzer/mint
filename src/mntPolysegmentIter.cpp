@@ -240,7 +240,8 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     // segments overlap then the coefficient of first segment
     // is set to 1.0 - overlap/(tb - ta). Assumes overlap 
     // can only happen for pairs of segment
-    n = this->segCellIds.size();
+    n = this->segCellIds.size(); // changed after removing zero length sub-segments
+    // iterate over sub-segment pairs
     for (size_t i0 = 0; i0 < n - 1; ++i0) {
         size_t i1 = i0 + 1;
         double ta0 = this->segTas[i0];
@@ -266,6 +267,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
     std::vector<double> v0(3);
     std::vector<double> v1(3);
 
+    // vector from start to finish
     double dp[] = {pEnd[0] - pBeg[0], pEnd[1] - pBeg[1], pEnd[2] - pBeg[2]};
 
     // find all the cells intersected by the line
@@ -273,11 +275,18 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                                       (double*) &pEnd[0], 
                                       this->tol, cellIds);
 
-    // collect the intersection points in between
+    //
+    // collect the intersection points
+    //
+
+    // iterate over the cells along the line
     for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
+        // this cell Id
         vtkIdType cId = cellIds->GetId(i);
 
+        // vertices, ptIds.GetNumberOfIds() should return 4
+        // since we're dealing with quads only
         this->grid->GetCellPoints(cId, ptIds);
 
         // iterate over the quads' edges
@@ -290,9 +299,14 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
             // look for an intersection
             intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0]);
+
             if (! intersector.hasSolution(this->eps)) {
+                // skip if no solution. FindCellsAlongLine may be too generous with
+                // returning the list of intersected cells
                 continue;
             }
+
+            // we have a solution but it could be degenerate
 
             if (std::abs(intersector.getDet()) > this->eps) {
                 // normal intersection, 1 solution
@@ -304,10 +318,13 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 if (lambRay >= (0. - this->eps100) && lambRay <= (1. + this->eps100)  && 
                     lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100)) {
 
+                    // compute the intersection point
                     double p[] = {pBeg[0] + lambRay*dp[0], pBeg[1] + lambRay*dp[1]};
+
+                    // add to list
                     cIds.push_back(cId);
                     lambRays.push_back(lambRay);
-                    points.push_back(std::vector<double>(p, p + 2)); // is this a copy?
+                    points.push_back(std::vector<double>(p, p + 2)); // copies
                 }
             }
             else {
@@ -315,16 +332,22 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 // looks like the two lines (p0, p1) and (q0, q1) are overlapping
                 // add the starting/ending points
                 const std::pair<double, double> sol = intersector.getBegEndParamCoords();
+                // linear param coord along line
                 double lama = sol.first;
                 double lamb = sol.second;
+                // compute the points
                 double pa[] = {pBeg[0] + lama*dp[0], pBeg[1] + lama*dp[1]};
                 double pb[] = {pBeg[0] + lamb*dp[0], pBeg[1] + lamb*dp[1]};
+
+                // add to lists both points
                 cIds.push_back(cId);
                 lambRays.push_back(lama);
                 points.push_back(std::vector<double>(pa, pa + 2));
+
                 cIds.push_back(cId);
-                lambRays.push_back(lamb);
+                lambRays.push_back(lamb); // same Id as before
                 points.push_back(std::vector<double>(pb, pb + 2));
+
             }
         } // end of edge loop
     } // end of cell loop
@@ -338,6 +361,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
 void 
 PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[]) {
+    
     // things we need to define
     vtkIdList* ptIds = vtkIdList::New();
     vtkGenericCell* cell = vtkGenericCell::New();
