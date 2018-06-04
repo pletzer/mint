@@ -361,11 +361,12 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
 void 
 PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[]) {
-    
+
     // things we need to define
     vtkIdList* ptIds = vtkIdList::New();
     vtkGenericCell* cell = vtkGenericCell::New();
     vtkIdList* cellIds = vtkIdList::New();
+
     double xi[] = {0., 0., 0.};
     double closestPoint[] = {0., 0., 0.};
     double weights[] = {0., 0., 0., 0.};
@@ -380,9 +381,10 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     // add starting point
     vtkIdType cId = this->locator->FindCell(pBeg, this->eps, cell, xi, weights);
     if (cId >= 0) {
+        // success
         this->cellIds.push_back(cId);
-        this->xis.push_back(std::vector<double>(xi, xi + 2));
-        this->ts.push_back(0.);
+        this->xis.push_back(std::vector<double>(xi, xi + 2)); // copy
+        this->ts.push_back(0.); // start of line
     }
 
     //
@@ -394,7 +396,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     std::vector< std::vector<double> > points;
     this->__collectIntersectionPoints(pBeg, pEnd, cIds, lambRays, points);
 
-    // find the cell id of the neighbouring cells
+    // find the cell Id of the neighbouring cells
     size_t nXPts = cIds.size();
     for (size_t i = 0; i < nXPts; ++i) {
 
@@ -418,9 +420,10 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     // add end point 
     cId = this->locator->FindCell(pEnd, this->eps, cell, xi, weights);
     if (cId >= 0) {
+        // success
         this->cellIds.push_back(cId);
         this->xis.push_back(std::vector<double>(xi, xi + 2));
-        this->ts.push_back(1.);
+        this->ts.push_back(1.); // end of line
     }
 
     // clean up
