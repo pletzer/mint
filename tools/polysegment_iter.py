@@ -170,17 +170,29 @@ class PolysegmentIter:
     def __assignCoefficientsToSegments(self):
 
         n = len(self.segCellIds)
-
+        # copy
+        sCellIds = self.segCellIds[:]
+        sTas = self.segTas[:]
+        sTbs = self.segTbs[:]
+        sXias = self.segXias[:]
+        sXibs = self.segXibs[:]
+        sCoeffs = self.segCoeffs[:]
         # remove zero length segments
-        for i in range(n - 1, -1, -1):
-            ta, tb = self.segTas[i], self.segTbs[i]
-            if abs(tb - ta) < self.eps100:
-                del self.segCellIds[i]
-                del self.segTas[i]
-                del self.segTbs[i]
-                del self.segXias[i]
-                del self.segXibs[i]
-                del self.segCoeffs[i]
+        self.segCellIds = []
+        self.segTas = []
+        self.segTbs = []
+        self.segXias = []
+        self.segXibs = []
+        self.segCoeffs = []
+        for i in range(n):
+            ta, tb = sTas[i], sTbs[i]
+            if abs(tb - ta) > self.eps100:
+                self.segCellIds.append(sCellIds[i])
+                self.segTas.append(sTas[i])
+                self.segTbs.append(sTbs[i])
+                self.segXias.append(sXias[i])
+                self.segXibs.append(sXibs[i])
+                self.segCoeffs.append(sCoeffs[i])
 
         # reduce contribution for overlapping segments. If two 
         # segments overlap then the coefficient of first segment
