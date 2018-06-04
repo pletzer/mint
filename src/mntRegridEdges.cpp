@@ -6,8 +6,8 @@
 extern "C"
 int mnt_regridedges_new(mntLatLon_t** self) {
     *self = new mntRegridEdges_t();
-    (*self)->srcGrid = vtkUnstructuredGrid::New();
-    (*self)->dstGrid = vtkUnstructuredGrid::New();
+    (*self)->srcGrid = NULL;
+    (*self)->dstGrid = NULL;
     (*self)->srcLoc = vtkCellLocator::New();
     return 0;
 }
@@ -18,8 +18,6 @@ int mnt_regridedges_new(mntLatLon_t** self) {
  */
 extern "C"
 int mnt_regridedges_del(mntLatLon_t** self) {
-    (*self)->srcGrid = vtkUnstructuredGrid::Delete();
-    (*self)->dstGrid = vtkUnstructuredGrid::Delete();
     (*self)->srcLoc = vtkCellLocator::Delete();
     *self = new mntRegridEdges_t();
     return 0;
