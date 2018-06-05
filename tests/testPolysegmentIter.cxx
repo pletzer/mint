@@ -184,7 +184,10 @@ void test2CellsEdge() {
                                    << '\n';
         psi.next();
     }
-    assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
+    double tTotal = psi.getIntegratedParamCoord();
+    double error = tTotal - 1.0;
+    std::cout << "test2CellsEdge: total t = " << tTotal <<  " error = " << error << '\n';
+    assert(std::abs(error) < 1.e-10);
 
     ptIds->Delete();
     loc->Delete();
