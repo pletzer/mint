@@ -10,6 +10,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vtkCellLocator::New();
+    (*self)->weights.clear();
     return 0;
 }
 
@@ -101,9 +102,9 @@ int mnt_regridedges_build(RegridEdges_t** self) {
                                                           (*self)->srcLoc,
                                                           dstEdgePt0, dstEdgePt1);
 
-            std::cout << "dst cell " << dstCellId
-                      << " dstEdgePt0=" << dstEdgePt0[0] << ',' << dstEdgePt0[1]
-                      << " dstEdgePt1=" << dstEdgePt1[0] << ',' << dstEdgePt1[1] << '\n';
+            //std::cout << "dst cell " << dstCellId
+            //          << " dstEdgePt0=" << dstEdgePt0[0] << ',' << dstEdgePt0[1]
+            //          << " dstEdgePt1=" << dstEdgePt1[0] << ',' << dstEdgePt1[1] << '\n';
 
             // number of sub-segments
             size_t numSegs = polySegIter.getNumberOfSegments();
@@ -130,8 +131,8 @@ int mnt_regridedges_build(RegridEdges_t** self) {
                                - dxi[0] * (0.0 + xiMid[1]) * coeff,
                                - dxi[1] * (1.0 - xiMid[0]) * coeff};
 
-                std::cout << "\t seg=" << iseg << " srcCellId=" << srcCellId << " xia=" << xia[0] << ',' << xia[1] << " xib=" << xib[0] << ',' << xib[1]
-                          << " coeff=" << coeff << " dxi=" << dxi[0] << ',' << dxi[1] << '\n';
+                //std::cout << "\t seg=" << iseg << " srcCellId=" << srcCellId << " xia=" << xia[0] << ',' << xia[1] << " xib=" << xib[0] << ',' << xib[1]
+                //          << " coeff=" << coeff << " dxi=" << dxi[0] << ',' << dxi[1] << '\n';
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
                     // initialize the weights to a zero 4x4 matrix
@@ -177,9 +178,51 @@ int mnt_regridedges_build(RegridEdges_t** self) {
  * Load the weights from file
  * @param filename file name
  * @return error code (0 is OK)
+ * @note this creates the object, user must call mnt_regridedges_del to reclaim memory
  */
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, const char* filename);
+int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
+
+    // create object
+    mnt_regridedges_new(self);
+
+    int ncid, ier;
+    ier = nc_open(filename, NC_NOWRITE, &ncid);
+
+    // get the sizes
+    size_t numWeights, numEdges;
+    int numWeightsId;
+    int numEdgesId;
+    ier = nc_inq_dimid(ncid, "num_weights", &numWeightsId);
+    ier = nc_inq_dimlen(ncid, numWeightsId, &numWeights);
+    ier = nc_inq_dimid(ncid, "num_edges", &numEdgesId);
+    ier = nc_inq_dimlen(ncid, numEdgesId, &numEdges);
+
+    int dstCellIdsId, srcCellIdsId, weightsId;
+
+    ier = nc_inq_varid(ncid, "dst_cell_ids", &dstCellIdsId);
+    ier = nc_inq_varid(ncid, "src_cell_ids", &srcCellIdsId);
+    ier = nc_inq_varid(ncid, "weights", &weightsId);
+
+    // read
+    std::vector<long> dstCellIds(numWeights);
+    std::vector<long> srcCellIds(numWeights);
+    std::vector<double> weights(numWeights * numEdges);
+    ier = nc_get_var_long(ncid, dstCellIdsId, &dstCellIds[0]);
+    ier = nc_get_var_long(ncid, srcCellIdsId, &srcCellIds[0]);
+    ier = nc_get_var_double(ncid, weightsId, &weights[0]);
+
+    ier = nc_close(ncid);    
+
+    // store in map
+    for (int i = 0; i < numWeights; ++i) {
+        std::pair< vtkIdType, vtkIdType > k(dstCellIds[i], srcCellIds[i]);
+        std::vector<double> v(&weights[numEdges*i], &weights[numEdges*i + numEdges]);
+        std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv(k, v);
+        (*self)->weights.insert(kv);
+    }
+
+}
 
 /**
  * Dump the weights to file
