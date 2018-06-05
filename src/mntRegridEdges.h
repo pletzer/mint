@@ -59,7 +59,7 @@ int mnt_regridedges_build(RegridEdges_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, const std::string& filename);
+int mnt_regridedges_load(RegridEdges_t** self, const char* filename);
 
 /**
  * Dump the weights to file
@@ -67,6 +67,6 @@ int mnt_regridedges_load(RegridEdges_t** self, const std::string& filename);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, const std::string& filename);
+int mnt_regridedges_dump(RegridEdges_t** self, const char* filename);
 
 

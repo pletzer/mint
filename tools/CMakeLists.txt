@@ -15,4 +15,8 @@ target_link_libraries(latlon
 add_executable(regrid_edges regrid_edges.cxx)
 target_link_libraries(regrid_edges
                       mint 
-                      ${VTK_LIBRARIES})
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARY} 
+                      ${HDF5_HL_LIBRARIES}
+                      ${HDF5_LIBRARIES} 
+                      ${CURL_LIBRARIES})

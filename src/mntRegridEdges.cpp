@@ -2,7 +2,7 @@
 #include <mntPolysegmentIter.h>
 #include <iostream>
 #include <vtkIdList.h>
-#include <MvVector.h>
+#include <netcdf.h>
 
 extern "C"
 int mnt_regridedges_new(RegridEdges_t** self) {
@@ -171,7 +171,7 @@ int mnt_regridedges_build(RegridEdges_t** self) {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, const std::string& filename);
+int mnt_regridedges_load(RegridEdges_t** self, const char* filename);
 
 /**
  * Dump the weights to file
@@ -179,6 +179,60 @@ int mnt_regridedges_load(RegridEdges_t** self, const std::string& filename);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, const std::string& filename);
+int mnt_regridedges_dump(RegridEdges_t** self, const char* filename) {
+
+    size_t numWeights = (*self)->weights.size();
+    const int numEdges = 4;
+
+    int ncid, ier;
+    ier = nc_create(filename, NC_CLOBBER, &ncid);
+
+    // create dimensions
+    int numWeightsId;
+    int numEdgesId;
+    ier = nc_def_dim(ncid, "num_weights", (int) numWeights, &numWeightsId);
+    ier = nc_def_dim(ncid, "num_edges", numEdges, &numEdgesId);
+
+
+    // create variables
+    int numWeightsAxis[] = {numWeightsId};
+    int numWeightsNumEdgesAxes[] = {numWeightsId, numEdgesId};
+
+    int dstCellIdsId;
+    ier = nc_def_var(ncid, "dst_cell_ids", NC_LONG, 1, numWeightsAxis, &dstCellIdsId);
+
+    int srcCellIdsId;
+    ier = nc_def_var(ncid, "src_cell_ids", NC_LONG, 1, numWeightsAxis, &srcCellIdsId);
+
+    int weightsId;
+    ier = nc_def_var(ncid, "weights", NC_DOUBLE, 1, numWeightsNumEdgesAxes, &weightsId);
+
+    // close define mode
+    ier = nc_enddef(ncid);
+
+    // load into arrays
+    std::vector<long> dstCellIds(numWeights);
+    std::vector<long> srcCellIds(numWeights);
+    std::vector<double> weights(numWeights * numEdges);
+    size_t i = 0;
+    for (std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::const_iterator 
+        it = (*self)->weights.begin(); it != (*self)->weights.end(); ++it) {
+        dstCellIds[i] = it->first.first;
+        srcCellIds[i] = it->first.second;
+        for (int j = 0; j < numEdges; ++j) {
+        weights[numEdges*i + j] = it->second[j];
+        }
+        i++;
+    }
+
+    // write
+    ier = nc_put_var_long(ncid, dstCellIdsId, &dstCellIds[0]);
+    ier = nc_put_var_long(ncid, srcCellIdsId, &srcCellIds[0]);
+    ier = nc_put_var_double(ncid, weightsId, &weights[0]);
+
+    ier = nc_close(ncid);
+
+    return 0;
+}
 
 
