@@ -6,6 +6,7 @@
 
 int main(int argc, char** argv) {
 
+    int ier;
     CmdLineArgParser args;
     args.setPurpose("Regrid an edge centred field.");
     args.set("-s", std::string(""), "Source grid file in VTK format");
@@ -27,6 +28,9 @@ int main(int argc, char** argv) {
             return 2;
         }
 
+        vtkUnstructuredGrid* sg = NULL;
+        vtkUnstructuredGrid* dg = NULL;
+
         // read/build the src grid
         mntGrid_t* srcGrid = NULL;
         mnt_grid_new(&srcGrid);
@@ -37,14 +41,18 @@ int main(int argc, char** argv) {
         mnt_grid_new(&dstGrid);
         mnt_grid_load(&dstGrid, dstFile.c_str());
 
-        vtkUnstructuredGrid* sg;
-        vtkUnstructuredGrid* dg;
+        // get the grid pointers
+        mnt_grid_get(&srcGrid, &sg);
+        mnt_grid_get(&dstGrid, &dg);
+
 
         // compute the interpolation weights
         mntRegridEdges_t* rge = NULL;
         mnt_regridedges_new(&rge);
-        mnt_regridedges_setSrcGrid(&rge, sg);
-        mnt_regridedges_setDstGrid(&rge, dg);
+        ier = mnt_regridedges_setSrcGrid(&rge, sg);
+        if (ier != 0) return 1;
+        ier = mnt_regridedges_setDstGrid(&rge, dg);
+        if (ier != 0) return 2;
         mnt_regridedges_build(&rge);
 
         // cleanup

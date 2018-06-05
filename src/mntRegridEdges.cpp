@@ -27,13 +27,26 @@ int mnt_regridedges_del(mntRegridEdges_t** self) {
 
 extern "C"
 int mnt_regridedges_setSrcGrid(mntRegridEdges_t** self, vtkUnstructuredGrid* grid) {
+    // check
+    if (grid->GetNumberOfPoints() != 4 * grid->GetNumberOfCells()) {
+        std::cerr << "mnt_regridedges_setSrcGrid: ERROR num points != 4 * num cells!\n";
+        return 1;
+    }
+
     // borrow pointer
     (*self)->srcGrid = grid;
+
     return 0;
 }
 
 extern "C"
 int mnt_regridedges_setDstGrid(mntRegridEdges_t** self, vtkUnstructuredGrid* grid) {
+    // check
+    if (grid->GetNumberOfPoints() != 4 * grid->GetNumberOfCells()) {
+        std::cerr << "mnt_regridedges_setDstGrid: ERROR num points != 4 * num cells!\n";
+        return 1;
+    }
+
     // borrow pointer
     (*self)->srcGrid = grid;
     return 0;
