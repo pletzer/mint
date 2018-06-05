@@ -5,8 +5,8 @@
 #include <MvVector.h>
 
 extern "C"
-int mnt_regridedges_new(mntRegridEdges_t** self) {
-    *self = new mntRegridEdges_t();
+int mnt_regridedges_new(RegridEdges_t** self) {
+    *self = new RegridEdges_t();
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vtkCellLocator::New();
@@ -18,7 +18,7 @@ int mnt_regridedges_new(mntRegridEdges_t** self) {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_del(mntRegridEdges_t** self) {
+int mnt_regridedges_del(RegridEdges_t** self) {
     // the src and dst grids don't belong to this class
     (*self)->srcLoc->Delete();
     delete *self;
@@ -26,7 +26,7 @@ int mnt_regridedges_del(mntRegridEdges_t** self) {
 }
 
 extern "C"
-int mnt_regridedges_setSrcGrid(mntRegridEdges_t** self, vtkUnstructuredGrid* grid) {
+int mnt_regridedges_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) {
     // check
     if (grid->GetNumberOfPoints() != 4 * grid->GetNumberOfCells()) {
         std::cerr << "mnt_regridedges_setSrcGrid: ERROR num points != 4 * num cells!\n";
@@ -40,7 +40,7 @@ int mnt_regridedges_setSrcGrid(mntRegridEdges_t** self, vtkUnstructuredGrid* gri
 }
 
 extern "C"
-int mnt_regridedges_setDstGrid(mntRegridEdges_t** self, vtkUnstructuredGrid* grid) {
+int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) {
     // check
     if (grid->GetNumberOfPoints() != 4 * grid->GetNumberOfCells()) {
         std::cerr << "mnt_regridedges_setDstGrid: ERROR num points != 4 * num cells!\n";
@@ -53,7 +53,7 @@ int mnt_regridedges_setDstGrid(mntRegridEdges_t** self, vtkUnstructuredGrid* gri
 }
 
 extern "C"
-int mnt_regridedges_build(mntRegridEdges_t** self) {
+int mnt_regridedges_build(RegridEdges_t** self) {
 
     // checks
     if (!(*self)->srcGrid) {
@@ -171,7 +171,7 @@ int mnt_regridedges_build(mntRegridEdges_t** self) {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_load(mntRegridEdges_t** self, const std::string& filename);
+int mnt_regridedges_load(RegridEdges_t** self, const std::string& filename);
 
 /**
  * Dump the weights to file
@@ -179,6 +179,6 @@ int mnt_regridedges_load(mntRegridEdges_t** self, const std::string& filename);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_dump(mntRegridEdges_t** self, const std::string& filename);
+int mnt_regridedges_dump(RegridEdges_t** self, const std::string& filename);
 
 

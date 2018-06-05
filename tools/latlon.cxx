@@ -17,13 +17,13 @@ int main(int argc, char** argv) {
         int nlat = args.get<int>("-nlat");
         int nlon = args.get<int>("-nlon");
 
-        mntLatLon_t *ll;
-        mnt_latlon_new(&ll);
-        mnt_latlon_setNumberOfLatCells(&ll, (size_t) args.get<int>("-nlat"));
-        mnt_latlon_setNumberOfLonCells(&ll, (size_t) args.get<int>("-nlon"));
-        mnt_latlon_build(&ll);
-        mnt_latlon_dump(&ll, args.get<std::string>("-o"));
-        mnt_latlon_del(&ll);
+        LatLon_t *lalo;
+        mnt_latlon_new(&lalo);
+        mnt_latlon_setNumberOfLatCells(&lalo, (size_t) args.get<int>("-nlat"));
+        mnt_latlon_setNumberOfLonCells(&lalo, (size_t) args.get<int>("-nlon"));
+        mnt_latlon_build(&lalo);
+        mnt_latlon_dump(&lalo, args.get<std::string>("-o"));
+        mnt_latlon_del(&lalo);
     }
     else if (help) {
         args.help();

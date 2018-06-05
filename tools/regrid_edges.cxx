@@ -32,12 +32,12 @@ int main(int argc, char** argv) {
         vtkUnstructuredGrid* dg = NULL;
 
         // read/build the src grid
-        mntGrid_t* srcGrid = NULL;
+        Grid_t* srcGrid = NULL;
         mnt_grid_new(&srcGrid);
         mnt_grid_load(&srcGrid, srcFile.c_str());
 
         // read/build the dst grid
-        mntGrid_t* dstGrid = NULL;
+        Grid_t* dstGrid = NULL;
         mnt_grid_new(&dstGrid);
         mnt_grid_load(&dstGrid, dstFile.c_str());
 
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 
 
         // compute the interpolation weights
-        mntRegridEdges_t* rge = NULL;
+        RegridEdges_t* rge = NULL;
         mnt_regridedges_new(&rge);
         ier = mnt_regridedges_setSrcGrid(&rge, sg);
         if (ier != 0) return 1;

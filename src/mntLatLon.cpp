@@ -4,8 +4,8 @@
 
 
 extern "C"
-int mnt_latlon_new(mntLatLon_t** self){
-    *self = new mntLatLon_t();
+int mnt_latlon_new(LatLon_t** self){
+    *self = new LatLon_t();
     (*self)->fillValue = -1.073742e+09;
     (*self)->dLat = 0.;
     (*self)->dLon = 0.;
@@ -13,25 +13,25 @@ int mnt_latlon_new(mntLatLon_t** self){
 }
 
 extern "C"
-int mnt_latlon_del(mntLatLon_t** self) {
+int mnt_latlon_del(LatLon_t** self) {
     delete *self;
     return 0;
 }
 
 extern "C"
-int mnt_latlon_setNumberOfLatCells(mntLatLon_t** self, size_t n) {
+int mnt_latlon_setNumberOfLatCells(LatLon_t** self, size_t n) {
     (*self)->lats.resize(n + 1);
     return 0;
 }
 
 extern "C"
-int mnt_latlon_setNumberOfLonCells(mntLatLon_t** self, size_t n) {
+int mnt_latlon_setNumberOfLonCells(LatLon_t** self, size_t n) {
     (*self)->lons.resize(n + 1);
     return 0;
 }
 
 extern "C"
-int mnt_latlon_build(mntLatLon_t** self) {
+int mnt_latlon_build(LatLon_t** self) {
     size_t nLats = (*self)->lats.size();
     size_t nLons = (*self)->lons.size();
     (*self)->dLat = 180.0 / double(nLats - 1);
@@ -46,7 +46,7 @@ int mnt_latlon_build(mntLatLon_t** self) {
 }
 
 extern "C"
-int mnt_latlon_load(mntLatLon_t** self, const std::string& filename) {
+int mnt_latlon_load(LatLon_t** self, const std::string& filename) {
 
     int ncid, latitude_0_dim, longitude_0_dim;
     size_t numLat0, numLon0;
@@ -71,7 +71,7 @@ int mnt_latlon_load(mntLatLon_t** self, const std::string& filename) {
 }
 
 extern "C"
-int mnt_latlon_dump(mntLatLon_t** self, const std::string& filename) {
+int mnt_latlon_dump(LatLon_t** self, const std::string& filename) {
 
     int ncid, latitude_0_dim, latitude_dim, longitude_0_dim, longitude_dim;
     int latitude_var, longitude_var;
