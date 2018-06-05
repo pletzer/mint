@@ -25,3 +25,7 @@ target_link_libraries(testGrid
                       ${VTK_LIBRARIES}
                      )
 
+add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
+add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
+add_test(NAME grid COMMAND testGrid)
+
