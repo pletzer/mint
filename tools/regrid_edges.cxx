@@ -11,6 +11,7 @@ int main(int argc, char** argv) {
     args.setPurpose("Regrid an edge centred field.");
     args.set("-s", std::string(""), "Source grid file in VTK format");
     args.set("-d", std::string(""), "Destination grid file in VTK format");
+    args.set("-o", std::string("weights.nc"), "Write interpolation weights to file");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -18,6 +19,7 @@ int main(int argc, char** argv) {
     if (success && !help) {
         std::string srcFile = args.get<std::string>("-s");
         std::string dstFile = args.get<std::string>("-d");
+        std::string weightsFile = args.get<std::string>("-o");
 
         if (srcFile.size() == 0) {
             std::cerr << "ERROR: must specify a source grid file (-s)\n";
@@ -55,6 +57,11 @@ int main(int argc, char** argv) {
         if (ier != 0) return 2;
         ier = mnt_regridedges_build(&rge);
         if (ier != 0) return 3;
+
+        if (weightsFile.size() != 0) {
+            std::cout << "INFO saving weights in file " << weightsFile << '\n';
+            ier = mnt_regridedges_dump(&rge, weightsFile.c_str());
+        }
 
         // cleanup
         mnt_grid_del(&dstGrid);
