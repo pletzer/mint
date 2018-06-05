@@ -9,6 +9,7 @@ set(LIB_FILES
   MvMat_double.cpp
   mntLatLon.cpp
   mntPolysegmentIter.cpp
+  mntRegridEdges.cpp
 )
 
 set(HEADER_FILES
@@ -17,6 +18,7 @@ set(HEADER_FILES
   mntGrid.h
   mntLineLineIntersector.h
   mntPolysegmentIter.h
+  mntRegridEdges.h
 )
 
 add_library(mint ${LIB_FILES})
