@@ -139,6 +139,7 @@ int mnt_regridedges_build(mntRegridEdges_t** self) {
     srcCellIds->Delete();
     dstPtIds->Delete();
 
+    return 0;
 }
 
 /**

@@ -1,5 +1,7 @@
 #include <mntRegridEdges.h>
+#include <mntGrid.h>
 #include <CmdLineArgParser.h>
+#include <vtkUnstructuredGrid.h>
 #include <iostream>
 
 int main(int argc, char** argv) {
@@ -25,10 +27,29 @@ int main(int argc, char** argv) {
             return 2;
         }
 
+        // read/build the src grid
+        mntGrid_t* srcGrid = NULL;
+        mnt_grid_new(&srcGrid);
+        mnt_grid_load(&srcGrid, srcFile.c_str());
+
+        // read/build the dst grid
+        mntGrid_t* dstGrid = NULL;
+        mnt_grid_new(&dstGrid);
+        mnt_grid_load(&dstGrid, dstFile.c_str());
+
+        vtkUnstructuredGrid* sg;
+        vtkUnstructuredGrid* dg;
+
+        // compute the interpolation weights
         mntRegridEdges_t* rge = NULL;
         mnt_regridedges_new(&rge);
+        mnt_regridedges_setSrcGrid(&rge, sg);
+        mnt_regridedges_setDstGrid(&rge, dg);
+        mnt_regridedges_build(&rge);
 
         // cleanup
+        mnt_grid_del(&dstGrid);
+        mnt_grid_del(&srcGrid);
         mnt_regridedges_del(&rge);
 
     }
