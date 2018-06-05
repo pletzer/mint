@@ -72,8 +72,8 @@ int mnt_regridedges_build(RegridEdges_t** self) {
     // compute the weights
     vtkIdList* dstPtIds = vtkIdList::New();
     vtkIdList* srcCellIds = vtkIdList::New();
-    double* dstEdgePt0 = NULL;
-    double* dstEdgePt1 = NULL;
+    double dstEdgePt0[] = {0., 0., 0.};
+    double dstEdgePt1[] = {0., 0., 0.};
 
     vtkIdType numSrcCells = (*self)->srcGrid->GetNumberOfCells();
     vtkIdType numDstCells = (*self)->dstGrid->GetNumberOfCells();
@@ -93,19 +93,24 @@ int mnt_regridedges_build(RegridEdges_t** self) {
             vtkIdType id0 = dstPtIds->GetId(i0);
             vtkIdType id1 = dstPtIds->GetId(i1);
                 
-            dstEdgePt0 = (*self)->dstGrid->GetPoint(id0);
-            dstEdgePt1 = (*self)->dstGrid->GetPoint(id1);
+            (*self)->dstGrid->GetPoints()->GetPoint(id0, dstEdgePt0);
+            (*self)->dstGrid->GetPoints()->GetPoint(id1, dstEdgePt1);
 
             // break the edge into sub-edges
             PolysegmentIter polySegIter = PolysegmentIter((*self)->srcGrid, 
                                                           (*self)->srcLoc,
                                                           dstEdgePt0, dstEdgePt1);
 
+            std::cout << "dst cell " << dstCellId
+                      << " dstEdgePt0=" << dstEdgePt0[0] << ',' << dstEdgePt0[1]
+                      << " dstEdgePt1=" << dstEdgePt1[0] << ',' << dstEdgePt1[1] << '\n';
+
             // number of sub-segments
             size_t numSegs = polySegIter.getNumberOfSegments();
 
             // iterate over the sub-segments. Each sub-segment gets a src cell Id,
             //start/end cell param coords, the coefficient...
+            polySegIter.reset();
             for (size_t iseg = 0; iseg < numSegs; ++iseg) {
 
                 const vtkIdType srcCellId = polySegIter.getCellId();
@@ -124,6 +129,9 @@ int mnt_regridedges_build(RegridEdges_t** self) {
                                + dxi[1] * (0.0 + xiMid[0]) * coeff,
                                - dxi[0] * (0.0 + xiMid[1]) * coeff,
                                - dxi[1] * (1.0 - xiMid[0]) * coeff};
+
+                std::cout << "\t seg=" << iseg << " srcCellId=" << srcCellId << " xia=" << xia[0] << ',' << xia[1] << " xib=" << xib[0] << ',' << xib[1]
+                          << " coeff=" << coeff << " dxi=" << dxi[0] << ',' << dxi[1] << '\n';
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
                     // initialize the weights to a zero 4x4 matrix
