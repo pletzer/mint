@@ -53,7 +53,8 @@ int main(int argc, char** argv) {
         if (ier != 0) return 1;
         ier = mnt_regridedges_setDstGrid(&rge, dg);
         if (ier != 0) return 2;
-        mnt_regridedges_build(&rge);
+        ier = mnt_regridedges_build(&rge);
+        if (ier != 0) return 3;
 
         // cleanup
         mnt_grid_del(&dstGrid);

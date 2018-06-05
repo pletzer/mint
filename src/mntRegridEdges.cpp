@@ -48,12 +48,22 @@ int mnt_regridedges_setDstGrid(mntRegridEdges_t** self, vtkUnstructuredGrid* gri
     }
 
     // borrow pointer
-    (*self)->srcGrid = grid;
+    (*self)->dstGrid = grid;
     return 0;
 }
 
 extern "C"
 int mnt_regridedges_build(mntRegridEdges_t** self) {
+
+    // checks
+    if (!(*self)->srcGrid) {
+        std::cerr << "mnt_regridedges_build: ERROR must set source grid!\n";
+        return 1;
+    }
+    if (!(*self)->dstGrid) {
+        std::cerr << "mnt_regridedges_build: ERROR must set destination grid!\n";
+        return 2;
+    }
 
     // build the locator
     (*self)->srcLoc->SetDataSet((*self)->srcGrid);
