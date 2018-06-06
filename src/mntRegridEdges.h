@@ -13,6 +13,9 @@ struct RegridEdges_t {
     vtkUnstructuredGrid* dstGrid;
     vtkCellLocator* srcLoc;
     std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> > weights;
+    size_t numSrcCells;
+    size_t numDstCells;
+    size_t numEdges;
 };
 
 /**
@@ -53,10 +56,22 @@ int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
 extern "C"
 int mnt_regridedges_build(RegridEdges_t** self);
 
+
+/**
+ * Apply interpolation weights to field
+ * @param src_data edge centred data on the source grid 
+ * @param dst_data edge centred data on the destination grid
+ * @return error code (0 is OK)
+ * @note edges go anticlockwise
+ */
+extern "C"
+int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], double dst_data[]);
+
 /**
  * Load the weights from file
  * @param filename file name
  * @return error code (0 is OK)
+ * @note this creates the object, user must call mnt_regridedges_del to reclaim memory
  */
 extern "C"
 int mnt_regridedges_load(RegridEdges_t** self, const char* filename);

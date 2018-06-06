@@ -11,6 +11,9 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vtkCellLocator::New();
     (*self)->weights.clear();
+    (*self)->numSrcCells = 0;
+    (*self)->numDstCells = 0;
+    (*self)->numEdges = 4; // 2d for the time being
     return 0;
 }
 
@@ -76,11 +79,11 @@ int mnt_regridedges_build(RegridEdges_t** self) {
     double dstEdgePt0[] = {0., 0., 0.};
     double dstEdgePt1[] = {0., 0., 0.};
 
-    vtkIdType numSrcCells = (*self)->srcGrid->GetNumberOfCells();
-    vtkIdType numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
+    (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // iterate over the dst grid cells
-    for (vtkIdType dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+    for (vtkIdType dstCellId = 0; dstCellId < (*self)->numDstCells; ++dstCellId) {
 
         // get this cell vertex Ids
         (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
@@ -174,12 +177,32 @@ int mnt_regridedges_build(RegridEdges_t** self) {
     return 0;
 }
 
-/**
- * Load the weights from file
- * @param filename file name
- * @return error code (0 is OK)
- * @note this creates the object, user must call mnt_regridedges_del to reclaim memory
- */
+extern "C"
+int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], double dst_data[]) {
+
+    // initialize the data to zero
+    for (size_t i = 0; i < (*self)->numDstCells * (*self)->numEdges; ++i) {
+        dst_data[i] = 0.0;
+    }
+
+    for (std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::const_iterator 
+         it = (*self)->weights.begin(); it != (*self)->weights.end(); ++it) {
+
+        vtkIdType dstCellId = it->first.first;
+        vtkIdType srcCellId = it->first.second;
+        const std::vector<double>& weights = it->second;
+
+        size_t kd = dstCellId * (*self)->numEdges;
+        size_t ks = srcCellId * (*self)->numEdges;
+
+        for (size_t ie = 0; ie < (*self)->numEdges; ++ie) {
+            dst_data[kd + ie] += weights[ie] * src_data[ks + ie];
+        }
+    }
+
+    return 0;
+}
+
 extern "C"
 int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
 
@@ -225,11 +248,6 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
     return 0;
 }
 
-/**
- * Dump the weights to file
- * @param filename file name
- * @return error code (0 is OK)
- */
 extern "C"
 int mnt_regridedges_dump(RegridEdges_t** self, const char* filename) {
 
