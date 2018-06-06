@@ -5,12 +5,14 @@
 #include <vtkCellLocator.h>
 #include <string>
 #include <iostream>
+#include <cstdio>
 
 std::vector<double> parsePosition(const std::string& posStr) {
 	std::vector<double> res(2);
-	size_t commaPos;
-	res[0] = std::stod(posStr, &commaPos);
-	res[1] = std::stod(posStr.substr(commaPos + 1));
+	size_t commaPos = posStr.find(',');
+	std::cout << "posStr = " << posStr <<  '\n';
+	res[0] = atof(posStr.substr(0, commaPos).c_str());
+	res[1] = atof(posStr.substr(commaPos + 1).c_str());
 	return res;
 }
 
@@ -21,7 +23,7 @@ int main(int argc, char** argv) {
     args.setPurpose("Project a line segment.");
     args.set("-i", std::string(""), "Source grid file in VTK format");
     args.set("-p0", std::string("0., 0."), "Start point");
-    args.set("-p1", std::string("2*pi, 0."), "End point");
+    args.set("-p1", std::string("6.283185307179586, 0."), "End point");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
