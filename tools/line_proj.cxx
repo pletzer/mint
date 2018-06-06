@@ -8,9 +8,8 @@
 #include <cstdio>
 
 std::vector<double> parsePosition(const std::string& posStr) {
-	std::vector<double> res(2);
+	std::vector<double> res(3, 0);
 	size_t commaPos = posStr.find(',');
-	std::cout << "posStr = " << posStr <<  '\n';
 	res[0] = atof(posStr.substr(0, commaPos).c_str());
 	res[1] = atof(posStr.substr(commaPos + 1).c_str());
 	return res;
@@ -40,7 +39,6 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-
         // read/build the src grid
         Grid_t* srcGrid = NULL;
         mnt_grid_new(&srcGrid);
@@ -50,11 +48,17 @@ int main(int argc, char** argv) {
         vtkUnstructuredGrid* grid = NULL;
         mnt_grid_get(&srcGrid, &grid);
 
+        std::cout << "no of cells " << grid->GetNumberOfCells() << " no of points " << grid->GetNumberOfPoints() << '\n';
+
         // build locator
         vtkCellLocator* loc = vtkCellLocator::New();
         loc->SetDataSet(grid);
+        loc->BuildLocator();
 
         PolysegmentIter polyseg(grid, loc, &p0[0], &p1[0]);
+
+        /*
+
 
         size_t numSegs = polyseg.getNumberOfSegments();
         polyseg.reset();
@@ -69,6 +73,7 @@ int main(int argc, char** argv) {
         }
         double tTotal = polyseg.getIntegratedParamCoord();
 
+        */
         // cleanup
         mnt_grid_del(&srcGrid);
         loc->Delete();

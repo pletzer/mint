@@ -19,7 +19,9 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     this->cellIds.resize(0); // cell of each intersection point
     this->xis.resize(0);     // cell parametric coords for each intersection point
     this->ts.resize(0);      // linear param coord for each intersction point
+    std::cerr << " collectLineGridSegments p0=" << p0[0] << ',' << p0[1] << ',' << p0[2] << " p1=" << p1[0] << ',' << p1[1] << ',' << p1[2] << "\n";
     this->__collectLineGridSegments(p0, p1);
+    std::cerr << "done\n";
 
     // gather the intersection points attached to a cell: cellId -> [indx0, indx1, ...] 
     // indx is index in the cellIds, xis and ts arrays
@@ -52,7 +54,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     this->segXibs.resize(0);
     this->segCoeffs.resize(0);
 
-    // iterate over all the cells for which we have intersction points
+    // iterate over all the cells for which we have intersection points
     for (std::map< vtkIdType, std::vector<size_t> >::const_iterator it = c2Inds.begin();
         it != c2Inds.end(); ++it) {
 
@@ -68,6 +70,13 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
         for (size_t i = 0; i < n; ++i) {
             tVals[i] = this->ts[ inds[i] ];
         }
+
+        std::cerr << "PolysegmentIter cId = " << cId << " inds = ";
+        for (size_t i = 0; i < inds.size(); ++i) std::cerr << inds[i] << ',';
+        std::cerr << " t = ";
+        for (size_t i = 0; i < tVals.size(); ++i) std::cerr << tVals[i] << ',';
+        std::cerr << '\n';
+
 
         // sort the indices inds by t values
         std::sort(inds.begin(), inds.end(), TCmpFunctor(tVals));
@@ -209,6 +218,9 @@ PolysegmentIter::getNumberOfSegments() const {
     return this->numSegs;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// private methods
+
 void
 PolysegmentIter::__assignCoefficientsToSegments() {
 
@@ -268,6 +280,8 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
     vtkIdList* cellIds = vtkIdList::New();
     vtkIdList* ptIds = vtkIdList::New();
 
+    std::cerr << " *** 1 \n";
+
     std::vector<double> v0(3);
     std::vector<double> v1(3);
 
@@ -284,6 +298,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
     //
 
     // iterate over the cells along the line
+     std::cerr << " *** 2 \n";
     for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
         // this cell Id
@@ -292,6 +307,9 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
         // vertices, ptIds.GetNumberOfIds() should return 4
         // since we're dealing with quads only
         this->grid->GetCellPoints(cId, ptIds);
+
+        std::cerr << " *** 3 \n";
+
 
         // iterate over the quads' edges
         for (vtkIdType j0 = 0; j0 < 4; ++j0) {
@@ -311,6 +329,8 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
             }
 
             // we have a solution but it could be degenerate
+            std::cerr << " *** 4 \n";
+
 
             if (std::abs(intersector.getDet()) > this->eps) {
                 // normal intersection, 1 solution
@@ -332,6 +352,8 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 }
             }
             else {
+                std::cerr << " *** 5 \n";
+
                 // det is almost zero
                 // looks like the two lines (p0, p1) and (q0, q1) are overlapping
                 // add the starting/ending points
@@ -353,18 +375,27 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 points.push_back(std::vector<double>(pb, pb + 2));
 
             }
+            std::cerr << " *** 6 \n";
+
         } // end of edge loop
+        std::cerr << " *** 7 \n";
+
     } // end of cell loop
+    std::cerr << " *** 8 \n";
+
 
     // clean up
     cellIds->Delete();
     ptIds->Delete();
+    std::cerr << " *** 9 \n";
   
 }
 
 
 void 
 PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[]) {
+
+    std::cerr << " +++ 1 \n";
 
     // things we need to define
     vtkIdList* ptIds = vtkIdList::New();
@@ -377,19 +408,27 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
     int subId;
     double dist;
+    std::cerr << " +++ 2 \n";
     
     // VTK wants 3d positions
     double pBeg[] = {p0[0], p0[1], 0.};
+    std::cerr << " +++ 2.1 \n";
     double pEnd[] = {p1[0], p1[1], 0.};
+    std::cerr << " +++ 2.2 \n";
 
     // add starting point
     vtkIdType cId = this->locator->FindCell(pBeg, this->eps, cell, xi, weights);
+    std::cerr << " +++ 2.3 \n";
     if (cId >= 0) {
         // success
         this->cellIds.push_back(cId);
+        std::cerr << " +++ 2.4 \n";
         this->xis.push_back(std::vector<double>(xi, xi + 2)); // copy
+        std::cerr << " +++ 2.5 \n";
         this->ts.push_back(0.); // start of line
+        std::cerr << " +++ 2.6 \n";
     }
+    std::cerr << " +++ 3 \n";
 
     //
     // find all intersection points in between
@@ -401,8 +440,10 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     this->__collectIntersectionPoints(pBeg, pEnd, cIds, lambRays, points);
 
     // find the cell Id of the neighbouring cells
+    std::cerr << " +++ 4 \n";
     size_t nXPts = cIds.size();
     for (size_t i = 0; i < nXPts; ++i) {
+        std::cerr << " +++ 5 \n";
 
         vtkIdType cId = cIds[i];
         double lambRay = lambRays[i];
@@ -419,10 +460,12 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
             std::cerr << "Warning: param coord search failed for point " << point[0] << ", " << point[1] 
                                                                          << " in cell " << cId << '\n';
         }
+        std::cerr << " +++ 6 \n";
     }
  
     // add end point 
     cId = this->locator->FindCell(pEnd, this->eps, cell, xi, weights);
+    std::cerr << " +++ 7 \n";
     if (cId >= 0) {
         // success
         this->cellIds.push_back(cId);
@@ -430,10 +473,12 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
         this->ts.push_back(1.); // end of line
     }
 
+    std::cerr << " +++ 8 \n";
     // clean up
     ptIds->Delete();
     cell->Delete();
     cellIds->Delete();
+    std::cerr << " +++ 9 \n";
 
 }
 
