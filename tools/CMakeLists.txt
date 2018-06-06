@@ -25,3 +25,13 @@ target_link_libraries(regrid_edges
                       ${HDF5_LIBRARIES}
                       ${CURL_LIBRARIES}
 )
+
+add_executable(line_proj line_proj.cxx)
+target_link_libraries(line_proj
+                      mint
+                      ${VTK_LIBRARIES}
+                      netcdf
+                      hdf5_hl
+                      ${HDF5_LIBRARIES}
+                      ${CURL_LIBRARIES}
+)
