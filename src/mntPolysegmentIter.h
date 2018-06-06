@@ -5,7 +5,9 @@
 #include <algorithm>
 
 
-struct PolysegmentIter {
+class PolysegmentIter {
+
+public:
 
     /**
      * Constructor
@@ -82,14 +84,10 @@ struct PolysegmentIter {
      * @return coefficient
      */
     double getCoefficient() const;
- 
 
-    /**
-     * Get the current index
-     * @return index
-     */
-    size_t getIndex() const;
 
+
+private:
 
     void __assignCoefficientsToSegments();
 

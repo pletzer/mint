@@ -217,12 +217,6 @@ PolysegmentIter::getCoefficient() const {
     return this->segCoeffs[this->index];
 }
  
-
-size_t
-PolysegmentIter::getIndex() const {
-    return this->index;
-}
-
 size_t
 PolysegmentIter::getNumberOfSegments() const {
     return this->numSegs;
