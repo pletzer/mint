@@ -3,6 +3,17 @@
 #include <vtkGenericCell.h>
 #include <MvVector.h>
 
+struct TCmpFunctor {
+    TCmpFunctor(const std::vector<double>& ts) {
+        this->tVals = ts;
+    }
+    bool operator()(size_t i, size_t j) {
+        return (this->tVals[i] < this->tVals[j]);
+    }
+    std::vector<double> tVals;
+};
+
+
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
                                  const double p0[], const double p1[]) {
 
@@ -60,23 +71,29 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
         vtkIdType cId = it->first;
 
         // index array into this->ts, this->cellIds and this->xis
-        std::vector<size_t> inds = it->second;
+        const std::vector<size_t>& inds = it->second;
 
         // compute the corresponding linear param coord t's
         size_t n = inds.size();
+        std::vector<size_t> iVals(n);
         std::vector<double> tVals(n);
         for (size_t i = 0; i < n; ++i) {
+            iVals[i] = i;
             tVals[i] = this->ts[ inds[i] ];
         }
 
         // sort the indices inds by t values
-        std::sort(inds.begin(), inds.end(), TCmpFunctor(tVals));
+        std::sort(iVals.begin(), iVals.end(), TCmpFunctor(tVals));
 
         // create subsegments. Each subsegment has start and end points. Both
         // the start/end points are in the same cell.
-        for (size_t i = 0; i < n - 1; ++i) {
-            size_t ia = inds[i    ];
-            size_t ib = inds[i + 1];
+        for (size_t j = 0; j < n - 1; ++j) {
+            // indices into the inds lists
+            size_t i0 = iVals[j    ];
+            size_t i1 = iVals[j + 1];
+            // indices into this->ts, this->xis... 
+            size_t ia = inds[i0];
+            size_t ib = inds[i1];
             double ta = this->ts[ia];
             double tb = this->ts[ib];
             const std::vector<double>& xia = this->xis[ia];
@@ -96,13 +113,14 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     // sort all the segments by start linear param coord t values
 
     size_t n = this->segCellIds.size();
-    std::vector<size_t> inds(n);
+    std::vector<size_t> iVals(n);
     std::vector<double> tVals(n);
     for (size_t i = 0; i < n; ++i) {
-        inds[i] = i;
+        iVals[i] = i;
         tVals[i] = this->segTas[i];
     }
-    std::sort(inds.begin(), inds.end(), TCmpFunctor(tVals));
+
+    std::sort(iVals.begin(), iVals.end(), TCmpFunctor(tVals));
 
     // copy
     std::vector<vtkIdType> sCellIds = this->segCellIds;
@@ -110,14 +128,15 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     std::vector<double> sTbs = this->segTbs;
     std::vector< std::vector<double> > sXias = this->segXias;
     std::vector< std::vector<double> > sXibs = this->segXibs;
+
     // no need to sort this->segCoeffs since all the values are one
-    for (size_t i = 0; i < n; ++i) {
-        size_t k = inds[i];
-        this->segCellIds[i] = sCellIds[k];
-        this->segTas[i] = sTas[k];
-        this->segTbs[i] = sTbs[k];
-        this->segXias[i] = sXias[k];
-        this->segXibs[i] = sXibs[k];
+    for (size_t j = 0; j < n; ++j) {
+        size_t i = iVals[j];
+        this->segCellIds[j] = sCellIds[i];
+        this->segTas[j] = sTas[i];
+        this->segTbs[j] = sTbs[i];
+        this->segXias[j] = sXias[i];
+        this->segXibs[j] = sXibs[i];
     }
 
     // assign coefficients that account for duplicity, ie segments 

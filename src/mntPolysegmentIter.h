@@ -4,16 +4,6 @@
 #include <map>
 #include <algorithm>
 
-struct TCmpFunctor {
-    TCmpFunctor(const std::vector<double>& ts) {
-        this->tVals = ts;
-    }
-    bool operator()(size_t i, size_t j) {
-        return (this->tVals[i] < this->tVals[j]);
-    }
-    std::vector<double> tVals;
-};
-
 
 struct PolysegmentIter {
 

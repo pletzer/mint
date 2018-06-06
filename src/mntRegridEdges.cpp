@@ -222,6 +222,7 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
         (*self)->weights.insert(kv);
     }
 
+    return 0;
 }
 
 /**
