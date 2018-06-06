@@ -57,9 +57,6 @@ int main(int argc, char** argv) {
 
         PolysegmentIter polyseg(grid, loc, &p0[0], &p1[0]);
 
-        /*
-
-
         size_t numSegs = polyseg.getNumberOfSegments();
         polyseg.reset();
         for (size_t i = 0; i < numSegs; ++i) {
@@ -69,11 +66,14 @@ int main(int argc, char** argv) {
         	const std::vector<double>& xia = polyseg.getBegCellParamCoord();
         	const std::vector<double>& xib = polyseg.getEndCellParamCoord();
         	double coeff = polyseg.getCoefficient();
+
+            std::cout << "cell " << cellId << " t = " << ta  << " -> " << tb << 
+                        " xi = " << xia[0] << ',' << xia[1] << " -> " << xib[0] << ',' << xib[1] << 
+                        " coeff = " << coeff << '\n';
         	polyseg.next();
         }
         double tTotal = polyseg.getIntegratedParamCoord();
 
-        */
         // cleanup
         mnt_grid_del(&srcGrid);
         loc->Delete();
