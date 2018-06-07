@@ -57,10 +57,10 @@ template<class T>
 size_t Vector<T>::bra(T elem)
 {
   return static_cast<size_t>(
-			     std::upper_bound(this->begin() + 1, 
-					      this->end(), 
-					      elem) - 
-			     this->begin() - 1);
+                 std::upper_bound(this->begin() + 1, 
+                          this->end(), 
+                          elem) - 
+                 this->begin() - 1);
 }
 
 // upper_bound does not work for complex
@@ -99,7 +99,7 @@ template<class T>
 Vector<T> &Vector<T>::operator+=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
-	    std::bind2nd(std::plus<T>(), f));
+        std::bind2nd(std::plus<T>(), f));
   return (*this);
 }
 
@@ -110,9 +110,9 @@ Vector<T> &Vector<T>::operator+=(const Vector<T> &w)
   assert(this->size() == w.size());
 #endif
   std::transform(this->begin(), this->end(), 
-	         w.begin(), 
-	         this->begin(), 
-	         std::plus<T>() );
+             w.begin(), 
+             this->begin(), 
+             std::plus<T>() );
   return (*this);
 }
 
@@ -123,9 +123,9 @@ Vector<T> &Vector<T>::operator-=(const Vector<T> &w)
   assert(this->size() == w.size());
 #endif
   std::transform(this->begin(), this->end(), 
-	    w.begin(), 
-	    this->begin(), 
-	    std::minus<T>() );
+        w.begin(), 
+        this->begin(), 
+        std::minus<T>() );
   return (*this);
 }
 
@@ -133,7 +133,7 @@ template<class T>
 Vector<T> &Vector<T>::operator-=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
-	    bind2nd(std::minus<T>(), f));
+        bind2nd(std::minus<T>(), f));
   return (*this);
 }
 
@@ -141,7 +141,7 @@ template<class T>
 Vector<T> &Vector<T>::operator*=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
-	    bind2nd(std::multiplies<T>(), f));
+        bind2nd(std::multiplies<T>(), f));
   return *this;  
 }
 
@@ -152,9 +152,9 @@ Vector<T> &Vector<T>::operator*=(const Vector<T> &w)
   assert(this->size() == w.size());
 #endif
   std::transform(this->begin(), this->end(), 
-	    w.begin(), 
-	    this->begin(), 
-	    std::multiplies<T>() );
+        w.begin(), 
+        this->begin(), 
+        std::multiplies<T>() );
   return (*this);  
 }
 
@@ -162,7 +162,7 @@ template<class T>
 Vector<T> &Vector<T>::operator/=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
-	    bind2nd(std::divides<T>(), f));
+        bind2nd(std::divides<T>(), f));
   return (*this);
 }
 
@@ -173,9 +173,9 @@ Vector<T> &Vector<T>::operator/=(const Vector<T> &w)
   assert(this->size() == w.size());
 #endif
   std::transform(this->begin(), this->end(), 
-	    w.begin(), 
-	    this->begin(), 
-	    std::divides<T>() );
+        w.begin(), 
+        this->begin(), 
+        std::divides<T>() );
   return (*this);
 }
 

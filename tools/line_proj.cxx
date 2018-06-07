@@ -8,11 +8,11 @@
 #include <cstdio>
 
 std::vector<double> parsePosition(const std::string& posStr) {
-	std::vector<double> res(3, 0);
-	size_t commaPos = posStr.find(',');
-	res[0] = atof(posStr.substr(0, commaPos).c_str());
-	res[1] = atof(posStr.substr(commaPos + 1).c_str());
-	return res;
+    std::vector<double> res(3, 0);
+    size_t commaPos = posStr.find(',');
+    res[0] = atof(posStr.substr(0, commaPos).c_str());
+    res[1] = atof(posStr.substr(commaPos + 1).c_str());
+    return res;
 }
 
 int main(int argc, char** argv) {
@@ -60,17 +60,17 @@ int main(int argc, char** argv) {
         size_t numSegs = polyseg.getNumberOfSegments();
         polyseg.reset();
         for (size_t i = 0; i < numSegs; ++i) {
-        	vtkIdType cellId = polyseg.getCellId();
-        	double ta = polyseg.getBegLineParamCoord();
-        	double tb = polyseg.getEndLineParamCoord();
-        	const std::vector<double>& xia = polyseg.getBegCellParamCoord();
-        	const std::vector<double>& xib = polyseg.getEndCellParamCoord();
-        	double coeff = polyseg.getCoefficient();
+            vtkIdType cellId = polyseg.getCellId();
+            double ta = polyseg.getBegLineParamCoord();
+            double tb = polyseg.getEndLineParamCoord();
+            const std::vector<double>& xia = polyseg.getBegCellParamCoord();
+            const std::vector<double>& xib = polyseg.getEndCellParamCoord();
+            double coeff = polyseg.getCoefficient();
 
             std::cout << "cell " << cellId << " t = " << ta  << " -> " << tb << 
                         " xi = " << xia[0] << ',' << xia[1] << " -> " << xib[0] << ',' << xib[1] << 
                         " coeff = " << coeff << '\n';
-        	polyseg.next();
+            polyseg.next();
         }
         double tTotal = polyseg.getIntegratedParamCoord();
 

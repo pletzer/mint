@@ -39,8 +39,8 @@ int mnt_grid_new(Grid_t** self) {
  */
 extern "C"
 int mnt_grid_del(Grid_t** self) {
-	if ((*self)->writer) (*self)->writer->Delete();
-	if ((*self)->reader) {
+    if ((*self)->writer) (*self)->writer->Delete();
+    if ((*self)->reader) {
         (*self)->reader->Delete();
     }
     else {
@@ -116,9 +116,9 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
         (*self)->grid->Delete();
     }
     (*self)->reader = vtkUnstructuredGridReader::New();
-	(*self)->reader->SetFileName(filename);
-	(*self)->reader->Update();
-	(*self)->grid = (*self)->reader->GetOutput();
+    (*self)->reader->SetFileName(filename);
+    (*self)->reader->Update();
+    (*self)->grid = (*self)->reader->GetOutput();
     return 0;
 }
 
@@ -131,9 +131,9 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
 extern "C"
 int mnt_grid_dump(Grid_t** self, const char* filename) {
     (*self)->writer = vtkUnstructuredGridWriter::New();
-	(*self)->writer->SetFileName(filename);
+    (*self)->writer->SetFileName(filename);
     (*self)->writer->SetInputData((*self)->grid);
-	(*self)->writer->Update();
+    (*self)->writer->Update();
     return 0;
 }
 

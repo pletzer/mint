@@ -630,7 +630,7 @@ std::ostream&   operator<<(std::ostream& s, const ColMat<T>& V)
   for (size_t i = 0; i < M; i++)
     {
       for (size_t j = 0; j < N; j++)
-	s << V(i,j) << " " ;
+    s << V(i,j) << " " ;
       s << std::endl;
     }
     
@@ -710,9 +710,9 @@ Vector<T> sum0(const ColMat<T> &a)
   for (size_t j = 0; j < nc; ++j)
     {
       for (size_t i = 0; i < nr; ++i)
-	{
-	  av(j) += a(i,j);
-	}
+    {
+      av(j) += a(i,j);
+    }
     }
   return av;
 }
@@ -743,7 +743,7 @@ ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b)
   for (j = 0; j < c.size(1); ++j)
     for (i = 0; i < c.size(0); ++i)
       for (k = 0; k < a.size(1); k++)
-	c(i,j) += a(i,k) * b(k,j);
+    c(i,j) += a(i,k) * b(k,j);
   
   return c;
 }
@@ -791,13 +791,13 @@ ColMat<T> tripleDot(const ColMat<T> &a, const ColMat<T> &b,
   for (j = 0; j < n4; ++j)
     {
       for (i = 0; i < n1; ++i)
-	{
-	  for (k = 0; k < n2; k++)
-	    {
-	      for (m = 0; m < n3; m++) 
+    {
+      for (k = 0; k < n2; k++)
+        {
+          for (m = 0; m < n3; m++) 
                 c(i,j) = c(i,j) + a(i,k) * b(k,m) * d(m,j);
-	    }
-	}
+        }
+    }
     }
   return c;
 }
@@ -969,9 +969,9 @@ ColMat<T> space1(T xmin, T xmax, size_t ny, size_t nx)
   for (i = 0; i < a.size(0); ++i) 
     {
       for (j = 0; j < a.size(1); ++j)
-	{
-	  a(i,j) = xmin + (xmax-xmin)*T(j)/T(a.size(1)-1);
-	}
+    {
+      a(i,j) = xmin + (xmax-xmin)*T(j)/T(a.size(1)-1);
+    }
     }
   return a;
 
@@ -986,9 +986,9 @@ ColMat<T> space0(T ymin, T ymax, size_t ny, size_t nx)
   for (i = 0; i < a.size(0); ++i) 
     {
       for (j = 0; j < a.size(1); ++j)
-	{
-	  a(i,j) = ymin + (ymax-ymin)*T(i)/T(a.size(0)-1);
-	}
+    {
+      a(i,j) = ymin + (ymax-ymin)*T(i)/T(a.size(0)-1);
+    }
     }
   return a;
 
