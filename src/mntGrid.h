@@ -6,6 +6,8 @@
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkGenericCell.h>
 
+#ifndef MNT_GRID
+#define MNT_GRID
 
 struct Grid_t {
     vtkDoubleArray* pointData;
@@ -137,4 +139,4 @@ int mnt_grid_dump(Grid_t** self, const char* filename) {
     return 0;
 }
 
-
+#endif // MNT_GRID

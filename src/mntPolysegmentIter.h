@@ -4,6 +4,8 @@
 #include <map>
 #include <algorithm>
 
+#ifndef MNT_POLYSEGMENT_ITER
+#define MNT_POLYSEGMENT_ITER
 
 class PolysegmentIter {
 
@@ -150,3 +152,5 @@ private:
     size_t numSegs;
 
 };
+
+#endif // MNT_POLYSEGMENT_ITER

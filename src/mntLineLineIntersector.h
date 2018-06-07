@@ -1,6 +1,9 @@
 #include <MvMatrix.h>
 #include <MvVector.h>
 
+#ifndef MNT_LINE_LINE_INTERSECTOR
+#define MNT_LINE_LINE_INTERSECTOR
+
 struct LineLineIntersector {
 
     /**
@@ -159,3 +162,4 @@ struct LineLineIntersector {
 
 };
 
+#endif // MNT_LINE_LINE_INTERSECTOR

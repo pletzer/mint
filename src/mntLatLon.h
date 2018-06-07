@@ -1,6 +1,9 @@
 #include <vector>
 #include <string>
 
+#ifndef MNT_LATLON
+#define MNT_LATLON
+
 /**
  * A class to generate a uniform lat-lon grid conforming to the output of UM
  */
@@ -66,4 +69,4 @@ int mnt_latlon_load(LatLon_t** self, const std::string& filename);
 extern "C"
 int mnt_latlon_dump(LatLon_t** self, const std::string& filename);
 
-
+#endif // MNT_LATLON

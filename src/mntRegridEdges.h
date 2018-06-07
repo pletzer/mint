@@ -4,6 +4,9 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 
+#ifndef MNT_REGRID_EDGES
+#define MNT_REGRID_EDGES
+
 /**
  * A class to compute the regridding weights of an edge-centred field
  */
@@ -104,4 +107,4 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename);
 extern "C"
 int mnt_regridedges_dump(RegridEdges_t** self, const char* filename);
 
-
+#endif // MNT_REGRID_EDGES
