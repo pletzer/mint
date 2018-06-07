@@ -13,7 +13,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->weights.clear();
     (*self)->numSrcCells = 0;
     (*self)->numDstCells = 0;
-    (*self)->numEdges = 4; // 2d for the time being
+    (*self)->numEdgesPerCell = 4; // 2d
     return 0;
 }
 
@@ -178,10 +178,30 @@ int mnt_regridedges_build(RegridEdges_t** self) {
 }
 
 extern "C"
+int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, int* n) {
+    *n = (*self)->numSrcCells;
+    return 0;
+}
+
+extern "C"
+int mnt_regridedges_getNumDstCells(RegridEdges_t** self, int* n) {
+    *n = (*self)->numDstCells;
+    return 0;
+}
+
+extern "C"
+int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
+    *n = (*self)->numEdgesPerCell;
+    return 0;
+}
+
+
+extern "C"
 int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], double dst_data[]) {
 
     // initialize the data to zero
-    for (size_t i = 0; i < (*self)->numDstCells * (*self)->numEdges; ++i) {
+    size_t numEdges = (*self)->numDstCells * (*self)->numEdgesPerCell;
+    for (size_t i = 0; i < numEdges; ++i) {
         dst_data[i] = 0.0;
     }
 
@@ -192,10 +212,10 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
         vtkIdType srcCellId = it->first.second;
         const std::vector<double>& weights = it->second;
 
-        size_t kd = dstCellId * (*self)->numEdges;
-        size_t ks = srcCellId * (*self)->numEdges;
+        size_t kd = dstCellId * (*self)->numEdgesPerCell;
+        size_t ks = srcCellId * (*self)->numEdgesPerCell;
 
-        for (size_t ie = 0; ie < (*self)->numEdges; ++ie) {
+        for (size_t ie = 0; ie < (*self)->numEdgesPerCell; ++ie) {
             dst_data[kd + ie] += weights[ie] * src_data[ks + ie];
         }
     }
@@ -213,13 +233,15 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
     ier = nc_open(filename, NC_NOWRITE, &ncid);
 
     // get the sizes
-    size_t numWeights, numEdges;
+    size_t numWeights, numEdgesPerCell;
     int numWeightsId;
     int numEdgesId;
     ier = nc_inq_dimid(ncid, "num_weights", &numWeightsId);
     ier = nc_inq_dimlen(ncid, numWeightsId, &numWeights);
-    ier = nc_inq_dimid(ncid, "num_edges", &numEdgesId);
-    ier = nc_inq_dimlen(ncid, numEdgesId, &numEdges);
+    ier = nc_inq_dimid(ncid, "num_edges_per_cell", &numEdgesId);
+    ier = nc_inq_dimlen(ncid, numEdgesId, &numEdgesPerCell);
+
+    // should check that numEdgesPerCell and (*self)->numEdgesPerCell match
 
     int dstCellIdsId, srcCellIdsId, weightsId;
 
@@ -230,7 +252,7 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
     // read
     std::vector<long> dstCellIds(numWeights);
     std::vector<long> srcCellIds(numWeights);
-    std::vector<double> weights(numWeights * numEdges);
+    std::vector<double> weights(numWeights * numEdgesPerCell);
     ier = nc_get_var_long(ncid, dstCellIdsId, &dstCellIds[0]);
     ier = nc_get_var_long(ncid, srcCellIdsId, &srcCellIds[0]);
     ier = nc_get_var_double(ncid, weightsId, &weights[0]);
@@ -240,8 +262,14 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
     // store in map
     for (int i = 0; i < numWeights; ++i) {
         std::pair< vtkIdType, vtkIdType > k(dstCellIds[i], srcCellIds[i]);
-        std::vector<double> v(&weights[numEdges*i], &weights[numEdges*i + numEdges]);
+
+        // create vector of weights for this cell
+        std::vector<double> v(&weights[numEdgesPerCell*i], &weights[numEdgesPerCell*i + numEdgesPerCell]);
+
+        // create pair of entries
         std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv(k, v);
+
+        // insert
         (*self)->weights.insert(kv);
     }
 
@@ -252,7 +280,6 @@ extern "C"
 int mnt_regridedges_dump(RegridEdges_t** self, const char* filename) {
 
     size_t numWeights = (*self)->weights.size();
-    const int numEdges = 4;
 
     int ncid, ier;
     ier = nc_create(filename, NC_CLOBBER, &ncid);
@@ -261,7 +288,7 @@ int mnt_regridedges_dump(RegridEdges_t** self, const char* filename) {
     int numWeightsId;
     int numEdgesId;
     ier = nc_def_dim(ncid, "num_weights", (int) numWeights, &numWeightsId);
-    ier = nc_def_dim(ncid, "num_edges", numEdges, &numEdgesId);
+    ier = nc_def_dim(ncid, "num_edges_per_cell", (*self)->numEdgesPerCell, &numEdgesId);
 
 
     // create variables
@@ -283,14 +310,14 @@ int mnt_regridedges_dump(RegridEdges_t** self, const char* filename) {
     // load into arrays
     std::vector<long> dstCellIds(numWeights);
     std::vector<long> srcCellIds(numWeights);
-    std::vector<double> weights(numWeights * numEdges);
+    std::vector<double> weights(numWeights * (*self)->numEdgesPerCell);
     size_t i = 0;
     for (std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::const_iterator 
         it = (*self)->weights.begin(); it != (*self)->weights.end(); ++it) {
         dstCellIds[i] = it->first.first;
         srcCellIds[i] = it->first.second;
-        for (int j = 0; j < numEdges; ++j) {
-        weights[numEdges*i + j] = it->second[j];
+        for (int j = 0; j < (*self)->numEdgesPerCell; ++j) {
+        weights[(*self)->numEdgesPerCell*i + j] = it->second[j];
         }
         i++;
     }

@@ -15,7 +15,7 @@ struct RegridEdges_t {
     std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> > weights;
     size_t numSrcCells;
     size_t numDstCells;
-    size_t numEdges;
+    size_t numEdgesPerCell;
 };
 
 /**
@@ -56,6 +56,26 @@ int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
 extern "C"
 int mnt_regridedges_build(RegridEdges_t** self);
 
+/**
+ * Get number of source grid cells
+ * @param n number of cells
+ */
+extern "C"
+int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, int* n);
+
+/**
+ * Get number of destination grid cells
+ * @param n number of cells
+ */
+extern "C"
+int mnt_regridedges_getNumDstCells(RegridEdges_t** self, int* n);
+
+/**
+ * Get number of edges per cell
+ * @param n number
+ */
+extern "C"
+int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n);
 
 /**
  * Apply interpolation weights to field

@@ -2,7 +2,10 @@
 #include <mntGrid.h>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkAbstractArray.h>
+#include <vtkCellData.h>
 #include <iostream>
+#include <limits>
 
 int main(int argc, char** argv) {
 
@@ -10,8 +13,9 @@ int main(int argc, char** argv) {
     CmdLineArgParser args;
     args.setPurpose("Regrid an edge centred field.");
     args.set("-s", std::string(""), "Source grid file in VTK format");
+    args.set("-v", std::string("edge_integrated_velocity"), "Specify edge staggered field variable name in source VTK file");
     args.set("-d", std::string(""), "Destination grid file in VTK format");
-    args.set("-o", std::string("weights.nc"), "Write interpolation weights to file");
+    args.set("-o", std::string(""), "Write interpolation weights to file");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -61,6 +65,47 @@ int main(int argc, char** argv) {
         if (weightsFile.size() != 0) {
             std::cout << "INFO saving weights in file " << weightsFile << '\n';
             ier = mnt_regridedges_dump(&rge, weightsFile.c_str());
+        }
+
+        // regrid
+        std::string varname = args.get<std::string>("-v");
+        vtkCellData* cellData = sg->GetCellData();
+        if (varname.size() > 0) {
+            vtkAbstractArray* aa = cellData->GetAbstractArray(varname.c_str());
+
+            if (aa) {
+                // found the array
+                std::cout << "Found variable '" << varname << "'\n";
+
+                double* srcData = (double*) aa->GetVoidPointer(0);
+
+
+                int numDstCells, numEdgesPerCell;
+                mnt_regridedges_getNumDstCells(&rge, &numDstCells);
+                mnt_regridedges_getNumEdgesPerCell(&rge, &numEdgesPerCell);
+                std::vector<double> dstData(numDstCells * numEdgesPerCell);
+
+                // regrid
+                mnt_regridedges_applyWeights(&rge, srcData, &dstData[0]);
+
+                // compute loop integrals for each cell
+                double minAbsLoop = std::numeric_limits<double>::max();
+                double maxAbsLoop = - std::numeric_limits<double>::max();
+                double avgAbsLoop = 0.0;
+                for (size_t i = 0; i < numDstCells; ++i) {
+                    size_t k = i*numEdgesPerCell;
+                    double loop = 0.0;
+                    for (size_t j = 0; j < numEdgesPerCell; ++j) {
+                        loop += dstData[k + j];
+                    }
+                    loop = std::abs(loop);
+                    minAbsLoop = std::min(loop, minAbsLoop);
+                    maxAbsLoop = std::max(loop, maxAbsLoop);
+                    avgAbsLoop += loop;
+                }
+                avgAbsLoop /= double(numDstCells);
+                std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
+            }
         }
 
         // cleanup
