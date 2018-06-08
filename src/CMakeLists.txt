@@ -19,6 +19,7 @@ set(HEADER_FILES
   mntLineLineIntersector.h
   mntPolysegmentIter.h
   mntRegridEdges.h
+  MvFunctors.h MvMatrix.h MvVector.h
 )
 
 add_library(mint ${LIB_FILES})
