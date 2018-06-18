@@ -2,20 +2,20 @@
 
 extern "C"
 int mnt_celllocator_new(CellLocator_t** self) {
-	*self = new CellLocator_t();
-	mnt_grid_new(&(*self)->grid);
-	(*self)->loc = vtkCellLocator::New();
+    *self = new CellLocator_t();
+    mnt_grid_new(&(*self)->grid);
+    (*self)->loc = vtkCellLocator::New();
     (*self)->cell = vtkGenericCell::New();
-	return 0;
+    return 0;
 }
 
 extern "C"
 int mnt_celllocator_del(CellLocator_t** self) {
     (*self)->cell->Delete();
-	(*self)->loc->Delete();
-	mnt_grid_del(&(*self)->grid);
-	delete *self;
-	return 0;
+    (*self)->loc->Delete();
+    mnt_grid_del(&(*self)->grid);
+    delete *self;
+    return 0;
 }
 
 extern "C"
