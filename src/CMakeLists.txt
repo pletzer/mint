@@ -8,6 +8,7 @@ set(LIB_FILES
   MvVector.cpp
   MvMat_double.cpp
   mntLatLon.cpp
+  mntGrid.cpp
   mntPolysegmentIter.cpp
   mntRegridEdges.cpp
   mntCellLocator.cpp
