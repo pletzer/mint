@@ -10,6 +10,7 @@ set(LIB_FILES
   mntLatLon.cpp
   mntPolysegmentIter.cpp
   mntRegridEdges.cpp
+  mntCellLocator.cpp
 )
 
 set(HEADER_FILES
@@ -19,6 +20,7 @@ set(HEADER_FILES
   mntLineLineIntersector.h
   mntPolysegmentIter.h
   mntRegridEdges.h
+  mntCellLocator.h
   MvFunctors.h MvMatrix.h MvVector.h
 )
 
