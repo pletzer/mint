@@ -27,31 +27,43 @@ int mnt_grid_del(Grid_t** self) {
 }
 
 extern "C"
-int mnt_grid_setpoints(Grid_t** self, int ncells, const double points[]) {
+int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, int ncells, const double points[]) {
 
     (*self)->pointData = vtkDoubleArray::New();
     (*self)->points = vtkPoints::New();
     (*self)->grid = vtkUnstructuredGrid::New();
 
     int save = 1;
-    (*self)->pointData->SetNumberOfComponents(3);
-    int npoints = 4 * ncells;
+    int npoints = nVertsPerCell * ncells;
     (*self)->pointData->SetNumberOfTuples(npoints);
-    (*self)->pointData->SetVoidArray((double*) points, npoints, save);
+    (*self)->pointData->SetNumberOfComponents(3);
+    (*self)->pointData->SetVoidArray((double*) points, npoints*3, save);
 
     (*self)->points->SetData((*self)->pointData);
 
     (*self)->grid->Allocate(ncells, 1);
     (*self)->grid->SetPoints((*self)->points);
 
+    int cellType = -1;
+    if (nVertsPerCell == 4) {
+        cellType = VTK_QUAD;
+    }
+    else if (nVertsPerCell == 8) {
+        cellType = VTK_HEXAHEDRON;
+    }
+    else {
+        // error
+        return 1;
+    }
+
     // connect
     vtkIdList* ptIds = vtkIdList::New();
-    ptIds->SetNumberOfIds(4); // quad
+    ptIds->SetNumberOfIds(nVertsPerCell);
     for (int i = 0; i < ncells; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            ptIds->SetId(j, 4*i + j);
+        for (int j = 0; j < nVertsPerCell; ++j) {
+            ptIds->SetId(j, nVertsPerCell*i + j);
         }
-        (*self)->grid->InsertNextCell(VTK_QUAD, ptIds);
+        (*self)->grid->InsertNextCell(cellType, ptIds);
     }
     ptIds->Delete();
 

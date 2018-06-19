@@ -33,12 +33,13 @@ int mnt_celllocator_del(CellLocator_t** self);
 
 /**
  * Set the points (vertices)
+ * @param nVertsPerCell numnber of vertices per cell
  * @param ncells number of cells
  * @param points flat array of size 4*ncells*3
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int ncells, const double points[]);
+int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, int ncells, const double points[]);
 
 /**
  * Build the regridder

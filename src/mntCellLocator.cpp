@@ -19,8 +19,8 @@ int mnt_celllocator_del(CellLocator_t** self) {
 }
 
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int ncells, const double points[]) {
-    mnt_grid_setpoints(&(*self)->grid, ncells, points);
+int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, int ncells, const double points[]) {
+    mnt_grid_setpoints(&(*self)->grid, nVertsPerCell, ncells, points);
     return 0;
 }
 
