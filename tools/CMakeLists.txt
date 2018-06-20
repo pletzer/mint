@@ -15,11 +15,12 @@ target_link_libraries(latlon
                       ${CURL_LIBRARIES}
 )
 
+# VTK libraries bundled with MINT, no need to supply ${VTK_LIBRARRIES}
+# below
 
 add_executable(regrid_edges regrid_edges.cxx)
 target_link_libraries(regrid_edges
                       mint
-                      ${VTK_LIBRARIES}
                       netcdf
                       hdf5_hl
                       ${HDF5_LIBRARIES}
@@ -29,7 +30,6 @@ target_link_libraries(regrid_edges
 add_executable(line_proj line_proj.cxx)
 target_link_libraries(line_proj
                       mint
-                      ${VTK_LIBRARIES}
                       netcdf
                       hdf5_hl
                       ${HDF5_LIBRARIES}

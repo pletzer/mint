@@ -36,6 +36,11 @@ endif()
 
 include(${VTK_USE_FILE})
 
+# Create file containing list of libraries, save in mint.mk
+string(REPLACE ";" " " MINT_LIBS "mint ${VTK_LIBRARIES}")
+file(WRITE "${CMAKE_BINARY_DIR}/mint.mk" "${MINT_LIBS}\n")
+install(FILES "${CMAKE_BINARY_DIR}/mint.mk" DESTINATION share)
+
 enable_testing()
 
 add_subdirectory(src)

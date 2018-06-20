@@ -26,7 +26,7 @@ set(HEADER_FILES
 )
 
 add_library(mint ${LIB_FILES})
-target_link_libraries(mint ${NETCDF_LIBRARIES})
+target_link_libraries(mint ${NETCDF_LIBRARIES} ${VTK_LIBRARIES})
 
 # Install headers
 install(FILES ${HEADER_FILES} DESTINATION include)
