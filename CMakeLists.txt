@@ -17,7 +17,16 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(DEBUG_CMAKE TRUE)
 
+#
+# Find VTK
+#
+# allow the user to set the variables manually
+set(VTK_DIR "" CACHE PATH "The directory containing VTKConfig.cmake")
 find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
+message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
+message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
+
 
 #
 # Find the netcdf library and its dependencies by keying off from the nc-config
@@ -25,7 +34,7 @@ find_package(VTK REQUIRED)
 #
 
 # allow the user to set the variables manually
-set(NETCDF_INCLUDE_DIR "" CACHE PATH "Directory containing the netCDF include and module files")
+set(NETCDF_INCLUDE_DIR "" CACHE PATH "Directory containing the netCDF include files")
 set(NETCDF_LIBRARIES "" CACHE PATH "List of netCDF libraries")
 
 if (NETCDF_INCLUDE_DIR STREQUAL "")
@@ -66,10 +75,10 @@ include_directories(
 )
 
 
-include(${VTK_USE_FILE})
-
 enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(tools)
+
+
