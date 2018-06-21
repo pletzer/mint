@@ -36,9 +36,32 @@ endif()
 
 include(${VTK_USE_FILE})
 
+# Add version to each library name
+set(VTK_VER "${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
+#foreach (LIB in ${VTK_LIBRARIES})
+#	string(REGEX REPLACE "(vtk[^ ]+)" "\\1-${VTK_VER}" LIB2 "${LIB}")
+#	message(STATUS "${LIB} ${LIB2}")
+#endforeach()
+
+# Replace ; with space
+string(REPLACE ";" " " VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES}")
+
+# remove full path libraries, containing dylib, so, etc.
+string(REGEX REPLACE "([^ ]+\.dylib)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
+#string(REGEX REPLACE "([^ ]+\.so)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
+#string(REGEX REPLACE "([^ ]+\.a)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
+
+# Remove non vtk libraries
+string(REGEX REPLACE "verdict" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
+
+# remove Python libraries
+string(REGEX REPLACE "([^ ]+Python[^ ]+)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
+# Add version to library names
+string(REGEX REPLACE "(vtk[^ ]+)" "\\1-${VTK_VER}" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
+message(STATUS "${VTK_LIBRARIES_VERSION_SPACE}")
+
 # Create file containing list of libraries, save in mint.mk
-string(REPLACE ";" " " MINT_LIBS "mint ${VTK_LIBRARIES}")
-file(WRITE "${CMAKE_BINARY_DIR}/mint.mk" "${MINT_LIBS}\n")
+configure_file(mint.mk.in mint.mk)
 install(FILES "${CMAKE_BINARY_DIR}/mint.mk" DESTINATION share)
 
 enable_testing()
