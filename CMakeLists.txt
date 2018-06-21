@@ -18,51 +18,55 @@ set(CMAKE_CXX_STANDARD 11)
 set(DEBUG_CMAKE TRUE)
 
 find_package(VTK REQUIRED)
-#find_package(NetCDF REQUIRED)
-# the above does not work well,
-# user must explicitly specify 
-# NETCDF_DIR and we will assume 
-# $NETCDF_DIR/include and NETCDF_DIR/lib
-# to be below
-find_package(HDF5)
-find_package(CURL)
 
-if (ZLIB_FOUND)
-	message(STATUS "ZLIB_LIBRARIES are ${ZLIB_LIBRARIES}")
+#
+# Find the netcdf library and its dependencies by keying off from the nc-config
+# command. 
+#
+
+# allow the user to set the variables manually
+set(NETCDF_INCLUDE_DIR "" CACHE PATH "Directory containing the netCDF include and module files")
+set(NETCDF_LIBRARIES "" CACHE PATH "List of netCDF libraries")
+
+if (NETCDF_INCLUDE_DIR STREQUAL "")
+    execute_process(COMMAND "nf-config" "--includedir"
+                    OUTPUT_VARIABLE NETCDF_INCLUDE_DIR)
 endif()
-if (NetCDF_FOUND)
-	message(STATUS "NetCDF libraries are >${netCDF_LIBRARIES}< >${NETCDF_LIBRARY}< >${NETCDF_LIBRARIES}<")
+
+if (NETCDF_LIBRARIES STREQUAL "")
+    execute_process(COMMAND "nf-config" "--flibs"
+                    OUTPUT_VARIABLE NETCDF_Fortran_LIBRARIES)
+    string(STRIP "${NETCDF_Fortran_LIBRARIES}" NETCDF_Fortran_LIBRARIES)
+    execute_process(COMMAND "nc-config" "--libs"
+                    OUTPUT_VARIABLE NETCDF_C_LIBRARIES)
+    string(STRIP "${NETCDF_C_LIBRARIES}" NETCDF_C_LIBRARIES)
+    set(NETCDF_LIBRARIES "${NETCDF_Fortran_LIBRARIES} ${NETCDF_C_LIBRARIES}")
 endif()
+
+# remove \n at the end of the above variables
+string(STRIP "${NETCDF_INCLUDE_DIR}" NETCDF_INCLUDE_DIR)
+string(STRIP "${NETCDF_LIBRARIES}" NETCDF_LIBRARIES)
+
+
+if ("${NETCDF_INCLUDE_DIR}" STREQUAL "" OR "${NETCDF_LIBRARIES}" STREQUAL "")
+    message(STATUS "*******************************************************")
+    message(STATUS "Unable to infer the location of NetCDF!")
+    message(STATUS "Either:")
+    message(STATUS "1) Specify -DNETCDF_INCLUDE_DIR:PATH=<dir>")
+    message(STATUS "           -DNETCDF_LIBRARIES:PATH=\"-L<dir> -lnetcdff -lnetcdf\"")
+    message(STATUS "   (adding -lhdf5_hl -lhdf5 -ldl -lm -lz -lcurl and other libraries if need be)")
+    message(STATUS "--or--")
+    message(STATUS "2) Make sure to have nf-config and nc-config in your PATH")
+    message(STATUS "   so that NETCDF_INCLUDE_DIR and NETCDF_LIBRARIES can be deduced")
+    message(FATAL_ERROR "*******************************************************")
+endif()
+
+include_directories(
+  ${NETCDF_INCLUDE_DIR}
+)
+
 
 include(${VTK_USE_FILE})
-
-# Add version to each library name
-set(VTK_VER "${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
-#foreach (LIB in ${VTK_LIBRARIES})
-#	string(REGEX REPLACE "(vtk[^ ]+)" "\\1-${VTK_VER}" LIB2 "${LIB}")
-#	message(STATUS "${LIB} ${LIB2}")
-#endforeach()
-
-# Replace ; with space
-string(REPLACE ";" " " VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES}")
-
-# remove full path libraries, containing dylib, so, etc.
-string(REGEX REPLACE "([^ ]+\.dylib)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
-#string(REGEX REPLACE "([^ ]+\.so)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
-#string(REGEX REPLACE "([^ ]+\.a)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
-
-# Remove non vtk libraries
-string(REGEX REPLACE "verdict" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
-
-# remove Python libraries
-string(REGEX REPLACE "([^ ]+Python[^ ]+)" "" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
-# Add version to library names
-string(REGEX REPLACE "(vtk[^ ]+)" "\\1-${VTK_VER}" VTK_LIBRARIES_VERSION_SPACE "${VTK_LIBRARIES_VERSION_SPACE}")
-message(STATUS "${VTK_LIBRARIES_VERSION_SPACE}")
-
-# Create file containing list of libraries, save in mint.mk
-configure_file(mint.mk.in mint.mk)
-install(FILES "${CMAKE_BINARY_DIR}/mint.mk" DESTINATION share)
 
 enable_testing()
 

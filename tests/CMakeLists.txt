@@ -7,11 +7,9 @@ configure_file(testGrid.cpp testGrid.cxx)
 
 add_executable(testLineLineIntersector testLineLineIntersector.cxx)
 target_link_libraries(testLineLineIntersector
-	                  mint 
-	                  ${NETCDF_LIBRARY} 
-	                  ${HDF5_HL_LIBRARIES}
-	                  ${HDF5_LIBRARIES} 
-	                  ${CURL_LIBRARIES})
+	                  mint
+                    ${VTK_LIBRARIES}
+)
 
 add_executable(testPolysegmentIter testPolysegmentIter.cxx)
 target_link_libraries(testPolysegmentIter
