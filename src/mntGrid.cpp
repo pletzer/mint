@@ -1,18 +1,25 @@
 #include <mntGrid.h>
+#include <vtkCellData.h>
 
 extern "C" 
 int mnt_grid_new(Grid_t** self) {
+
     *self = new Grid_t();
     (*self)->pointData = NULL;
     (*self)->points = NULL;
     (*self)->grid = NULL;
     (*self)->reader = NULL;
     (*self)->writer = NULL;
+    (*self)->doubleArrays.resize(0);
     return 0;
 }
 
 extern "C"
 int mnt_grid_del(Grid_t** self) {
+
+    for (size_t i = 0; i < (*self)->doubleArrays.size(); ++i) {
+        (*self)->doubleArrays[i]->Delete();
+    }
     if ((*self)->writer) (*self)->writer->Delete();
     if ((*self)->reader) {
         (*self)->reader->Delete();
@@ -69,6 +76,32 @@ int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, int ncells, const doubl
 
     return 0;
 }
+
+extern "C"
+int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]) {
+
+    if (!(*self)->grid) {
+        return 1;
+    }
+
+    vtkIdType ncells = (*self)->grid->GetNumberOfCells();
+
+    vtkDoubleArray* vtkdata = vtkDoubleArray::New();
+    vtkdata->SetName(varname);
+    vtkdata->SetNumberOfTuples(ncells);
+    vtkdata->SetNumberOfComponents(nDataPerCell);
+    int save = 1;
+    vtkdata->SetVoidArray((double*) data, ncells*nDataPerCell, save);
+
+    // store
+    (*self)->doubleArrays.push_back(vtkdata);
+
+    // add to the grid
+    (*self)->grid->GetCellData()->AddArray(vtkdata);
+
+    return 0;
+}
+
 
 extern "C"
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {

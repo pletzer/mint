@@ -15,6 +15,7 @@ struct Grid_t {
     vtkUnstructuredGrid* grid;
     vtkUnstructuredGridReader* reader;
     vtkUnstructuredGridWriter* writer;
+    std::vector<vtkDoubleArray*> doubleArrays;
 };
 
 
@@ -44,6 +45,18 @@ int mnt_grid_del(Grid_t** self);
  */
 extern "C"
 int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, int ncells, const double points[]);
+
+/**
+ * Attach data
+ * @param self instance of Grid_t
+ * @param varname data field name
+ * @param nDataPerCell number of components per cell
+ * @param points flat array of size ncells*nDataPerCell
+ * @return error code (0 = OK)
+ * @note this object does own the data, caller is responsible for cleaning the data
+ */
+extern "C"
+int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]);
 
 /**
  * Get the VTK unstructured grid

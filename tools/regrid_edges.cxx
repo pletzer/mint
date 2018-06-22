@@ -15,7 +15,8 @@ int main(int argc, char** argv) {
     args.set("-s", std::string(""), "Source grid file in VTK format");
     args.set("-v", std::string("edge_integrated_velocity"), "Specify edge staggered field variable name in source VTK file");
     args.set("-d", std::string(""), "Destination grid file in VTK format");
-    args.set("-o", std::string(""), "Write interpolation weights to file");
+    args.set("-w", std::string(""), "Write interpolation weights to file");
+    args.set("-o", std::string(""), "Specify output VTK file where regridded edge data is saved");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -23,7 +24,8 @@ int main(int argc, char** argv) {
     if (success && !help) {
         std::string srcFile = args.get<std::string>("-s");
         std::string dstFile = args.get<std::string>("-d");
-        std::string weightsFile = args.get<std::string>("-o");
+        std::string weightsFile = args.get<std::string>("-w");
+        std::string regridFile = args.get<std::string>("-o");
 
         if (srcFile.size() == 0) {
             std::cerr << "ERROR: must specify a source grid file (-s)\n";
@@ -50,7 +52,6 @@ int main(int argc, char** argv) {
         // get the grid pointers
         mnt_grid_get(&srcGrid, &sg);
         mnt_grid_get(&dstGrid, &dg);
-
 
         // compute the interpolation weights
         RegridEdges_t* rge = NULL;
@@ -89,6 +90,7 @@ int main(int argc, char** argv) {
                 mnt_regridedges_applyWeights(&rge, srcData, &dstData[0]);
 
                 // compute loop integrals for each cell
+                std::vector<double> loop_integrals(numDstCells);
                 double minAbsLoop = std::numeric_limits<double>::max();
                 double maxAbsLoop = - std::numeric_limits<double>::max();
                 double avgAbsLoop = 0.0;
@@ -98,6 +100,7 @@ int main(int argc, char** argv) {
                     for (size_t j = 0; j < numEdgesPerCell; ++j) {
                         loop += dstData[k + j];
                     }
+                    loop_integrals[i] = loop;
                     loop = std::abs(loop);
                     minAbsLoop = std::min(loop, minAbsLoop);
                     maxAbsLoop = std::max(loop, maxAbsLoop);
@@ -105,6 +108,16 @@ int main(int argc, char** argv) {
                 }
                 avgAbsLoop /= double(numDstCells);
                 std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
+
+                if (regridFile.size() > 0) {
+                	// attach field to grid so we can save the data in file
+                	mnt_grid_attach(&dstGrid, varname.c_str(), 1, &dstData[0]);
+                	std::string loop_integral_varname = std::string("loop_integrals_of_") + varname;
+                	mnt_grid_attach(&dstGrid, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
+
+                	std::cout << "Writing " << varname << " to " << regridFile << '\n';
+                	mnt_grid_dump(&dstGrid, regridFile.c_str());
+                }
             }
         }
 
