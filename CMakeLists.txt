@@ -32,6 +32,7 @@ message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
 # Find the netcdf library and its dependencies by keying off from the nc-config
 # command. 
 #
+set(NETCDF_LIBRARY_DIR "" CACHE PATH "The top directory where NetCDF is installed")
 
 # allow the user to set the variables manually
 set(NETCDF_INCLUDE_DIR "" CACHE PATH "Directory containing the netCDF include files")
@@ -47,7 +48,13 @@ if (NETCDF_LIBRARIES STREQUAL "")
     execute_process(COMMAND "nc-config" "--libs"
                     OUTPUT_VARIABLE NETCDF_C_LIBRARIES)
     string(STRIP "${NETCDF_C_LIBRARIES}" NETCDF_C_LIBRARIES)
-    set(NETCDF_LIBRARIES "${NETCDF_Fortran_LIBRARIES} ${NETCDF_C_LIBRARIES}")
+    set(NETCDF_LIBRARIES "${NETCDF_C_LIBRARIES}")
+endif()
+
+if (NOT NETCDF_LIBRARY_DIR STREQUAL "")
+    # sometimes the netcdf library path returned by nc-config is wrong
+    # so users should be able to set expicitly
+    set(NETCDF_LIBRARIES "-L ${NETCDF_LIBRARY_DIR} ${NETCDF_LIBRARIES}")
 endif()
 
 # remove \n at the end of the above variables
