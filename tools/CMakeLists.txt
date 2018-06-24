@@ -24,3 +24,9 @@ target_link_libraries(line_proj
                       mint
                       ${VTK_LIBRARIES}
 )
+
+add_executable(stream_function_flux stream_function_flux.cxx)
+target_link_libraries(stream_function_flux
+                      mint
+                      ${VTK_LIBRARIES}
+)
