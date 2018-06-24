@@ -713,7 +713,6 @@ template class Vector< std::complex<double> >;
 template Vector< std::complex<double> > space( std::complex<double> ,  std::complex<double> , size_t);
 template std::complex<double>  dot(const Vector< std::complex<double> >&, const Vector< std::complex<double> >&);
 template std::complex<double>  sum(const Vector< std::complex<double> >&);
-template Vector< std::complex<double> > abs(const Vector< std::complex<double> >&);
 template Vector< std::complex<double> > pow(const Vector< std::complex<double> >&,  std::complex<double> );
 template std::ostream& operator<<(std::ostream& s, const Vector< std::complex<double> >&);
 template Vector< std::complex<double> > cat(const Vector< std::complex<double> >&, const Vector< std::complex<double> >&);

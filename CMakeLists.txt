@@ -43,8 +43,6 @@ if (NETCDF_INCLUDE_DIR STREQUAL "")
 endif()
 
 if (NETCDF_LIBRARIES STREQUAL "")
-    execute_process(COMMAND "nf-config" "--flibs"
-                    OUTPUT_VARIABLE NETCDF_Fortran_LIBRARIES)
     string(STRIP "${NETCDF_Fortran_LIBRARIES}" NETCDF_Fortran_LIBRARIES)
     execute_process(COMMAND "nc-config" "--libs"
                     OUTPUT_VARIABLE NETCDF_C_LIBRARIES)
