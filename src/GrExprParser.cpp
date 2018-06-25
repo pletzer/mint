@@ -20,10 +20,10 @@ GrExprParser::GrExprParser(size_t n, const std::string& expr) {
   // set multi-ops
   this->defineOperator("+", GrExprParser::add);
   this->defineOperator("*", GrExprParser::mul);
+  this->defineOperator("/", GrExprParser::div);
 
   // set unary ops
   this->defineOperator("-", GrExprParser::neg);
-  this->defineOperator("/", GrExprParser::inv);
   this->defineOperator("sqrt", GrExprParser::sqrt);
   this->defineOperator("log", GrExprParser::log);
   //this->defineOperator("log10", GrExprParser::log10);
