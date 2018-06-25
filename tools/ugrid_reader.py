@@ -24,10 +24,12 @@ class UgridReader(ReaderBase):
             if hasattr(var, 'cf_role') and var.cf_role == 'face_node_connectivity':
                 connectivity = var[:]
             elif hasattr(var, 'standard_name'):
-                if var.standard_name == 'longitude':
+                if var.standard_name == 'longitude' and hasattr(var, 'long_name') and var.long_name.find('node') >= 0:
                     lons = var[:]
-                elif var.standard_name == 'latitude':
+                    print('found longitude: {}'.format(varname))
+                elif var.standard_name == 'latitude' and hasattr(var, 'long_name') and var.long_name.find('node') >= 0:
                     lats = var[:]
+                    print('found latitude: {}'.format(varname))
 
         ncells = connectivity.shape[0]
 
