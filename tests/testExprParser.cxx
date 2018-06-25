@@ -6,7 +6,6 @@ void testZero() {
     Vec ts(11);
     ts.space(0., 1.);
 
-    //const std::string xLineExpr = "pi/4. + 0.2*cos(5*pi/3.) - 0.2";
     const std::string xLineExpr = "0.";
 
     std::cout << "expr: " << xLineExpr << '\n';
@@ -28,7 +27,6 @@ void testPi() {
     Vec ts(11);
     ts.space(0., 1.);
 
-    //const std::string xLineExpr = "pi/4. + 0.2*cos(5*pi/3.) - 0.2";
     const std::string xLineExpr = "pi";
 
     std::cout << "expr: " << xLineExpr << '\n';
@@ -50,7 +48,6 @@ void testPiDiv1() {
     Vec ts(11);
     ts.space(0., 1.);
 
-    //const std::string xLineExpr = "pi/4. + 0.2*cos(5*pi/3.) - 0.2";
     const std::string xLineExpr = "pi /1";
 
     std::cout << "expr: " << xLineExpr << '\n';
@@ -116,7 +113,6 @@ void testQuarterPi() {
     Vec ts(11);
     ts.space(0., 1.);
 
-    //const std::string xLineExpr = "pi/4. + 0.2*cos(5*pi/3.) - 0.2";
     const std::string xLineExpr = "pi/4.";
 
     std::cout << "expr: " << xLineExpr << '\n';
@@ -138,8 +134,7 @@ void testFull() {
     Vec ts(11);
     ts.space(0., 1.);
 
-    //const std::string xLineExpr = "pi/4. + 0.2*cos(5*pi*t/3.) - 0.2";
-    const std::string xLineExpr = "0.2*cos(5*pi*t/3.) - 0.2";
+    const std::string xLineExpr = "pi/4. + 0.2*cos(5*pi*t/3.) - 0.2";
 
     std::cout << "expr: " << xLineExpr << '\n';
     GrExprAdaptor xa(xLineExpr);
