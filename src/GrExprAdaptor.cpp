@@ -19,7 +19,6 @@ GrExprAdaptor::GrExprAdaptor(const std::string& expr) {
   }
 
   // define some default operators
-  this->defineUnaryOperator("-");
   this->defineUnaryOperator("sin");
   this->defineUnaryOperator("cos");
   this->defineUnaryOperator("tan");
@@ -28,6 +27,7 @@ GrExprAdaptor::GrExprAdaptor(const std::string& expr) {
 
   this->defineBinaryOperator("+", 0);
   this->defineBinaryOperator("*", 1);
+  this->defineBinaryOperator("-", 0);
   this->defineBinaryOperator("/", 1);
 
   // break the string into tokens

@@ -119,7 +119,24 @@ public:
       size_t n = args[0]->size(); // assume all other args have the same size
       res = new Vec(n, 0.0);
       for (size_t i = 0; i < args.size(); ++i) {
-	*res += *args[i];
+        *res += *args[i];
+      }
+    }
+    return res;
+  }
+
+  /** 
+   * Subtraction operator
+   * @param args arguments
+   * @return args[0] - args[1] - args[2]...
+   */
+  static Vec* sub(const std::vector<Vec*>& args) {
+    Vec* res = 0;
+    if (args.size() > 0) {
+      size_t n = args[0]->size(); // assume all other args have the same size
+      res = new Vec(*(args[0]));
+      for (size_t i = 1; i < args.size(); ++i) {
+        *res -= *args[i];
       }
     }
     return res;
