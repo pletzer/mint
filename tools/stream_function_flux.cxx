@@ -1,3 +1,5 @@
+#include <GrExprParser.h>
+#include <GrExprAdaptor.h>
 #include <mntGrid.h>
 #include <mntPolysegmentIter.h>
 #include <CmdLineArgParser.h>
@@ -9,64 +11,35 @@
 
 #define NDIMS 3
 
-std::vector<double> parsePosition(const std::string& posStr) {
-    std::vector<double> res(NDIMS, 0);
-    size_t commaPos = posStr.find(',');
-    res[0] = atof(posStr.substr(0, commaPos).c_str());
-    res[1] = atof(posStr.substr(commaPos + 1).c_str());
-    return res;
-}
-
-std::vector<double> parsePointList(const std::string& pointListStr) {
-
-    size_t len = pointListStr.size();
-
-    std::cerr << pointListStr << '\n';
-    std::vector<double> res;
-    size_t startPos = 0; 
-    while (startPos < pointListStr.size()) {
-
-        size_t lftParenPos = pointListStr.find('(', startPos);
-        if (lftParenPos == std::string::npos) {
-            // ( not 
-            break;
-        }
-
-        size_t rgtParenPos = pointListStr.find(')', lftParenPos + 1);
-        if (rgtParenPos == std::string::npos) {
-            // ) not found
-            std::cerr << "Warning: mismatch in parentheses?\n" << pointListStr << '\n';
-            break;
-        }
-
-        // parse the position
-        size_t nchars = rgtParenPos - lftParenPos - 1;
-        const std::string p = pointListStr.substr(lftParenPos + 1, nchars);
-        std::vector<double> point = parsePosition(p);
-        for (size_t i = 0; i < point.size(); ++i) {
-            res.push_back(point[i]);
-        }
-
-        // start new search on the right of )
-        startPos = rgtParenPos + 1;
-
-    }
-
-    return res;
-}
-
 int main(int argc, char** argv) {
 
     int ier;
     CmdLineArgParser args;
     args.setPurpose("Project a line segment.");
     args.set("-i", std::string(""), "Source grid file in VTK format");
-    args.set("-points", std::string("(0., 0.), (6.283185307179586, 0.)"), "Points");
+    args.set("-xline", std::string("pi/4. + 0.2*cos(5*pi/3. - 0.2"), "Parametric x coordinate (lon in [rad]) expression of 0 <= t <= 1");
+    args.set("-yline", std::string("pi/4. + 0.2*sin(5*pi/3. - 0.2"), "Parametric y coordinate (lat in [rad]) expression of 0 <= t <= 1");
+    args.set("-nline", 2, "Number of points defining the line (>= 2)");
+
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
 
     if (success && !help) {
+
+        std::string xLineExpr = args.get<std::string>("-xline");
+        std::string yLineExpr = args.get<std::string>("-yline");
+        int nline = args.get<int>("-nline");
+        Vec ts(nline);
+        ts.space(0., 1.);
+
+        GrExprParser xExpr(ts.size(), GrExprAdaptor(xLineExpr).getPrefixExpr());
+        xExpr.defineVariable("t", &ts);
+        Vec* xs = xExpr.eval();
+
+        GrExprParser yExpr(ts.size(), GrExprAdaptor(yLineExpr).getPrefixExpr());
+        yExpr.defineVariable("t", &ts);
+        Vec* ys = yExpr.eval();
 
         std::string srcFile = args.get<std::string>("-i");
         if (srcFile.size() == 0) {
@@ -74,14 +47,7 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        std::string pointListStr = args.get<std::string>("-points");
-        std::vector<double> points = parsePointList(pointListStr);
-        size_t npts = points.size() / NDIMS;
-        std::cout << "Polyline points (lon/lat):\n";
-        for (size_t i = 0; i < npts; ++i) {
-            std::cout << i << " " << points[NDIMS*i + 0] << ", " << points[NDIMS*i + 1] << '\n';
-        }
-        if (npts < 2) {
+        if (ts.size() < 2) {
             std::cerr << "ERROR: need at least two points to create a path\n";
             return 2;
         }
@@ -103,16 +69,21 @@ int main(int argc, char** argv) {
         loc->BuildLocator();
 
         // iterate over segments
-        size_t nsegs = npts - 1;
-        for (size_t iseg = 0; iseg < nsegs; ++iseg) {
+        for (size_t ip0 = 0; ip0 < ts.size() - 1; ++ip0) {
 
-            PolysegmentIter polyseg(grid, loc, &points[NDIMS*iseg], &points[NDIMS*(iseg + 1)]);
+            double p0[] = {(*xs)[ip0], (*ys)[ip0], 0.};
+
+            size_t ip1 = ip0 + 1;
+            double p1[] = {(*xs)[ip1], (*ys)[ip1], 0.};
+
+            PolysegmentIter polyseg(grid, loc, p0, p1);
 
             size_t numSubSegs = polyseg.getNumberOfSegments();
             polyseg.reset();
 
             // iterate over the sub-segments 
-            for (size_t isub = 0; isub < numSubSegs; ++isub) {
+            for (size_t i = 0; i < numSubSegs; ++i) {
+
                 vtkIdType cellId = polyseg.getCellId();
                 double ta = polyseg.getBegLineParamCoord();
                 double tb = polyseg.getEndLineParamCoord();

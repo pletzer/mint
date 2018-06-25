@@ -5,6 +5,8 @@ include_directories(
 
 set(LIB_FILES
   CmdLineArgParser.cpp
+  GrExprParser.cpp
+  GrExprAdaptor.cpp
   MvVector.cpp
   MvMat_double.cpp
   mntLatLon.cpp
@@ -16,6 +18,8 @@ set(LIB_FILES
 
 set(HEADER_FILES
   CmdLineArgParser.h
+  GrExprParser.h
+  GrExprAdaptor.h
   mntLatLon.h
   mntGrid.h
   mntLineLineIntersector.h
