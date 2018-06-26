@@ -39,7 +39,7 @@ int mnt_celllocator_del(CellLocator_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, int ncells, const double points[]);
+int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
 
 /**
  * Build the regridder

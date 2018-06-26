@@ -34,7 +34,7 @@ int mnt_grid_del(Grid_t** self) {
 }
 
 extern "C"
-int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, int ncells, const double points[]) {
+int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]) {
 
     (*self)->pointData = vtkDoubleArray::New();
     (*self)->points = vtkPoints::New();
