@@ -13,6 +13,7 @@ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 # Required version
 cmake_minimum_required(VERSION 3.1)
+enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 11)
 
 set(DEBUG_CMAKE TRUE)

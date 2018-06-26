@@ -58,12 +58,13 @@ end module test_mod
 
 program test
     use constants_mod
+    use, intrinsic :: iso_c_binding, only: c_size_t, c_int
     use test_mod
     implicit none
     integer(c_size_t) :: cloc
-    integer(c_size_t) :: num_cells = 1
-    integer(idef)     :: num_verts_per_cell = 8
-    integer(c_size_t) :: num_points = num_cells*num_verts_per_cell
+    integer(c_size_t), parameter :: num_cells = 1
+    integer(i_def), parameter    :: num_verts_per_cell = 8
+    integer(c_size_t), parameter :: num_points = num_cells*num_verts_per_cell
     real(r_def)       :: verts(num_points * 3)
     real(r_def)       :: target_point(3) = [0.2, 0.3, 0.4]
     real(r_def)       :: pcoords(3)
@@ -80,10 +81,15 @@ program test
              0., 1., 1.]
 
     ier = mnt_celllocator_new(cloc)
-    ier = mnt_celllocator_setpoints(cloc, num_verts_per_cell, num_cells, verts)
+    if(ier /= 0) print*,'ERROR ier = ', ier
+    ier = mnt_celllocator_setpoints(cloc, num_verts_per_cell, num_cells, verts(1))
+    if(ier /= 0) print*,'ERROR ier = ', ier
     ier = mnt_celllocator_build(cloc)
-    ier = mnt_celllocator_find(cloc, target_point, cell_id, pcoords)
+    if(ier /= 0) print*,'ERROR ier = ', ier
+    ier = mnt_celllocator_find(cloc, target_point(1), cell_id, pcoords(1))
+    if(ier /= 0) print*,'ERROR ier = ', ier
     ier = mnt_celllocator_del(cloc)
+    if(ier /= 0) print*,'ERROR ier = ', ier
 
     print *,'cell_id: ', cell_id, ' pcoords = ', pcoords
 
