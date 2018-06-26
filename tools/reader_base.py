@@ -4,7 +4,7 @@ import vtk
 
 class ReaderBase(object):
 
-    TWOPI = 2. * numpy.pi
+    PERIODICITY_LENGTH = 360.
 
     def __init__(self):
         """

@@ -44,13 +44,6 @@ class LatLonReader(ReaderBase):
         ncells_lat, ncells_lon = len(lats_0), len(lons_0)
         ncells = ncells_lat * (ncells_lon + padding)
 
-        # covnersion to radians
-        toRad = 1.0
-        periodicity_length = 360.0
-        if lons_units.find('degree') >= 0:
-            toRad = numpy.pi / 180.0
-            periodicity_length = 2.*numpy.pi
-
         # construct the unstructured grid as a collection of 
         # 2D cells
 
@@ -71,6 +64,7 @@ class LatLonReader(ReaderBase):
         ptIds = vtk.vtkIdList()
         ptIds.SetNumberOfIds(4)
 
+        periodicity_length = 360. # in deg
         icell = 0
         for j0 in range(ncells_lat):
 
@@ -83,10 +77,10 @@ class LatLonReader(ReaderBase):
                 offset0 = periodicity_length * ((i + 0) // ncells_lon)
                 offset1 = periodicity_length * ((i + 1) // ncells_lon)
 
-                lon00, lat00 = lons[i0]*toRad + offset0, lats[j0]*toRad
-                lon10, lat10 = lons[i1]*toRad + offset1, lats[j0]*toRad
-                lon11, lat11 = lons[i1]*toRad + offset1, lats[j1]*toRad
-                lon01, lat01 = lons[i0]*toRad + offset0, lats[j1]*toRad
+                lon00, lat00 = lons[i0] + offset0, lats[j0]
+                lon10, lat10 = lons[i1] + offset1, lats[j0]
+                lon11, lat11 = lons[i1] + offset1, lats[j1]
+                lon01, lat01 = lons[i0] + offset0, lats[j1]
 
                 k0 = 4*icell
                 k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 

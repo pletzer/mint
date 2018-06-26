@@ -69,13 +69,13 @@ class UgridReader(ReaderBase):
             if area013 < 0. or area231 < 0.:
                 # this cell straddles the dateline
                 # base longitude is lon00, add/remove 2*pi to reduce the cell deltas
-                index10 = numpy.argmin([abs(lon10 - self.TWOPI - lon00), abs(lon10 - lon00), abs(lon10 + self.TWOPI - lon00)])
-                index11 = numpy.argmin([abs(lon11 - self.TWOPI - lon00), abs(lon11 - lon00), abs(lon11 + self.TWOPI - lon00)])
-                index01 = numpy.argmin([abs(lon01 - self.TWOPI - lon00), abs(lon01 - lon00), abs(lon01 + self.TWOPI - lon00)])
+                index10 = numpy.argmin([abs(lon10 - self.PERIODICITY_LENGTH - lon00), abs(lon10 - lon00), abs(lon10 + self.PERIODICITY_LENGTH - lon00)])
+                index11 = numpy.argmin([abs(lon11 - self.PERIODICITY_LENGTH - lon00), abs(lon11 - lon00), abs(lon11 + self.PERIODICITY_LENGTH - lon00)])
+                index01 = numpy.argmin([abs(lon01 - self.PERIODICITY_LENGTH - lon00), abs(lon01 - lon00), abs(lon01 + self.PERIODICITY_LENGTH - lon00)])
 
-                lon10 += (index10 - 1) * self.TWOPI
-                lon11 += (index11 - 1) * self.TWOPI
-                lon01 += (index01 - 1) * self.TWOPI
+                lon10 += (index10 - 1) * self.PERIODICITY_LENGTH
+                lon11 += (index11 - 1) * self.PERIODICITY_LENGTH
+                lon01 += (index01 - 1) * self.PERIODICITY_LENGTH
 
             k0 = 4*icell
             k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 
