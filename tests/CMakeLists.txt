@@ -29,6 +29,12 @@ target_link_libraries(testCellLocator
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testCellLocatorF testCellLocatorF.f90)
+target_link_libraries(testCellLocatorF
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
+
 add_executable(testExprParser testExprParser.cxx)
 target_link_libraries(testExprParser
                       mint
@@ -47,5 +53,6 @@ add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
+add_test(NAME cellLocatorF COMMAND testCellLocatorF)
 add_test(NAME exprParser COMMAND testExprParser)
 add_test(NAME size COMMAND testSize)
