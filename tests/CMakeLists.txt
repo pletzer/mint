@@ -35,9 +35,17 @@ target_link_libraries(testExprParser
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testSize testSize.cxx)
+target_link_libraries(testSize
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
+
+
 
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME exprParser COMMAND testExprParser)
+add_test(NAME size COMMAND testSize)
