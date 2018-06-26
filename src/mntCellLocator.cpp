@@ -20,8 +20,8 @@ int mnt_celllocator_del(CellLocator_t** self) {
 
 extern "C"
 int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, int ncells, const double points[]) {
-    mnt_grid_setpoints(&(*self)->grid, nVertsPerCell, ncells, points);
-    return 0;
+    int ier = mnt_grid_setpoints(&(*self)->grid, nVertsPerCell, ncells, points);
+    return ier;
 }
 
 extern "C"
@@ -39,8 +39,14 @@ int mnt_celllocator_build(CellLocator_t** self) {
 }
 
 extern "C"
+int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* filename) {
+    int ier = mnt_grid_dump(&(*self)->grid, filename);
+    return ier;
+}
+
+extern "C"
 int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, double pcoords[]) {
-    double weights[8];
+    double weights[8]; // big enough for quad and hex
     const double eps = 1.e-12; // may need to adjust
     *cellId = (*self)->loc->FindCell((double*) point, eps, (*self)->cell, pcoords, weights);
     return 0;

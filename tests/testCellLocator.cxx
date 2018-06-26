@@ -43,6 +43,7 @@ void test1Hex() {
                             0., 1., 1.};
     mnt_celllocator_setpoints(&cloc, num_verts_per_cell, num_cells, verts);
     mnt_celllocator_build(&cloc);
+    mnt_celllocator_dumpgrid(&cloc, "testHex1.vtk");
     const double target_point[] = {0.2, 0.3, 0.4};
     double pcoords[3];
     long long cell_id;

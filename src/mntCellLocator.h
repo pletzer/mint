@@ -49,6 +49,14 @@ extern "C"
 int mnt_celllocator_build(CellLocator_t** self);
 
 /**
+ * Save the grid to a VTK file
+ * @param filename file name
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* filename);
+
+/**
  * Find the cell and the parametric coordinates
  * @param point target point 
  * @param cellId cell Id (< 0 if not found)
