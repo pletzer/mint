@@ -20,7 +20,6 @@ int mnt_celllocator_del(CellLocator_t** self) {
 
 extern "C"
 int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]) {
-	std::cerr << "--- nVertsPerCell = " << nVertsPerCell << " ncells = " << ncells << '\n';
     int ier = mnt_grid_setpoints(&(*self)->grid, nVertsPerCell, ncells, points);
     return ier;
 }
