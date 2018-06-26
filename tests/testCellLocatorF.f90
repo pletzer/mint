@@ -12,62 +12,20 @@ module constants_mod
 
 end module constants_mod
 
-
-module test_mod
-  ! C function prototypes
-  interface
-
-    function mnt_celllocator_new(obj) bind(C)
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
-      integer(c_size_t), intent(inout) :: obj
-      integer(c_int)                   :: mnt_celllocator_new
-    end function mnt_celllocator_new
-
-    function mnt_celllocator_del(obj) bind(C)
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
-      integer(c_size_t), intent(inout) :: obj
-      integer(c_int)                   :: mnt_celllocator_del
-    end function mnt_celllocator_del
-
-    function mnt_celllocator_setpoints(obj, nverts_per_cell, ncells, verts) bind(C)
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
-      integer(c_size_t), intent(inout)         :: obj
-      integer(c_int), value                    :: nverts_per_cell
-      integer(c_size_t), value                 :: ncells
-      real(c_double), intent(in)               :: verts ! const double*
-      integer(c_int)                           :: mnt_celllocator_setpoints
-    end function mnt_celllocator_setpoints
-
-    function mnt_celllocator_build(obj) bind(C)
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
-      integer(c_size_t), intent(inout) :: obj
-      integer(c_int)                   :: mnt_celllocator_build
-    end function mnt_celllocator_build
-
-    function mnt_celllocator_find(obj, point, cell_id, pcoords) bind(C)
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
-      integer(c_size_t), intent(inout)         :: obj
-      real(c_double), intent(in)               :: point   ! const double*
-      integer(c_size_t), intent(out)           :: cell_id
-      real(c_double), intent(out)              :: pcoords ! double*
-      integer(c_int)                           :: mnt_celllocator_find
-    end function mnt_celllocator_find
-  end interface
-end module test_mod
-
-
 program test
-    use constants_mod
+    ! defines the C API
+    use mnt_celllocator_capi_mod
+
     use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
-    use test_mod
+
     implicit none
     integer(c_size_t) :: cloc
     integer(c_size_t), parameter :: num_cells = 1
     integer(c_int), parameter    :: num_verts_per_cell = 8
     integer(c_size_t), parameter :: num_points = num_cells*num_verts_per_cell
-    real(r_def)       :: verts(num_points * 3)
-    real(r_def)       :: target_point(3) = [0.2_r_def, 0.3_r_def, 0.4_r_def]
-    real(r_def)       :: pcoords(3)
+    real(c_double)       :: verts(num_points * 3)
+    real(c_double)       :: target_point(3) = [0.2_c_double, 0.3_c_double, 0.4_c_double]
+    real(c_double)       :: pcoords(3)
     integer(c_int)    :: ier
     integer(c_size_t) :: cell_id
 

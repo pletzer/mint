@@ -14,6 +14,7 @@ set(LIB_FILES
   mntPolysegmentIter.cpp
   mntRegridEdges.cpp
   mntCellLocator.cpp
+  mnt_celllocator_capi_mod.f90
 )
 
 set(HEADER_FILES
