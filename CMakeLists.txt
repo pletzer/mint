@@ -16,6 +16,9 @@ cmake_minimum_required(VERSION 3.1)
 enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 11)
 
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
+
+
 set(DEBUG_CMAKE TRUE)
 
 #

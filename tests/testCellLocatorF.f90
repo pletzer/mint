@@ -1,17 +1,3 @@
-module constants_mod
-
-  use, intrinsic :: iso_fortran_env, only : real32, real64, int32, int64
-
-  implicit none
-
-  integer, parameter :: r_def     = real64 !< Default real kind for application.
-  integer, parameter :: r_single  = real32 !< Default single precision real kind for application.
-  integer, parameter :: r_double  = real64 !< Default double precision real kind for application.
-  integer, parameter :: i_def        = int32       !< Default integer kind for application.
-  integer, parameter :: i_addrss_def = int64       !< For integers that hold addresses.
-
-end module constants_mod
-
 program test
     ! defines the C API
     use mnt_celllocator_capi_mod

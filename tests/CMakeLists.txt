@@ -1,7 +1,7 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_SOURCE_DIR}/src
-  ${CMAKE_BINARY_DIR}/src # for mod files
+  ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
 configure_file(testGrid.cpp testGrid.cxx)
