@@ -30,10 +30,16 @@ set(HEADER_FILES
   MvFunctors.h MvMatrix.h MvVector.h
 )
 
+set(MOD_FILES
+    ${CMAKE_BINARY_DIR}/src/mnt_celllocator_capi_mod.mod)
+
 add_library(mint ${LIB_FILES})
 
 # Install headers
 install(FILES ${HEADER_FILES} DESTINATION include)
+
+# Install fortran modules
+install(FILES ${MOD_FILES} DESTINATION mod)
 
 # Install library
 install(TARGETS mint DESTINATION lib)
