@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
 
         }
 
-        std::cout << "Flux across the line: " << flux << '\n';
+        printf("Flux across the line: %5.18f\n", flux);
 
         // cleanup
         mnt_grid_del(&srcGrid);
