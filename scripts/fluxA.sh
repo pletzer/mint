@@ -1,9 +1,9 @@
 # compute flux
 
 # function determining thw the path
-nline=11
-xlinefunc="180. + 1.9*180.*cos(5*pi*t/3. - 0.2)/pi"
-ylinefunc="180./4. + 0.4*180.*sin(5*pi*t/3. - 0.2)/pi"
+nline=2
+xlinefunc="25.0 + 320.*t"
+ylinefunc="-85.0 + 170.*t"
 
 # write to VTK file
 python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc"
@@ -34,6 +34,8 @@ errors="["
 relerrors="["
 for n in 4 8 16 32 64; do # 128 256 512 1024 2048; do
 	echo "n = $n"
+
+	rm -rf rs.txt
 	../build/tools/flux -i cs_${n}.vtk \
 	             -nline "$nline" -xline "$xlinefunc" -yline "$ylinefunc" \
 	              >& res.txt
