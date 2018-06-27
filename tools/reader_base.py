@@ -91,6 +91,21 @@ class ReaderBase(object):
         self.edgeData.SetVoidArray(self.edgeArray, numCells*4, 1)
         self.vtk['grid'].GetCellData().AddArray(self.edgeData)
 
+    def setPointField(self, name, data):
+        """
+        Set point field
+        @param name name of the field
+        @param data array of size (numCells, 4)
+        """
+        self.pointArray = data
+        self.pointData = vtk.vtkDoubleArray()
+        self.pointData.SetName(name)
+        self.pointData.SetNumberOfComponents(1)
+        numCells = self.getNumberOfCells()
+        self.pointData.SetNumberOfTuples(numCells*4)
+        self.pointData.SetVoidArray(self.pointArray, numCells*4, 1)
+        self.vtk['grid'].GetPointData().AddArray(self.pointData)        
+
 
     def getEdgeFieldFromStreamData(self, streamFuncData):
         """

@@ -119,6 +119,7 @@ def main():
         # compute the edge velocity if user provides the stream function
         x, y = reader.getLonLat()
         streamData = eval(args.streamFunc)
+        reader.setPointField('stream_function', streamData)
         edgeVel = reader.getEdgeFieldFromStreamData(streamData)
         reader.setEdgeField('edge_integrated_velocity', edgeVel)
         loopIntegrals = reader.getLoopIntegralsFromStreamData(streamData)
