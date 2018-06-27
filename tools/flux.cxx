@@ -49,6 +49,10 @@ int main(int argc, char** argv) {
         Vec* xs = xExpr.eval();
         Vec* ys = yExpr.eval();
 
+        for (size_t i = 0; i < (*xs).size(); ++i) {
+            std::cout << i << " x = " << (*xs)[i] << ", " << " y = " << (*ys)[i] << '\n';
+        }
+
         std::string srcFile = args.get<std::string>("-i");
         if (srcFile.size() == 0) {
             std::cerr << "ERROR: must specify a source grid file (-i)\n";
