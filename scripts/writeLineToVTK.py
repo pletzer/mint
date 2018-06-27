@@ -6,7 +6,7 @@ t = linspace(0., 1., nline)
 x = eval(sys.argv[2])
 y = eval(sys.argv[3])
 
-f = open('line.vtk', 'w')
+f = open(sys.argv[4], 'w')
 f.write('# vtk DataFile Version 4.2\n')
 f.write('vtk output\n')
 f.write('ASCII\n')

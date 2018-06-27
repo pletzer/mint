@@ -2,11 +2,11 @@
 
 # function determining thw the path
 nline=2
-xlinefunc="25.0 + 320.*t"
-ylinefunc="-85.0 + 170.*t"
+xlinefunc="320.*t + 25.0"
+ylinefunc="170.*t - 85.0"
 
 # write to VTK file
-python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc"
+python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc" lineA.vtk
 
 # stream function
 streamfunc="sin(6*pi*x/180. - 0.3)**2 + cos(2*pi*y/180.)**2"
@@ -32,7 +32,7 @@ fluxes="["
 num_cells="["
 errors="["
 relerrors="["
-for n in 4 8 16 32 64; do # 128 256 512 1024 2048; do
+for n in 4 8 16 32 64 128 256 512 1024 2048; do
 	echo "n = $n"
 
 	rm -rf rs.txt
@@ -64,4 +64,4 @@ echo "errors     = $errors"
 echo "rel_errors = $relerrors"
 
 # plot
-python plot.py "$num_cells" "$errors"
+python plot.py "$num_cells" "$relerrors"

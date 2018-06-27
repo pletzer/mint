@@ -24,6 +24,7 @@ GrExprAdaptor::GrExprAdaptor(const std::string& expr) {
   this->defineUnaryOperator("tan");
   this->defineUnaryOperator("log");
   this->defineUnaryOperator("exp");
+  //this->defineUnaryOperator("-");
 
   this->defineBinaryOperator("+", 0);
   this->defineBinaryOperator("*", 1);

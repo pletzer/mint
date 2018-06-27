@@ -6,7 +6,7 @@ xlinefunc="180. + 1.9*180.*cos(5*pi*t/3. - 0.2)/pi"
 ylinefunc="180./4. + 0.4*180.*sin(5*pi*t/3. - 0.2)/pi"
 
 # write to VTK file
-python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc"
+python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc" lineB.vtk
 
 # stream function
 streamfunc="sin(6*pi*x/180. - 0.3)**2 + cos(2*pi*y/180.)**2"
@@ -32,7 +32,7 @@ fluxes="["
 num_cells="["
 errors="["
 relerrors="["
-for n in 4 8 16 32 64; do # 128 256 512 1024 2048; do
+for n in 4 8 16 32 64 128 256 512 1024 2048; do
 	echo "n = $n"
 
 	rm -rf rs.txt
@@ -64,4 +64,4 @@ echo "errors     = $errors"
 echo "rel_errors = $relerrors"
 
 # plot
-python plot.py "$num_cells" "$errors"
+python plot.py "$num_cells" "$relerrors"

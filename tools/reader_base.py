@@ -107,6 +107,24 @@ class ReaderBase(object):
         self.vtk['grid'].GetPointData().AddArray(self.pointData)        
 
 
+    def setPointVectorField(self, name, uData, vData):
+        """
+        Set vector field on cell points
+        @param name name of the field
+        @param data array of size (numCells, 4)
+        """
+        numCells = self.getNumberOfCells()
+        self.pointVectorArray = numpy.zeros((numCells*4, 3), numpy.float64)
+        self.pointVectorArray[:, 0] = uData.flat
+        self.pointVectorArray[:, 1] = vData.flat
+        self.pointVectorData = vtk.vtkDoubleArray()
+        self.pointVectorData.SetName(name)
+        # 4 points per cell, 3 components
+        self.pointVectorData.SetNumberOfComponents(3)
+        self.pointVectorData.SetNumberOfTuples(numCells*4)
+        self.pointVectorData.SetVoidArray(self.pointVectorArray, numCells*4*3, 1)
+        self.vtk['grid'].GetPointData().AddArray(self.pointVectorData)        
+
     def getEdgeFieldFromStreamData(self, streamFuncData):
         """
         Get the edge integrated values from the nodal stream function data

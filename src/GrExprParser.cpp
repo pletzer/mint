@@ -30,6 +30,7 @@ GrExprParser::GrExprParser(size_t n, const std::string& expr) {
   this->defineOperator("sin", GrExprParser::sin);
   this->defineOperator("cos", GrExprParser::cos);
   this->defineOperator("tan", GrExprParser::tan);
+  this->defineOperator("-", GrExprParser::neg);
 }
 
 GrExprParser::~GrExprParser() {

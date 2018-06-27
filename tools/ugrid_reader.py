@@ -108,20 +108,34 @@ def main():
                               help='Specify by how much the grid should be padded on the high lon side')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
     parser.add_argument('-stream', dest='streamFunc', default='', 
-                        help='Stream function as a function of x (longitude in rad) and y (latitude in rad)')
+                        help='Stream function as a function of x (longitude) and y (latitude)')
+    parser.add_argument('-u', dest='uFunc', default='', 
+                        help='u vector component function of x (longitude) and y (latitude)')
+    parser.add_argument('-v', dest='vFunc', default='', 
+                        help='v vector component function of x (longitude) and y (latitude)')
+
 
    
     args = parser.parse_args()
 
     reader = UgridReader(filename=args.input)
 
+    # compute the edge velocity if user provides the stream function
+    x, y = reader.getLonLat()
+
+    if args.uFunc and args.vFunc:
+        uData = eval(args.uFunc)
+        vData = eval(args.vFunc)
+        reader.setPointVectorField('velocity_vector', uData, vData)
+
     if args.streamFunc:
-        # compute the edge velocity if user provides the stream function
-        x, y = reader.getLonLat()
+
         streamData = eval(args.streamFunc)
         reader.setPointField('stream_function', streamData)
+
         edgeVel = reader.getEdgeFieldFromStreamData(streamData)
         reader.setEdgeField('edge_integrated_velocity', edgeVel)
+
         loopIntegrals = reader.getLoopIntegralsFromStreamData(streamData)
         reader.setLoopIntegrals('cell_loop_integrals', loopIntegrals)
 
