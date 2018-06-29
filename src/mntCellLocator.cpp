@@ -49,5 +49,6 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* 
     double weights[8]; // big enough for quad and hex
     const double eps = 1.e-12; // may need to adjust
     *cellId = (*self)->loc->FindCell((double*) point, eps, (*self)->cell, pcoords, weights);
+
     return 0;
 }
