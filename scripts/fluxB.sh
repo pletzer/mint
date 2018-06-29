@@ -9,7 +9,7 @@ ylinefunc="180./4. + 0.4*180.*sin(5*pi*t/3. - 0.2)/pi"
 python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc" lineB.vtk
 
 # stream function
-streamfunc="sin(6*pi*x/180. - 0.3)**2 + cos(2*pi*y/180.)**2"
+streamfunc="sin(2*pi*x/180. - 0.3)**2 + cos(2*pi*y/180. - 0.2)**2"
 
 x0expr=$(echo $xlinefunc | perl -ne "s/t/0./g;print;")
 y0expr=$(echo $ylinefunc | perl -ne "s/t/0./g;print;")

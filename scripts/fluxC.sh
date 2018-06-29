@@ -2,11 +2,11 @@
 
 # function determining thw the path
 nline=2
-xlinefunc="320.*t + 25.0"
-ylinefunc="170.*t - 85.0"
+xlinefunc="360*t"
+ylinefunc="0.*t -35.0"
 
 # write to VTK file
-python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc" lineA.vtk
+python writeLineToVTK.py "$nline" "$xlinefunc" "$ylinefunc" lineC.vtk
 
 # stream function
 streamfunc="sin(2*pi*x/180. - 0.3)**2 + cos(2*pi*y/180. - 0.2)**2"
