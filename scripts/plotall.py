@@ -24,7 +24,7 @@ n0, n1 = num_cells[0], num_cells[-1]
 e0 = 10.0
 c = n0**(-alpha) * e0
 e1 = c * n1**alpha
-loglog([n0, n1], [e0, e1], 'k--')
+loglog([n0, n1], [e0, e1], 'k-.')
 
 
 xlabel('Number of horizontal grid cells')
