@@ -2,6 +2,7 @@ import numpy
 import math
 import argparse
 import vtk
+from math import cos, sin, pi, log, exp
 
 """
 A class to generate a polar grid
@@ -19,6 +20,7 @@ class Polar:
             'pointData': vtk.vtkDoubleArray(),
             'points': vtk.vtkPoints(),
             'grid': vtk.vtkUnstructuredGrid(),
+            'velocity': vtk.vtkDoubleArray(),
         }
 
 
@@ -37,7 +39,7 @@ class Polar:
         """
         self.numThe0 = n
 
-    def build(self, radius=1.0):
+    def build(self, potentialExpr, radius=1.0):
         """
         Build the object. Call this after setNumberOfRhoCells and setNumberOfTheCells
         """
@@ -55,9 +57,15 @@ class Polar:
         # sure each cell's area is positive in lat-lon space
         # build unstructured grid
 
+
         ncells = self.numRho0 * self.numThe0
         pointArray = numpy.zeros((4 * ncells, 3))
         self.vtk['pointArray'] = pointArray
+
+        edgeData = self.vtk['velocity']
+        edgeData.SetNumberOfComponents(4)
+        edgeData.SetNumberOfTuples(ncells)
+        edgeData.SetName('edgeData')
 
         pointData = self.vtk['pointData']
         pointData.SetNumberOfComponents(3)
@@ -87,6 +95,17 @@ class Polar:
                 x11, y11 = rho1*math.cos(the1), rho1*math.sin(the1)
                 x01, y01 = rho0*math.cos(the1), rho0*math.sin(the1)
 
+                x, y = x00, y00
+                psi00 = eval(potentialExpr)
+                x, y = x10, y10
+                psi10 = eval(potentialExpr)
+                x, y = x11, y11
+                psi11 = eval(potentialExpr)
+                x, y = x01, y01
+                psi01 = eval(potentialExpr)
+
+                edgeData.SetTuple(icell, [psi10 - psi00, psi11 - psi10, psi01 - psi11, psi00 - psi01])
+
                 k0 = 4*icell
                 k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 
 
@@ -103,8 +122,8 @@ class Polar:
 
                 icell += 1
 
-
         grid.SetPoints(points)
+        grid.GetCellData().AddArray(edgeData)
 
 
     def saveToVtkFile(self, filename):
@@ -124,6 +143,8 @@ def main():
     parser.add_argument('-nrho', dest='nrho', type=int, default=10, help='Number of rho cells')
     parser.add_argument('-nthe', dest='nthe', type=int, default=15, help='Number of the cells')
     parser.add_argument('-o', dest='output', type=str, default='polar.vtk', help='Output file')
+    parser.add_argument('-stream', dest='streamFunc', default='0.5*log(x**2 + y**2 + 1.e-14)/(2.*pi)', help='')
+
 
     args = parser.parse_args()
     numRho, numThe = args.nrho, args.nthe
@@ -132,7 +153,7 @@ def main():
     pl = Polar()
     pl.setNumberOfRhoCells(numRho)
     pl.setNumberOfTheCells(numThe)
-    pl.build()
+    pl.build(args.streamFunc)
     pl.saveToVtkFile(outputFile)
 
 if __name__ == '__main__':
