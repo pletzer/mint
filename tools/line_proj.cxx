@@ -97,11 +97,11 @@ int main(int argc, char** argv) {
             for (size_t j = 0; j < points[iseg0].size(); ++j) {
                 std::cout << points[iseg0][j] << ", ";
             }
-            std::cout << " -> ";
+            std::cout << ") -> (";
             for (size_t j = 0; j < points[iseg1].size(); ++j) {
                 std::cout << points[iseg1][j] << ", ";
             }
-            std::cout << '\n';
+            std::cout << ")\n";
 
             PolysegmentIter polyseg(grid, loc, &points[iseg0][0], &points[iseg1][0]);
 
