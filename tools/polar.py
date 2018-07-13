@@ -104,7 +104,7 @@ class Polar:
                 x, y = x01, y01
                 psi01 = eval(potentialExpr)
 
-                edgeData.SetTuple(icell, [psi10 - psi00, psi11 - psi10, psi01 - psi11, psi00 - psi01])
+                edgeData.SetTuple(icell, [psi10 - psi00, psi11 - psi10, -(psi01 - psi11), -(psi00 - psi01)])
 
                 k0 = 4*icell
                 k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 

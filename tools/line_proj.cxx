@@ -3,6 +3,7 @@
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
+#include <vtkCellData.h>
 #include <string>
 #include <iostream>
 #include <cstdio>
@@ -15,28 +16,58 @@ std::vector<double> parsePosition(const std::string& posStr) {
     return res;
 }
 
+std::vector< std::vector<double> > parsePoints(const std::string& pointsStr) {
+    std::vector< std::vector<double> > res;
+    const char leftDelim = '(';
+    const char rghtDelim = ')';
+    size_t leftPos = 0;
+    size_t rghtPos = pointsStr.size();
+    while(true) {
+        leftPos = pointsStr.find(leftDelim, leftPos);
+        rghtPos = pointsStr.find(rghtDelim, leftPos);
+        if (leftPos == std::string::npos || rghtPos == std::string::npos) {
+            // could not find a point or parentheses don't match
+            break;
+        }
+        leftPos++;
+        size_t n = rghtPos - leftPos;
+        std::string posStr = pointsStr.substr(leftPos, n);
+        res.push_back(parsePosition(posStr));
+    }
+    return res;
+}
+
 int main(int argc, char** argv) {
 
     int ier;
     CmdLineArgParser args;
     args.setPurpose("Project a line segment.");
     args.set("-i", std::string(""), "Source grid file in VTK format");
-    args.set("-p0", std::string("0., 0."), "Start point");
-    args.set("-p1", std::string("6.283185307179586, 0."), "End point");
+    args.set("-p", std::string("(0., 0.),(6.283185307179586, 0.)"), "Points defining the path.");
+    args.set("-v", std::string("edgeData"), "Edge variable name.");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
 
     if (success && !help) {
         std::string srcFile = args.get<std::string>("-i");
-        std::vector<double> p0 = parsePosition(args.get<std::string>("-p0"));
-        std::vector<double> p1 = parsePosition(args.get<std::string>("-p1"));
-        std::cout << "p0 = " << p0[0] << ", " << p0[1] << '\n';
-        std::cout << "p1 = " << p1[0] << ", " << p1[1] << '\n';
+        std::vector< std::vector<double> > points = parsePoints(args.get<std::string>("-p"));
+        size_t npts = points.size();
+        std::cout << "Path:\n";
+        for (size_t i = 0; i< npts; ++i) {
+            std::cout << i << ": ";
+            for (size_t j = 0; j < points[i].size(); ++j) std::cout << points[i][j] << ", ";
+            std::cout << '\n';
+        }
 
         if (srcFile.size() == 0) {
             std::cerr << "ERROR: must specify a source grid file (-i)\n";
             return 1;
+        }
+
+        if (npts < 2) {
+            std::cerr << "ERROR: must have at least two points\n";
+            return 2;
         }
 
         // read/build the src grid
@@ -55,24 +86,59 @@ int main(int argc, char** argv) {
         loc->SetDataSet(grid);
         loc->BuildLocator();
 
-        PolysegmentIter polyseg(grid, loc, &p0[0], &p1[0]);
+        double totFlux = 0.0;
+        vtkDataArray* arr = grid->GetCellData()->GetArray(args.get<std::string>("-v").c_str());
 
-        size_t numSegs = polyseg.getNumberOfSegments();
-        polyseg.reset();
-        for (size_t i = 0; i < numSegs; ++i) {
-            vtkIdType cellId = polyseg.getCellId();
-            double ta = polyseg.getBegLineParamCoord();
-            double tb = polyseg.getEndLineParamCoord();
-            const std::vector<double>& xia = polyseg.getBegCellParamCoord();
-            const std::vector<double>& xib = polyseg.getEndCellParamCoord();
-            double coeff = polyseg.getCoefficient();
+        // iterate over segments
+        size_t nsegs = npts - 1;
+        for (size_t iseg0 = 0; iseg0 < nsegs; ++iseg0) {
+            size_t iseg1 = iseg0 + 1;
+            std::cout << "Segment " << iseg0 << " (";
+            for (size_t j = 0; j < points[iseg0].size(); ++j) {
+                std::cout << points[iseg0][j] << ", ";
+            }
+            std::cout << " -> ";
+            for (size_t j = 0; j < points[iseg1].size(); ++j) {
+                std::cout << points[iseg1][j] << ", ";
+            }
+            std::cout << '\n';
 
-            std::cout << "cell " << cellId << " t = " << ta  << " -> " << tb << 
-                        " xi = " << xia[0] << ',' << xia[1] << " -> " << xib[0] << ',' << xib[1] << 
-                        " coeff = " << coeff << '\n';
-            polyseg.next();
+            PolysegmentIter polyseg(grid, loc, &points[iseg0][0], &points[iseg1][0]);
+
+            size_t numSegs = polyseg.getNumberOfSegments();
+            polyseg.reset();
+            for (size_t i = 0; i < numSegs; ++i) {
+                vtkIdType cellId = polyseg.getCellId();
+                double ta = polyseg.getBegLineParamCoord();
+                double tb = polyseg.getEndLineParamCoord();
+                const std::vector<double>& xia = polyseg.getBegCellParamCoord();
+                const std::vector<double>& xib = polyseg.getEndCellParamCoord();
+                double coeff = polyseg.getCoefficient();
+
+                std::vector<double> dxi({xib[0] - xia[0], xib[1] - xia[1]});
+                std::vector<double> xiMid({0.5*(xia[0] + xib[0]), 0.5*(xia[1] + xib[1])});
+
+                // interpolation weights
+                double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
+                               + dxi[1] * (0.0 + xiMid[0]) * coeff,
+                               - dxi[0] * (0.0 + xiMid[1]) * coeff,
+                               - dxi[1] * (1.0 - xiMid[0]) * coeff};
+
+                double* fieldVals = arr->GetTuple(cellId);
+                // iterate over edges
+                for (size_t ie = 0; ie < 4; ++ie) {
+                    totFlux += ws[ie] * fieldVals[ie];
+                }
+            }
+            double tTotal = polyseg.getIntegratedParamCoord();
+
+            const double tol = 1.e-10;
+            if (std::abs(tTotal - 1.0) > tol) {
+                std::cout << "Warning: total integrated length for segment " << iseg0 << " is " << tTotal << " != 1\n";
+            }
         }
-        double tTotal = polyseg.getIntegratedParamCoord();
+
+        std::cout << "total flux is: " << totFlux << '\n';
 
         // cleanup
         mnt_grid_del(&srcGrid);
@@ -85,6 +151,7 @@ int main(int argc, char** argv) {
     }
     else {
         std::cerr << "ERROR when parsing command line arguments\n";
+        return 3;
     }
 
     return 0;
