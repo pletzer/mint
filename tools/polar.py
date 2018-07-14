@@ -39,7 +39,7 @@ class Polar:
         """
         self.numThe0 = n
 
-    def build(self, potentialExpr, radius=1.0):
+    def build(self, radius=1.0):
         """
         Build the object. Call this after setNumberOfRhoCells and setNumberOfTheCells
         """
@@ -83,11 +83,11 @@ class Polar:
 
         icell = 0
         for i in range(self.numRho0):
-            rho0 = self.rhos[i]
+            rho0 = self.rhos[i + 0]
             rho1 = self.rhos[i + 1]
 
             for j in range(self.numThe0):
-                the0 = self.thes[j]
+                the0 = self.thes[j + 0]
                 the1 = self.thes[j + 1]
 
                 x00, y00 = rho0*math.cos(the0), rho0*math.sin(the0)
@@ -95,16 +95,8 @@ class Polar:
                 x11, y11 = rho1*math.cos(the1), rho1*math.sin(the1)
                 x01, y01 = rho0*math.cos(the1), rho0*math.sin(the1)
 
-                x, y = x00, y00
-                psi00 = eval(potentialExpr)
-                x, y = x10, y10
-                psi10 = eval(potentialExpr)
-                x, y = x11, y11
-                psi11 = eval(potentialExpr)
-                x, y = x01, y01
-                psi01 = eval(potentialExpr)
-
-                edgeData.SetTuple(icell, [psi10 - psi00, psi11 - psi10, -(psi01 - psi11), -(psi00 - psi01)])
+                # difference in poloidal angle gives flux across theta edge
+                edgeData.SetTuple(icell, [0., the1 - the0, 0., the1 - the0])
 
                 k0 = 4*icell
                 k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 
@@ -143,7 +135,6 @@ def main():
     parser.add_argument('-nrho', dest='nrho', type=int, default=10, help='Number of rho cells')
     parser.add_argument('-nthe', dest='nthe', type=int, default=15, help='Number of the cells')
     parser.add_argument('-o', dest='output', type=str, default='polar.vtk', help='Output file')
-    parser.add_argument('-stream', dest='streamFunc', default='0.5*log(x**2 + y**2 + 1.e-14)/(2.*pi)', help='')
 
 
     args = parser.parse_args()
@@ -153,7 +144,7 @@ def main():
     pl = Polar()
     pl.setNumberOfRhoCells(numRho)
     pl.setNumberOfTheCells(numThe)
-    pl.build(args.streamFunc)
+    pl.build()
     pl.saveToVtkFile(outputFile)
 
 if __name__ == '__main__':
