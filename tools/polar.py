@@ -45,12 +45,8 @@ class Polar:
         """
 
         # deltas
-        self.dRho = radius/float(self.numRho0)
-        self.dThe = 2. * math.pi/float(self.numThe0)
-
-        # axes
-        self.rhos = numpy.linspace(0.0, radius, self.numRho0 + 1)
-        self.thes = numpy.linspace(0.0, 2*math.pi, self.numThe0 + 1)
+        dRho = radius/float(self.numRho0)
+        dThe = 2. * math.pi/float(self.numThe0)
 
         # construct the unstructured grid as a collection of 
         # 2D cells. Each cell has its own cooordinates. Make
@@ -83,12 +79,12 @@ class Polar:
 
         icell = 0
         for i in range(self.numRho0):
-            rho0 = self.rhos[i + 0]
-            rho1 = self.rhos[i + 1]
+            rho0 = (i + 0) * dRho
+            rho1 = (i + 1) * dRho
 
             for j in range(self.numThe0):
-                the0 = self.thes[j + 0]
-                the1 = self.thes[j + 1]
+                the0 = (j + 0) * dThe
+                the1 = (j + 1) * dThe
 
                 x00, y00 = rho0*math.cos(the0), rho0*math.sin(the0)
                 x10, y10 = rho1*math.cos(the0), rho1*math.sin(the0)
@@ -96,7 +92,7 @@ class Polar:
                 x01, y01 = rho0*math.cos(the1), rho0*math.sin(the1)
 
                 # difference in poloidal angle gives flux across theta edge
-                edgeData.SetTuple(icell, [0., the1 - the0, 0., the1 - the0])
+                edgeData.SetTuple(icell, [0., dThe, 0., -dThe])
 
                 k0 = 4*icell
                 k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 

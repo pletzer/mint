@@ -60,15 +60,29 @@ int main(int argc, char** argv) {
             std::cout << '\n';
         }
 
+        // checks
         if (srcFile.size() == 0) {
             std::cerr << "ERROR: must specify a source grid file (-i)\n";
             return 1;
         }
-
         if (npts < 2) {
             std::cerr << "ERROR: must have at least two points\n";
             return 2;
         }
+        // compute length of path and check it is != 0
+        double pathLength = 0;
+        for (size_t i = 0; i < npts - 1; ++i) {
+            double dx = points[i + 1][0] - points[i + 0][0];
+            double dy = points[i + 1][1] - points[i + 0][1];
+            double dz = points[i + 1][2] - points[i + 0][2];
+            pathLength += sqrt(dx*dx + dy*dy + dz*dz);
+        }
+        if (pathLength == 0) {
+            std::cerr << "ERROR: path length must be > 0\n";
+            return 3;
+        }
+
+
 
         // read/build the src grid
         Grid_t* srcGrid = NULL;
