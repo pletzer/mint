@@ -18,10 +18,12 @@ y0="$y0init"
 x0s="["
 y0s="["
 fluxes="["
+i=0
 while [ $(python -c "print ($x0 >= $x0init) and ($x0 < $x0finl)") == "True" ]; do
 	x0=$(python -c "print $x0 + $dx")
 	y0=$(python -c "print $y0 + $dy")
 	xy=$(python generate_circle_lines.py -a $a -n $nt -x0 $x0 -y0 $y0)
+	python write_line_vtk_file.py -p "$xy" -o "circle${i}.vtk"
 	x0s="$x0s $x0,"
 	y0s="$y0s $y0,"
 	# compute flux
@@ -30,6 +32,7 @@ while [ $(python -c "print ($x0 >= $x0init) and ($x0 < $x0finl)") == "True" ]; d
 	flux=$(cat res.txt | grep total | awk '{print $4}')
 	echo "flux = $flux"
 	fluxes="$fluxes $flux,"
+	i=$(expr $i + 1)
 done
 x0s="$x0s ]"
 y0s="$y0s ]"
