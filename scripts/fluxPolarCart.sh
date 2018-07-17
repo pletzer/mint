@@ -13,11 +13,13 @@ y0init="-0.45"
 y0finl="0.02"
 dx=$(python -c "print ($x0finl - $x0init)/float($n)")
 dy=$(python -c "print ($y0finl - $y0init)/float($n)")
+echo "dx = $dx dy = $dy"
 x0="$x0init"
 y0="$y0init"
 x0s="["
 y0s="["
 fluxes="["
+fluxesTrapezoidal="["
 i=0
 while [ $(python -c "print ($x0 >= $x0init) and ($x0 < $x0finl)") == "True" ]; do
 	x0=$(python -c "print $x0 + $dx")
@@ -28,18 +30,22 @@ while [ $(python -c "print ($x0 >= $x0init) and ($x0 < $x0finl)") == "True" ]; d
 	y0s="$y0s $y0,"
 	# compute flux
 	echo "xy = $xy"
+	fluxTrapezoidal=$(python compute_trapezoidal_flux.py -p "$xy" | awk '{print $3}')
 	../build/tools/line_proj -i ../tools/polarCart.vtk -p "$xy" >& res.txt
 	flux=$(cat res.txt | grep total | awk '{print $4}')
-	echo "flux = $flux"
+	echo "flux = $flux fluxTrapezoidal = $fluxTrapezoidal"
 	fluxes="$fluxes $flux,"
+	fluxesTrapezoidal="$fluxesTrapezoidal $fluxTrapezoidal,"
 	i=$(expr $i + 1)
 done
 x0s="$x0s ]"
 y0s="$y0s ]"
 fluxes="$fluxes ]"
+fluxesTrapezoidal="$fluxesTrapezoidal ]"
 
 echo "a = $a nt = $nt"
 echo "x0s = $x0s"
 echo "y0s = $y0s"
 echo "fluxes = $fluxes"
+echo "fluxesTrapezoidal = $fluxesTrapezoidal"
 
