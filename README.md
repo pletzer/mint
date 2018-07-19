@@ -78,6 +78,11 @@ The figure below shows a detail of the source (red) and destination (green) grid
  ```
  python regrid_edges.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs_16.vtk -o regrid_edges.vtk
  ```
+ or, alternatively, the C++ version:
+ ```
+ ../build/tools/regrid_edges -s um100x60.vtk -v "edge_integrated_velocity" -d cs_16.vtk -o regrid_edges.vtk
+ ```
+
 
  The above should print very small values, indicating that the loop integrals are nearly zero for each cell, and thus satisfying Stokes' theorem.
 
