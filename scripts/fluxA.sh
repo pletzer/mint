@@ -1,6 +1,6 @@
 # compute flux
 
-# function determining thw the path
+# function determining the path
 nline=2
 xlinefunc="320.*t + 25.0"
 ylinefunc="170.*t - 85.0"
