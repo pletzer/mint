@@ -54,6 +54,8 @@ class UgridReader(ReaderBase):
         grid.Allocate(ncells, 1)
         ptIds = vtk.vtkIdList()
         ptIds.SetNumberOfIds(4)
+        halfPeriodicity = self.PERIODICITY_LENGTH/2.
+        quarterPeriodicity = self.PERIODICITY_LENGTH/4.
         for icell in range(ncells):
 
             i00, i10, i11, i01 = connectivity[icell, :] - 1 # zero based indexing
@@ -76,6 +78,21 @@ class UgridReader(ReaderBase):
                 lon10 += (index10 - 1) * self.PERIODICITY_LENGTH
                 lon11 += (index11 - 1) * self.PERIODICITY_LENGTH
                 lon01 += (index01 - 1) * self.PERIODICITY_LENGTH
+
+            lts = numpy.array([lat00, lat10, lat11, lat01])
+            lns = numpy.array([lon00, lon10, lon11, lon01])
+            alts = numpy.fabs(lts)
+            if numpy.any(alts[:] == quarterPeriodicity):
+                # there is a latitude at the pole. The longitude is not well 
+                # defined in this case - we can set it to any value. For 
+                # esthetical reason it't good to set it to the average 
+                # of the longitudes
+                i = numpy.argmax(alts - quarterPeriodicity)
+                # compute the average lon value, excluding this one
+                # and set lns[index] to that value
+                avgLon = numpy.sum([lns[(i + 1) % 4], lns[(i + 2) % 4], lns[(i + 3) % 4]]) / 3.
+                lns[i] = avgLon
+                lon00, lon10, lon11, lon01 = lns
 
             k0 = 4*icell
             k1, k2, k3 = k0 + 1, k0 + 2, k0 + 3 
@@ -103,7 +120,7 @@ def main():
     from numpy import pi, sin, cos, exp
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
-    parser.add_argument('-i', dest='input', default='', help='Specify UM input netCDF file')
+    parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file')
     parser.add_argument('-p', dest='padding', type=int, default=0, 
                               help='Specify by how much the grid should be padded on the high lon side')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
