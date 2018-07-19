@@ -18,11 +18,40 @@ You will need to have:
  * netCDF4 (1.3.1)
  * VTK with python bindings enabled (8.1.0)
 
- We recommend to install the above packages using Anaconda.
+
+ * C++ compiler (e.g. g++ 6.4)
+ * Fortran compiler (e.g gfortran 6.4)
+ * NetCDF library
+
+
+ We recommend to install Python and related packages using Anaconda.
+ 
+## How to build MINT
+
+```
+mkdir build
+cd build
+cmake ..
+make -j 8
+```
+
+You can specify the compiler with
+```
+FC=mpif90 CXX=mpicxx cmake ..; make -j 8
+```
+
+## Checking that the build was sucessful
+
+```
+make test
+```
 
 ## Example how to regrid from lat-lon to a cubed-sphere grid
 
 In directory `tools/`:
+```
+cd ../tools
+```
 
  1. Generate lat-lon grid of Unified Model NetCDF flavour
  ```
@@ -31,38 +60,31 @@ In directory `tools/`:
 
  2. Convert the destination grid to VTK file format
  ```
- python ugrid_reader.py -i ../data/cubedsphere10.nc -V cs.vtk
+ python ugrid_reader.py -i ../data/cs_16.nc -V cs_16.vtk
  ```
 
  3. Read the source grid, generate edge data and save the result as a VTK file
  ```
- python latlon_reader.py -i um100x60.nc -stream "x*cos(y)" -p 30 -V um100x60.vtk
+ python latlon_reader.py -i um100x60.nc -stream "sin(2*pi*x/360.)*cos(pi*y/180.)" -V um100x60.vtk
  ```
- Note: `x*cos(y)` sets the stream function where x, y are the longitude, respectively, latitudes in radians. The vector field integral on edges is the difference of stream function values between the edge vertices. Argument -p 20 padds the grid on the high longitude 
- side by adding 20 cells. Padding is required to ensure that all destination grid cells are fully contained within source grid cells and
-  should be applied whenever the destination grid has cells that cross the dateline. 
+ Note: this sets the stream function where x, y are the longitude, respectively, latitudes in degrees. 
+ The vector field integral on edges is the difference of stream function values between the edge vertices.
 
-The figure below shows the source (red) and destination (green) grids. Notice how the lat-lon grid was extended to accommodate the 
-cubed-sphere cells near the poles.
+The figure below shows a detail of the source (red) and destination (green) grids.
 ![alt Source (red) and destination (green) grids](https://raw.githubusercontent.com/pletzer/mint/master/figures/srcAndDstGrids.png)
 
 
  4. Regrid the above field from the UM source grid to a cubed-sphere and save the result in a VTK file
  ```
- python regrid_edges.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs.vtk -o regrid.vtk
+ python regrid_edges.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs_16.vtk -o regrid_edges.vtk
  ```
 
- The above should print very small values, e.g.,
- ```
- Min/avg/max cell loop integrals: 7.07767178199e-16/2.29485108361e-12/1.50344181549e-11
- ```
-indicating that the loop integrals are nearly zero for each cell, thus satisfying Stokes's theorem.
+ The above should print very small values, indicating that the loop integrals are nearly zero for each cell, and thus satisfying Stokes' theorem.
 
 It is important to note that treating the the edge field as a nodal field, i.e. applying bilinear regridding 
 does not produce zero loop integrals:
 ```
-python regrid_verts.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs.vtk -o regrid2.vtk
-Min/avg/max cell loop integrals: 0.000201184844794/0.0902900913509/0.477269661097
+python regrid_verts.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs_16.vtk -o regrid_verts.vtk
 ```
 
 Error of bilinear regridding:
