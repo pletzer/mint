@@ -126,6 +126,7 @@ def main():
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
     parser.add_argument('-stream', dest='streamFunc', default='', 
                         help='Stream function as a function of x (longitude) and y (latitude)')
+    parser.add_argument('-b', dest='binary', action='store_true', help='Write binary file')
     parser.add_argument('-u', dest='uFunc', default='', 
                         help='u vector component function of x (longitude) and y (latitude)')
     parser.add_argument('-v', dest='vFunc', default='', 
@@ -157,7 +158,7 @@ def main():
         reader.setLoopIntegrals('cell_loop_integrals', loopIntegrals)
 
     if args.vtk_file:
-        reader.saveToVtkFile(args.vtk_file)
+        reader.saveToVtkFile(args.vtk_file, binary=args.binary)
 
 
 if __name__ == '__main__':

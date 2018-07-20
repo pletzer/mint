@@ -39,12 +39,14 @@ class ReaderBase(object):
         self.vtk['grid'] = reader.GetOutput()
 
 
-    def saveToVtkFile(self, filename):
+    def saveToVtkFile(self, filename, binary=True):
         """
         Save the grid to a VTK file
         @param filename VTK file
         """
         writer = vtk.vtkUnstructuredGridWriter()
+        if binary:
+            writer.SetFileTypeToBinary()
         writer.SetFileName(filename)
         writer.SetInputData(self.vtk['grid'])
         writer.Update()

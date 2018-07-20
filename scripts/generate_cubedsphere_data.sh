@@ -15,5 +15,5 @@ for n in 4 8 16 32 64 128 256 512 1024 2048; do
     python ../tools/ugrid_reader.py \
                                     -stream "$stream_function" \
                                     -i "${cs_file_dir}/cs_${n}.nc"  \
-                                    -V "cs_${n}.vtk"
+                                    -V "cs_${n}.vtk" -b
 done
