@@ -18,7 +18,7 @@ for nlat in 45 90 180 360 720 1440 2880 5760; do # 11520; do
 
 	# regrid using mimetic interpolation
 	echo "regrid_edges...$(date)"
-	../build-lfric/tools/regrid_edges -s um.vtk -v "edge_integrated_velocity" -d cs_64.vtk -o regrid_edges.vtk >& edges.txt
+	../build-lfric/tools/regrid_edges -N 10000 -s um.vtk -v "edge_integrated_velocity" -d cs_64.vtk -o regrid_edges.vtk >& edges.txt
 	# extract the max loop integral error
 	max_loop_error_verts=$(cat verts.txt | awk -F '/' '{print $5}')
 	max_loop_error_edges=$(cat edges.txt | perl -ne 'if(/Min/){print;}' | awk -F '/' '{print $5}')
