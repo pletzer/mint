@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
     args.set("-i", std::string(""), "Source grid file in VTK format");
     args.set("-p", std::string("(0., 0.),(6.283185307179586, 0.)"), "Points defining the path.");
     args.set("-v", std::string("edgeData"), "Edge variable name.");
+    args.set("-N", 128, "Average number of cells per bucket.");
     args.set("-verbose", false, "Verbose mode.");
 
     bool success = args.parse(argc, argv);
@@ -97,6 +98,7 @@ int main(int argc, char** argv) {
         // build locator
         vtkCellLocator* loc = vtkCellLocator::New();
         loc->SetDataSet(grid);
+	loc->SetNumberOfCellsPerBucket(args.get<int>("-N"));
         loc->BuildLocator();
 
         double totFlux = 0.0;

@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
     args.set("-d", std::string(""), "Destination grid file in VTK format");
     args.set("-w", std::string(""), "Write interpolation weights to file");
     args.set("-o", std::string(""), "Specify output VTK file where regridded edge data is saved");
+    args.set("-N", 1024, "Average number of cells per bucket");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -60,7 +61,7 @@ int main(int argc, char** argv) {
         if (ier != 0) return 1;
         ier = mnt_regridedges_setDstGrid(&rge, dg);
         if (ier != 0) return 2;
-        ier = mnt_regridedges_build(&rge);
+        ier = mnt_regridedges_build(&rge, args.get<int>("-N"));
         if (ier != 0) return 3;
 
         if (weightsFile.size() != 0) {

@@ -54,10 +54,11 @@ int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
 
 /**
  * Build the regridder
+ * @param numCellsPerBucket average number of cells per bucket
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_build(RegridEdges_t** self);
+int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket);
 
 /**
  * Get number of source grid cells

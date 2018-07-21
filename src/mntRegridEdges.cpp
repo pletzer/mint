@@ -58,7 +58,7 @@ int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) 
 }
 
 extern "C"
-int mnt_regridedges_build(RegridEdges_t** self) {
+int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
     // checks
     if (!(*self)->srcGrid) {
@@ -72,6 +72,7 @@ int mnt_regridedges_build(RegridEdges_t** self) {
 
     // build the locator
     (*self)->srcLoc->SetDataSet((*self)->srcGrid);
+    (*self)->srcLoc->SetNumberOfCellsPerBucket(numCellsPerBucket);
     (*self)->srcLoc->BuildLocator(); 
 
     // compute the weights
