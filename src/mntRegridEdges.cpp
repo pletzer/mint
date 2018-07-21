@@ -161,7 +161,7 @@ int mnt_regridedges_build(RegridEdges_t** self) {
 
             double totalT = polySegIter.getIntegratedParamCoord();
             if (std::abs(totalT - 1.0) > 1.e-10) {
-            	printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)",
+            	printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
             		   totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
             }
 
