@@ -2,6 +2,7 @@
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <MvVector.h>
+#include <limits>
 
 struct TCmpFunctor {
     TCmpFunctor(const std::vector<double>& ts) {
@@ -18,7 +19,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
                                  const double p0[], const double p1[]) {
 
     // small tolerances 
-    this->eps = 1.73654365e-14;
+    this->eps = 10 * std::numeric_limits<double>::epsilon();
     this->eps100 = 100. * this->eps;
     this->tol = 1.e-3; // to determine if a point is inside a cell
 

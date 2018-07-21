@@ -1,4 +1,5 @@
 #include <mntCellLocator.h>
+#include <limits>
 
 extern "C"
 int mnt_celllocator_new(CellLocator_t** self) {
@@ -47,8 +48,8 @@ int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* filename) {
 extern "C"
 int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, double pcoords[]) {
     double weights[8]; // big enough for quad and hex
-    const double eps = 1.e-12; // may need to adjust
-    *cellId = (*self)->loc->FindCell((double*) point, eps, (*self)->cell, pcoords, weights);
+    const double tol2 = 10 * std::numeric_limits<double>::epsilon() * std::numeric_limits<double>::epsilon(); // 1.e-12 may need to adjust
+    *cellId = (*self)->loc->FindCell((double*) point, tol2, (*self)->cell, pcoords, weights);
 
     return 0;
 }
