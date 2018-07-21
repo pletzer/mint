@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
             double tTotal = polyseg.getIntegratedParamCoord();
             const double tol = 1.e-10;
             if (std::abs(tTotal - 1.0) > tol) {
-                std::cout << "Warning: total integrated length for segment " << iseg0 << " is " << tTotal << " != 1\n";
+                std::cout << "Warning: total integrated length for segment " << iseg0 << " is " << tTotal << " != 1 (diff=" << tTotal - 1. << ")\n";
             }
 
             // add this cell contribution
