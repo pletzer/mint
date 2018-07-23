@@ -11,7 +11,9 @@ program test
     integer(c_size_t), parameter :: num_points = num_cells*num_verts_per_cell
     real(c_double)       :: verts(num_points * 3)
     real(c_double)       :: target_point(3) = [0.2_c_double, 0.3_c_double, 0.4_c_double]
+    real(c_double)       :: interp_point(3)
     real(c_double)       :: pcoords(3)
+    real(c_double)       :: diff2
     integer(c_int)    :: ier, num_cells_per_bucket
     integer(c_size_t) :: cell_id
 
@@ -33,6 +35,13 @@ program test
     if(ier /= 0) print*,'ERROR ier = after build', ier
     ier = mnt_celllocator_find(cloc, target_point(1), cell_id, pcoords(1))
     if(ier /= 0) print*,'ERROR ier = after find', ier
+
+    ier = mnt_celllocator_interp_point(cloc, cell_id, pcoords(1), interp_point(1))
+    if(ier /= 0) print*,'ERROR ier = after find', ier
+    ! check interpolation
+    diff2 = dot_product(interp_point - target_point, interp_point - target_point)
+    print *,'distance square error = ', diff2
+
     ier = mnt_celllocator_del(cloc)
     if(ier /= 0) print*,'ERROR after del ier = ', ier
 

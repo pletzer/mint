@@ -67,5 +67,15 @@ int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* filename);
 extern "C"
 int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, double pcoords[]);
 
+/**
+ * Interpolate the position
+ * @param cellId cell Id (input)
+ * @param pcoords parametric coordinates in the unit cell (input)
+ * @param point target point (output)
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_celllocator_interp_point(CellLocator_t** self, vtkIdType cellId, const double pcoords[], double point[]);
+
 
 #endif // MNT_CELL_LOCATOR
