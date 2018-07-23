@@ -43,10 +43,11 @@ int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType
 
 /**
  * Build the regridder
+ * @param num_cells_per_bucket number of cells per tree node (bucket)
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_build(CellLocator_t** self);
+int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket);
 
 /**
  * Save the grid to a VTK file

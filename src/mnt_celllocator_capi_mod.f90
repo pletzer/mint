@@ -23,9 +23,10 @@ module mnt_celllocator_capi_mod
       integer(c_int)                           :: mnt_celllocator_setpoints
     end function mnt_celllocator_setpoints
 
-    function mnt_celllocator_build(obj) bind(C)
+    function mnt_celllocator_build(obj, num_cells_per_bucket) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
       integer(c_size_t), intent(inout) :: obj
+      integer(c_int), intent(in)       :: num_cells_per_bucket
       integer(c_int)                   :: mnt_celllocator_build
     end function mnt_celllocator_build
 
@@ -38,5 +39,6 @@ module mnt_celllocator_capi_mod
       integer(c_int)                           :: mnt_celllocator_find
     end function mnt_celllocator_find
   end interface
+
 end module mnt_celllocator_capi_mod
 

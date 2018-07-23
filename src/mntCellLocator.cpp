@@ -26,13 +26,14 @@ int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType
 }
 
 extern "C"
-int mnt_celllocator_build(CellLocator_t** self) {
+int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 
     // get the grid
     vtkUnstructuredGrid* grd;
     mnt_grid_get(&(*self)->grid, &grd);
 
     // build the locator
+    (*self)->loc->SetNumberOfCellsPerBucket(num_cells_per_bucket);
     (*self)->loc->SetDataSet(grd);
     (*self)->loc->BuildLocator();
 
