@@ -31,6 +31,7 @@ target_link_libraries(testCellLocator
                       )
 
 add_executable(testCellLocatorF testCellLocatorF.f90)
+set_target_properties(testCellLocatorF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCellLocatorF
                       mint
                       ${VTK_LIBRARIES}

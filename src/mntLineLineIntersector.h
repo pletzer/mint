@@ -52,7 +52,7 @@ struct LineLineIntersector {
      * Get the determinant
      * @return determinant
     */
-    const double getDet() const {
+    double getDet() const {
         return this->det;
     }
 
