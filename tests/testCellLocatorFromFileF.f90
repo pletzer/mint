@@ -20,15 +20,22 @@ program test
     integer(c_size_t) :: cell_id
 
     integer :: nargs
-    character(len=512) :: filename
+    character(len=512) :: filename, num_cells_per_bucket_str
 
-    if (command_argument_count() < 1) then
+    nargs = command_argument_count()
+    if (nargs < 1) then
         stop 'ERROR: must provide VTK file name'
     endif
     call get_command_argument(1, filename)
     print*,'reading grid from file ', filename
 
     num_cells_per_bucket = 1024
+    if (nargs >= 2) then
+        call get_command_argument(2, num_cells_per_bucket_str)
+        read(num_cells_per_bucket_str, *) num_cells_per_bucket
+    endif
+    print*,'Number of cells per bucket = ', num_cells_per_bucket
+
 
     ier = mnt_celllocator_load(cloc, filename, len(filename, c_size_t))
     if(ier /= 0) print*,'ERROR after load ier = ', ier
