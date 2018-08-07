@@ -6,7 +6,7 @@
 extern "C"
 int mnt_celllocator_new(CellLocator_t** self) {
     *self = new CellLocator_t();
-    mnt_grid_new(&(*self)->grid);
+    mnt_grid_new(&(*self)->gridt);
     (*self)->loc = vtkCellLocator::New();
     (*self)->cell = vtkGenericCell::New();
     return 0;
@@ -18,7 +18,7 @@ int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, size_t
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
     // load the grid
-    int ier = mnt_grid_load(&(*self)->grid, filename.c_str());
+    int ier = mnt_grid_load(&(*self)->gridt, filename.c_str());
     if (ier != 0) {
         return ier;
     }
@@ -29,7 +29,7 @@ extern "C"
 int mnt_celllocator_del(CellLocator_t** self) {
     (*self)->cell->Delete();
     (*self)->loc->Delete();
-    mnt_grid_del(&(*self)->grid);
+    mnt_grid_del(&(*self)->gridt);
     delete *self;
     return 0;
 }
@@ -37,7 +37,7 @@ int mnt_celllocator_del(CellLocator_t** self) {
 extern "C"
 int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, 
 		              const double points[]) {
-    int ier = mnt_grid_setpoints(&(*self)->grid, nVertsPerCell, ncells, points);
+    int ier = mnt_grid_setpoints(&(*self)->gridt, nVertsPerCell, ncells, points);
     return ier;
 }
 
@@ -46,7 +46,7 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 
     // get the grid
     vtkUnstructuredGrid* grd;
-    mnt_grid_get(&(*self)->grid, &grd);
+    mnt_grid_get(&(*self)->gridt, &grd);
 
     // build the locator
     (*self)->loc->SetNumberOfCellsPerBucket(num_cells_per_bucket);
@@ -58,8 +58,9 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 
 extern "C"
 int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, size_t n) {
+    // copy fortran string into c string
     std::string filename = std::string(fort_filename, n);
-    int ier = mnt_grid_dump(&(*self)->grid, filename.c_str());
+    int ier = mnt_grid_dump(&(*self)->gridt, filename.c_str());
     return ier;
 }
 
@@ -74,7 +75,11 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* 
 
 extern "C"
 int mnt_celllocator_interp_point(CellLocator_t** self, vtkIdType cellId, const double pcoords[], double point[]) {
+    if (cellId < 0) {
+        return 1;
+    }
     int subId = 0;
-    (*self)->grid->grid->GetCell(cellId)->EvaluateLocation(subId, (double*) pcoords, point, (*self)->weights);
+    vtkCell* cell = (*self)->gridt->grid->GetCell(cellId);
+    cell->EvaluateLocation(subId, (double*) pcoords, point, (*self)->weights);
     return 0;
 }
