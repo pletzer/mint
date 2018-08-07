@@ -37,6 +37,14 @@ target_link_libraries(testCellLocatorF
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testCellLocatorFromFileF testCellLocatorFromFileF.f90)
+set_target_properties(testCellLocatorFromFileF PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(testCellLocatorFromFileF
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
+
+
 add_executable(testExprParser testExprParser.cxx)
 target_link_libraries(testExprParser
                       mint
@@ -56,5 +64,6 @@ add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME cellLocatorF COMMAND testCellLocatorF)
+add_test(NAME cellLocatorFromFile_cs_64 COMMAND testCellLocatorFromFileF "@CMAKE_SOURCE_DIR@/data/cs_64.vtk")
 add_test(NAME exprParser COMMAND testExprParser)
 add_test(NAME size COMMAND testSize)

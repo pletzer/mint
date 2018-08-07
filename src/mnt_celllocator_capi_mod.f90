@@ -14,6 +14,14 @@ module mnt_celllocator_capi_mod
       integer(c_int)                   :: mnt_celllocator_del
     end function mnt_celllocator_del
 
+    function mnt_celllocator_load(obj, filename, n) bind(C)
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      integer(c_size_t), intent(inout)         :: obj
+      character(len=1), intent(in)             :: filename
+      integer(c_size_t), value                 :: n
+      integer(c_int)                           :: mnt_celllocator_load
+    end function mnt_celllocator_load
+
     function mnt_celllocator_setpoints(obj, nverts_per_cell, ncells, verts) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
       integer(c_size_t), intent(inout)         :: obj

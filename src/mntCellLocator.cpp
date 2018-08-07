@@ -1,10 +1,27 @@
 #include <mntCellLocator.h>
 #include <limits>
+#include <cstring>
 
 extern "C"
 int mnt_celllocator_new(CellLocator_t** self) {
     *self = new CellLocator_t();
     mnt_grid_new(&(*self)->grid);
+    (*self)->loc = vtkCellLocator::New();
+    (*self)->cell = vtkGenericCell::New();
+    return 0;
+}
+
+extern "C"
+int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, size_t n) {
+    *self = new CellLocator_t();
+    // Fortran strings don't come with null-termination character. Copy string 
+    // into a new one and add '\0'
+    char* filename = new char[n + 1];
+    strncpy(filename, fort_filename, n);
+    filename[n] = '\0';
+    // load the grid
+    int ier = mnt_grid_load(&(*self)->grid, filename);
+    if (ier != 0) return ier;
     (*self)->loc = vtkCellLocator::New();
     (*self)->cell = vtkGenericCell::New();
     return 0;

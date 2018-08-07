@@ -25,6 +25,15 @@ extern "C"
 int mnt_celllocator_new(CellLocator_t** self);
 
 /**
+ * Constructor from file
+ * @param fort_filename VTK file name without '\0'
+ * @param number of characters in fort_filename
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, size_t n);
+
+/**
  * Destructor
  * @return error code (0 is OK)
  */
