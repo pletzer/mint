@@ -27,23 +27,23 @@ program test
         stop 'ERROR: must provide VTK file name'
     endif
     call get_command_argument(1, filename)
-    print*,'reading grid from file >'//trim(filename)//'<'
+    print *,'reading grid from file >'//trim(filename)//'<'
 
     num_cells_per_bucket = 1024
     if (nargs >= 2) then
         call get_command_argument(2, num_cells_per_bucket_str)
         read(num_cells_per_bucket_str, *) num_cells_per_bucket
     endif
-    print*,'Number of cells per bucket = ', num_cells_per_bucket
+    print *,'Number of cells per bucket = ', num_cells_per_bucket
 
     out_filename = 'testCellLocatorFromFile_grid.vtk'
     if (nargs >= 3) then
         call get_command_argument(3, out_filename)
     endif
-    print*,'Output file name = ', out_filename
+    print *,'Output file name = >'//trim(out_filename)//'<'
 
     ier = mnt_celllocator_new(cloc)
-    if(ier /= 0) print*,'ERROR after new ier = ', ier
+    if(ier /= 0) print *,'ERROR after new ier = ', ier
 
     ier = mnt_celllocator_load(cloc, filename, len(trim(filename), c_size_t))
     if(ier /= 0) then 
@@ -51,32 +51,33 @@ program test
     endif
 
     ier = mnt_celllocator_build(cloc, num_cells_per_bucket)
-    if(ier /= 0) print*,'ERROR ier = after build', ier
+    if(ier /= 0) print *,'ERROR ier = after build', ier
 
     ier = mnt_celllocator_rungriddiagnostics(cloc)
-    if(ier /= 0) print*,'ERROR ier = after rungriddiagnostics', ier
+    if(ier /= 0) print *,'ERROR ier = after rungriddiagnostics', ier
 
     ! initialiaze
     pcoords = 0._c_double
     ier = mnt_celllocator_find(cloc, target_point(1), cell_id, pcoords(1))
-    if(ier /= 0) print*,'ERROR ier = after find', ier
+    if(ier /= 0) print *,'ERROR ier = after find', ier
 
     if (cell_id >= 0) then
         ! the target point was found
 
         ier = mnt_celllocator_interp_point(cloc, cell_id, pcoords(1), interp_point(1))
-        if(ier /= 0) print*,'ERROR ier = after find', ier
+        if(ier /= 0) print *,'ERROR ier = after find', ier
 
         ! check interpolation
         diff2 = dot_product(interp_point - target_point, interp_point - target_point)
         print *,'distance square error = ', diff2
     endif
 
-    ier = mnt_celllocator_del(cloc)
-    if(ier /= 0) print*,'ERROR after del ier = ', ier
-
     ier = mnt_celllocator_dumpgrid(cloc, out_filename, len(out_filename, c_size_t))
-    if(ier /= 0) print*,'ERROR after dumpgrid ier = ', ier
+    if(ier /= 0) print *,'ERROR after dumpgrid ier = ', ier
+
+    ! clean up
+    ier = mnt_celllocator_del(cloc)
+    if(ier /= 0) print *,'ERROR after del ier = ', ier
 
     print *,'cell_id: ', cell_id, ' pcoords = ', pcoords
 
