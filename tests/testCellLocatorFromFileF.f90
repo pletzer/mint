@@ -72,7 +72,7 @@ program test
         print *,'distance square error = ', diff2
     endif
 
-    ier = mnt_celllocator_dumpgrid(cloc, out_filename, len(out_filename, c_size_t))
+    ier = mnt_celllocator_dumpgrid(cloc, trim(out_filename), len(trim(out_filename), c_size_t))
     if(ier /= 0) print *,'ERROR after dumpgrid ier = ', ier
 
     ! clean up
