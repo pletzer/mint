@@ -20,7 +20,7 @@ program test
     integer(c_size_t) :: cell_id
 
     integer :: nargs
-    character(len=512) :: filename, num_cells_per_bucket_str
+    character(len=512) :: filename, num_cells_per_bucket_str, out_filename
 
     nargs = command_argument_count()
     if (nargs < 1) then
@@ -36,6 +36,11 @@ program test
     endif
     print*,'Number of cells per bucket = ', num_cells_per_bucket
 
+    out_filename = 'testCellLocatorFromFile_grid.vtk'
+    if (nargs >= 3) then
+        call get_command_argument(3, out_filename)
+    endif
+    print*,'Output file name = ', out_filename
 
     ier = mnt_celllocator_new(cloc)
     if(ier /= 0) print*,'ERROR after new ier = ', ier
@@ -62,6 +67,9 @@ program test
 
     ier = mnt_celllocator_del(cloc)
     if(ier /= 0) print*,'ERROR after del ier = ', ier
+
+    ier = mnt_celllocator_dumpgrid(cloc, out_filename, len(out_filename, c_size_t))
+    if(ier /= 0) print*,'ERROR after dumpgrid ier = ', ier
 
     print *,'cell_id: ', cell_id, ' pcoords = ', pcoords
 

@@ -45,7 +45,8 @@ void test1Hex() {
     mnt_celllocator_setpoints(&cloc, num_verts_per_cell, num_cells, verts);
     int numCellsPerBucket = 512;
     mnt_celllocator_build(&cloc, numCellsPerBucket);
-    mnt_celllocator_dumpgrid(&cloc, "testHex1.vtk");
+    std::string outfile = std::string("testHex1.vtk");
+    mnt_celllocator_dumpgrid(&cloc, outfile.c_str(), outfile.size());
     const double target_point[] = {0.2, 0.3, 0.4};
     double pcoords[3];
     long long cell_id;

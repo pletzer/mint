@@ -62,11 +62,12 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket);
 
 /**
  * Save the grid to a VTK file
- * @param filename file name
+ * @param filename fortran file name
+ * @param n number of characters of fortr_filename
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* filename);
+int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, size_t n);
 
 /**
  * Find the cell and the parametric coordinates

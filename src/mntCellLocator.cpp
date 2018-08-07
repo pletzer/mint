@@ -1,6 +1,7 @@
 #include <mntCellLocator.h>
 #include <limits>
 #include <cstring>
+#include <string>
 
 extern "C"
 int mnt_celllocator_new(CellLocator_t** self) {
@@ -15,11 +16,9 @@ extern "C"
 int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, size_t n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
-    char* filename = new char[n + 1];
-    strncpy(filename, fort_filename, n);
-    filename[n] = '\0';
+    std::string filename = std::string(fort_filename, n);
     // load the grid
-    int ier = mnt_grid_load(&(*self)->grid, filename);
+    int ier = mnt_grid_load(&(*self)->grid, filename.c_str());
     if (ier != 0) {
         return ier;
     }
@@ -58,8 +57,9 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 }
 
 extern "C"
-int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* filename) {
-    int ier = mnt_grid_dump(&(*self)->grid, filename);
+int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, size_t n) {
+    std::string filename = std::string(fort_filename, n);
+    int ier = mnt_grid_dump(&(*self)->grid, filename.c_str());
     return ier;
 }
 

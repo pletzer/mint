@@ -54,7 +54,15 @@ module mnt_celllocator_capi_mod
       real(c_double), intent(in)               :: pcoords(*) ! const double*
       real(c_double), intent(out)              :: point(*)   ! double*
       integer(c_int)                           :: mnt_celllocator_find
-    end function mnt_celllocator_interp_point      
+    end function mnt_celllocator_interp_point
+
+    function mnt_celllocator_dumpgrid(obj, filename, n) bind(C)
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      integer(c_size_t), intent(inout)         :: obj
+      character(len=1), intent(in)             :: filename
+      integer(c_size_t), value                 :: n
+      integer(c_int)                           :: mnt_celllocator_dumpgrid      
+    end function mnt_celllocator_dumpgrid
 
   end interface
 
