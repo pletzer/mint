@@ -12,6 +12,7 @@
  */
 
 struct CellLocator_t {
+    double weights[8]; /* big enough to accommodate quads and hexs */
     Grid_t* grid;
     vtkCellLocator* loc;
     vtkGenericCell* cell;

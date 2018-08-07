@@ -37,7 +37,8 @@ int mnt_celllocator_del(CellLocator_t** self) {
 }
 
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]) {
+int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, 
+		              const double points[]) {
     int ier = mnt_grid_setpoints(&(*self)->grid, nVertsPerCell, ncells, points);
     return ier;
 }
@@ -64,17 +65,17 @@ int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* filename) {
 }
 
 extern "C"
-int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, double pcoords[]) {
-    double weights[8]; // big enough for quad and hex
-    const double tol2 = 10 * std::numeric_limits<double>::epsilon() * std::numeric_limits<double>::epsilon(); // 1.e-12 may need to adjust
-    *cellId = (*self)->loc->FindCell((double*) point, tol2, (*self)->cell, pcoords, weights);
+int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, 
+		         double pcoords[]) {
+    // may need to be adjusted
+    const double tol2 = 10 * std::numeric_limits<double>::epsilon(); 
+    *cellId = (*self)->loc->FindCell((double*) point, tol2, (*self)->cell, pcoords, (*self)->weights);
     return 0;
 }
 
 extern "C"
 int mnt_celllocator_interp_point(CellLocator_t** self, vtkIdType cellId, const double pcoords[], double point[]) {
-    double weights[8]; // big enough for quad and hex
     int subId = 0;
-	(*self)->grid->grid->GetCell(cellId)->EvaluateLocation(subId, (double*) pcoords, point, weights);
-	return 0;
+    (*self)->grid->grid->GetCell(cellId)->EvaluateLocation(subId, (double*) pcoords, point, (*self)->weights);
+    return 0;
 }
