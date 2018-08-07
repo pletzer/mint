@@ -53,6 +53,9 @@ program test
     ier = mnt_celllocator_build(cloc, num_cells_per_bucket)
     if(ier /= 0) print*,'ERROR ier = after build', ier
 
+    ier = mnt_celllocator_rungriddiagnostics(cloc)
+    if(ier /= 0) print*,'ERROR ier = after rungriddiagnostics', ier
+
     ! initialiaze
     pcoords = 0._c_double
     ier = mnt_celllocator_find(cloc, target_point(1), cell_id, pcoords(1))
@@ -60,7 +63,7 @@ program test
 
     if (cell_id >= 0) then
         ! the target point was found
-        
+
         ier = mnt_celllocator_interp_point(cloc, cell_id, pcoords(1), interp_point(1))
         if(ier /= 0) print*,'ERROR ier = after find', ier
 

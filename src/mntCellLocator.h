@@ -53,6 +53,13 @@ extern "C"
 int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
 
 /**
+ * Run grid diagnostics
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_celllocator_rungriddiagnostics(CellLocator_t** self);
+
+/**
  * Build the regridder
  * @param num_cells_per_bucket number of cells per tree node (bucket)
  * @return error code (0 is OK)

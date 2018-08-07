@@ -57,6 +57,33 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 }
 
 extern "C"
+int mnt_celllocator_rungriddiagnostics(CellLocator_t** self) {
+    vtkIdType ncells = (*self)->gridt->grid->GetNumberOfCells();
+    vtkIdType npts = (*self)->gridt->grid->GetNumberOfPoints();
+    std::cout << "No of cells = " << ncells << " no of points = " << npts << '\n';
+    vtkPoints* points = (*self)->gridt->grid->GetPoints();
+    vtkCell* cell;
+    double vert[3];
+    for (vtkIdType i = 0; i < ncells; ++i) {
+        std::cout << "cell " << i << " verts ";
+        cell = (*self)->gridt->grid->GetCell(i);
+        vtkIdList* ptIds = cell->GetPointIds();
+        for (vtkIdType j = 0; j < ptIds->GetNumberOfIds(); ++j) {
+            vtkIdType k = ptIds->GetId(j);
+            points->GetPoint(k, vert);
+            std::cout << "\t" << k << " (";
+            for (int el = 0; el < 3; ++el) {
+                std::cout << vert[el] << ',';
+            }
+            std::cout << ") ";
+        }
+        std::cout << '\n';
+    }
+    return 0;
+}
+
+
+extern "C"
 int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, size_t n) {
     // copy fortran string into c string
     std::string filename = std::string(fort_filename, n);

@@ -64,6 +64,12 @@ module mnt_celllocator_capi_mod
       integer(c_int)                           :: mnt_celllocator_dumpgrid      
     end function mnt_celllocator_dumpgrid
 
+    function mnt_celllocator_rungriddiagnostics(obj) bind(C)
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      integer(c_size_t), intent(inout)         :: obj
+      integer(c_int)                           :: mnt_celllocator_rungriddiagnostics    
+    end function mnt_celllocator_rungriddiagnostics
+
   end interface
 
 end module mnt_celllocator_capi_mod
