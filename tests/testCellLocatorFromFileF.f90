@@ -27,7 +27,7 @@ program test
         stop 'ERROR: must provide VTK file name'
     endif
     call get_command_argument(1, filename)
-    print*,'reading grid from file ', filename
+    print*,'reading grid from file >'//trim(filename)//'<'
 
     num_cells_per_bucket = 1024
     if (nargs >= 2) then
@@ -37,17 +37,23 @@ program test
     print*,'Number of cells per bucket = ', num_cells_per_bucket
 
 
-    ier = mnt_celllocator_load(cloc, filename, len(filename, c_size_t))
+    ier = mnt_celllocator_new(cloc)
+    if(ier /= 0) print*,'ERROR after new ier = ', ier
+
+    ier = mnt_celllocator_load(cloc, filename, len(trim(filename), c_size_t))
     if(ier /= 0) print*,'ERROR after load ier = ', ier
 
     ier = mnt_celllocator_build(cloc, num_cells_per_bucket)
     if(ier /= 0) print*,'ERROR ier = after build', ier
 
+    ! initialiaze
+    pcoords = 0._c_double
     ier = mnt_celllocator_find(cloc, target_point(1), cell_id, pcoords(1))
     if(ier /= 0) print*,'ERROR ier = after find', ier
 
     ier = mnt_celllocator_interp_point(cloc, cell_id, pcoords(1), interp_point(1))
     if(ier /= 0) print*,'ERROR ier = after find', ier
+    
     ! check interpolation
     diff2 = dot_product(interp_point - target_point, interp_point - target_point)
     print *,'distance square error = ', diff2
