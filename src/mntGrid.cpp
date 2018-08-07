@@ -1,5 +1,6 @@
 #include <mntGrid.h>
 #include <vtkCellData.h>
+#include <fstream>
 
 extern "C" 
 int mnt_grid_new(Grid_t** self) {
@@ -111,6 +112,12 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 
 extern "C"
 int mnt_grid_load(Grid_t** self, const char* filename) {
+    // check if the file exists
+    if (!fstream(filename).good()) {
+        std::cerr << "ERROR file " << filename << " does not exist\n";
+        return 1;        
+    }
+
     if ((*self)->grid) {
         (*self)->grid->Delete();
     }

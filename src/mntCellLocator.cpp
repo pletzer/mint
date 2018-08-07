@@ -20,7 +20,9 @@ int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, size_t
     filename[n] = '\0';
     // load the grid
     int ier = mnt_grid_load(&(*self)->grid, filename);
-    if (ier != 0) return ier;
+    if (ier != 0) {
+        return ier;
+    }
     return 0;
 }
 
