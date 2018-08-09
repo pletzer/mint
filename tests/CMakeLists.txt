@@ -63,6 +63,12 @@ target_link_libraries(testCmdLineArgParserC
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)
+set_target_properties(testCmdLineArgParserF PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(testCmdLineArgParserF
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
 
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
