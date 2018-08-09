@@ -74,3 +74,6 @@ add_test(NAME cellLocatorFromFile_lfric_24576cells COMMAND testCellLocatorFromFi
 add_test(NAME exprParser COMMAND testExprParser)
 add_test(NAME size COMMAND testSize)
 add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC)
+add_test(NAME cmdLineArgParserC2 
+        COMMAND testCmdLineArgParserC "-i" "-234" "-d" -2.34 "-s" "hi_there")
+

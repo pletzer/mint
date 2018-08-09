@@ -39,11 +39,11 @@ template <>
 std::string CmdLineArgParser::get(const std::string& name) const {
   std::string res = "";
   std::map<std::string, std::string>::const_iterator
-    i = this->stringArg.find(name);
+  i = this->stringArg.find(name);
   if (i != this->stringArg.end()) {
     res = i->second;
   }
-return res;
+  return res;
 }
   
 

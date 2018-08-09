@@ -36,6 +36,7 @@ int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, const int arg
 	char** argv = new char*[nargs];
 	for (size_t i = 0; i < (size_t) nargs; ++i) {
 		argv[i] = new char[args_lengths[i]];
+		strncpy(argv[i], args[i], args_lengths[i]);
 	}
 	(*self)->parse(nargs, argv);
 	for (size_t i = 0; i < (size_t) nargs; ++i) {
@@ -60,11 +61,9 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 extern "C"
 int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, char* val, int* n){
 	size_t nv = strlen(val);
-	std::cerr << "** nv = " << nv << '\n';
 	std::string sval = (*self)->get<std::string>(name);
 	*n = (int) sval.size();
 	strncpy(val, sval.c_str(), nv);
-	std::cerr << "val=" << val << "< sval=" << sval << '\n';
 	if (*n > nv) {
 		return 1;
 	}
