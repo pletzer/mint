@@ -82,4 +82,8 @@ add_test(NAME size COMMAND testSize)
 add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC)
 add_test(NAME cmdLineArgParserC2 
         COMMAND testCmdLineArgParserC "-i" "-234" "-d" -2.34 "-s" "hi_there")
+add_test(NAME cmdLineArgParserF COMMAND testCmdLineArgParserF)
+add_test(NAME cmdLineArgParserF2 
+         COMMAND testCmdLineArgParserF "-i" "-234" "-d" -2.34 "-s" "hi_there")
+
 
