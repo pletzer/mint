@@ -55,7 +55,7 @@ int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, co
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, const int args_lengths[], const char** args);
+int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, const int args_lengths[], char** args);
 
 /**
  * Get double command line argument

@@ -57,6 +57,11 @@ target_link_libraries(testSize
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testCmdLineArgParserC testCmdLineArgParserC.cxx)
+target_link_libraries(testCmdLineArgParserC
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
 
 
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
@@ -68,3 +73,4 @@ add_test(NAME cellLocatorFromFile_cs_64 COMMAND testCellLocatorFromFileF "${CMAK
 add_test(NAME cellLocatorFromFile_lfric_24576cells COMMAND testCellLocatorFromFileF "${CMAKE_SOURCE_DIR}/data/lfric_grid.vtk" "100")
 add_test(NAME exprParser COMMAND testExprParser)
 add_test(NAME size COMMAND testSize)
+add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC "-i" "some_file")
