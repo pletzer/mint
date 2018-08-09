@@ -1,4 +1,5 @@
 #include <mntCmdLineArgParser.h>
+#include <cstring>
 
 extern "C"
 int mnt_cmdlineargparser_new(CmdLineArgParser** self) {
@@ -57,7 +58,15 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 }
 
 extern "C"
-int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, const char** val){
-	*val = (*self)->get<std::string>(name).c_str();
+int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, char* val, int* n){
+	size_t nv = strlen(val);
+	std::cerr << "** nv = " << nv << '\n';
+	std::string sval = (*self)->get<std::string>(name);
+	*n = (int) sval.size();
+	strncpy(val, sval.c_str(), nv);
+	std::cerr << "val=" << val << "< sval=" << sval << '\n';
+	if (*n > nv) {
+		return 1;
+	}
 	return 0;
 }

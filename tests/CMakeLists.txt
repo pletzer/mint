@@ -73,4 +73,4 @@ add_test(NAME cellLocatorFromFile_cs_64 COMMAND testCellLocatorFromFileF "${CMAK
 add_test(NAME cellLocatorFromFile_lfric_24576cells COMMAND testCellLocatorFromFileF "${CMAKE_SOURCE_DIR}/data/lfric_grid.vtk" "100")
 add_test(NAME exprParser COMMAND testExprParser)
 add_test(NAME size COMMAND testSize)
-add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC "-i" "some_file")
+add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC)

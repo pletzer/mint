@@ -1,6 +1,7 @@
 #include <mntCmdLineArgParser.h>
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 int main(int argc, char** argv) {
 
@@ -48,9 +49,15 @@ int main(int argc, char** argv) {
     ier = mnt_cmdlineargparser_getdouble(&self, "-d", &dval);
     assert(ier == 0);
 
-    const char* sval;
-    ier = mnt_cmdlineargparser_getstring(&self, "-s", &sval);
+    char sval[128];
+    int n;
+    ier = mnt_cmdlineargparser_getstring(&self, "-s", sval, &n);
     assert(ier == 0);
+
+    // print results
+    std::cout << "-i arg is " << ival << '\n';
+    std::cout << "-d arg is " << dval << '\n';
+    std::cout << "-s arg is " << sval << '\n';
 
     // clean up 
 
