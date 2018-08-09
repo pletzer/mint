@@ -60,12 +60,14 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 
 extern "C"
 int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, char* val, int* n){
-	size_t nv = strlen(val);
 	std::string sval = (*self)->get<std::string>(name);
-	*n = (int) sval.size();
-	strncpy(val, sval.c_str(), nv);
-	if (*n > nv) {
+	if (sval.size() == 0) {
+		// not valid name
 		return 1;
 	}
+	*n = (int) sval.size();
+	strncpy(val, sval.c_str(), *n);
+	// add termination character
+	val[*n] = '\0';
 	return 0;
 }
