@@ -57,7 +57,7 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 }
 
 extern "C"
-int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, const char* val){
-	val = (*self)->get<std::string>(name).c_str();
+int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, const char** val){
+	*val = (*self)->get<std::string>(name).c_str();
 	return 0;
 }

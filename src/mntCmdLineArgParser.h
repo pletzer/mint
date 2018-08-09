@@ -82,7 +82,7 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, const char* val);
+int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, const char** val);
 
 
 

@@ -38,6 +38,20 @@ int main(int argc, char** argv) {
     ier = mnt_cmdlineargparser_parse(&self, argc, args_lengths, args);
     assert(ier == 0);
 
+    // get the command argument values
+
+    int ival;
+    ier = mnt_cmdlineargparser_getint(&self, "-i", &ival);
+    assert(ier == 0);
+
+    double dval;
+    ier = mnt_cmdlineargparser_getdouble(&self, "-d", &dval);
+    assert(ier == 0);
+
+    const char* sval;
+    ier = mnt_cmdlineargparser_getstring(&self, "-s", &sval);
+    assert(ier == 0);
+
     // clean up 
 
     ier = mnt_cmdlineargparser_del(&self);
