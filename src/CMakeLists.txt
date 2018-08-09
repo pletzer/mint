@@ -14,6 +14,7 @@ set(LIB_FILES
   mntPolysegmentIter.cpp
   mntRegridEdges.cpp
   mntCellLocator.cpp
+  mntCmdLineArgParser.cpp
   mnt_celllocator_capi_mod.f90
 )
 
@@ -27,6 +28,7 @@ set(HEADER_FILES
   mntPolysegmentIter.h
   mntRegridEdges.h
   mntCellLocator.h
+  mntCmdLineArgParser.h
   MvFunctors.h MvMatrix.h MvVector.h
 )
 
