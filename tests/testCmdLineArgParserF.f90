@@ -12,20 +12,20 @@ program test
     character(len=mnt_string_size)                   :: argv_full
     integer(c_int)                                   :: ival
     real(c_double)                                   :: dval
-    character(len=mnt_string_size)                   :: sval, s2, s3
+    character(len=mnt_string_size)                   :: sval
 
     ier = mnt_cmdlineargparser_new(prsr)
 
     ! set
-    call mnt_make_c_string("some integer", s3)
-    ier = mnt_cmdlineargparser_setint(prsr, "-i"//char(0), -123, s3)
+    ier = mnt_cmdlineargparser_setint(prsr, "-i"//char(0), -123, &
+                                      "some integer"//char(0))
 
-    call mnt_make_c_string("some double", s3)
-    ier = mnt_cmdlineargparser_setdouble(prsr, "-d"//char(0), -1.23_c_double, s3)
+    ier = mnt_cmdlineargparser_setdouble(prsr, "-d"//char(0), -1.23_c_double, &
+                                         "some double"//char(0))
 
-    call mnt_make_c_string("Hello there!", s2)
-    call mnt_make_c_string("some integer", s3)
-    ier = mnt_cmdlineargparser_setstring(prsr, "-s"//char(0), s2, s3)
+    ier = mnt_cmdlineargparser_setstring(prsr, "-s"//char(0), &
+                                         "Hello there!"//char(0), &
+                                         "some string"//char(0))
 
     ! parse
     nargs = command_argument_count() + 1
