@@ -112,6 +112,14 @@ contains
     c_string = trim(adjustl(fort_string))//char(0)
   end subroutine mnt_make_c_string
 
+  subroutine mnt_make_f_string(c_string, f_string)
+    implicit none
+    character(len=*), intent(in)  :: c_string
+    character(len=*), intent(out) :: f_string
+    f_string = trim(adjustl(c_string))
+    f_string(len_trim(f_string):len(f_string)) = ' '
+  end subroutine mnt_make_f_string
+
 
 end module mnt_cmdlineargparser_capi_mod
 
