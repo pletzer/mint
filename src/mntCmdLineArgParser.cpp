@@ -70,7 +70,5 @@ int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, ch
 	}
 	*n = (int) sval.size();
 	strncpy(val, sval.c_str(), *n);
-	// add termination character
-	val[*n] = '\0';
 	return 0;
 }
