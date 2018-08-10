@@ -66,40 +66,7 @@ class CmdLineArgParser {
   /**
    * Print help to stdout
    */
-  void help() const {
-    std::cout << this->purpose << std::endl;
-    std::cout << this->execName << " [options]\n";
-    std::cout << "Usage:\n";
-    for (std::map<std::string, double>::const_iterator
-         i = this->doubleArg.begin();
-       i != this->doubleArg.end(); ++i) {
-      std::string hlp = this->doubleArgHelp.find(i->first)->second;
-      std::cout << "\t" << i->first << " <double#> " << hlp
-              << " (" << i->second << ")\n";
-    }
-    for (std::map<std::string, int>::const_iterator
-         i = this->intArg.begin();
-       i != this->intArg.end(); ++i) {
-      std::string hlp = this->intArgHelp.find(i->first)->second;
-      std::cout << "\t" << i->first << " <int#> " << hlp
-              << " (" << i->second << ")\n";
-    }
-    for (std::map<std::string, std::string>::const_iterator
-         i = this->stringArg.begin();
-       i != this->stringArg.end(); ++i) {
-      std::string hlp = this->stringArgHelp.find(i->first)->second;
-      std::cout << "\t" << i->first << " <string> " << hlp
-              << " (" << i->second << ")\n";
-    }
-    for (std::map<std::string, bool>::const_iterator
-         i = this->boolArg.begin();
-       i != this->boolArg.end(); ++i) {
-      std::string hlp = this->boolArgHelp.find(i->first)->second;
-      std::cout << "\t" << i->first << ' ' << hlp
-              << " (" << i->second << ")\n";
-    }
-    std::cout << this->footer << std::endl;    
-  }
+  void help() const;
 
   /**
    * Add, optional text to the help message

@@ -36,7 +36,8 @@ program test
     nargs = command_argument_count() + 1
     allocate(args(nargs))
     do i = 1, nargs
-        call get_command_argument(i, argv_full)
+        ! make sure to include the name of the executable
+        call get_command_argument(i - 1, argv_full)
         ! add termination character, trim...
         call mnt_make_c_string(argv_full, args(i))
     enddo

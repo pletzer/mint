@@ -80,7 +80,7 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
   // check if all the options supplied are valid
   for (int a = 1; a < argc; ++a) {
     std::string arg(argv[a]);
-    // is arg the name of an option (or a value)?t
+    // is arg the name of an option or a value?
     // assume that options are of the form "-X"
     bool isOptionName = (arg[0] == '-')
       && (arg.size() >= 2) && !isdigit(arg[1]);
@@ -91,12 +91,13 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
         || stringArg.find(arg) != stringArg.end()
         || boolArg.find(arg) != boolArg.end();
       if (!isValidOptName) {
-        std::cerr << arg << " is not a valid option.\n";
+        std::cerr << "Warning: '" << arg << "'' is not a valid option.\n";
         return false;
       }
     }
   }
 
+  // doubles
   for (std::map<std::string, double>::iterator
        i = this->doubleArg.begin();
        i != this->doubleArg.end(); ++i) {
@@ -116,6 +117,8 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
       }
     }
   }
+
+  // integers
   for (std::map<std::string, int>::iterator
         i = this->intArg.begin();
         i != this->intArg.end(); ++i) {
@@ -136,6 +139,7 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
     }
   }
     
+  // strings
   for (std::map<std::string, std::string>::iterator
        i = this->stringArg.begin();
        i != this->stringArg.end(); ++i) {
@@ -155,6 +159,8 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
       }
     }
   }
+
+  // booleans
   for (std::map<std::string, bool>::iterator
        i = this->boolArg.begin();
        i != this->boolArg.end(); ++i) {
@@ -168,9 +174,45 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
     }
   }
 
-    return true;
+  return true;
 }
+  
 
+void 
+CmdLineArgParser::help() const {
+  std::cout << this->purpose << std::endl;
+  std::cout << this->execName << " [options]\n";
+  std::cout << "Usage:\n";
+  for (std::map<std::string, double>::const_iterator
+         i = this->doubleArg.begin();
+       i != this->doubleArg.end(); ++i) {
+    std::string hlp = this->doubleArgHelp.find(i->first)->second;
+    std::cout << "\t" << i->first << " <double#> " << hlp
+              << " (" << i->second << ")\n";
+  }
+  for (std::map<std::string, int>::const_iterator
+         i = this->intArg.begin();
+       i != this->intArg.end(); ++i) {
+    std::string hlp = this->intArgHelp.find(i->first)->second;
+    std::cout << "\t" << i->first << " <int#> " << hlp
+              << " (" << i->second << ")\n";
+  }
+  for (std::map<std::string, std::string>::const_iterator
+         i = this->stringArg.begin();
+       i != this->stringArg.end(); ++i) {
+    std::string hlp = this->stringArgHelp.find(i->first)->second;
+    std::cout << "\t" << i->first << " <string> " << hlp
+              << " (" << i->second << ")\n";
+  }
+  for (std::map<std::string, bool>::const_iterator
+         i = this->boolArg.begin();
+       i != this->boolArg.end(); ++i) {
+    std::string hlp = this->boolArgHelp.find(i->first)->second;
+    std::cout << "\t" << i->first << ' ' << hlp
+              << " (" << i->second << ")\n";
+  }
+  std::cout << this->footer << std::endl;    
+}
 
 
 template <>

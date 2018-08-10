@@ -21,7 +21,6 @@ program test
                                             &  -1.3135173587022644_c_double, &
                                             &   51392.815974060693_c_double]
 
-    nargs = command_argument_count() + 1 ! must include the executable itself
 
     ier = mnt_cmdlineargparser_new(prsr)
     ier = mnt_cmdlineargparser_setint(prsr, "-n"//char(0), 100, &
@@ -35,12 +34,13 @@ program test
     ier = mnt_cmdlineargparser_setbool(prsr, "-v"//char(0), 0, &
                                          "Turn verbosity on"//char(0))
     ! parse
+    nargs = command_argument_count() + 1 ! must include the executable's name
     allocate(args(nargs))
     do i = 1, nargs
-        call get_command_argument(i, argv_full)
+        ! include the executable
+        call get_command_argument(i - 1, argv_full)
         ! add termination character, trim...
         call mnt_make_c_string(argv_full, args(i))
-        print *, '>>> i = ', i, ' args = "', args(i), '"'
     enddo
     ier = mnt_cmdlineargparser_help(prsr)
 

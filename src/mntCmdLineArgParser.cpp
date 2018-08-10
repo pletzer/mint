@@ -28,7 +28,6 @@ int mnt_cmdlineargparser_setint(CmdLineArgParser** self, const char* name, int d
 extern "C"
 int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, const char* def_value, const char* help) {
 	(*self)->set(name, std::string(def_value), help);
-	std::cerr << "--- set name = '" << name << "' def_value = '" << def_value << "'\n";
 	return 0;
 }
 
@@ -82,7 +81,6 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 extern "C"
 int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, char* val, int* n){
 	std::string sval = (*self)->get<std::string>(name);
-	std::cerr << "*** name = '" << name << "' sval = '" << sval << "'\n";
 	if (sval.size() == 0) {
 		// not valid name
 		return 1;
