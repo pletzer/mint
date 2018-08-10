@@ -1,4 +1,7 @@
 module mnt_cmdlineargparser_capi_mod
+
+  integer, parameter :: mnt_string_size = 16 ! TO INCREASE!
+
   ! C function prototypes
   interface
 
@@ -36,16 +39,16 @@ module mnt_cmdlineargparser_capi_mod
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
       integer(c_size_t), intent(inout)         :: obj
       character(len=1), intent(in)             :: name
-      character(len=1), value                  :: def_value
+      character(len=1), intent(in)             :: def_value
       character(len=1), intent(in)             :: help
       integer(c_int)                           :: mnt_cmdlineargparser_setstring
     end function mnt_cmdlineargparser_setstring
 
-    function mnt_cmdlineargparser_parse(obj, nargs, arg_lengths, args) bind(C)
+    function mnt_cmdlineargparser_parse(obj, nargs, n, args) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
       integer(c_size_t), intent(inout)         :: obj
-      integer(c_int), intent(in)               :: nargs
-      integer(c_int), intent(in)               :: arg_lengths(*)
+      integer(c_int), value                    :: nargs
+      integer(c_int), value                    :: n
       character(len=1), intent(in)             :: args(*)
       integer(c_int)                           :: mnt_cmdlineargparser_parse
     end function mnt_cmdlineargparser_parse
@@ -76,6 +79,16 @@ module mnt_cmdlineargparser_capi_mod
     end function mnt_cmdlineargparser_getstring
 
   end interface
+
+contains
+
+  subroutine mnt_make_c_string(fort_string, c_string)
+    implicit none
+    character(len=*), intent(in)  :: fort_string
+    character(len=*), intent(out) :: c_string
+    c_string = trim(adjustl(fort_string))//char(0)
+  end subroutine mnt_make_c_string
+
 
 end module mnt_cmdlineargparser_capi_mod
 

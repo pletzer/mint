@@ -25,18 +25,15 @@ int main(int argc, char** argv) {
     // parse the command line. Note: we need too pass a string array where
     // each element is a character array without the termination character
 
-    int* args_lengths = new int[argc];
-    char** args = new char*[argc];
+    const int string_len = 32; // max argument length
+    char* args = new char[argc * string_len];
     for (size_t i = 0; i < (size_t) argc; ++i) {
-        size_t n = strlen(argv[i]);
-        args[i] = new char[n];
-        strncpy(args[i], argv[i], n);
-        args_lengths[i] = n;
+        strncpy(&args[i * string_len], argv[i], string_len);
     }
 
     // parse 
 
-    ier = mnt_cmdlineargparser_parse(&self, argc, args_lengths, args);
+    ier = mnt_cmdlineargparser_parse(&self, argc, string_len, args);
     assert(ier == 0);
 
     // get the command argument values
@@ -64,11 +61,7 @@ int main(int argc, char** argv) {
     ier = mnt_cmdlineargparser_del(&self);
     assert(ier == 0);
 
-    for (size_t i = 0; i < (size_t) argc; ++i) {
-        delete[] args[i];
-    }
     delete[] args;
-    delete[] args_lengths;
 
     return 0;
 }

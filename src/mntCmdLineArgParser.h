@@ -50,12 +50,12 @@ int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, co
 /**
  * Parse the command line arguments
  * @param nargs number of arguments
- * @param args_lengths length of each command line argument
- * @param args list of command line arguments
+ * @param n max length of element of args
+ * @param args list of command line arguments as a contiguous array
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, const int args_lengths[], char** args);
+int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args, ...);
 
 /**
  * Get double command line argument

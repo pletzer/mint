@@ -32,13 +32,16 @@ int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, co
 }
 
 extern "C"
-int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, const int args_lengths[], char** args) {
+int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args, ...) {
+
 	char** argv = new char*[nargs];
 	for (size_t i = 0; i < (size_t) nargs; ++i) {
-		argv[i] = new char[args_lengths[i]];
-		strncpy(argv[i], args[i], args_lengths[i]);
+		argv[i] = new char[n];
+		strncpy(argv[i], &args[n*i], n);
 	}
+
 	(*self)->parse(nargs, argv);
+
 	for (size_t i = 0; i < (size_t) nargs; ++i) {
 		delete[] argv[i];
 	}
