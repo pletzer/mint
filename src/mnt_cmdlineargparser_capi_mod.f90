@@ -44,6 +44,15 @@ module mnt_cmdlineargparser_capi_mod
       integer(c_int)                           :: mnt_cmdlineargparser_setstring
     end function mnt_cmdlineargparser_setstring
 
+    function mnt_cmdlineargparser_setbool(obj, name, def_value, help) bind(C)
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      integer(c_size_t), intent(inout)         :: obj
+      character(len=1), intent(in)             :: name
+      integer(c_int), value                    :: def_value
+      character(len=1), intent(in)             :: help
+      integer(c_int)                           :: mnt_cmdlineargparser_setint
+    end function mnt_cmdlineargparser_setbool
+
     function mnt_cmdlineargparser_parse(obj, nargs, n, args) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
       integer(c_size_t), intent(inout)         :: obj
@@ -77,6 +86,14 @@ module mnt_cmdlineargparser_capi_mod
       integer(c_int), intent(out)              :: n
       integer(c_int)                           :: mnt_cmdlineargparser_getstring
     end function mnt_cmdlineargparser_getstring
+
+    function mnt_cmdlineargparser_getbool(obj, name, value) bind(C)
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      integer(c_size_t), intent(inout)         :: obj
+      character(len=1), intent(in)             :: name
+      integer(c_int), intent(out)              :: value
+      integer(c_int)                           :: mnt_cmdlineargparser_getint
+    end function mnt_cmdlineargparser_getbool
 
   end interface
 

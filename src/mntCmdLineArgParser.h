@@ -48,6 +48,16 @@ extern "C"
 int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, const char* def_value, const char* help);
 
 /**
+ * Set boolean command line argument
+ * @param name name of the command line argument
+ * @param def_value default value, 0 = false
+ * @param help help message
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_cmdlineargparser_setbool(CmdLineArgParser** self, const char* name, int def_value, const char* help);
+
+/**
  * Parse the command line arguments
  * @param nargs number of arguments
  * @param n max length of element of args
@@ -86,6 +96,14 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 extern "C"
 int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, char* val, int* n);
 
+/**
+ * Get boolean command line argument
+ * @param name name of the command line argument
+ * @param val returned value, 0 = false
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_cmdlineargparser_getbool(CmdLineArgParser** self, const char* name, int* val);
 
 
 #endif // MNT_CMD_LINE_ARG_PARSER

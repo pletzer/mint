@@ -29,7 +29,7 @@ class CmdLineArgParser {
   CmdLineArgParser() {
     // always activate -h
     this->set("-h", false, "Print help.");
-    this->footer = "\nReport bugs to alexander@gokliya.net\n";    
+    this->footer = "\n";    
   }
   
   // Setters
@@ -89,7 +89,7 @@ class CmdLineArgParser {
           || stringArg.find(arg) != stringArg.end()
           || boolArg.find(arg) != boolArg.end();
         if (!isValidOptName) {
-          std::cout << arg << " is not a valid option.\n";
+          std::cerr << arg << " is not a valid option.\n";
           return false;
         }
       }

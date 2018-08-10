@@ -7,7 +7,7 @@ program test
 
     implicit none
     integer(c_size_t)                                :: prsr
-    integer(c_int)                                   :: ier, nargs, i, n
+    integer(c_int)                                   :: ier, nargs, i, n, verbosity
     character(len=mnt_string_size), allocatable      :: args(:)
     character(len=mnt_string_size)                   :: argv_full
     integer(c_int)                                   :: ival
@@ -27,6 +27,8 @@ program test
                                          "Hello there!"//char(0), &
                                          "some string"//char(0))
 
+    ier = mnt_cmdlineargparser_setbool(prsr, "-v"//char(0), 0, &
+                                         "verbose"//char(0))
     ! parse
     nargs = command_argument_count() + 1
     allocate(args(nargs))
@@ -43,10 +45,12 @@ program test
     ier = mnt_cmdlineargparser_getdouble(prsr, "-d"//char(0), dval)
     sval(:) = ' '
     ier = mnt_cmdlineargparser_getstring(prsr, "-s"//char(0), sval, n)
+    ier = mnt_cmdlineargparser_getbool(prsr, "-v"//char(0), verbosity)
 
     print *, "-i arg is ", ival
     print *, "-d arg is ", dval
     print *, "-s arg is ", trim(sval)
+    print *, "-v arg is ", verbosity
 
     ! clean up
     deallocate(args)

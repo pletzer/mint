@@ -32,6 +32,14 @@ int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, co
 }
 
 extern "C"
+int mnt_cmdlineargparser_setbool(CmdLineArgParser** self, const char* name, int def_value, const char* help) {
+	bool v = false;
+	if (def_value != 0) v = true;
+	(*self)->set(name, v, help);
+	return 0;
+}
+
+extern "C"
 int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args, ...) {
 
 	char** argv = new char*[nargs];
@@ -72,3 +80,16 @@ int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, ch
 	strncpy(val, sval.c_str(), *n);
 	return 0;
 }
+
+extern "C"
+int mnt_cmdlineargparser_getbool(CmdLineArgParser** self, const char* name, int* val) {
+	bool v = (*self)->get<bool>(name);
+	if (v) {
+		*val = 1;
+	}
+	else {
+		*val = 0;
+	}
+	return 0;
+}
+
