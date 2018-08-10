@@ -1,11 +1,15 @@
 program test
     ! defines the C API
     use mnt_celllocator_capi_mod
+    use mnt_cmdlineargparser_capi_mod
 
     use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
 
     implicit none
-    integer(c_size_t) :: cloc
+    integer(c_size_t) :: cloc, prsr
+    integer :: nargs, n, i
+    character(len=mnt_string_size)  :: argv_full, filename, num_cells_per_bucket_str, out_filename
+    character(len=mnt_string_size), allocatable :: args(:)
     integer(c_size_t), parameter :: num_cells = 1
     integer(c_int), parameter    :: num_verts_per_cell = 8
     integer(c_size_t), parameter :: num_points = num_cells*num_verts_per_cell
@@ -19,27 +23,40 @@ program test
     integer(c_int)    :: ier, num_cells_per_bucket
     integer(c_size_t) :: cell_id
 
-    integer :: nargs
-    character(len=512) :: filename, num_cells_per_bucket_str, out_filename
 
-    nargs = command_argument_count()
-    if (nargs < 1) then
-        stop 'ERROR: must provide VTK file name'
+    nargs = command_argument_count() + 1 ! must include the executable itself
+
+    ier = mnt_cmdlineargparser_new(prsr)
+    ier = mnt_cmdlineargparser_setstring(prsr, "-i"//char(0), "not-valid.vtk"//char(0), &
+                                         "Input VTK file"//char(0))
+    ier = mnt_cmdlineargparser_setint(prsr, "-n"//char(0), 100, &
+                                         "Average number of cells per bucket"//char(0))
+    ier = mnt_cmdlineargparser_setstring(prsr, "-o"//char(0), "testCellLocatorFromFile_grid.vtk"//char(0), &
+                                         "Output VTK file"//char(0))
+
+    ! parse
+    allocate(args(nargs))
+    do i = 1, nargs
+        call get_command_argument(i, argv_full)
+        ! add termination character, trim...
+        call mnt_make_c_string(argv_full, args(i))
+    enddo
+    ier = mnt_cmdlineargparser_parse(prsr, nargs, len(args(1)), args)
+
+    ! extract the arguments
+    ier = mnt_cmdlineargparser_getint(prsr, "-n"//char(0), num_cells_per_bucket)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), filename, n)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), out_filename, n)
+
+    ! done
+    ier = mnt_cmdlineargparser_del(prsr)
+
+    if (filename == 'not-valid.vtk') then
+        stop 'ERROR: must provide VTK file name (-i <filename>)'
     endif
-    call get_command_argument(1, filename)
+
     print *,'reading grid from file >'//trim(filename)//'<'
-
-    num_cells_per_bucket = 1024
-    if (nargs >= 2) then
-        call get_command_argument(2, num_cells_per_bucket_str)
-        read(num_cells_per_bucket_str, *) num_cells_per_bucket
-    endif
     print *,'Number of cells per bucket = ', num_cells_per_bucket
-
-    out_filename = 'testCellLocatorFromFile_grid.vtk'
-    if (nargs >= 3) then
-        call get_command_argument(3, out_filename)
-    endif
     print *,'Output file name = >'//trim(out_filename)//'<'
 
     ier = mnt_celllocator_new(cloc)

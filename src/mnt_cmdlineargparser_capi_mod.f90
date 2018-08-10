@@ -1,6 +1,6 @@
 module mnt_cmdlineargparser_capi_mod
 
-  integer, parameter :: mnt_string_size = 16 ! TO INCREASE!
+  integer, parameter :: mnt_string_size = 256 ! May need to adjust!
 
   ! C function prototypes
   interface
