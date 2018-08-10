@@ -49,12 +49,15 @@ int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* 
 		strncpy(argv[i], &args[n*i], n);
 	}
 
-	(*self)->parse(nargs, argv);
+	bool success = (*self)->parse(nargs, argv);
 
+	// clean up
 	for (size_t i = 0; i < (size_t) nargs; ++i) {
 		delete[] argv[i];
 	}
 	delete[] argv;
+
+	if (!success) return 1;
 	return 0;
 }
 

@@ -93,6 +93,6 @@ add_test(NAME cmdLineArgParserF COMMAND testCmdLineArgParserF)
 add_test(NAME cmdLineArgParserF2 
          COMMAND testCmdLineArgParserF "-i" "-234" "-d" -2.34 "-s" "hi_there" "-v")
 add_test(NAME cmdLineArgParserFB
-         COMMAND testCmdLineArgParserFB "-i" "${CMAKE_SOURCE_DIR}/data/cs_64.vtk" "-n" "10" "-o" "out.vtk")
+         COMMAND testCmdLineArgParserFB "-i" "in.vtk")
 
 
