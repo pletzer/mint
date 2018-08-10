@@ -70,12 +70,19 @@ target_link_libraries(testCmdLineArgParserF
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testCmdLineArgParserFB testCmdLineArgParserFB.f90)
+set_target_properties(testCmdLineArgParserFB PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(testCmdLineArgParserFB
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
+
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME cellLocatorF COMMAND testCellLocatorF)
-add_test(NAME cellLocatorFromFile_cs_64 COMMAND testCellLocatorFromFileF "-i" "${CMAKE_SOURCE_DIR}/data/cs_64.vtk" "10")
+add_test(NAME cellLocatorFromFile_cs_64 COMMAND testCellLocatorFromFileF "-i" "${CMAKE_SOURCE_DIR}/data/cs_64.vtk" "-n" "10" "-o" "out.vtk")
 add_test(NAME cellLocatorFromFile_lfric_24576cells COMMAND testCellLocatorFromFileF "-i" "${CMAKE_SOURCE_DIR}/data/lfric_grid.vtk" "-n" "256")
 add_test(NAME exprParser COMMAND testExprParser)
 add_test(NAME size COMMAND testSize)
@@ -85,5 +92,7 @@ add_test(NAME cmdLineArgParserC2
 add_test(NAME cmdLineArgParserF COMMAND testCmdLineArgParserF)
 add_test(NAME cmdLineArgParserF2 
          COMMAND testCmdLineArgParserF "-i" "-234" "-d" -2.34 "-s" "hi_there" "-v")
+add_test(NAME cmdLineArgParserFB
+         COMMAND testCmdLineArgParserFB "-i" "${CMAKE_SOURCE_DIR}/data/cs_64.vtk" "-n" "10" "-o" "out.vtk")
 
 

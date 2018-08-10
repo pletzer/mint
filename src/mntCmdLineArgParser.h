@@ -68,6 +68,14 @@ extern "C"
 int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args, ...);
 
 /**
+ * Print help message
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_cmdlineargparser_help(CmdLineArgParser** self);
+
+
+/**
  * Get double command line argument
  * @param name name of the command line argument
  * @param val returned value

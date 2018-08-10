@@ -1,6 +1,6 @@
 module mnt_cmdlineargparser_capi_mod
 
-  integer, parameter :: mnt_string_size = 256 ! May need to adjust!
+  integer, parameter :: mnt_string_size = 64 ! May need to adjust!
 
   ! C function prototypes
   interface
@@ -61,6 +61,12 @@ module mnt_cmdlineargparser_capi_mod
       character(len=1), intent(in)             :: args(*)
       integer(c_int)                           :: mnt_cmdlineargparser_parse
     end function mnt_cmdlineargparser_parse
+
+    function mnt_cmdlineargparser_help(obj) bind(C)
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      integer(c_size_t), intent(inout)         :: obj
+      integer(c_int)                           :: mnt_cmdlineargparser_parse
+    end function mnt_cmdlineargparser_help
 
     function mnt_cmdlineargparser_getdouble(obj, name, value) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double

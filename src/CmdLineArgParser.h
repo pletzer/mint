@@ -177,7 +177,7 @@ class CmdLineArgParser {
   }
 
   /**
-   * Print help to stderr
+   * Print help to stdout
    */
   void help() const {
     std::cout << this->purpose << std::endl;

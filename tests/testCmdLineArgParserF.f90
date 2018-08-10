@@ -29,6 +29,9 @@ program test
 
     ier = mnt_cmdlineargparser_setbool(prsr, "-v"//char(0), 0, &
                                          "verbose"//char(0))
+
+    ier = mnt_cmdlineargparser_help(prsr)
+
     ! parse
     nargs = command_argument_count() + 1
     allocate(args(nargs))
@@ -37,8 +40,9 @@ program test
         ! add termination character, trim...
         call mnt_make_c_string(argv_full, args(i))
     enddo
-    n = len(args(1))
-    ier = mnt_cmdlineargparser_parse(prsr, nargs, n, args)
+    ier = mnt_cmdlineargparser_parse(prsr, nargs, mnt_string_size, args)
+
+    ier = mnt_cmdlineargparser_help(prsr)
 
     ! extract
     ier = mnt_cmdlineargparser_getint(prsr, "-i"//char(0), ival)
