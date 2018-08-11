@@ -9,7 +9,8 @@ program test
     integer(c_size_t)                           :: cloc, prsr
     integer                                     :: nargs, n, i, verbosity
     character(len=mnt_string_size)              :: argv_full, inp_filename, &
-                                                   num_cells_per_bucket_str, out_filename
+                                                   num_cells_per_bucket_str, out_filename, &
+                                                   out_filename_f, inp_filename_f
     character(len=mnt_string_size), allocatable :: args(:)
     real(c_double)                              :: interp_point(3)
     real(c_double)                              :: pcoords(3)
@@ -40,7 +41,7 @@ program test
         ! include the executable
         call get_command_argument(i - 1, argv_full)
         ! add termination character, trim...
-        call mnt_make_c_string(argv_full, args(i))
+        call mnt_f2c_string(argv_full, args(i))
     enddo
     ier = mnt_cmdlineargparser_help(prsr)
 
@@ -51,7 +52,9 @@ program test
     ! extract the arguments
     ier = mnt_cmdlineargparser_getint(prsr, "-n"//char(0), num_cells_per_bucket)
     ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), inp_filename, n)
+    call mnt_c2f_string(inp_filename, inp_filename_f)
     ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), out_filename, n)
+    call mnt_c2f_string(out_filename, out_filename_f)
     ier = mnt_cmdlineargparser_getbool(prsr, "-v"//char(0), verbosity)
 
     ! done
@@ -61,9 +64,9 @@ program test
         stop 'ERROR: must provide VTK file name (-i <filename>)'
     endif
 
-    print *,'Reading grid from file >'//trim(inp_filename)//'<'
+    print *,'Reading grid from file "'//trim(inp_filename_f)//'"'
     print *,'Number of cells per bucket = ', num_cells_per_bucket
-    print *,'Output file name = >'//trim(out_filename)//'<'
+    print *,'Output file name = "'//trim(out_filename_f)//'"'
 
     ier = mnt_celllocator_new(cloc)
     if(ier /= 0) print *,'ERROR after new ier = ', ier

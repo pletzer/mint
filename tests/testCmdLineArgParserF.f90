@@ -12,7 +12,7 @@ program test
     character(len=mnt_string_size)                   :: argv_full
     integer(c_int)                                   :: ival
     real(c_double)                                   :: dval
-    character(len=mnt_string_size)                   :: sval
+    character(len=mnt_string_size)                   :: sval, sval_f
 
     ier = mnt_cmdlineargparser_new(prsr)
 
@@ -39,7 +39,7 @@ program test
         ! make sure to include the name of the executable
         call get_command_argument(i - 1, argv_full)
         ! add termination character, trim...
-        call mnt_make_c_string(argv_full, args(i))
+        call mnt_f2c_string(argv_full, args(i))
     enddo
     ier = mnt_cmdlineargparser_parse(prsr, nargs, mnt_string_size, args)
 
@@ -50,11 +50,12 @@ program test
     ier = mnt_cmdlineargparser_getdouble(prsr, "-d"//char(0), dval)
     sval(:) = ' '
     ier = mnt_cmdlineargparser_getstring(prsr, "-s"//char(0), sval, n)
+    call mnt_c2f_string(sval, sval_f)
     ier = mnt_cmdlineargparser_getbool(prsr, "-v"//char(0), verbosity)
 
     print *, "-i arg is ", ival
     print *, "-d arg is ", dval
-    print *, "-s arg is ", trim(sval)
+    print *, '-s arg is "'//trim(sval_f)//'"'
     print *, "-v arg is ", verbosity
 
     ! clean up

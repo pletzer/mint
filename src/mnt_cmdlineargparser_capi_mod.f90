@@ -105,20 +105,28 @@ module mnt_cmdlineargparser_capi_mod
 
 contains
 
-  subroutine mnt_make_c_string(fort_string, c_string)
+  subroutine mnt_f2c_string(f_string, c_string)
     implicit none
-    character(len=*), intent(in)  :: fort_string
+    character(len=*), intent(in)  :: f_string
     character(len=*), intent(out) :: c_string
-    c_string = trim(adjustl(fort_string))//char(0)
-  end subroutine mnt_make_c_string
+    integer                :: i
+    c_string = trim(adjustl(f_string))//char(0)
+  end subroutine mnt_f2c_string
 
-  subroutine mnt_make_f_string(c_string, f_string)
+  subroutine mnt_c2f_string(c_string, f_string)
     implicit none
     character(len=*), intent(in)  :: c_string
     character(len=*), intent(out) :: f_string
-    f_string = trim(adjustl(c_string))
-    f_string(len_trim(f_string):len(f_string)) = ' '
-  end subroutine mnt_make_f_string
+    integer                       :: i
+    ! replace '\0' with ' '
+    do i = 1, len(c_string)
+      if (c_string(i:i) == char(0)) then 
+        f_string(i:i) = ' '
+      else
+        f_string(i:i) = c_string(i:i)
+      endif
+    enddo
+  end subroutine mnt_c2f_string
 
 
 end module mnt_cmdlineargparser_capi_mod
