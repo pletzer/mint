@@ -393,10 +393,11 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
     double xi[] = {0., 0., 0.};
     double closestPoint[] = {0., 0., 0.};
-    double weights[] = {0., 0., 0., 0.};
+    double weights[8];
 
     int subId;
     double dist;
+    std::vector<double> point(3, 0.0);
     
     // VTK wants 3d positions
     double pBeg[] = {p0[0], p0[1], 0.};
@@ -426,9 +427,11 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
         vtkIdType cId = cIds[i];
         double lambRay = lambRays[i];
-        const std::vector<double>& point = points[i];
+	// need to copy because points are 2-tuples and VTK always works with 3-tuples
+        point.assign(&points[i][0], &points[i][2]);
 
-        int found = this->grid->GetCell(cId)->EvaluatePosition((double*) &point[0], closestPoint, 
+	vtkCell* cell = this->grid->GetCell(cId);
+        int found = cell->EvaluatePosition((double*) &point[0], closestPoint, 
                                                                 subId, xi, dist, weights);
         if (found) {
             this->cellIds.push_back(cId);
