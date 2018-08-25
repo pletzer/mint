@@ -4,18 +4,21 @@ module mnt_celllocator_capi_mod
 
     function mnt_celllocator_new(obj) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout) :: obj
       integer(c_int)                   :: mnt_celllocator_new
     end function mnt_celllocator_new
 
     function mnt_celllocator_del(obj) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout) :: obj
       integer(c_int)                   :: mnt_celllocator_del
     end function mnt_celllocator_del
 
     function mnt_celllocator_load(obj, filename, n) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout)         :: obj
       character(len=1), intent(in)             :: filename
       integer(c_size_t), value                 :: n
@@ -24,6 +27,7 @@ module mnt_celllocator_capi_mod
 
     function mnt_celllocator_setpoints(obj, nverts_per_cell, ncells, verts) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout)         :: obj
       integer(c_int), value                    :: nverts_per_cell
       integer(c_size_t), value                 :: ncells
@@ -33,6 +37,7 @@ module mnt_celllocator_capi_mod
 
     function mnt_celllocator_build(obj, num_cells_per_bucket) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout) :: obj
       integer(c_int), intent(in)       :: num_cells_per_bucket
       integer(c_int)                   :: mnt_celllocator_build
@@ -40,6 +45,7 @@ module mnt_celllocator_capi_mod
 
     function mnt_celllocator_find(obj, point, cell_id, pcoords) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout)         :: obj
       real(c_double), intent(in)               :: point(3) ! const double*
       integer(c_size_t), intent(out)           :: cell_id
@@ -49,15 +55,17 @@ module mnt_celllocator_capi_mod
 
     function mnt_celllocator_interp_point(obj, cell_id, pcoords, point) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout)         :: obj
       integer(c_size_t), value                 :: cell_id
       real(c_double), intent(in)               :: pcoords(3) ! const double*
       real(c_double), intent(out)              :: point(3)   ! double*
-      integer(c_int)                           :: mnt_celllocator_find
+      integer(c_int)                           :: mnt_celllocator_interp_point
     end function mnt_celllocator_interp_point
 
     function mnt_celllocator_dumpgrid(obj, filename, n) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout)         :: obj
       character(len=1), intent(in)             :: filename
       integer(c_size_t), value                 :: n
@@ -66,6 +74,7 @@ module mnt_celllocator_capi_mod
 
     function mnt_celllocator_rungriddiagnostics(obj) bind(C)
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      implicit none
       integer(c_size_t), intent(inout)         :: obj
       integer(c_int)                           :: mnt_celllocator_rungriddiagnostics    
     end function mnt_celllocator_rungriddiagnostics
