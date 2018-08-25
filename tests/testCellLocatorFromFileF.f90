@@ -3,7 +3,7 @@ program test
     use mnt_celllocator_capi_mod
     use mnt_cmdlineargparser_capi_mod
 
-    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_loc, c_ptr
+    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
 
     implicit none
     integer(c_size_t)                           :: cloc, prsr
@@ -12,17 +12,15 @@ program test
                                                    num_cells_per_bucket_str, out_filename, &
                                                    out_filename_f, inp_filename_f
     character(len=mnt_string_size), allocatable :: args(:)
-    real(c_double), target                      :: interp_point(3)
-    real(c_double), target                      :: pcoords(3)
+    real(c_double)                              :: interp_point(3)
+    real(c_double)                              :: pcoords(3)
     real(c_double)                              :: diff2
     integer(c_int)                              :: ier, num_cells_per_bucket
     integer(c_size_t)                           :: cell_id
 
-    real(c_double), target  :: target_point(3) = [ 4.3760449538518165_c_double, &
+    real(c_double)          :: target_point(3) = [ 4.3760449538518165_c_double, &
                                                &  -1.3135173587022644_c_double, &
                                                &   51392.815974060693_c_double]
-    type(c_ptr)                                 :: pcoords_ptr
-    type(c_ptr)                                 :: interp_point_ptr
 
 
     ier = mnt_cmdlineargparser_new(prsr)
@@ -87,16 +85,14 @@ program test
     endif
 
     ! initialiaze
-    pcoords = 0._c_double
-    pcoords_ptr = c_loc(pcoords(1))
-    ier = mnt_celllocator_find(cloc, c_loc(target_point(1)), cell_id, pcoords_ptr)
+    pcoords = -1._c_double
+    ier = mnt_celllocator_find(cloc, target_point(1), cell_id, pcoords(1))
     if(ier /= 0) print *,'ERROR ier = after find', ier
 
     if (cell_id >= 0) then
         ! the target point was found
 
-        interp_point_ptr = c_loc(interp_point(1))
-        ier = mnt_celllocator_interp_point(cloc, cell_id, c_loc(pcoords(1)), interp_point_ptr)
+        ier = mnt_celllocator_interp_point(cloc, cell_id, pcoords(1), interp_point(1))
         if(ier /= 0) print *,'ERROR ier = after find', ier
 
         ! check interpolation
