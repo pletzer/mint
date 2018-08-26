@@ -65,7 +65,7 @@ int mnt_cmdlineargparser_setbool(CmdLineArgParser** self, const char* name, int 
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args, ...);
+int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args);
 
 /**
  * Print help message

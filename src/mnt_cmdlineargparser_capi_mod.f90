@@ -185,8 +185,8 @@ contains
     implicit none
     character(len=*), intent(in)  :: f_string
     character(len=*), intent(out) :: c_string
-    integer                :: i
-    c_string = trim(adjustl(f_string))//char(0)
+    c_string(:) = char(0)
+    c_string(1:len_trim(f_string)) = trim(f_string)
   end subroutine mnt_f2c_string
 
   subroutine mnt_c2f_string(c_string, f_string)
@@ -197,6 +197,8 @@ contains
     implicit none
     character(len=*), intent(in)  :: c_string
     character(len=*), intent(out) :: f_string
+
+    ! local variables
     integer                       :: i
     logical                       :: set_to_empty
 

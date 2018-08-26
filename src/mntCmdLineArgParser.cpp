@@ -40,11 +40,12 @@ int mnt_cmdlineargparser_setbool(CmdLineArgParser** self, const char* name, int 
 }
 
 extern "C"
-int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args, ...) {
+int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args) {
 
 	char** argv = new char*[nargs];
 	for (size_t i = 0; i < (size_t) nargs; ++i) {
 		argv[i] = new char[n];
+		// assumes args is contiguous in memorygs 
 		strncpy(argv[i], &args[n*i], n);
 	}
 
