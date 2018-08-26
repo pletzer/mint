@@ -93,7 +93,7 @@ module mnt_cmdlineargparser_capi_mod
       ! Parse command line options
       ! @param obj instance of mntCmdLineArgParser_t (opaque handle)
       ! @param nargs number of arguments
-      ! @param n maximum length of arguments
+      ! @param n length of each command line argument string
       ! @param args list of command line options, each option must be \0 terminated
       ! @return 0 if successful
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int
