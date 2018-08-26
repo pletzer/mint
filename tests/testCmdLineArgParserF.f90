@@ -47,7 +47,7 @@ program test
     ier = mnt_cmdlineargparser_help(prsr)
 
     ! parse the command line arguments
-    ier = mnt_cmdlineargparser_parse(prsr, nargs + 1, mnt_string_size, args(1))
+    ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(1))
 
     ! print help
     ier = mnt_cmdlineargparser_help(prsr)
