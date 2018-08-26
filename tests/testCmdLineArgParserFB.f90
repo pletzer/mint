@@ -5,12 +5,10 @@ program test
 
     implicit none
     integer(c_size_t)                                :: prsr
-    integer(c_int)                                   :: ier, nargs, i, n, verbosity
+    integer(c_int)                                   :: ier, nargs, i, n, verbosity, nargs1
     character(len=mnt_string_size), allocatable      :: args(:)
     character(len=mnt_string_size)                   :: argv_full, inp_filename, out_filename, inp_filename_f
     integer(c_int)                                   :: num_cells_per_bucket
-
-    nargs = command_argument_count() + 1 ! must include the executable itself
 
     ier = mnt_cmdlineargparser_new(prsr)
     if (ier /= 0) then
@@ -25,15 +23,19 @@ program test
     endif
 
     ! parse
-    allocate(args(nargs))
-    do i = 1, nargs
+    nargs = command_argument_count() ! excludes the executable
+    nargs1 = nargs + 1               ! includes the executable
+
+    allocate(args(0:nargs))
+
+    do i = 0, nargs
         ! make sure to include the name of the executable
-        call get_command_argument(i - 1, argv_full)
+        call get_command_argument(i, argv_full)
         ! add termination character, trim...
         call mnt_f2c_string(argv_full, args(i))
     enddo
 
-    ier = mnt_cmdlineargparser_parse(prsr, nargs, mnt_string_size, args)
+    ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(0))
     if (ier /= 0) then
         print *,'ERROR after calling mnt_cmdlineargparser_parse'
     endif

@@ -34,13 +34,16 @@ program test
 
     ! parse
     nargs = command_argument_count()
+
     allocate(args(0:nargs))
-    do i = 0, nargs ! index 0 is the executable
+
+    do i = 0, nargs 
+        ! i = 0 is the executable
         call get_command_argument(i, argv_full)
         ! add termination character, trim...
         call mnt_f2c_string(argv_full, args(i))
     enddo
-    ier = mnt_cmdlineargparser_parse(prsr, nargs, mnt_string_size, args(0))
+    ier = mnt_cmdlineargparser_parse(prsr, nargs + 1, mnt_string_size, args(0))
 
     ier = mnt_cmdlineargparser_help(prsr)
 
