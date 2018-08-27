@@ -30,7 +30,7 @@ target_link_libraries(testCellLocator
                       ${VTK_LIBRARIES}
                       )
 
-add_executable(testPrintAddressF testPrintaddressF.f90)
+add_executable(testPrintAddressF testPrintAddressF.f90)
 set_target_properties(testPrintAddressF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testPrintAddressF
                       mint
