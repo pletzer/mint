@@ -6,9 +6,9 @@ module mnt_celllocator_capi_mod
       ! Constructor
       ! @param obj instance of mntcellLocator_t (opaque handle)
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout) :: obj
+      type(c_ptr), intent(inout)       :: obj ! void**
       integer(c_int)                   :: mnt_celllocator_new
     end function mnt_celllocator_new
 
@@ -16,9 +16,9 @@ module mnt_celllocator_capi_mod
       ! Destructor
       ! @param obj instance of mntcellLocator_t (opaque handle)
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout) :: obj
+      type(c_ptr), intent(inout)       :: obj ! void**
       integer(c_int)                   :: mnt_celllocator_del
     end function mnt_celllocator_del
 
@@ -27,9 +27,9 @@ module mnt_celllocator_capi_mod
       ! @param obj instance of mntcellLocator_t (opaque handle)
       ! @return 0 if sucecssful
       ! @note must invoke constructior prior to this call
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void**
       character(len=1), intent(in)             :: filename
       integer(c_size_t), value                 :: n
       integer(c_int)                           :: mnt_celllocator_load
@@ -42,9 +42,9 @@ module mnt_celllocator_capi_mod
       ! @param ncells number of cells
       ! @param verts flat array of vertices [x0, y0, z0, x1, y1, z1, ...]
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void**
       integer(c_int), value                    :: nverts_per_cell
       integer(c_size_t), value                 :: ncells
       real(c_double), intent(in)               :: verts(*) ! const double*
@@ -56,9 +56,9 @@ module mnt_celllocator_capi_mod
       ! @param obj instance of mntcellLocator_t (opaque handle)
       ! @param um_cells_per_bucket number of cells per bucket
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout) :: obj
+      type(c_ptr), intent(inout)       :: obj ! void**
       integer(c_int), value            :: num_cells_per_bucket
       integer(c_int)                   :: mnt_celllocator_build
     end function mnt_celllocator_build
@@ -70,9 +70,9 @@ module mnt_celllocator_capi_mod
       ! @param cell_id output cell Id (zero-based)
       ! @param output parametric coordinates
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void**
       real(c_double), intent(in)               :: point(3) ! const double*
       integer(c_size_t), intent(out)           :: cell_id
       real(c_double), intent(out)              :: pcoords(3) ! double*
@@ -87,9 +87,9 @@ module mnt_celllocator_capi_mod
       ! @param point output point
       ! @return 0 if successful
       ! @note call mnt_celllocator_find to compute pcoords and get cell_id
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void**
       integer(c_size_t), value                 :: cell_id
       real(c_double), intent(in)               :: pcoords(3) ! const double*
       real(c_double), intent(out)              :: point(3)   ! double*
@@ -102,9 +102,9 @@ module mnt_celllocator_capi_mod
       ! @param filename file name, \0 (char(0)) terminated
       ! @param n length of filename 
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void**
       character(len=1), intent(in)             :: filename
       integer(c_size_t), value                 :: n
       integer(c_int)                           :: mnt_celllocator_dumpgrid      
@@ -114,9 +114,9 @@ module mnt_celllocator_capi_mod
       ! Run grid diagnostics
       ! @param obj instance of mntcellLocator_t (opaque handle)
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void**
       integer(c_int)                           :: mnt_celllocator_rungriddiagnostics    
     end function mnt_celllocator_rungriddiagnostics
 

@@ -3,10 +3,11 @@ program test
     use mnt_celllocator_capi_mod
     use mnt_cmdlineargparser_capi_mod
 
-    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_loc
 
     implicit none
-    integer(c_size_t)                           :: cloc, prsr
+    integer(c_size_t)                           :: prsr
+    type(c_ptr)                                 :: cloc ! void*
     integer                                     :: nargs, n, i, verbosity
     character(len=mnt_string_size)              :: argv_full, inp_filename, &
                                                    num_cells_per_bucket_str, out_filename, &

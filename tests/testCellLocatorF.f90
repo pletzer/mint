@@ -2,10 +2,10 @@ program test
     ! defines the C API
     use mnt_celllocator_capi_mod
 
-    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
 
     implicit none
-    integer(c_size_t) :: cloc
+    type(c_ptr)                  :: cloc 
     integer(c_size_t), parameter :: num_cells = 1
     integer(c_int), parameter    :: num_verts_per_cell = 8
     integer(c_size_t), parameter :: num_points = num_cells*num_verts_per_cell
