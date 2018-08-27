@@ -96,5 +96,7 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* 
 extern "C"
 int mnt_celllocator_interp_point(CellLocator_t** self, long long cellId, const double pcoords[], double point[]);
 
+extern "C"
+void mnt_celllocator_printaddress(void* something);
 
 #endif // MNT_CELL_LOCATOR
