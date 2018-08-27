@@ -6,7 +6,7 @@ program test
     use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_loc
 
     implicit none
-    integer(c_size_t)                           :: prsr
+    type(c_ptr)                                 :: prsr
     type(c_ptr)                                 :: cloc ! void*
     integer                                     :: nargs, n, i, verbosity
     character(len=mnt_string_size)              :: argv_full, inp_filename, &

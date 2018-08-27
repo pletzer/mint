@@ -1,10 +1,10 @@
 program test
     ! defines the C API
     use mnt_cmdlineargparser_capi_mod
-    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_char
+    use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr
 
     implicit none
-    integer(c_size_t)                                :: prsr
+    type(c_ptr)                                      :: prsr
     integer(c_int)                                   :: ier, nargs, i, n, verbosity, nargs1
     character(len=1), allocatable                    :: args(:)
     character(len=mnt_string_size)                   :: argv_full

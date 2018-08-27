@@ -9,9 +9,9 @@ module mnt_cmdlineargparser_capi_mod
       ! Constructor
       ! @param obj instance of mntCmdLineArgParser_t (opaque handle)
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout) :: obj
+      type(c_ptr), intent(inout)       :: obj ! void*
       integer(c_int)                   :: mnt_cmdlineargparser_new
     end function mnt_cmdlineargparser_new
 
@@ -19,9 +19,9 @@ module mnt_cmdlineargparser_capi_mod
       ! Destructor
       ! @param obj instance of mntCmdLineArgParser_t (opaque handle)
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout) :: obj
+      type(c_ptr), intent(inout)       :: obj ! void*
       integer(c_int)                   :: mnt_cmdlineargparser_del
     end function mnt_cmdlineargparser_del
 
@@ -32,9 +32,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param def_value default value
       ! @param help description of the option
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       real(c_double), value                    :: def_value
       character(len=1), intent(in)             :: help
@@ -48,9 +48,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param def_value default value
       ! @param help description of the option
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       integer(c_int), value                    :: def_value
       character(len=1), intent(in)             :: help
@@ -64,9 +64,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param def_value default value
       ! @param help description of the option
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       character(len=1), intent(in)             :: def_value
       character(len=1), intent(in)             :: help
@@ -80,9 +80,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param def_value default value as an integer, 0 = false, 1 = true
       ! @param help description of the option
       ! @return 0 if successful
-       use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+       use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       integer(c_int), value                    :: def_value
       character(len=1), intent(in)             :: help
@@ -96,9 +96,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param n length of each command line argument string
       ! @param args list of command line options, each option must be \0 terminated
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       integer(c_int), value                    :: nargs
       integer(c_int), value                    :: n
       character(len=1), intent(in)             :: args(*)
@@ -110,9 +110,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param obj instance of mntCmdLineArgParser_t (opaque handle)
       ! @param name name of the command line option (must be \0 terminated)
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       integer(c_int)                           :: mnt_cmdlineargparser_help
     end function mnt_cmdlineargparser_help
 
@@ -122,9 +122,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param name name of the command line option (must be \0 terminated)
       ! @param value return value
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       real(c_double), intent(out)              :: value
       integer(c_int)                           :: mnt_cmdlineargparser_getdouble
@@ -136,9 +136,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param name name of the command line option (must be \0 terminated)
       ! @param value return value
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       integer(c_int), intent(out)              :: value
       integer(c_int)                           :: mnt_cmdlineargparser_getint
@@ -151,9 +151,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param value return value
       ! @param n returned length of string
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       character(len=1), intent(out)            :: value
       integer(c_int), intent(out)              :: n
@@ -166,9 +166,9 @@ module mnt_cmdlineargparser_capi_mod
       ! @param name name of the command line option (must be \0 terminated)
       ! @param value return value as an integer, 0 = false, 1 = true
       ! @return 0 if successful
-       use, intrinsic :: iso_c_binding, only: c_size_t, c_int
+       use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
-      integer(c_size_t), intent(inout)         :: obj
+      type(c_ptr), intent(inout)               :: obj ! void*
       character(len=1), intent(in)             :: name
       integer(c_int), intent(out)              :: value
       integer(c_int)                           :: mnt_cmdlineargparser_getbool
