@@ -30,6 +30,13 @@ target_link_libraries(testCellLocator
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testPrintAddressF testPrintaddressF.f90)
+set_target_properties(testPrintAddressF PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(testPrintAddressF
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
+
 add_executable(testCellLocatorF testCellLocatorF.f90)
 set_target_properties(testCellLocatorF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCellLocatorF
@@ -94,5 +101,6 @@ add_test(NAME cmdLineArgParserF2
          COMMAND testCmdLineArgParserF "-i" "-234" "-d" -2.34 "-s" "hi_there" "-v")
 add_test(NAME cmdLineArgParserFB
          COMMAND testCmdLineArgParserFB "-i" "in.vtk")
-
+add_test(NAME testPrintAddressF
+         COMMAND testPrintAddressF)
 

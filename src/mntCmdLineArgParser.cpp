@@ -64,6 +64,7 @@ int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* 
 extern "C"
 int mnt_cmdlineargparser_help(CmdLineArgParser** self) {
 	(*self)->help();
+	return 0;
 }
 
 

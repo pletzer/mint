@@ -110,3 +110,8 @@ int mnt_celllocator_interp_point(CellLocator_t** self, long long cellId, const d
     cell->EvaluateLocation(subId, (double*) pcoords, point, (*self)->weights);
     return 0;
 }
+
+extern "C"
+void mnt_celllocator_printaddress(void* something) {
+    printf("address is %lld\n", (long long) something);
+}

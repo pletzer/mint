@@ -120,6 +120,13 @@ module mnt_celllocator_capi_mod
       integer(c_int)                           :: mnt_celllocator_rungriddiagnostics    
     end function mnt_celllocator_rungriddiagnostics
 
+    subroutine mnt_celllocator_printaddress(something) bind(C)
+      ! Print the address of something
+      use, intrinsic :: iso_c_binding, only: c_ptr
+      implicit none
+      type(c_ptr), value :: something
+    end subroutine mnt_celllocator_printaddress
+
   end interface
 
 end module mnt_celllocator_capi_mod
