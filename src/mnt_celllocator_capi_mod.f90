@@ -27,10 +27,10 @@ module mnt_celllocator_capi_mod
       ! @param obj instance of mntcellLocator_t (opaque handle)
       ! @return 0 if sucecssful
       ! @note must invoke constructior prior to this call
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_char
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
-      character(len=1), intent(in)             :: filename
+      character(kind=c_char), intent(in)       :: filename
       integer(c_size_t), value                 :: n
       integer(c_int)                           :: mnt_celllocator_load
     end function mnt_celllocator_load
@@ -102,10 +102,10 @@ module mnt_celllocator_capi_mod
       ! @param filename file name, \0 (char(0)) terminated
       ! @param n length of filename 
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_char
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
-      character(len=1), intent(in)             :: filename
+      character(kind=c_char), intent(in)       :: filename
       integer(c_size_t), value                 :: n
       integer(c_int)                           :: mnt_celllocator_dumpgrid      
     end function mnt_celllocator_dumpgrid
