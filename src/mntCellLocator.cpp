@@ -113,5 +113,5 @@ int mnt_celllocator_interp_point(CellLocator_t** self, long long cellId, const d
 
 extern "C"
 void mnt_celllocator_printaddress(void* something) {
-    printf("address is %lld\n", (long long) something);
+    printf("address is %lld (0x%16zx)\n", (long long) something, (size_t) something);
 }
