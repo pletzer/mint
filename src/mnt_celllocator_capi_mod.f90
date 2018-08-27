@@ -70,11 +70,11 @@ module mnt_celllocator_capi_mod
       ! @param cell_id output cell Id (zero-based)
       ! @param output parametric coordinates
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_long_long, c_int, c_double, c_ptr
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
       real(c_double), intent(in)               :: point(3) ! const double*
-      integer(c_size_t), intent(out)           :: cell_id
+      integer(c_long_long), intent(out)        :: cell_id
       real(c_double), intent(out)              :: pcoords(3) ! double*
       integer(c_int)                           :: mnt_celllocator_find
     end function mnt_celllocator_find
@@ -87,10 +87,10 @@ module mnt_celllocator_capi_mod
       ! @param point output point
       ! @return 0 if successful
       ! @note call mnt_celllocator_find to compute pcoords and get cell_id
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_long_long, c_int, c_double, c_ptr
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
-      integer(c_size_t), value                 :: cell_id
+      integer(c_long_long), value              :: cell_id
       real(c_double), intent(in)               :: pcoords(3) ! const double*
       real(c_double), intent(out)              :: point(3)   ! double*
       integer(c_int)                           :: mnt_celllocator_interp_point

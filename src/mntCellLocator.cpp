@@ -35,7 +35,7 @@ int mnt_celllocator_del(CellLocator_t** self) {
 }
 
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, 
+int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, size_t ncells, 
 		              const double points[]) {
     int ier = mnt_grid_setpoints(&(*self)->gridt, nVertsPerCell, ncells, points);
     return ier;
@@ -92,8 +92,8 @@ int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, si
 }
 
 extern "C"
-int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, 
-		         double pcoords[]) {
+int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* cellId, 
+		                 double pcoords[]) {
     // may need to be adjusted
     const double tol2 = 10 * std::numeric_limits<double>::epsilon(); 
     *cellId = (*self)->loc->FindCell((double*) point, tol2, (*self)->cell, pcoords, (*self)->weights);
@@ -101,7 +101,7 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* 
 }
 
 extern "C"
-int mnt_celllocator_interp_point(CellLocator_t** self, vtkIdType cellId, const double pcoords[], double point[]) {
+int mnt_celllocator_interp_point(CellLocator_t** self, long long cellId, const double pcoords[], double point[]) {
     if (cellId < 0) {
         return 1;
     }

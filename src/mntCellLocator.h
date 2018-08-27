@@ -50,7 +50,7 @@ int mnt_celllocator_del(CellLocator_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
+int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, size_t ncells, const double points[]);
 
 /**
  * Run grid diagnostics
@@ -84,7 +84,7 @@ int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, si
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, double pcoords[]);
+int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* cellId, double pcoords[]);
 
 /**
  * Interpolate the position
@@ -94,7 +94,7 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* 
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_interp_point(CellLocator_t** self, vtkIdType cellId, const double pcoords[], double point[]);
+int mnt_celllocator_interp_point(CellLocator_t** self, long long cellId, const double pcoords[], double point[]);
 
 
 #endif // MNT_CELL_LOCATOR
