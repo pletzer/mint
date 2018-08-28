@@ -3,7 +3,7 @@ program test
     use mnt_celllocator_capi_mod
     use mnt_cmdlineargparser_capi_mod
 
-    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_loc
+    use, intrinsic :: iso_c_binding, only: c_size_t, c_long_long, c_int, c_double, c_ptr, c_loc
 
     implicit none
     type(c_ptr)                                 :: prsr ! void*
@@ -17,7 +17,7 @@ program test
     real(c_double)                              :: pcoords(3)
     real(c_double)                              :: diff2
     integer(c_int)                              :: ier, num_cells_per_bucket
-    integer(c_size_t)                           :: cell_id
+    integer(c_long_long)                        :: cell_id
 
     real(c_double)          :: target_point(3) = [ 4.3760449538518165_c_double, &
                                                &  -1.3135173587022644_c_double, &
