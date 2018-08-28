@@ -8,10 +8,10 @@ program test
     integer(c_int)                                   :: ier, nargs, i, n, verbosity, nargs1
     character(len=1), allocatable                    :: args(:)
     character(len=mnt_string_size)                   :: argv_full
-    integer(c_int)                                   :: ival
+    integer(c_int)                                   :: nval, vval
     real(c_double)                                   :: dval
-    character(len=mnt_string_size)                   :: sval
-    character(len=mnt_string_size)                   :: sval_f
+    character(len=mnt_string_size)                   :: ival, oval
+    character(len=mnt_string_size)                   :: ival_f, oval_f
 
 
     nargs = command_argument_count()
@@ -31,15 +31,19 @@ program test
     ier = mnt_cmdlineargparser_new(prsr)
 
     ! set
-    ier = mnt_cmdlineargparser_setint(prsr, "-i"//char(0), -123, &
+    ier = mnt_cmdlineargparser_setint(prsr, "-n"//char(0), -123, &
                                       "some integer"//char(0))
 
     ier = mnt_cmdlineargparser_setdouble(prsr, "-d"//char(0), -1.23_c_double, &
                                          "some double"//char(0))
 
-    ier = mnt_cmdlineargparser_setstring(prsr, "-s"//char(0), &
-                                         "Hello there!"//char(0), &
-                                         "some string"//char(0))
+    ier = mnt_cmdlineargparser_setstring(prsr, "-i"//char(0), &
+                                         "Hello input!"//char(0), &
+                                         "some input string"//char(0))
+
+    ier = mnt_cmdlineargparser_setstring(prsr, "-o"//char(0), &
+                                         "Hello output!"//char(0), &
+                                         "some output string"//char(0))
 
     ier = mnt_cmdlineargparser_setbool(prsr, "-v"//char(0), 0, &
                                          "verbose"//char(0))
@@ -53,16 +57,21 @@ program test
     ier = mnt_cmdlineargparser_help(prsr)
 
     ! extract
-    ier = mnt_cmdlineargparser_getint(prsr, "-i"//char(0), ival)
+    ier = mnt_cmdlineargparser_getint(prsr, "-n"//char(0), nval)
+    ival(:) = char(0)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), ival, n)
+    oval(:) = char(0)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), oval, n)
     ier = mnt_cmdlineargparser_getdouble(prsr, "-d"//char(0), dval)
-    sval(:) = char(0)
-    ier = mnt_cmdlineargparser_getstring(prsr, "-s"//char(0), sval, n)
-    call mnt_c2f_string(sval, sval_f)
     ier = mnt_cmdlineargparser_getbool(prsr, "-v"//char(0), verbosity)
 
-    print *, "-i arg is ", ival
+    call mnt_c2f_string(ival, ival_f)
+    call mnt_c2f_string(oval, oval_f)
+
+    print *, "-n arg is ", nval
+    print *, "-i arg is '", trim(ival_f), "'"
+    print *, "-o arg is '", trim(oval_f), "'"
     print *, "-d arg is ", dval
-    print *, '-s arg is "'//trim(sval_f)//'"'
     print *, "-v arg is ", verbosity
 
     ! clean up

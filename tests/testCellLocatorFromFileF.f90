@@ -6,13 +6,13 @@ program test
     use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_loc
 
     implicit none
-    type(c_ptr)                                 :: prsr
+    type(c_ptr)                                 :: prsr ! void*
     type(c_ptr)                                 :: cloc ! void*
-    integer                                     :: nargs, n, i, verbosity
+    integer                                     :: nargs, nargs1, n, i, verbosity
     character(len=mnt_string_size)              :: argv_full, inp_filename, &
                                                    num_cells_per_bucket_str, out_filename, &
                                                    out_filename_f, inp_filename_f
-    character(len=mnt_string_size), allocatable :: args(:)
+    character(len=1), allocatable               :: args(:)
     real(c_double)                              :: interp_point(3)
     real(c_double)                              :: pcoords(3)
     real(c_double)                              :: diff2
@@ -23,6 +23,18 @@ program test
                                                &  -1.3135173587022644_c_double, &
                                                &   51392.815974060693_c_double]
 
+    nargs = command_argument_count()
+    nargs1 = nargs + 1
+
+    ! args must be a contiguous string
+    allocate(args(nargs1 * mnt_string_size))
+
+    do i = 0, nargs 
+        ! i = 0 is the executable
+        call get_command_argument(i, argv_full)
+        ! add termination character, trim...
+        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1))
+    enddo
 
     ier = mnt_cmdlineargparser_new(prsr)
     if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_new'
@@ -45,40 +57,31 @@ program test
                                          "Turn verbosity on"//char(0))
     if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_setbool'
 
-    ! parse
-    nargs = command_argument_count() + 1 ! must include the executable's name
-    allocate(args(nargs))
-    do i = 1, nargs
-        ! include the executable
-        call get_command_argument(i - 1, argv_full)
-        ! add termination character, trim...
-        call mnt_f2c_string(argv_full, args(i))
-    enddo
-
-    ier = mnt_cmdlineargparser_parse(prsr, nargs, mnt_string_size, args)
-    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_parse'
+    ! parse the command line arguments
+    ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(1))
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_parse'
 
     ier = mnt_cmdlineargparser_help(prsr)
-    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_help'
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_help'
 
     ! extract the arguments
     ier = mnt_cmdlineargparser_getint(prsr, "-n"//char(0), num_cells_per_bucket)
-    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_getint'
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getint'
 
     ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), inp_filename, n)
-    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_getstring -i'
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getstring -i'
     call mnt_c2f_string(inp_filename, inp_filename_f)
 
     ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), out_filename, n)
-    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_getstring -o'
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getstring -o'
     call mnt_c2f_string(out_filename, out_filename_f)
 
     ier = mnt_cmdlineargparser_getbool(prsr, "-v"//char(0), verbosity)
-    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_getbool'
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getbool'
 
     ! done
     ier = mnt_cmdlineargparser_del(prsr)
-    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_del'
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_del'
 
     if (inp_filename == 'not-valid.vtk') then
         stop 'ERROR: must provide VTK file name (-i <filename>)'
@@ -89,7 +92,10 @@ program test
     write(0, *) 'Output file name = "'//trim(out_filename_f)//'"'
 
     ier = mnt_celllocator_new(cloc)
-    if(ier /= 0) write(0, *) 'ERROR after mnt_celllocator_new ier = ', ier
+    if(ier /= 0) then 
+        write(0, *) 'ERROR after mnt_celllocator_new ier = ', ier
+        stop
+    endif
 
     ier = mnt_celllocator_load(cloc, inp_filename, len(trim(inp_filename), c_size_t))
     if(ier /= 0) then 
@@ -98,7 +104,9 @@ program test
     endif
 
     ier = mnt_celllocator_build(cloc, num_cells_per_bucket)
-    if(ier /= 0) write(0, *) 'ERROR after mnt_celllocator_build ier = ', ier
+    if(ier /= 0) then
+        write(0, *) 'ERROR after mnt_celllocator_build ier = ', ier
+    endif
 
     if (verbosity /= 0) then
         ier = mnt_celllocator_rungriddiagnostics(cloc)

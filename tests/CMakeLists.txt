@@ -98,7 +98,7 @@ add_test(NAME cmdLineArgParserC2
         COMMAND testCmdLineArgParserC "-i" "-234" "-d" -2.34 "-s" "hi_there")
 add_test(NAME cmdLineArgParserF COMMAND testCmdLineArgParserF)
 add_test(NAME cmdLineArgParserF2 
-         COMMAND testCmdLineArgParserF "-i" "-234" "-d" -2.34 "-s" "hi_there" "-v")
+         COMMAND testCmdLineArgParserF "-i" "input.vtk" "-o" "output.vtk" "-d" "-2.34" "-n" "100" "-v")
 add_test(NAME cmdLineArgParserFB
          COMMAND testCmdLineArgParserFB "-i" "in.vtk")
 add_test(NAME testPrintAddressF
