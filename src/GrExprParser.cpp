@@ -26,7 +26,7 @@ GrExprParser::GrExprParser(size_t n, const std::string& expr) {
   // set unary ops
   this->defineOperator("sqrt", GrExprParser::sqrt);
   this->defineOperator("log", GrExprParser::log);
-  //this->defineOperator("log10", GrExprParser::log10);
+  this->defineOperator("log10", GrExprParser::log10);
   this->defineOperator("sin", GrExprParser::sin);
   this->defineOperator("cos", GrExprParser::cos);
   this->defineOperator("tan", GrExprParser::tan);
@@ -110,7 +110,7 @@ GrExprParser::eval() {
     } 
   }
 
-  // create temporary, temporaries are named $0, $1, ...
+  // create temporary, these are named $0, $1, ...
   Vec* temp = 0;
   std::ostringstream oss;
   oss << "$" << this->temps.size();
