@@ -29,7 +29,7 @@ program test
     ier = mnt_celllocator_new(cloc)
     if(ier /= 0) print*,'ERROR after new ier = ', ier
 
-    ier = mnt_celllocator_setpoints(cloc, num_verts_per_cell, num_cells, verts(1))
+    ier = mnt_celllocator_setPointsPtr(cloc, num_verts_per_cell, num_cells, verts(1))
     if(ier /= 0) print*,'ERROR after setpoints ier = ', ier
 
     num_cells_per_bucket = 512
@@ -41,8 +41,8 @@ program test
     ier = mnt_celllocator_find(cloc, target_point(1), cell_id, pcoords(1))
     if(ier /= 0) print*,'ERROR ier = after find', ier
 
-    ier = mnt_celllocator_interp_point(cloc, cell_id, pcoords(1), interp_point(1))
-    if(ier /= 0) print*,'ERROR ier = after find', ier
+    ier = mnt_celllocator_interppoint(cloc, cell_id, pcoords(1), interp_point(1))
+    if(ier /= 0) print*,'ERROR ier = after interppoint', ier
     ! check interpolation
     diff2 = dot_product(interp_point - target_point, interp_point - target_point)
     print *,'distance square error = ', diff2

@@ -12,7 +12,7 @@ void test1Quad() {
                             1., 0., 0.,
                             1., 1., 0.,
                             0., 1., 0.};
-    mnt_celllocator_setpoints(&cloc, num_verts_per_cell, num_cells, verts);
+    mnt_celllocator_setPointsPtr(&cloc, num_verts_per_cell, num_cells, verts);
     int numCellsPerBucket = 512;
     mnt_celllocator_build(&cloc, numCellsPerBucket);
     const double target_point[] = {0.2, 0.3, 0.};
@@ -42,11 +42,11 @@ void test1Hex() {
                             1., 0., 1.,
                             1., 1., 1.,
                             0., 1., 1.};
-    mnt_celllocator_setpoints(&cloc, num_verts_per_cell, num_cells, verts);
+    mnt_celllocator_setPointsPtr(&cloc, num_verts_per_cell, num_cells, verts);
     int numCellsPerBucket = 512;
     mnt_celllocator_build(&cloc, numCellsPerBucket);
     std::string outfile = std::string("testHex1.vtk");
-    mnt_celllocator_dumpgrid(&cloc, outfile.c_str(), outfile.size());
+    mnt_celllocator_dumpGrid(&cloc, outfile.c_str(), outfile.size());
     const double target_point[] = {0.2, 0.3, 0.4};
     double pcoords[3];
     long long cell_id;

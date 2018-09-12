@@ -33,7 +33,7 @@ program test
         ! i = 0 is the executable
         call get_command_argument(i, argv_full)
         ! add termination character, trim...
-        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1))
+        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1:(i+1)*mnt_string_size))
     enddo
 
     ier = mnt_cmdlineargparser_new(prsr)
@@ -121,8 +121,8 @@ program test
     if (cell_id >= 0) then
         ! the target point was found
 
-        ier = mnt_celllocator_interp_point(cloc, cell_id, pcoords(1), interp_point(1))
-        if(ier /= 0) write(0, *) 'ERROR ier = after mnt_celllocator_interp_point ier = ', ier
+        ier = mnt_celllocator_interppoint(cloc, cell_id, pcoords(1), interp_point(1))
+        if(ier /= 0) write(0, *) 'ERROR ier = after mnt_celllocator_interppoint ier = ', ier
 
         ! check interpolation
         diff2 = dot_product(interp_point - target_point, interp_point - target_point)

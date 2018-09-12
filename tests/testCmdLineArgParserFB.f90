@@ -20,7 +20,7 @@ program test
         ! make sure to include the name of the executable
         call get_command_argument(i, argv_full)
         ! add termination character, trim...
-        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1))
+        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1:(i+1)*mnt_string_size))
     enddo
 
     ier = mnt_cmdlineargparser_new(prsr)

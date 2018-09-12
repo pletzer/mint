@@ -36,15 +36,17 @@ extern "C"
 int mnt_grid_del(Grid_t** self);
 
 /**
- * Set points
+ * Set the points array pointer
  * @param self instance of Grid_t
  * @param nVertsPerCell number of vertices per cell
  * @param ncells number of cells
  * @param points flat array of size 4*ncells*3
  * @return error code (0 = OK)
+ * @note the caller is responsible for managing the memory of the points array, which
+ *       is expected to exist until the grid object is destroyed.
  */
 extern "C"
-int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
+int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
 
 /**
  * Attach data

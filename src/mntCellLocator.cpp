@@ -35,9 +35,9 @@ int mnt_celllocator_del(CellLocator_t** self) {
 }
 
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, size_t ncells, 
-		              const double points[]) {
-    int ier = mnt_grid_setpoints(&(*self)->gridt, nVertsPerCell, ncells, points);
+int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, size_t ncells, 
+		                         const double points[]) {
+    int ier = mnt_grid_setPointsPtr(&(*self)->gridt, nVertsPerCell, ncells, points);
     return ier;
 }
 
@@ -57,7 +57,7 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 }
 
 extern "C"
-int mnt_celllocator_rungriddiagnostics(CellLocator_t** self) {
+int mnt_celllocator_runGridDiagnostics(CellLocator_t** self) {
     vtkIdType ncells = (*self)->gridt->grid->GetNumberOfCells();
     vtkIdType npts = (*self)->gridt->grid->GetNumberOfPoints();
     std::cout << "No of cells = " << ncells << " no of points = " << npts << '\n';
@@ -84,7 +84,7 @@ int mnt_celllocator_rungriddiagnostics(CellLocator_t** self) {
 
 
 extern "C"
-int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, size_t n) {
+int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, size_t n) {
     // copy fortran string into c string
     std::string filename = std::string(fort_filename, n);
     int ier = mnt_grid_dump(&(*self)->gridt, filename.c_str());
@@ -101,7 +101,7 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* 
 }
 
 extern "C"
-int mnt_celllocator_interp_point(CellLocator_t** self, long long cellId, const double pcoords[], double point[]) {
+int mnt_celllocator_interpPoint(CellLocator_t** self, long long cellId, const double pcoords[], double point[]) {
     if (cellId < 0) {
         return 1;
     }
@@ -112,6 +112,6 @@ int mnt_celllocator_interp_point(CellLocator_t** self, long long cellId, const d
 }
 
 extern "C"
-void mnt_celllocator_printaddress(void* something) {
+void mnt_celllocator_printAddress(void* something) {
     printf("address is %lld (0x%16zx)\n", (long long) something, (size_t) something);
 }

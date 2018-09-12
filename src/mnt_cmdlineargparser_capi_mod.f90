@@ -166,7 +166,7 @@ module mnt_cmdlineargparser_capi_mod
       ! @param name name of the command line option (must be \0 terminated)
       ! @param value return value as an integer, 0 = false, 1 = true
       ! @return 0 if successful
-       use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
       character(len=1), intent(in)             :: name
@@ -184,8 +184,11 @@ contains
     ! @param c_string output C string, null terminated, trimmed and left-adjusted
     implicit none
     character(len=*), intent(in)  :: f_string
-    character(len=*), intent(out) :: c_string
+    character(len=1), intent(out) :: c_string(:)
     c_string(:) = char(0)
+    print *,'**** len(c_string) = ', len(c_string)
+    print *,'**** len_trim(f_string) = ', len_trim(f_string)
+    print *,'**** len(f_string) = ', len(f_string)
     c_string(1:len_trim(f_string)) = trim(f_string)
   end subroutine mnt_f2c_string
 

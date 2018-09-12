@@ -24,7 +24,7 @@ program test
         ! i = 0 is the executable
         call get_command_argument(i, argv_full)
         ! add termination character, trim...
-        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1))
+        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1:(i+1)*mnt_string_size))
     enddo
 
     ! define the command line arguments
