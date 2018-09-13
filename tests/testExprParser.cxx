@@ -216,14 +216,14 @@ int main(int argc, char** argv) {
 
     testZero();
     testPi();
-    //testMinusPi(); // currently failing
+    testMinusPi();
     testPiDiv1();
     testSubtraction();
     testCos();
     testQuarterPi();
     testFull();
     testLine();
-    //testLine2(); // currently failing
+    testLine2(); // currently failing
 
     return 0;
 }

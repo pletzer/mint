@@ -24,11 +24,11 @@ GrExprAdaptor::GrExprAdaptor(const std::string& expr) {
   this->defineUnaryOperator("tan");
   this->defineUnaryOperator("log");
   this->defineUnaryOperator("exp");
-  //this->defineUnaryOperator("-");
+  this->defineUnaryOperator("-");
 
   this->defineBinaryOperator("+", 0);
   this->defineBinaryOperator("*", 1);
-  this->defineBinaryOperator("-", 0);
+  //this->defineBinaryOperator("-", 0);
   this->defineBinaryOperator("/", 1);
 
   // break the string into tokens
@@ -56,32 +56,35 @@ GrExprAdaptor::getPrefixExpr() const {
 
   std::deque<std::string> opStack;
   std::deque<std::string> exprList;
+
+  // number of arguments, either 2 for binary operation, 1 for unary and 0 if element 
+  // is a variable
   std::deque<int> numArgList;
 
   for (std::deque<std::string>::const_reverse_iterator 
-	 it = this->tokens.rbegin(); 
+       it = this->tokens.rbegin(); 
        it != this->tokens.rend(); ++it) {
     const std::string& elem = *it;
     if (this->binaryOps.find(elem) != this->binaryOps.end()) {
       // it's a binary operator. check if there already is another
       // operator in opStack. 
       if (opStack.size() > 0) {
-	// move otherOp to exprList
-	// add elem to opStack
-	std::string otherOp = opStack[0];
-	std::map<std::string, int>::const_iterator 
-	  itBinOtherOp = this->binaryOps.find(otherOp);
-	std::map<std::string, int>::const_iterator 
-	  itBinElemOp = this->binaryOps.find(elem);
-	if (itBinOtherOp != this->binaryOps.end() &&
-	    itBinElemOp != this->binaryOps.end() &&
-	    itBinOtherOp->second >= itBinElemOp->second) {
-	  opStack.pop_front();
+        // move otherOp to exprList
+        // add elem to opStack
+        std::string otherOp = opStack[0];
+        std::map<std::string, int>::const_iterator 
+                              itBinOtherOp = this->binaryOps.find(otherOp);
+        std::map<std::string, int>::const_iterator 
+                              itBinElemOp = this->binaryOps.find(elem);
+        if (itBinOtherOp != this->binaryOps.end() &&
+            itBinElemOp != this->binaryOps.end() &&
+            itBinOtherOp->second >= itBinElemOp->second) {
+          opStack.pop_front();
           if (otherOp != ")") {
             exprList.push_front(otherOp);
             numArgList.push_front(2); // binary op
           }
-	}
+        }
       }
       opStack.push_front(elem);
     }
@@ -90,11 +93,11 @@ GrExprAdaptor::getPrefixExpr() const {
     }
     else if (elem == "(") {
       // pour all the operators into exprList until ")" is encountered, 
-      // in inverse order
+      // in reverse order
       bool foundRightParen = false;
       while (opStack.size() > 0 && !foundRightParen) {
-	std::string otherOp = opStack[0];
-	opStack.pop_front();
+        std::string otherOp = opStack[0];
+        opStack.pop_front();
         if (otherOp != ")") {
           exprList.push_front(otherOp);
           numArgList.push_front(2); // binary op
@@ -116,7 +119,7 @@ GrExprAdaptor::getPrefixExpr() const {
     }
   }
 
-  // push the remaining operators remaining in the stack
+  // push the remaining operators in the stack
   while (opStack.size() > 0) {
     std::string otherOp = opStack[0];
     opStack.pop_front();

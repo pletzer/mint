@@ -78,13 +78,13 @@ GrExprParser::eval() {
     // look into the input var container
     it = this->input.find(tokens[i]);
     if (it != this->input.end()) {
-      args.push_back( it->second );
+      args.push_back(it->second);
     }
     else {
       // is this a temporary object?
       it = this->temps.find(tokens[i]);
       if (it != this->temps.end()) {
-        args.push_back( it->second );
+        args.push_back(it->second);
       }
       else {
         // are we dealing with a numeral?
@@ -273,13 +273,12 @@ GrExprParser::fillInVarNamesFromExpr(std::set<std::string>& varnames,
 
 std::string
 GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
-  std::string preExpr;
   
   // Iterate over each element from the back. An element is always bounded
   // by: start/end of the string, any of the supported operator (+, -, *,
   // ...), and space. An element can either be a variable or an operator. 
   // Operators are either binary (a + b) or unary (sin(x)). 
-  // Variable goes to the back of exprList, operators got into the front of
+  // Variable goes to the back of exprList, operators go into the front of
   // opStack. When a new operator is added to opStack which already 
   // contains an operator, the former operator goes into exprList if 
   // this operator has precedence over the earlier stored operator, 
@@ -290,6 +289,7 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
   std::vector<std::string> unaryOps;
   unaryOps.push_back("sin");
   unaryOps.push_back("cos");
+  unaryOps.push_back("-");
 
   // binary operators and their priority
   std::map<std::string, int> binaryOps;
@@ -306,7 +306,7 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
     varDelimiters.push_back(unaryOps[i]);
   }
   for (std::map<std::string, int>::const_iterator 
-         it = binaryOps.begin(); it != binaryOps.end(); ++it) {
+    it = binaryOps.begin(); it != binaryOps.end(); ++it) {
     varDelimiters.push_back(it->first);
   }
 
@@ -408,6 +408,7 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
 
   // Build the prefix expression. Put brackets around unary and
   // binary operations
+  std::string preExpr;
   for (size_t i = 0; i < exprList.size(); ++i) {
     preExpr += exprList[i];
   }
