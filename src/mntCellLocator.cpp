@@ -30,6 +30,7 @@ int mnt_celllocator_del(CellLocator_t** self) {
     (*self)->cell->Delete();
     (*self)->loc->Delete();
     mnt_grid_del(&(*self)->gridt);
+    (*self)->badCellIds.resize(0);
     delete *self;
     return 0;
 }
@@ -57,7 +58,7 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 }
 
 extern "C"
-int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells) {
+int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells, vtkIdType* badCellIds) {
     int res = 0;
     vtkIdType ncells = (*self)->gridt->grid->GetNumberOfCells();
     if (ncells == 0) return res;
@@ -86,7 +87,10 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
                     numBad++;
                 }
             }
-            if (numBad > 0) *numBadCells++;
+            if (numBad > 0) {
+                *numBadCells++;
+                (*self)->badCellIds.push_back(i);
+            }
         }
     }
     else if ((*self)->gridt->grid->GetCell(0)->GetCellType() == VTK_HEXAHEDRON) {
@@ -112,12 +116,19 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
                     numBad++;
                 }
             }
-            if (numBad > 0) *numBadCells++;
+            if (numBad > 0) {
+                *numBadCells++;
+                (*self)->badCellIds.push_back(i);
+            }
         }
     }
     else {
         res = 1;
     }
+
+    // undefined behavior if no bad cells
+    badCellIds = &(*self)->badCellIds[0];
+
     return res;
 }
 
