@@ -55,6 +55,15 @@ extern "C"
 int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, size_t ncells, const double points[]);
 
 /**
+ * Check if cell areas/volumes are positive
+ * @param tol tolerance, area volume must be >= to be valid
+ * @param numBadCells number of bad cells (output)
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells);
+
+/**
  * Run grid diagnostics
  * @return error code (0 is OK)
  */

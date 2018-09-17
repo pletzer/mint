@@ -57,6 +57,71 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 }
 
 extern "C"
+int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells) {
+    int res = 0;
+    vtkIdType ncells = (*self)->gridt->grid->GetNumberOfCells();
+    if (ncells == 0) return res;
+    vtkIdType npts = (*self)->gridt->grid->GetNumberOfPoints();
+    vtkPoints* points = (*self)->gridt->grid->GetPoints();
+    vtkCell* cell;
+    double vert0[3], vert1[3], vert2[3], vert3[3];
+    double a[3], b[3], c[3];
+    *numBadCells = 0;
+    // check the cell type
+    if ((*self)->gridt->grid->GetCell(0)->GetCellType() == VTK_QUAD) {
+        for (vtkIdType i = 0; i < ncells; ++i) {
+            int numBad = 0;
+            vtkIdList* ptIds = (*self)->gridt->grid->GetCell(i)->GetPointIds();
+            for (vtkIdType j = 1; j < ptIds->GetNumberOfIds() - 1; j += 2) {
+                vtkIdType k0 = ptIds->GetId(j);
+                vtkIdType k1 = ptIds->GetId(j + 1);
+                vtkIdType k2 = ptIds->GetId(j - 1);
+                points->GetPoint(k0, vert0);
+                points->GetPoint(k1, vert1);
+                points->GetPoint(k2, vert2);
+                a[0] = vert1[0] - vert0[0]; a[1] = vert1[1] - vert0[1];
+                b[0] = vert2[0] - vert0[0]; b[1] = vert2[1] - vert0[1];
+                double area = a[0]*b[1] - a[1]*b[0];
+                if (area < std::abs(tol)) {
+                    numBad++;
+                }
+            }
+            if (numBad > 0) *numBadCells++;
+        }
+    }
+    else if ((*self)->gridt->grid->GetCell(0)->GetCellType() == VTK_HEXAHEDRON) {
+        for (vtkIdType i = 0; i < ncells; ++i) {
+            int numBad = 0;
+            vtkIdList* ptIds = (*self)->gridt->grid->GetCell(i)->GetPointIds();
+            for (vtkIdType j = 1; j < ptIds->GetNumberOfIds() - 1; j += 2) {
+                vtkIdType k0 = ptIds->GetId(j);
+                vtkIdType k1 = ptIds->GetId(j + 1);
+                vtkIdType k2 = ptIds->GetId(j - 1);
+                vtkIdType k3 = ptIds->GetId((j + 4) % 8);
+                points->GetPoint(k0, vert0);
+                points->GetPoint(k1, vert1);
+                points->GetPoint(k2, vert2);
+                points->GetPoint(k3, vert3);
+                a[0] = vert1[0] - vert0[0]; a[1] = vert1[1] - vert0[1]; a[2] = vert1[2] - vert0[2];
+                b[0] = vert2[0] - vert0[0]; b[1] = vert2[1] - vert0[1]; b[2] = vert2[2] - vert0[2];
+                c[0] = vert3[0] - vert0[0]; c[1] = vert3[1] - vert0[1]; c[2] = vert3[2] - vert0[2];
+                double volume = (a[1]*b[2] - a[2]*b[1])*c[0] 
+                              + (a[2]*b[0] - a[0]*b[2])*c[1]
+                              + (a[0]*b[1] - a[1]*b[0])*c[2];
+                if (volume < std::abs(tol)) {
+                    numBad++;
+                }
+            }
+            if (numBad > 0) *numBadCells++;
+        }
+    }
+    else {
+        res = 1;
+    }
+    return res;
+}
+
+extern "C"
 int mnt_celllocator_runGridDiagnostics(CellLocator_t** self) {
     vtkIdType ncells = (*self)->gridt->grid->GetNumberOfCells();
     vtkIdType npts = (*self)->gridt->grid->GetNumberOfPoints();
