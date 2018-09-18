@@ -16,7 +16,6 @@ struct CellLocator_t {
     Grid_t* gridt;
     vtkCellLocator* loc;
     vtkGenericCell* cell;
-    std::vector<vtkIdType> badCellIds;
 };
 
 /**
@@ -64,7 +63,7 @@ int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, size_t
  * @note pointer badCellIds is invalid if numBadCells is zero
  */
 extern "C"
-int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells, vtkIdType* badCellIds);
+int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells);
 
 /**
  * Run grid diagnostics

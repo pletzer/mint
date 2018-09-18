@@ -30,7 +30,6 @@ int mnt_celllocator_del(CellLocator_t** self) {
     (*self)->cell->Delete();
     (*self)->loc->Delete();
     mnt_grid_del(&(*self)->gridt);
-    (*self)->badCellIds.resize(0);
     delete *self;
     return 0;
 }
@@ -58,10 +57,9 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 }
 
 extern "C"
-int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells, vtkIdType* badCellIds) {
+int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells) {
 
-    // initialize the pointer to zero
-    badCellIds = 0;
+    // initialize
     *numBadCells = 0;
     int ier = 0;
 
@@ -139,19 +137,18 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
 
             if (volume < tol) {
                 numBad++;
+                std::cout << "Bad cell (0-based Id = " << icell << ") point Ids: " 
+                          << j0[j] << ',' << ja[j] << ',' << jb[j] << ',' << jc[j] << " coords: " 
+                          << p0[0] << ',' << p0[1] << ',' << p0[2] << ';' 
+                          << pa[0] << ',' << pa[1] << ',' << pa[2] << ';' 
+                          << pb[0] << ',' << pb[1] << ',' << pb[2] << ';' 
+                          << pc[0] << ',' << pc[1] << ',' << pc[2] << '\n';
             }
         }
 
         if (numBad > 0) {
             *numBadCells++;
-            // save the cell Id
-            (*self)->badCellIds.push_back(icell);
         }
-    }
-
-    if (*numBadCells > 0) {
-        // set the pointer to the beginning od the badCellIds array
-        badCellIds = &(*self)->badCellIds[0];
     }
 
     return ier;

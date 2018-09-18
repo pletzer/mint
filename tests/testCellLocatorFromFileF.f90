@@ -15,8 +15,8 @@ program test
     character(len=1), allocatable               :: args(:)
     real(c_double)                              :: interp_point(3)
     real(c_double)                              :: pcoords(3)
-    real(c_double)                              :: diff2
-    integer(c_int)                              :: ier, num_cells_per_bucket
+    real(c_double)                              :: diff2, tol
+    integer(c_int)                              :: ier, num_cells_per_bucket, num_bad_cells
     integer(c_long_long)                        :: cell_id
 
     real(c_double)          :: target_point(3) = [ 4.3760449538518165_c_double, &
@@ -111,6 +111,13 @@ program test
     if (verbosity /= 0) then
         ier = mnt_celllocator_rungriddiagnostics(cloc)
         if(ier /= 0) write(0, *) 'ERROR ier = after mnt_celllocator_rungriddiagnostics ier = ', ier
+
+        tol = -1.e-12_c_double
+        ier = mnt_celllocator_checkgrid(cloc, tol, num_bad_cells)
+        if(ier /= 0) write(0, *) 'ERROR ier = after mnt_celllocator_checkgrid ier = ', ier
+        if (num_bad_cells > 0) then
+          write(0, *) 'Number of bad cells: ', num_bad_cells
+        endif
     endif
 
     ! initialiaze

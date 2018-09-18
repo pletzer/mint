@@ -118,6 +118,21 @@ module mnt_celllocator_capi_mod
       integer(c_int)                           :: mnt_celllocator_dumpgrid      
     end function mnt_celllocator_dumpGrid
 
+    function mnt_celllocator_checkGrid(obj, tol, num_bad_cells) &
+                                     & bind(C, name='mnt_celllocator_checkGrid')
+      ! Check/detect grid cells with bad topology
+      ! @param obj instance of mntcellLocator_t (opaque handle)
+      ! @param tol min area/volume tolerance (typically small and negative)
+      ! @param num_bad_cells number of bad cells, ie cells with area/volume < tol
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
+      implicit none
+      type(c_ptr), intent(inout)               :: obj ! void**
+      real(c_double), value                    :: tol
+      integer(c_int), intent(out)              :: num_bad_cells
+      integer(c_int)                           :: mnt_celllocator_checkgrid   
+    end function mnt_celllocator_checkGrid
+
     function mnt_celllocator_runGridDiagnostics(obj) &
                                               & bind(C, name='mnt_celllocator_runGridDiagnostics')
       ! Run grid diagnostics
