@@ -185,8 +185,12 @@ contains
     implicit none
     character(len=*), intent(in)  :: f_string
     character(len=1), intent(out) :: c_string(:)
+    integer                       :: i, n
+    n = len_trim(f_string)
     c_string(:) = char(0)
-    c_string(1:len_trim(f_string)) = trim(f_string)
+    do i = 1, n
+      c_string(i) = f_string(i:i)
+    enddo
   end subroutine mnt_f2c_string
 
   subroutine mnt_c2f_string(c_string, f_string)

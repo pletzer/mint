@@ -51,6 +51,13 @@ target_link_libraries(testCellLocatorFromFileF
                       ${VTK_LIBRARIES}
                       )
 
+add_executable(testC2fString testC2fString.f90)
+set_target_properties(testC2fString PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(testC2fString
+                      mint
+                      ${VTK_LIBRARIES}
+                      )
+
 
 add_executable(testExprParser testExprParser.cxx)
 target_link_libraries(testExprParser
@@ -103,4 +110,6 @@ add_test(NAME cmdLineArgParserFB
          COMMAND testCmdLineArgParserFB "-i" "in.vtk")
 add_test(NAME testPrintAddressF
          COMMAND testPrintAddressF)
+add_test(NAME c2fString
+         COMMAND testC2fString)
 

@@ -19,6 +19,7 @@ program test
 
     ! args must be a contiguous string
     allocate(args(nargs1 * mnt_string_size))
+    args(:) = char(0)
 
     do i = 0, nargs 
         ! i = 0 is the executable
@@ -47,8 +48,6 @@ program test
 
     ier = mnt_cmdlineargparser_setbool(prsr, "-v"//char(0), 0, &
                                          "verbose"//char(0))
-
-    ier = mnt_cmdlineargparser_help(prsr)
 
     ! parse the command line arguments
     ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(1))
