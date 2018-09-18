@@ -1,4 +1,4 @@
-module mnt_cmdlineargparser_capi_mod
+ module mnt_cmdlineargparser_capi_mod
 
   integer, parameter :: mnt_string_size = 1024 ! May need to adjust!
 
@@ -186,9 +186,6 @@ contains
     character(len=*), intent(in)  :: f_string
     character(len=1), intent(out) :: c_string(:)
     c_string(:) = char(0)
-    print *,'**** len(c_string) = ', len(c_string)
-    print *,'**** len_trim(f_string) = ', len_trim(f_string)
-    print *,'**** len(f_string) = ', len(f_string)
     c_string(1:len_trim(f_string)) = trim(f_string)
   end subroutine mnt_f2c_string
 
