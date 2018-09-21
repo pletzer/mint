@@ -203,13 +203,15 @@ contains
     character(len=*), intent(out) :: f_string
 
     ! local variables
-    integer                       :: i, n_f_string
+    integer                       :: i, n_f_string, n
     logical                       :: set_to_empty
 
     n_f_string = len(f_string)
+    n = min(n_f_string, size(c_string))
     set_to_empty = .FALSE.
     ! replace '\0' with ' '
-    do i = 1, min(len(c_string), n_f_string)
+    do i = 1, n
+      
       if (set_to_empty .OR. c_string(i) == char(0)) then
         ! end of C string detected
         f_string(i:i) = ' '
