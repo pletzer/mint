@@ -154,8 +154,8 @@
       use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
-      character(len=1), intent(in)             :: name
-      character(len=1), intent(out)            :: value
+      character(len=1), intent(in)             :: name(*)
+      character(len=1), intent(out)            :: value(*)
       integer(c_int), intent(out)              :: n
       integer(c_int)                           :: mnt_cmdlineargparser_getstring
     end function mnt_cmdlineargparser_getstring
@@ -199,21 +199,23 @@ contains
     ! @param c_string input C string 
     ! @param f_string output Fortran string, replacing 
     implicit none
-    character(len=*), intent(in)  :: c_string
+    character(len=1), intent(in)  :: c_string(:)
     character(len=*), intent(out) :: f_string
 
     ! local variables
-    integer                       :: i
+    integer                       :: i, n_f_string
     logical                       :: set_to_empty
 
+    n_f_string = len(f_string)
     set_to_empty = .FALSE.
     ! replace '\0' with ' '
-    do i = 1, len(c_string)
-      if (set_to_empty .OR. c_string(i:i) == char(0)) then 
+    do i = 1, min(len(c_string), n_f_string)
+      if (set_to_empty .OR. c_string(i) == char(0)) then
+        ! end of C string detected
         f_string(i:i) = ' '
         set_to_empty = .TRUE.
       else
-        f_string(i:i) = c_string(i:i)
+        f_string(i:i) = c_string(i)
       endif
     enddo
 

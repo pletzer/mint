@@ -10,7 +10,7 @@ program test
     character(len=mnt_string_size)                   :: argv_full
     integer(c_int)                                   :: nval, vval
     real(c_double)                                   :: dval
-    character(len=mnt_string_size)                   :: ival, oval
+    character(len=1), dimension(mnt_string_size)     :: ival, oval
     character(len=mnt_string_size)                   :: ival_f, oval_f
 
 

@@ -7,7 +7,8 @@ program test
     type(c_ptr)                                      :: prsr
     integer(c_int)                                   :: ier, nargs, i, n, verbosity, nargs1
     character(len=1), allocatable                    :: args(:)
-    character(len=mnt_string_size)                   :: argv_full, inp_filename, out_filename, inp_filename_f
+    character(len=mnt_string_size)                   :: argv_full, out_filename, inp_filename_f
+    character(len=1), dimension(mnt_string_size)     :: inp_filename
     integer(c_int)                                   :: num_cells_per_bucket
 
     ! parse

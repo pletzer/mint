@@ -33,7 +33,7 @@ module mnt_celllocator_capi_mod
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_char
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
-      character(kind=c_char), intent(in)       :: filename
+      character(kind=c_char), intent(in)       :: filename(*)
       integer(c_size_t), value                 :: n
       integer(c_int)                           :: mnt_celllocator_load
     end function mnt_celllocator_load
@@ -113,7 +113,7 @@ module mnt_celllocator_capi_mod
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_char
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
-      character(kind=c_char), intent(in)       :: filename
+      character(kind=c_char), intent(in)       :: filename(*)
       integer(c_size_t), value                 :: n
       integer(c_int)                           :: mnt_celllocator_dumpgrid      
     end function mnt_celllocator_dumpGrid

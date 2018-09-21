@@ -9,9 +9,10 @@ program test
     type(c_ptr)                                 :: prsr ! void*
     type(c_ptr)                                 :: cloc ! void*
     integer                                     :: nargs, nargs1, n, i, verbosity
-    character(len=mnt_string_size)              :: argv_full, inp_filename, &
-                                                   num_cells_per_bucket_str, out_filename, &
+    character(len=mnt_string_size)              :: argv_full,  &
+                                                   num_cells_per_bucket_str, &
                                                    out_filename_f, inp_filename_f
+    character(len=1), dimension(mnt_string_size):: inp_filename, out_filename
     character(len=1), allocatable               :: args(:)
     real(c_double)                              :: interp_point(3)
     real(c_double)                              :: pcoords(3)
@@ -83,7 +84,7 @@ program test
     ier = mnt_cmdlineargparser_del(prsr)
     if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_del'
 
-    if (inp_filename == 'not-valid.vtk') then
+    if (inp_filename_f == 'not-valid.vtk') then
         stop 'ERROR: must provide VTK file name (-i <filename>)'
     endif
 
@@ -97,10 +98,10 @@ program test
         stop
     endif
 
-    ier = mnt_celllocator_load(cloc, inp_filename, len(trim(inp_filename), c_size_t))
+    ier = mnt_celllocator_load(cloc, inp_filename, len(trim(inp_filename_f), c_size_t))
     if(ier /= 0) then 
         write(0, *) 'ERROR after mnt_celllocator_load ier = ', ier
-        stop
+        stop 1
     endif
 
     ier = mnt_celllocator_build(cloc, num_cells_per_bucket)
@@ -136,7 +137,7 @@ program test
         write(0, *) 'distance square error = ', diff2
     endif
 
-    ier = mnt_celllocator_dumpgrid(cloc, trim(out_filename), len(trim(out_filename), c_size_t))
+    ier = mnt_celllocator_dumpgrid(cloc, out_filename, len(trim(out_filename_f), c_size_t))
     if(ier /= 0) write(0, *) 'ERROR after mnt_celllocator_dumpgrid ier = ', ier
 
     ! clean up
