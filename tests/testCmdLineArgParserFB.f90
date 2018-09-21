@@ -36,14 +36,14 @@ program test
         print *,'ERROR after calling mnt_cmdlineargparser_setstring'
     endif
 
-    ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(1))
-    if (ier /= 0) then
-        print *,'ERROR after calling mnt_cmdlineargparser_parse'
-    endif
-
     ier = mnt_cmdlineargparser_help(prsr)
     if (ier /= 0) then
         print *,'ERROR after calling mnt_cmdlineargparser_help'
+    endif
+
+    ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(1))
+    if (ier /= 0) then
+        print *,'ERROR after calling mnt_cmdlineargparser_parse'
     endif
 
     ! extract the arguments
