@@ -149,7 +149,7 @@
       ! @param obj instance of mntCmdLineArgParser_t (opaque handle)
       ! @param name name of the command line option (must be \0 terminated)
       ! @param value return value
-      ! @param n returned length of string
+      ! @param n length of value
       ! @return 0 if successful
       use, intrinsic :: iso_c_binding, only: c_int, c_ptr
       implicit none
