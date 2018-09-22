@@ -96,13 +96,13 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 /**
  * Get string command line argument
  * @param name name of the command line argument
+ * @param n length of alocated val
  * @param val string will be coped into val, val must be have been allocated (size >= n + 1)
- * @param n number of characters in the string, excluding '\0' (out)
  * @return error code (0 is OK)
- * @note a termination character '\0' will be added
+ * @note termination character '\0' will be added to remaining characters that were allocated to val
  */
 extern "C"
-int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, char* val, int* n);
+int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, int n, char* val);
 
 /**
  * Get boolean command line argument

@@ -69,13 +69,11 @@ program test
     ier = mnt_cmdlineargparser_getint(prsr, "-n"//char(0), num_cells_per_bucket)
     if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getint'
 
-    inp_filename(:) = char(0) ! must be initialized to \n
-    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), inp_filename, n)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), size(inp_filename), inp_filename)
     if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getstring -i'
     call mnt_c2f_string(inp_filename, inp_filename_f)
 
-    out_filename(:) = char(0) ! must be initialized to \n
-    ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), out_filename, n)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), size(out_filename), out_filename)
     if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getstring -o'
     call mnt_c2f_string(out_filename, out_filename_f)
 
@@ -101,8 +99,6 @@ program test
         stop
     endif
 
-    print *, '*** inp_filename = "', inp_filename, '"'
-    print *, '*** out_filename = "', out_filename, '"'
     ier = mnt_celllocator_load(cloc, inp_filename, len(trim(inp_filename_f), c_size_t))
     if(ier /= 0) then 
         write(0, *) 'ERROR after mnt_celllocator_load ier = ', ier

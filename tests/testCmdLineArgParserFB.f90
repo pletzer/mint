@@ -47,8 +47,7 @@ program test
     endif
 
     ! extract the arguments
-    inp_filename(:) = char(0)
-    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), inp_filename, n)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), size(inp_filename), inp_filename)
     if (ier /= 0) then
         print *,'ERROR after calling mnt_cmdlineargparser_getstring'
     endif

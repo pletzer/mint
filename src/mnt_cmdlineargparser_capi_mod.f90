@@ -144,7 +144,7 @@
       integer(c_int)                           :: mnt_cmdlineargparser_getint
     end function mnt_cmdlineargparser_getint
 
-    function mnt_cmdlineargparser_getstring(obj, name, value, n) bind(C)
+    function mnt_cmdlineargparser_getstring(obj, name, n, value) bind(C)
       ! Get string command line argument value
       ! @param obj instance of mntCmdLineArgParser_t (opaque handle)
       ! @param name name of the command line option (must be \0 terminated)
@@ -155,8 +155,8 @@
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
       character(len=1), intent(in)             :: name(*)
+      integer(c_int), value                    :: n
       character(len=1), intent(out)            :: value(*)
-      integer(c_int), intent(out)              :: n
       integer(c_int)                           :: mnt_cmdlineargparser_getstring
     end function mnt_cmdlineargparser_getstring
 

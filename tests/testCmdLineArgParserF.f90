@@ -57,10 +57,8 @@ program test
 
     ! extract
     ier = mnt_cmdlineargparser_getint(prsr, "-n"//char(0), nval)
-    ival(:) = char(0)
-    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), ival, n)
-    oval(:) = char(0)
-    ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), oval, n)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), size(ival), ival)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-o"//char(0), size(oval), oval)
     ier = mnt_cmdlineargparser_getdouble(prsr, "-d"//char(0), dval)
     ier = mnt_cmdlineargparser_getbool(prsr, "-v"//char(0), verbosity)
 

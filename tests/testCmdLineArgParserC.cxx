@@ -47,8 +47,7 @@ int main(int argc, char** argv) {
     assert(ier == 0);
 
     char sval[128];
-    int n;
-    ier = mnt_cmdlineargparser_getstring(&self, "-s", sval, &n);
+    ier = mnt_cmdlineargparser_getstring(&self, "-s", 128, sval);
     assert(ier == 0);
 
     // print results

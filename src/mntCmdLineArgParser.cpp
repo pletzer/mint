@@ -81,14 +81,19 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 }
 
 extern "C"
-int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, char* val, int* n){
+int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, int n, char* val){
 	std::string sval = (*self)->get<std::string>(name);
 	if (sval.size() == 0) {
 		// not valid name
 		return 1;
 	}
-	*n = (int) sval.size();
-	strncpy(val, sval.c_str(), *n);
+    // initialize the receiving string to the termination character
+    for (int i = 0; i < n; ++i) {
+        val[i] = '\0';
+    }
+    // copy
+	int n2 = std::min((int) sval.size(), n);
+	strncpy(val, sval.c_str(), n2);
 	return 0;
 }
 
