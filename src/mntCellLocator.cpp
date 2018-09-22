@@ -147,7 +147,7 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
         }
 
         if (numBad > 0) {
-            *numBadCells++;
+            (*numBadCells)++;
         }
     }
 
