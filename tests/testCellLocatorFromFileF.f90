@@ -8,7 +8,7 @@ program test
     implicit none
     type(c_ptr)                                 :: prsr ! void*
     type(c_ptr)                                 :: cloc ! void*
-    integer                                     :: nargs, nargs1, n, i, verbosity
+    integer                                     :: nargs, nargs1, n, i, verbosity, checks
     character(len=mnt_string_size)              :: argv_full,  &
                                                    num_cells_per_bucket_str, &
                                                    out_filename_f, inp_filename_f
@@ -58,6 +58,10 @@ program test
                                          "Turn verbosity on"//char(0))
     if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_setbool'
 
+    ier = mnt_cmdlineargparser_setbool(prsr, "-c"//char(0), 0, &
+                                         "Turn check of cell positiveness on"//char(0))
+    if (ier /= 0) write(0, *) 'ERROR after mnt_cmdlineargparser_setbool'
+
     ! parse the command line arguments
     ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(1))
     if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_parse'
@@ -78,6 +82,9 @@ program test
     call mnt_c2f_string(out_filename, out_filename_f)
 
     ier = mnt_cmdlineargparser_getbool(prsr, "-v"//char(0), verbosity)
+    if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getbool'
+
+    ier = mnt_cmdlineargparser_getbool(prsr, "-c"//char(0), checks)
     if (ier /= 0) stop 'ERROR after mnt_cmdlineargparser_getbool'
 
     ! done
@@ -113,14 +120,17 @@ program test
     if (verbosity /= 0) then
         ier = mnt_celllocator_rungriddiagnostics(cloc)
         if(ier /= 0) write(0, *) 'ERROR ier = after mnt_celllocator_rungriddiagnostics ier = ', ier
+    endif
 
+    if (checks /= 0) then
+        write(0, *) 'Checking positiveness of cells'
+        ! negative number to detect cells whose area/volume < tol
         tol = -1.e-12_c_double
         ier = mnt_celllocator_checkgrid(cloc, tol, num_bad_cells)
         if(ier /= 0) write(0, *) 'ERROR ier = after mnt_celllocator_checkgrid ier = ', ier
-        if (num_bad_cells > 0) then
-          write(0, *) 'Number of bad cells: ', num_bad_cells
-        endif
+        write(0, *) 'Number of bad cells: ', num_bad_cells
     endif
+    
 
     ! initialiaze
     pcoords = -1._c_double
