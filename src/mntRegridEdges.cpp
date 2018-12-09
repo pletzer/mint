@@ -15,6 +15,8 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->numSrcCells = 0;
     (*self)->numDstCells = 0;
     (*self)->numEdgesPerCell = 4; // 2d
+    (*self)->srcGridObj = NULL;
+    (*self)->dstGridObj = NULL;
     return 0;
 }
 
@@ -24,7 +26,13 @@ int mnt_regridedges_new(RegridEdges_t** self) {
  */
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self) {
-    // the src and dst grids don't belong to this class
+    // destroy the source and destination grids if this instance owns them
+    if ((*self)->srcGridObj) {
+        mnt_grid_del(&(*self)->srcGridObj);
+    }
+    if ((*self)->dstGridObj) {
+        mnt_grid_del(&(*self)->dstGridObj);
+    }
     (*self)->srcLoc->Delete();
     delete *self;
     return 0;
@@ -54,6 +62,22 @@ int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) 
 
     // borrow pointer
     (*self)->dstGrid = grid;
+    return 0;
+}
+
+extern "C"
+int mnt_regridedges_setSrcPointsPtr(RegridEdges_t** self, size_t nVertsPerCell, size_t ncells, const double verts[]) {
+    mnt_grid_new(&(*self)->srcGridObj);
+    mnt_grid_setPointsPtr(&(*self)->srcGridObj, (int) nVertsPerCell, (vtkIdType) ncells, verts);
+    mnt_grid_get(&(*self)->srcGridObj, &(*self)->srcGrid);
+    return 0;
+}
+
+extern "C"
+int mnt_regridedges_setDstPointsPtr(RegridEdges_t** self, size_t nVertsPerCell, size_t ncells, const double verts[]) {
+    mnt_grid_new(&(*self)->dstGridObj);
+    mnt_grid_setPointsPtr(&(*self)->dstGridObj, (int) nVertsPerCell, (vtkIdType) ncells, verts);
+    mnt_grid_get(&(*self)->dstGridObj, &(*self)->dstGrid);
     return 0;
 }
 
