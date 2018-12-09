@@ -225,9 +225,6 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 extern "C"
 int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
 
-    // create object
-    mnt_regridedges_new(self);
-
     int ncid, ier;
     ier = nc_open(filename, NC_NOWRITE, &ncid);
 

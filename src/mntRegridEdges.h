@@ -95,7 +95,7 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
  * Load the weights from file
  * @param filename file name
  * @return error code (0 is OK)
- * @note this creates the object, user must call mnt_regridedges_del to reclaim memory
+ * @note this does not create the object, user must call mnt_regridedges_new prior to this call
  */
 extern "C"
 int mnt_regridedges_load(RegridEdges_t** self, const char* filename);
