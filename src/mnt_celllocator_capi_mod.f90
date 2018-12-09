@@ -60,7 +60,7 @@ module mnt_celllocator_capi_mod
                                  & bind(C, name='mnt_celllocator_build')
       ! Build locator object
       ! @param obj instance of mntcellLocator_t (opaque handle)
-      ! @param um_cells_per_bucket number of cells per bucket
+      ! @param num_cells_per_bucket number of cells per bucket
       ! @return 0 if successful
       use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
