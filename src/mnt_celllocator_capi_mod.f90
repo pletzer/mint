@@ -28,8 +28,9 @@ module mnt_celllocator_capi_mod
                                 & bind(C, name='mnt_celllocator_load')
       ! Load cell locator object from file 
       ! @param obj instance of mntcellLocator_t (opaque handle)
+      ! @param filename file name
       ! @return 0 if sucecssful
-      ! @note must invoke constructior prior to this call
+      ! @note must invoke constructor prior to this call
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr, c_char
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
