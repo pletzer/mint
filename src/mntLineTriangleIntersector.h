@@ -34,6 +34,7 @@ struct LineTriangleIntersector {
                    const double q0[], 
                    const double q1[],
                    const double q2[]) {
+
         for (size_t i = 0; i < 3; ++i) {
             this->p0[i] = p0[i];
             this->p1[i] = p1[i];
@@ -45,26 +46,29 @@ struct LineTriangleIntersector {
             this->mat(i, 1) = q0[i] - q1[i];
             this->mat(i, 2) = q0[i] - q2[i];
         }
-        this->invMatTimesDet(0, 0) = this->mat(1, 2)*this->mat(2, 1) - this->mat(1, 1)*this->mat(2, 2);
-        this->invMatTimesDet(0, 1) = this->mat(0, 2)*this->mat(2, 1) - this->mat(0, 1)*this->mat(2, 2);
-        this->invMatTimesDet(0, 2) = this->mat(0, 2)*this->mat(1, 1) - this->mat(0, 1)*this->mat(1, 2);
-        this->invMatTimesDet(1, 0) = this->mat(1, 2)*this->mat(2, 0) - this->mat(1, 0)*this->mat(2, 2);
-        this->invMatTimesDet(1, 1) = this->mat(0, 2)*this->mat(2, 0) - this->mat(0, 0)*this->mat(2, 2);
-        this->invMatTimesDet(1, 2) = this->mat(0, 2)*this->mat(2, 0) - this->mat(0, 0)*this->mat(1, 2);
-        this->invMatTimesDet(2, 0) = this->mat(1, 1)*this->mat(2, 0) - this->mat(1, 0)*this->mat(2, 1);
-        this->invMatTimesDet(2, 1) = this->mat(0, 1)*this->mat(2, 0) - this->mat(0, 0)*this->mat(2, 1);
-        this->invMatTimesDet(2, 2) = this->mat(0, 1)*this->mat(2, 0) - this->mat(0, 0)*this->mat(1, 1);
+
+        this->invMatTimesDet(0, 0) = -this->mat(1, 2)*this->mat(2, 1) + this->mat(1, 1)*this->mat(2, 2);
+        this->invMatTimesDet(0, 1) = +this->mat(0, 2)*this->mat(2, 1) - this->mat(0, 1)*this->mat(2, 2);
+        this->invMatTimesDet(0, 2) = -this->mat(0, 2)*this->mat(1, 1) + this->mat(0, 1)*this->mat(1, 2);
+        this->invMatTimesDet(1, 0) = +this->mat(1, 2)*this->mat(2, 0) - this->mat(1, 0)*this->mat(2, 2);
+        this->invMatTimesDet(1, 1) = -this->mat(0, 2)*this->mat(2, 0) + this->mat(0, 0)*this->mat(2, 2);
+        this->invMatTimesDet(1, 2) = +this->mat(0, 2)*this->mat(1, 0) - this->mat(0, 0)*this->mat(1, 2);
+        this->invMatTimesDet(2, 0) = -this->mat(1, 1)*this->mat(2, 0) + this->mat(1, 0)*this->mat(2, 1);
+        this->invMatTimesDet(2, 1) = +this->mat(0, 1)*this->mat(2, 0) - this->mat(0, 0)*this->mat(2, 1);
+        this->invMatTimesDet(2, 2) = -this->mat(0, 1)*this->mat(1, 0) + this->mat(0, 0)*this->mat(1, 1);
+
         this->solTimesDet = dot(this->invMatTimesDet, this->rhs);
-        this->det = this->mat(0, 2)*this->mat(1, 1)*this->mat(2, 0)
-                  - this->mat(0, 1)*this->mat(1, 2)*this->mat(2, 0) 
-                  - this->mat(0, 2)*this->mat(1, 0)*this->mat(2, 1) 
-                  + this->mat(0, 0)*this->mat(1, 2)*this->mat(2, 1) 
-                  + this->mat(0, 1)*this->mat(1, 0)*this->mat(2, 2) 
-                  - this->mat(0, 0)*this->mat(1, 1)*this->mat(2, 2);
+
+        this->det = - this->mat(0, 2)*this->mat(1, 1)*this->mat(2, 0)
+                    + this->mat(0, 1)*this->mat(1, 2)*this->mat(2, 0) 
+                    + this->mat(0, 2)*this->mat(1, 0)*this->mat(2, 1) 
+                    - this->mat(0, 0)*this->mat(1, 2)*this->mat(2, 1) 
+                    - this->mat(0, 1)*this->mat(1, 0)*this->mat(2, 2) 
+                    + this->mat(0, 0)*this->mat(1, 1)*this->mat(2, 2);
     }
 
     /**
-     * Get the determinant
+     * Get the determinant of the linear system
      * @return determinant
     */
     double getDet() const {
@@ -139,7 +143,7 @@ struct LineTriangleIntersector {
 
         if (std::abs(dot(this->solTimesDet, this->solTimesDet)) < tol) {
             // determinant is zero
-            // ray and triangle are tangential
+            // ray and triangle are on the same plane
             this->computeBegEndParamCoords();
 
             if (std::abs(this->lamEnd - this->lamBeg) > tol)
