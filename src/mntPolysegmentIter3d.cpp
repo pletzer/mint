@@ -392,7 +392,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 double lamb = sol.second;
                 // compute the points
                 double pa[] = {pBeg[0] + lama*dp[0], pBeg[1] + lama*dp[1], pBeg[2] + lama*dp[2]};
-                double pb[] = {pBeg[0] + lamb*dp[0], pBeg[1] + lamb*dp[1], pBeg[2] + lamb*dp[3]};
+                double pb[] = {pBeg[0] + lamb*dp[0], pBeg[1] + lamb*dp[1], pBeg[2] + lamb*dp[2]};
 
                 // add to lists both points
                 cIds.push_back(cId);
