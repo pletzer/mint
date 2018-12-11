@@ -4,9 +4,9 @@
 #include <cmath>
 #include <iostream>
 
-void test1() {
-    // standard
-    double tol = 1.e-10;
+#define TOL 1.e-10
+
+void testNormal() {
 
     // line
     double p0[] = {0., 0., 1.};
@@ -20,21 +20,40 @@ void test1() {
     lli.setPoints(p0, p1, q0, q1, q2);
 
     double det = lli.getDet();
-    std::cout << "test1: det = " << det << '\n';
+    assert(abs(det - (-1.)) < TOL);
 
     Vector<double> sol = lli.getSolution();
     double lam = sol[0];
-    assert(abs(lam - 1.0) < tol);
+    assert(abs(lam - 1.0) < TOL);
     std::vector<double> xi = std::vector<double>(&sol[1], &sol[3]);
-    std::cout << "test1: xi = " << xi[0] << ", " << xi[1] << '\n';
-    assert(abs(xi[0] - 0.) < tol);
-    assert(abs(xi[1] - 0.) < tol);
+    assert(abs(xi[0] - 0.) < TOL);
+    assert(abs(xi[1] - 0.) < TOL);
 }
+
+void testNoSolution() {
+
+    // line
+    double p0[] = {0., 0., 0.1};
+    double p1[] = {0., 1., 0.1};
+
+    // triangle
+    double q0[] = {0., 0., 0.};
+    double q1[] = {1., 0., 0.};
+    double q2[] = {0., 1., 0.};
+    LineTriangleIntersector lli;
+    lli.setPoints(p0, p1, q0, q1, q2);
+
+    double det = lli.getDet();
+    assert(abs(det - (0.)) < TOL);
+    assert(!lli.hasSolution(TOL));
+}
+
 
 
 int main(int argc, char** argv) {
 
-    test1();
+    testNormal();
+    testNoSolution();
 
     return 0;
 }
