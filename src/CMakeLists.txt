@@ -12,7 +12,9 @@ set(LIB_FILES
   mntLatLon.cpp
   mntGrid.cpp
   mntPolysegmentIter.cpp
+  mntPolysegmentIter3d.cpp
   mntRegridEdges.cpp
+  mntRegridEdges3d.cpp
   mntCellLocator.cpp
   mntCmdLineArgParser.cpp
   mnt_celllocator_capi_mod.f90
