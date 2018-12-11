@@ -29,14 +29,14 @@ struct RegridEdges3d_t {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_new(RegridEdges_t** self);
+int mnt_regridedges3d_new(RegridEdges3d_t** self);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_del(RegridEdges_t** self);
+int mnt_regridedges3d_del(RegridEdges3d_t** self);
 
 /**
  * Set the source grid
@@ -44,7 +44,7 @@ int mnt_regridedges3d_del(RegridEdges_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
+int mnt_regridedges3d_setSrcGrid(RegridEdges3d_t** self, vtkUnstructuredGrid* grid);
 
 /**
  * Set the destination grid
@@ -52,7 +52,7 @@ int mnt_regridedges3d_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
+int mnt_regridedges3d_setDstGrid(RegridEdges3d_t** self, vtkUnstructuredGrid* grid);
 
 /**
  * Set the pointer to the source grid points
@@ -62,7 +62,7 @@ int mnt_regridedges3d_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_setSrcPointsPtr(RegridEdges_t** self, 
+int mnt_regridedges3d_setSrcPointsPtr(RegridEdges3d_t** self, 
                                     size_t nVertsPerCell, size_t ncells, 
                                     const double verts[]);
 
@@ -75,7 +75,7 @@ int mnt_regridedges3d_setSrcPointsPtr(RegridEdges_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_setDstPointsPtr(RegridEdges_t** self, 
+int mnt_regridedges3d_setDstPointsPtr(RegridEdges3d_t** self, 
                                     size_t nVertsPerCell, size_t ncells, 
                                     const double verts[]);
 
@@ -85,28 +85,28 @@ int mnt_regridedges3d_setDstPointsPtr(RegridEdges_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_build(RegridEdges_t** self, int numCellsPerBucket);
+int mnt_regridedges3d_build(RegridEdges3d_t** self, int numCellsPerBucket);
 
 /**
  * Get number of source grid cells
  * @param n number of cells
  */
 extern "C"
-int mnt_regridedges3d_getNumSrcCells(RegridEdges_t** self, int* n);
+int mnt_regridedges3d_getNumSrcCells(RegridEdges3d_t** self, int* n);
 
 /**
  * Get number of destination grid cells
  * @param n number of cells
  */
 extern "C"
-int mnt_regridedges3d_getNumDstCells(RegridEdges_t** self, int* n);
+int mnt_regridedges3d_getNumDstCells(RegridEdges3d_t** self, int* n);
 
 /**
  * Get number of edges per cell
  * @param n number
  */
 extern "C"
-int mnt_regridedges3d_getNumEdgesPerCell(RegridEdges_t** self, int* n);
+int mnt_regridedges3d_getNumEdgesPerCell(RegridEdges3d_t** self, int* n);
 
 /**
  * Apply interpolation weights to field
@@ -116,7 +116,7 @@ int mnt_regridedges3d_getNumEdgesPerCell(RegridEdges_t** self, int* n);
  * @note edges go anticlockwise
  */
 extern "C"
-int mnt_regridedges3d_applyWeights(RegridEdges_t** self, const double src_data[], double dst_data[]);
+int mnt_regridedges3d_applyWeights(RegridEdges3d_t** self, const double src_data[], double dst_data[]);
 
 /**
  * Load the weights from file
@@ -125,7 +125,7 @@ int mnt_regridedges3d_applyWeights(RegridEdges_t** self, const double src_data[]
  * @note this does not create the object, user must call mnt_regridedges_new prior to this call
  */
 extern "C"
-int mnt_regridedges3d_load(RegridEdges_t** self, const char* filename);
+int mnt_regridedges3d_load(RegridEdges3d_t** self, const char* filename);
 
 /**
  * Dump the weights to file
@@ -133,6 +133,6 @@ int mnt_regridedges3d_load(RegridEdges_t** self, const char* filename);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges3d_dump(RegridEdges_t** self, const char* filename);
+int mnt_regridedges3d_dump(RegridEdges3d_t** self, const char* filename);
 
 #endif // MNT_REGRID_EDGES_3D

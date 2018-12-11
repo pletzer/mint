@@ -1,4 +1,4 @@
-#include <mntLineLineIntersector.h>
+#include <mntLineTriangleIntersector.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <map>

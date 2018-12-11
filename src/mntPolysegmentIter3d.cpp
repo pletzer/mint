@@ -1,4 +1,5 @@
-#include <mntPolysegmentIter.h>
+#include "mntLineTriangleIntersector.h"
+#include "mntPolysegmentIter3d.h"
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <MvVector.h>
@@ -351,7 +352,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
             this->grid->GetPoint(ptIds->GetId(j3), &v3[0]);
 
             // look for an intersection
-            intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0], &v2[0], &v3[0]);
+            intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0], &v2[0]);
 
             if (! intersector.hasSolution(this->eps)) {
                 // skip if no solution. FindCellsAlongLine may be too generous with

@@ -18,6 +18,7 @@ struct LineTriangleIntersector {
         this->p1.alloc(3);
         this->q0.alloc(3);
         this->q1.alloc(3);
+        this->q2.alloc(3);
     }
 
     /**
@@ -169,6 +170,7 @@ struct LineTriangleIntersector {
     Vector<double> p1;
     Vector<double> q0;
     Vector<double> q1;
+    Vector<double> q2;
 
     double lamBeg;
     double lamEnd;
