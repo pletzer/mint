@@ -8,7 +8,13 @@ configure_file(testGrid.cpp testGrid.cxx)
 
 add_executable(testLineLineIntersector testLineLineIntersector.cxx)
 target_link_libraries(testLineLineIntersector
-	                  mint
+                    mint
+                    ${VTK_LIBRARIES}
+)
+
+add_executable(testLineTriangleIntersector testLineTriangleIntersector.cxx)
+target_link_libraries(testLineTriangleIntersector
+                    mint
                     ${VTK_LIBRARIES}
 )
 
