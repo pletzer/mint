@@ -293,6 +293,17 @@ ColMat<T> max(const ColMat<T> &a, const ColMat<T> &b);
 template<class T> 
 ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b);
 
+/** Matrix-matrix-matrix multiplication. Not to be confused with a*b, the elementwise
+ multiplication. 
+@see operator*
+@param a a matrix
+@param b matrix of shape b.size(0)=a.size(1)
+@param c matrix of shape c.size(0)=b.size(1)
+@return matrix = a.b.c
+*/
+template<class T> 
+ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b, const ColMat<T> &c);
+
 /** Matrix-vector multiplication. 
  @param a a matrix
  @param b a vector of length b.size()=a.size(1) 
@@ -300,6 +311,17 @@ ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b);
 */
 template<class T> 
 Vector<T> dot(const ColMat<T> &a, const Vector<T> &b);
+
+/** Matrix-matrix-vector multiplication. Not to be confused with a*b, the elementwise
+ multiplication. 
+@see operator*
+@param a a matrix
+@param b matrix of shape b.size(0)=a.size(1)
+@param c matrix of shape c.size(0)=b.size(1)
+@return matrix = a.b.c
+*/
+template<class T> 
+Vector<T> dot(const ColMat<T> &a, const ColMat<T> &b, const Vector<T> &c);
 
 /** Real Matrix - complex vector multiplication. 
  @param a real matrix
@@ -450,6 +472,12 @@ ColMat<T> pow(const ColMat<T> &a, const T exp);
 template<class T>
 ColMat<T> pow(const ColMat<T> &a, const int exp);
 
+/** Transpose matrix
+  @param a - input matrix
+  @return matrix
+*/
+template<class T>
+ColMat<T> transpose(const ColMat<T> &a);
 
 
 //@}
@@ -748,6 +776,64 @@ ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b)
   return c;
 }
 
+
+template<class T> 
+ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b, const ColMat<T> &c)
+{
+
+  ColMat<T> res(a.size(0), c.size(1), 0.0);
+
+#ifndef NO_ASSERT
+  assert(a.jsize() == b.isize());
+  assert(b.jsize() == c.isize());
+#endif
+
+  for (size_t j = 0; j < c.jsize(); ++j)
+  {
+    for (size_t i = 0; i < a.isize(); ++i)
+    {
+      for (size_t k = 0; k < b.isize(); ++k)
+      {
+        for (size_t el = 0; el < c.isize(); ++el)
+        {
+          res(i, j) += a(i, k) * b(k, el) * c(el, j);
+        }
+      }
+    }
+  }
+  
+  return res;
+}
+
+template<class T> 
+Vector<T> dot(const ColMat<T> &a, const ColMat<T> &b, const Vector<T> &c)
+{
+
+  Vector<T> res(a.size(0), 0.0);
+
+#ifndef NO_ASSERT
+  assert(a.jsize() == b.isize());
+  assert(b.jsize() == c.size());
+#endif
+
+  for (size_t j = 0; j < c.size(); ++j)
+  {
+    for (size_t i = 0; i < a.isize(); ++i)
+    {
+      for (size_t k = 0; k < b.isize(); ++k)
+      {
+        for (size_t el = 0; el < c.size(); ++el)
+        {
+          res[i] += a(i, k) * b(k, el) * c[el];
+        }
+      }
+    }
+  }
+  
+  return res;
+}
+
+
 template<class T> 
 Vector<T> dot(const ColMat<T> &a, const Vector<T> &b)
 {
@@ -778,36 +864,6 @@ Vector<T> dot(const Vector<T> &b, const ColMat<T> &a)
   return c;
 }
 
-
-template<class T> 
-ColMat<T> tripleDot(const ColMat<T> &a, const ColMat<T> &b, 
-                    const ColMat<T> &d)
-{
-  size_t i,j,k,m;
-  size_t n1 = a.size(0), n2 = b.size(0), n3 = d.size(0), n4 = d.size(1);
-
-  ColMat<T> c(n1,n4, 0.0);
-
-  for (j = 0; j < n4; ++j)
-    {
-      for (i = 0; i < n1; ++i)
-    {
-      for (k = 0; k < n2; k++)
-        {
-          for (m = 0; m < n3; m++) 
-                c(i,j) = c(i,j) + a(i,k) * b(k,m) * d(m,j);
-        }
-    }
-    }
-  return c;
-}
-
-template<class T> 
-ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b, const ColMat<T> &c)
-{
-  ColMat<T> d = tripleDot( a, b, c );
-  return d;
-}
 
 /*
  multiplication element by element
@@ -1199,6 +1255,17 @@ ColMat<T> max(const ColMat<T> &a, const ColMat<T> &b)
   ColMat<T> c(a.size(0), a.size(1));
   transform(a.v_.begin(), a.v_.end(), b.v_.begin(), c.v_.begin(), Max<T>());
   return c;
+}
+
+template<class T>
+ColMat<T> transpose(const ColMat<T> &a)
+{
+  ColMat<T> res(a.size(1), a.size(0));
+  for (size_t i = 0; i < a.size(0); ++i) {
+    for (size_t j = 0; j < a.size(1); ++j)
+      res(j, i) = a(i, j);
+  }
+  return res;
 }
 
 #endif /* _MATRIX_H */

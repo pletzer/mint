@@ -51,8 +51,8 @@ void testNoSolution() {
 void testDegenerate() {
 
     // line
-    double p0[] = {0., 0., 0.};
-    double p1[] = {0., 1., 0.};
+    double p0[] = {0., 0.1, 0.};
+    double p1[] = {1., 0.1, 0.};
 
     // triangle
     double q0[] = {0., 0., 0.};
@@ -64,6 +64,9 @@ void testDegenerate() {
     double det = lti.getDet();
     assert(std::abs(det - (0.)) < TOL);
     assert(lti.hasSolution(TOL));
+    const std::pair< double, double > lamBegEnd = lti.getBegEndParamCoords();
+    assert(std::abs(lamBegEnd.first - 0.0) < TOL);
+    assert(std::abs(lamBegEnd.second - 0.9) < TOL);    
 }
 
 

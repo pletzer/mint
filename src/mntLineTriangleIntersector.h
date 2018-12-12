@@ -1,8 +1,45 @@
 #include <MvMatrix.h>
 #include <MvVector.h>
+#include <mntLineLineIntersector.h>
+#include <iostream>
 
 #ifndef MNT_LINE_TRIANGLE_INTERSECTOR
 #define MNT_LINE_TRIANGLE_INTERSECTOR
+
+/**
+ * Get the position of p in the triangle parameter space of (q0, q1, q2)
+ *
+ * @param q0 first triangle vertex (3-element vector)
+ * @param q1 second triangle vertex (3-element vector)
+ * @param q2 third triangle vertex (3-element vector)
+ * @param p target point (3-element vector)
+ * @return (xi1, xi2) vector
+ * 
+ * @note assumes p to be in the plane of (q0, q1, q2)
+ */
+Vector<double>
+getTriangleParamLocation(const Vector<double>& q0, 
+                         const Vector<double>& q1, 
+                         const Vector<double>& q2, 
+                         const Vector<double>& p) {
+    // 3x2 matrix
+    ColMat<double> mat(3, 2);
+    Vector<double> rhs(3);
+    for (size_t i = 0; i < 3; ++i) {
+        mat(i, 0) = q1[i] - q0[i];
+        mat(i, 1) = q2[i] - q0[i];
+        rhs[i] = p[i] - q0[i];
+    }
+    ColMat<double> matT = transpose(mat);
+    ColMat<double> a = dot(matT, mat);
+    double det = a(0, 0)*a(1, 1) - a(0, 1)*a(1, 0);
+    ColMat<double> aInv(2, 2);
+    aInv(0, 0) = a(1, 1)/det;
+    aInv(0, 1) = -a(0, 1)/det;
+    aInv(1, 0) = -a(1, 0)/det;
+    aInv(1, 1) = a(0, 0)/det;
+    return dot(aInv, matT, rhs);
+}
 
 struct LineTriangleIntersector {
 
@@ -91,22 +128,57 @@ struct LineTriangleIntersector {
      * Compute the begin/end parametric coordinates
     */
     void computeBegEndParamCoords() {
-        const Vector<double> dp = this->p1 - this->p0;
-        double dp2 = dot(dp, dp);
-        // lambda @ q0
-        double lm0 = dot(this->q0 - this->p0, dp)/dp2;
-        // lambda @ q1
-        double lm1 = dot(this->q1 - this->p0, dp)/dp2;
 
-        this->lamBeg = std::min(std::max(lm0, 0.0), 1.0);
-        this->lamEnd = std::max(std::min(lm1, 1.0), 0.0);
-        if (this->lamEnd < this->lamBeg) {
-            // switch
-            double lbeg = this->lamEnd;
-            double lend = this->lamBeg;
-            this->lamBeg = lbeg;
-            this->lamEnd = lend;
+        // intersectors of the line with any of the three edges of the
+        // triangle
+        LineLineIntersector llA;
+        LineLineIntersector llB;
+        LineLineIntersector llC;
+
+        // endpoints of the triangle in the parametric space of the triangle
+        const double qxi0[] = {0., 0.};
+        const double qxi1[] = {1., 0.};
+        const double qxi2[] = {0., 1.};
+
+        // endpoints of the line in the parametric space of the triangle
+        // are computed using a pseudo-inverse
+        Vector<double> pxi0 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p0);
+        Vector<double> pxi1 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p1);
+
+        llA.setPoints(&pxi0[0], &pxi1[0], qxi0, qxi1);
+        llB.setPoints(&pxi0[0], &pxi1[0], qxi1, qxi2);
+        llC.setPoints(&pxi0[0], &pxi1[0], qxi2, qxi0);
+
+        // collect intersection points
+        std::vector<double> lamVals;
+        Vector<double> sol;
+
+        const double tol = 1.e-10;
+        if (llA.hasSolution(tol)) {
+            sol = llA.getSolution();
+            if (sol[0] > 0. - tol && sol[0] < 1.0 + tol) {
+                lamVals.push_back(sol[0]);
+            }
         }
+        if (llB.hasSolution(tol)) {
+            sol = llB.getSolution();
+            if (sol[0] > 0. - tol && sol[0] < 1.0 + tol) {
+                lamVals.push_back(sol[0]);
+            }
+        }
+        if (llC.hasSolution(tol)) {
+            sol = llC.getSolution();
+            if (sol[0] > 0. - tol && sol[0] < 1.0 + tol) {
+                lamVals.push_back(sol[0]);
+            }
+        }
+
+        // sort
+        std::sort(lamVals.begin(), lamVals.end());
+
+        // set
+        this->lamBeg = lamVals[0];
+        this->lamEnd = lamVals[lamVals.size() - 1];
     }
 
 
@@ -145,6 +217,7 @@ struct LineTriangleIntersector {
             // determinant is zero
             // ray and triangle are on the same plane
             this->computeBegEndParamCoords();
+            std::cerr << "*** lamBeg = " << lamBeg << ", lamEnd = " << lamEnd << '\n';
 
             if (std::abs(this->lamEnd - this->lamBeg) > tol)
                 return true;
