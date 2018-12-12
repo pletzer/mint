@@ -145,15 +145,28 @@ struct LineTriangleIntersector {
         Vector<double> pxi0 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p0);
         Vector<double> pxi1 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p1);
 
+        const double tol = 1.e-10;
+
+        // collect intersection points
+        std::vector<double> lamVals;
+
+        if (pxi0[0] > 0. - tol && pxi0[1] < 1. - pxi0[0] + tol) {
+            // add this point if it is in the triangle
+            lamVals.push_back(0.0);
+        }
+        if (pxi1[0] > 0. - tol && pxi1[1] < 1. - pxi1[0] + tol) {
+            // add this point if it is in the triangle
+            lamVals.push_back(1.0);
+        }
+
+
         llA.setPoints(&pxi0[0], &pxi1[0], qxi0, qxi1);
         llB.setPoints(&pxi0[0], &pxi1[0], qxi1, qxi2);
         llC.setPoints(&pxi0[0], &pxi1[0], qxi2, qxi0);
 
-        // collect intersection points
-        std::vector<double> lamVals;
         Vector<double> sol;
 
-        const double tol = 1.e-10;
+
         if (llA.hasSolution(tol)) {
             sol = llA.getSolution();
             if (sol[0] > 0. - tol && sol[0] < 1.0 + tol) {
