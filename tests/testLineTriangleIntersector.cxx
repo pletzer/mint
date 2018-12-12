@@ -6,6 +6,20 @@
 
 #define TOL 1.e-10
 
+void testGetParamLocation1() {
+
+    Vector<double> q0(3); q0[0] = 0.; q0[1] = 0.; q0[2] = 0.;
+    Vector<double> q1(3); q1[0] = 1.; q1[1] = 0.; q1[2] = 0.;
+    Vector<double> q2(3); q2[0] = 0.; q2[1] = 1.; q2[2] = 0.;
+
+    Vector<double> p(3); p[0] = 0.; p[1] = 0.1; p[2] = 0.;
+
+	Vector<double> xi = getTriangleParamLocation(q0, q1, q2, p);
+    std::cout << "testGetParamLocation1: xi = " << xi[0] << ", " << xi[1] << '\n';
+    assert(std::abs(xi[0] - 0.) < TOL);
+    assert(std::abs(xi[1] - 0.1) < TOL);
+}
+
 void testNormal() {
 
     // line
@@ -72,6 +86,7 @@ void testDegenerate() {
 
 int main(int argc, char** argv) {
 
+    testGetParamLocation1();
     testNormal();
     testNoSolution();
     testDegenerate();
