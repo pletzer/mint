@@ -816,16 +816,13 @@ Vector<T> dot(const ColMat<T> &a, const ColMat<T> &b, const Vector<T> &c)
   assert(b.jsize() == c.size());
 #endif
 
-  for (size_t j = 0; j < c.size(); ++j)
+  for (size_t i = 0; i < a.isize(); ++i)
   {
-    for (size_t i = 0; i < a.isize(); ++i)
+    for (size_t k = 0; k < b.isize(); ++k)
     {
-      for (size_t k = 0; k < b.isize(); ++k)
+      for (size_t el = 0; el < c.size(); ++el)
       {
-        for (size_t el = 0; el < c.size(); ++el)
-        {
-          res[i] += a(i, k) * b(k, el) * c[el];
-        }
+        res[i] += a(i, k) * b(k, el) * c[el];
       }
     }
   }

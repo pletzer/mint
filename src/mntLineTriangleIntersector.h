@@ -217,7 +217,6 @@ struct LineTriangleIntersector {
             // determinant is zero
             // ray and triangle are on the same plane
             this->computeBegEndParamCoords();
-            std::cerr << "*** lamBeg = " << lamBeg << ", lamEnd = " << lamEnd << '\n';
 
             if (std::abs(this->lamEnd - this->lamBeg) > tol)
                 return true;

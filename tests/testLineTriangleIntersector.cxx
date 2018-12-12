@@ -15,7 +15,6 @@ void testGetParamLocation1() {
     Vector<double> p(3); p[0] = 0.; p[1] = 0.1; p[2] = 0.;
 
 	Vector<double> xi = getTriangleParamLocation(q0, q1, q2, p);
-    std::cout << "testGetParamLocation1: xi = " << xi[0] << ", " << xi[1] << '\n';
     assert(std::abs(xi[0] - 0.) < TOL);
     assert(std::abs(xi[1] - 0.1) < TOL);
 }
