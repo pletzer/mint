@@ -103,6 +103,26 @@ void testDegenerate2() {
     assert(std::abs(lamBegEnd.second - 0.7) < TOL);
 }
 
+void testDegenerate3() {
+
+    // line
+    double p0[] = {0., 0.1, 0.};
+    double p1[] = {1.2, 0.1, 0.};
+
+    // triangle
+    double q0[] = {0., 0., 0.};
+    double q1[] = {1., 0., 0.};
+    double q2[] = {0., 1., 0.};
+    LineTriangleIntersector lti;
+    lti.setPoints(p0, p1, q0, q1, q2);
+
+    double det = lti.getDet();
+    assert(std::abs(det - (0.)) < TOL);
+    assert(lti.hasSolution(TOL));
+    const std::pair< double, double > lamBegEnd = lti.getBegEndParamCoords();
+    assert(std::abs(lamBegEnd.first - 0.0) < TOL);
+    assert(std::abs(lamBegEnd.second - 0.75) < TOL);
+}
 
 int main(int argc, char** argv) {
 
@@ -111,6 +131,7 @@ int main(int argc, char** argv) {
     testNoSolution();
     testDegenerate1();
     testDegenerate2();
+    testDegenerate3();
 
     return 0;
 }
