@@ -159,10 +159,8 @@ void testCoPlanarNoSolution() {
     lti.setPoints(p0, p1, q0, q1, q2);
 
     double det = lti.getDet();
-    std::cerr << "testCoPlanarNoSolution: det = " << det << '\n';
     assert(std::abs(det - (0.)) < TOL);
     bool hasSol = lti.hasSolution(TOL);
-    std::cerr << "testCoPlanarNoSolution: hasSol = " << hasSol << '\n';
     assert(!lti.hasSolution(TOL));
 }
 

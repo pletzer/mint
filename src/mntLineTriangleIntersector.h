@@ -2,9 +2,12 @@
 #include <MvVector.h>
 #include <mntLineLineIntersector.h>
 #include <iostream>
+#include <limits>
 
 #ifndef MNT_LINE_TRIANGLE_INTERSECTOR
 #define MNT_LINE_TRIANGLE_INTERSECTOR
+
+#define BAD std::numeric_limits<double>::max()
 
 /**
  * Get the position of p in the triangle parameter space of (q0, q1, q2)
@@ -56,6 +59,8 @@ struct LineTriangleIntersector {
         this->q0.alloc(3);
         this->q1.alloc(3);
         this->q2.alloc(3);
+        this->lamBeg = BAD;
+        this->lamEnd = BAD;
     }
 
     /**
@@ -159,7 +164,6 @@ struct LineTriangleIntersector {
             lamVals.push_back(1.0);
         }
 
-
         llA.setPoints(&pxi0[0], &pxi1[0], qxi0, qxi1);
         llB.setPoints(&pxi0[0], &pxi1[0], qxi1, qxi2);
         llC.setPoints(&pxi0[0], &pxi1[0], qxi2, qxi0);
@@ -186,12 +190,14 @@ struct LineTriangleIntersector {
             }
         }
 
-        // sort
-        std::sort(lamVals.begin(), lamVals.end());
+        if (lamVals.size() >= 2) {
+            // sort
+            std::sort(lamVals.begin(), lamVals.end());
 
-        // set
-        this->lamBeg = lamVals[0];
-        this->lamEnd = lamVals[lamVals.size() - 1];
+            // set
+            this->lamBeg = lamVals[0];
+            this->lamEnd = lamVals[lamVals.size() - 1];
+        }
     }
 
 
