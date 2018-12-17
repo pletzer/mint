@@ -22,84 +22,91 @@ add_executable(testPolysegmentIter testPolysegmentIter.cxx)
 target_link_libraries(testPolysegmentIter
                       mint
                       ${VTK_LIBRARIES}
-                     )
+)
+
+add_executable(testPolysegmentIter3d testPolysegmentIter3d.cxx)
+target_link_libraries(testPolysegmentIter3d
+                      mint
+                      ${VTK_LIBRARIES}
+)
 
 add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
                       ${VTK_LIBRARIES}
-                     )
+)
 
 add_executable(testCellLocator testCellLocator.cxx)
 target_link_libraries(testCellLocator
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testPrintAddressF testPrintAddressF.f90)
 set_target_properties(testPrintAddressF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testPrintAddressF
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testCellLocatorF testCellLocatorF.f90)
 set_target_properties(testCellLocatorF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCellLocatorF
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testCellLocatorFromFileF testCellLocatorFromFileF.f90)
 set_target_properties(testCellLocatorFromFileF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCellLocatorFromFileF
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testC2fString testC2fString.f90)
 set_target_properties(testC2fString PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testC2fString
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 
 add_executable(testExprParser testExprParser.cxx)
 target_link_libraries(testExprParser
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testSize testSize.cxx)
 target_link_libraries(testSize
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testCmdLineArgParserC testCmdLineArgParserC.cxx)
 target_link_libraries(testCmdLineArgParserC
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)
 set_target_properties(testCmdLineArgParserF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCmdLineArgParserF
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_executable(testCmdLineArgParserFB testCmdLineArgParserFB.f90)
 set_target_properties(testCmdLineArgParserFB PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCmdLineArgParserFB
                       mint
                       ${VTK_LIBRARIES}
-                      )
+)
 
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
+add_test(NAME polysegmentIter3d COMMAND testPolysegmentIter3d)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME cellLocatorF COMMAND testCellLocatorF)
