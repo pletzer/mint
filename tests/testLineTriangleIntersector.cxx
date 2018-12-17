@@ -145,6 +145,27 @@ void testDegenerate4() {
     assert(std::abs(lamBegEnd.second - 1.0) < TOL);
 }
 
+void testCoPlanarNoSolution() {
+
+    // line
+    double p0[] = {1.2, 0.1, 0.};
+    double p1[] = {2.0, 0.1, 0.};
+
+    // triangle
+    double q0[] = {0., 0., 0.};
+    double q1[] = {1., 0., 0.};
+    double q2[] = {0., 1., 0.};
+    LineTriangleIntersector lti;
+    lti.setPoints(p0, p1, q0, q1, q2);
+
+    double det = lti.getDet();
+    std::cerr << "testCoPlanarNoSolution: det = " << det << '\n';
+    assert(std::abs(det - (0.)) < TOL);
+    bool hasSol = lti.hasSolution(TOL);
+    std::cerr << "testCoPlanarNoSolution: hasSol = " << hasSol << '\n';
+    assert(!lti.hasSolution(TOL));
+}
+
 int main(int argc, char** argv) {
 
     testGetParamLocation1();
@@ -154,6 +175,7 @@ int main(int argc, char** argv) {
     testDegenerate2();
     testDegenerate3();
     testDegenerate4();
+    testCoPlanarNoSolution();
 
     return 0;
 }
