@@ -9,6 +9,13 @@
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <iostream>
+#include <cmath>
+
+void getXYZFromElvLatLon(double elv, double lat, double lon, double p[]) {
+    p[0] = (1.0 + elv) * cos(lat * M_PI/180.) * cos(lon * M_PI/180.);
+    p[1] = (1.0 + elv) * cos(lat * M_PI/180.) * sin(lon * M_PI/180.);
+    p[2] = (1.0 + elv) * sin(lat * M_PI/180.);
+}
 
 void test1Cell() {
     // a one cell grid, built from scratch
@@ -72,10 +79,69 @@ void test1Cell() {
     points->Delete();
 }
 
+void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
+
+    //
+    // create lat-lon grid
+    //
+    double p[3];
+    double dElv = 0.1 / double(nElv);
+    double dLat = 180.0 / double(nLat);
+    double dLon = 360.0 / double(nLon);
+
+    vtkPoints* points = vtkPoints::New();
+    size_t nCells = nElv * nLat * nLon;
+    points->SetNumberOfPoints(8 * nCells);
+    points->SetDataTypeToDouble();
+
+    vtkIdType index = 0;
+    for (size_t k = 0; k < nElv; ++k) {
+        double elv0 = 1.0 + dElv*k;
+        double elv1 = elv0 + dElv;
+        for (size_t j = 0; j < nLat; ++j) {
+            double lat0 = -90.0 + j*dLat;
+            double lat1 = lat0 + dLat;
+            for (size_t i = 0; i < nLon; ++i) {
+                double lon0 = -180.0 + i*dLon;
+                double lon1 = lon0 + dLon;
+
+                getXYZFromElvLatLon(elv0, lat0, lon0, p);
+                points->SetPoint(index, p);
+                index++;
+                getXYZFromElvLatLon(elv0, lat0, lon1, p);
+                points->SetPoint(index, p);
+                index++;
+                getXYZFromElvLatLon(elv0, lat1, lon1, p);
+                points->SetPoint(index, p);
+                index++;
+                getXYZFromElvLatLon(elv0, lat1, lon0, p);
+                points->SetPoint(index, p);
+                index++;
+                getXYZFromElvLatLon(elv1, lat0, lon0, p);
+                points->SetPoint(index, p);
+                index++;
+                getXYZFromElvLatLon(elv1, lat0, lon1, p);
+                points->SetPoint(index, p);
+                index++;
+                getXYZFromElvLatLon(elv1, lat1, lon1, p);
+                points->SetPoint(index, p);
+                index++;
+                getXYZFromElvLatLon(elv1, lat1, lon0, p);
+                points->SetPoint(index, p);
+                index++;
+            }
+        }
+    }
+        
+
+    points->Delete();
+}
+
 
 int main(int argc, char** argv) {
 
     test1Cell();
+    testLatLon(2, 3, 4);
 
     return 0;
 }
