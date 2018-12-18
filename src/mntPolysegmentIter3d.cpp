@@ -16,7 +16,7 @@ struct TCmpFunctor {
 };
 
 
-PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
+PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
                                  const double p0[], const double p1[]) {
 
     // small tolerances 
@@ -164,19 +164,19 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
 
 
 double 
-PolysegmentIter::getIntegratedParamCoord() const {
+PolysegmentIter3d::getIntegratedParamCoord() const {
     return this->totalT;
 }
 
 
 void 
-PolysegmentIter::reset() {
+PolysegmentIter3d::reset() {
     this->index = 0;
 }
 
 
 bool
-PolysegmentIter::next() {
+PolysegmentIter3d::next() {
     if (this->index < this->numSegs - 1) {
         this->index++;
         return true;
@@ -186,41 +186,41 @@ PolysegmentIter::next() {
 
 
 vtkIdType 
-PolysegmentIter::getCellId() const {
+PolysegmentIter3d::getCellId() const {
     return this->segCellIds[this->index];
 }
 
 const std::vector<double>& 
-PolysegmentIter::getBegCellParamCoord() const {
+PolysegmentIter3d::getBegCellParamCoord() const {
     return this->segXias[this->index];
 }        
 
 
 const std::vector<double>& 
-PolysegmentIter::getEndCellParamCoord() const {
+PolysegmentIter3d::getEndCellParamCoord() const {
     return this->segXibs[this->index];
 }
  
 
 double
-PolysegmentIter::getBegLineParamCoord() const {
+PolysegmentIter3d::getBegLineParamCoord() const {
     return this->segTas[this->index];
 }
         
 
 double 
-PolysegmentIter::getEndLineParamCoord() const {
+PolysegmentIter3d::getEndLineParamCoord() const {
     return this->segTbs[this->index];
 }
      
 
 double 
-PolysegmentIter::getCoefficient() const {
+PolysegmentIter3d::getCoefficient() const {
     return this->segCoeffs[this->index];
 }
  
 size_t
-PolysegmentIter::getNumberOfSegments() const {
+PolysegmentIter3d::getNumberOfSegments() const {
     return this->numSegs;
 }
 
@@ -228,7 +228,7 @@ PolysegmentIter::getNumberOfSegments() const {
 // private methods
 
 void
-PolysegmentIter::__assignCoefficientsToSegments() {
+PolysegmentIter3d::__assignCoefficientsToSegments() {
 
     size_t n = this->segCellIds.size();
 
@@ -277,7 +277,7 @@ PolysegmentIter::__assignCoefficientsToSegments() {
 }
 
 void
-PolysegmentIter::__collectIntersectionPoints(const double pBeg[], 
+PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[], 
                                              const double pEnd[],
                                              std::vector<vtkIdType>& cIds,
                                              std::vector<double>& lambRays,
@@ -417,7 +417,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
 
 void 
-PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[]) {
+PolysegmentIter3d::__collectLineGridSegments(const double p0[], const double p1[]) {
 
     // things we need to define
     vtkIdList* ptIds = vtkIdList::New();

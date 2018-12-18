@@ -7,7 +7,7 @@
 #ifndef MNT_POLYSEGMENT_ITER_3D
 #define MNT_POLYSEGMENT_ITER_3D
 
-class PolysegmentIter {
+class PolysegmentIter3d {
 
 public:
 
@@ -18,7 +18,7 @@ public:
      * @param p0 start point
      * @param p1 end point
      */
-    PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
+    PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
                     const double p0[], const double p1[]);
 
     /**
