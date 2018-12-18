@@ -82,17 +82,18 @@ void test1Cell() {
 void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 
     //
-    // create lat-lon grid
+    // generate vertices
     //
     double p[3];
+
     double dElv = 0.1 / double(nElv);
     double dLat = 180.0 / double(nLat);
     double dLon = 360.0 / double(nLon);
 
     vtkPoints* points = vtkPoints::New();
     size_t nCells = nElv * nLat * nLon;
-    points->SetNumberOfPoints(8 * nCells);
     points->SetDataTypeToDouble();
+    points->SetNumberOfPoints(8 * nCells);
 
     vtkIdType index = 0;
     for (size_t k = 0; k < nElv; ++k) {
@@ -132,8 +133,56 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
             }
         }
     }
-        
 
+    //
+    // create grid
+    //
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+    grid->SetPoints(points);
+    grid->Allocate(1, 1);
+    vtkIdList* ptIds = vtkIdList::New();
+    ptIds->SetNumberOfIds(8);
+    for (size_t iCell = 0; iCell < nCells; ++iCell) {
+        for (vtkIdType iVert = 0; iVert < 8; ++iVert) {
+            ptIds->SetId(iVert, 8*iCell + iVert);
+        }
+        grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
+    }
+
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetDataSet(grid);
+    loc->BuildLocator();
+
+    //
+    // line segment
+    // 
+    const double paLatLon[] = {0., -90., -180.};
+    const double pbLatLon[] = {1., +90., +180.};
+    double pa[3], pb[3];
+    getXYZFromElvLatLon(paLatLon[0], paLatLon[1], paLatLon[2], pa);
+    getXYZFromElvLatLon(pbLatLon[0], pbLatLon[1], pbLatLon[2], pb);
+
+    PolysegmentIter3d psi(grid, loc, pa, pb);
+    size_t numSegs = psi.getNumberOfSegments();
+    psi.reset();
+    for (size_t i = 0; i < numSegs; ++i) {
+        vtkIdType cellId = psi.getCellId();
+        const std::vector<double>& xia = psi.getBegCellParamCoord();
+        const std::vector<double>& xib = psi.getEndCellParamCoord();
+        double ta = psi.getBegLineParamCoord();
+        double tb = psi.getEndLineParamCoord();
+        double coeff = psi.getCoefficient();
+        std::cout << "testLatLon: seg " << i << " cell=" << cellId \
+                                   << " ta=" << ta << " xia=" << xia[0] << ',' << xia[1] 
+                                   << " tb=" << tb << " xib=" << xib[0] << ',' << xib[1] 
+                                   << '\n';
+        psi.next();
+    }
+    assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
+
+    loc->Delete();
+    ptIds->Delete();
+    grid->Delete();
     points->Delete();
 }
 
