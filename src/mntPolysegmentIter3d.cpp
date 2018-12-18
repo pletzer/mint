@@ -278,10 +278,25 @@ PolysegmentIter3d::__assignCoefficientsToSegments() {
 
 void
 PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[], 
-                                             const double pEnd[],
-                                             std::vector<vtkIdType>& cIds,
-                                             std::vector<double>& lambRays,
-                                             std::vector< std::vector<double> >& points) {
+                                               const double pEnd[],
+                                               std::vector<vtkIdType>& cIds,
+                                               std::vector<double>& lambRays,
+                                               std::vector< std::vector<double> >& points) {
+
+    const vtkIdType triangleFaceInds[] = {
+        1, 2, 5, // x-hi 
+        2, 6, 5,
+        0, 3, 4, // x-lo
+        3, 7, 4, 
+        2, 3, 6, // y-hi
+        3, 7, 6, 
+        1, 0, 4, // y-lo
+        4, 5, 1, 
+        4, 5, 6, // z-hi
+        6, 7, 4,
+        0, 1, 2, // z-lo
+        2, 3, 0
+    };
 
     LineTriangleIntersector intersector;
     vtkIdList* cellIds = vtkIdList::New();
@@ -291,14 +306,6 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
     std::vector<double> v0(3);
     std::vector<double> v1(3);
     std::vector<double> v2(3);
-    std::vector<double> v3(3);
-
-
-    // vectors of 0s and 1s uniquely identifying the vertex
-    std::vector<int> iv0(3);
-    std::vector<int> iv1(3);
-    std::vector<int> iv2(3);
-    std::vector<int> iv3(3);
 
     // vector from start to finish
     double dp[] = {pEnd[0] - pBeg[0], pEnd[1] - pBeg[1], pEnd[2] - pBeg[2]};
@@ -315,41 +322,21 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
     // iterate over the cells along the line
     for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
-        // this cell Id
+        // this cell's Id
         vtkIdType cId = cellIds->GetId(i);
 
         // vertices, ptIds.GetNumberOfIds() should return 8
         // since we're dealing with hexahedral cells
         this->grid->GetCellPoints(cId, ptIds);
 
-
-        // iterate over the quads' edges
-        for (vtkIdType j0 = 0; j0 < ptIds->GetNumberOfIds(); ++j0) {
-
-            iv0[0] = j0 % 2; 
-            iv0[1] = (j0 / 2) % 2; 
-            iv0[2] = (j0 / 4) % 2;
-
-            iv1[0] = (iv0[0] + 1) % 2;
-            iv1[1] = iv0[1];
-            iv1[2] = iv0[2];
-
-            iv2[0] = iv0[0];
-            iv2[1] = (iv0[1] + 1) % 2;
-            iv2[2] = iv0[2];
-
-            iv3[0] = iv0[0];
-            iv3[1] = iv0[1];
-            iv3[2] = (iv0[2] + 1) % 2;
-
-            vtkIdType j1 = iv1[0] + 2*(iv1[1] + 2*iv1[2]);
-            vtkIdType j2 = iv2[0] + 2*(iv2[1] + 2*iv2[2]);
-            vtkIdType j3 = iv3[0] + 2*(iv3[1] + 2*iv3[2]);
-
+        // iterate over the hex's triangle faces (12)
+        for (vtkIdType j = 0; j < 12; j += 3) {
+            vtkIdType j0 = triangleFaceInds[j + 0];
+            vtkIdType j1 = triangleFaceInds[j + 1];
+            vtkIdType j2 = triangleFaceInds[j + 2];
             this->grid->GetPoint(ptIds->GetId(j0), &v0[0]);
             this->grid->GetPoint(ptIds->GetId(j1), &v1[0]);
             this->grid->GetPoint(ptIds->GetId(j2), &v2[0]);
-            this->grid->GetPoint(ptIds->GetId(j3), &v3[0]);
 
             // look for an intersection
             intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0], &v2[0]);
@@ -405,7 +392,7 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
 
             }
 
-        } // end of edge loop
+        } // end of triangle face loop
 
     } // end of cell loop
 

@@ -178,6 +178,7 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
                                    << '\n';
         psi.next();
     }
+    std::cerr << "testLatLon: integrated param coord = " << psi.getIntegratedParamCoord() << '\n';
     assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
 
     loc->Delete();
