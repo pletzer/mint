@@ -92,8 +92,8 @@ void test1CellLineOutside() {
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
-    const double p0[] = {0.2, 0.3, -1.};
-    const double p1[] = {0.4, 0.5, -1.};
+    const double p0[] = {-0.2, 0.3, 0.};
+    const double p1[] = {-0.4, 0.5, 0.};
     PolysegmentIter psi(grid, loc, p0, p1);
     size_t numSegs = psi.getNumberOfSegments();
     psi.reset();
@@ -175,7 +175,7 @@ void test2Cells() {
                                    << '\n';
         psi.next();
     }
-    assert(std::abs(psi.getIntegratedParamCoord() - 0.0) < 1.e-10);
+    assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
 
     ptIds->Delete();
     loc->Delete();
