@@ -263,15 +263,17 @@ PolysegmentIter3d::__assignCoefficientsToSegments() {
     // is set to 1.0 - overlap/(tb - ta). Assumes overlap 
     // can only happen for pairs of segment
     n = this->segCellIds.size(); // changed after removing zero length sub-segments
-    // iterate over sub-segment pairs
-    for (size_t i0 = 0; i0 < n - 1; ++i0) {
-        size_t i1 = i0 + 1;
-        double ta0 = this->segTas[i0];
-        double tb0 = this->segTbs[i0];
-        double ta1 = this->segTas[i1];
-        double tb1 = this->segTbs[i1];
-        double overlap = std::max(0., std::min(tb0, tb1) - std::max(ta1, ta0));
-        this->segCoeffs[i0] = 1.0 - overlap/(tb0 - ta0);
+    if (n > 0) {
+        // iterate over sub-segment pairs
+        for (size_t i0 = 0; i0 < n - 1; ++i0) {
+            size_t i1 = i0 + 1;
+            double ta0 = this->segTas[i0];
+            double tb0 = this->segTbs[i0];
+            double ta1 = this->segTas[i1];
+            double tb1 = this->segTbs[i1];
+            double overlap = std::max(0., std::min(tb0, tb1) - std::max(ta1, ta0));
+            this->segCoeffs[i0] = 1.0 - overlap/(tb0 - ta0);
+        }
     }
 
 }
