@@ -101,7 +101,7 @@ class PolysegmentIter:
         return self
 
 
-    def next(self):
+    def __next__(self):
         """
         Update iterator
         """
@@ -110,6 +110,10 @@ class PolysegmentIter:
             return self
         else:
             raise StopIteration()
+
+    # Python2
+    def next(self):
+        return self.__next__()
 
 
     def getCellId(self):
