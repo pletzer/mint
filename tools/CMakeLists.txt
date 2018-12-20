@@ -5,13 +5,6 @@ include_directories(
 
 link_directories(${NETCDF_DIR}/lib)
 
-add_executable(latlon latlon.cxx)
-target_link_libraries(latlon 
-                      mint
-                      ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
-)
-
 add_executable(regrid_edges regrid_edges.cxx)
 target_link_libraries(regrid_edges
                       mint

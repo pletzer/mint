@@ -123,7 +123,7 @@ def test1():
     lli = LineLineIntersector()
     lli.setPoints(p0, p1, q0, q1)
     xi1, xi2 = lli.getSolution()
-    print xi1, xi2
+    print('xi1 = {} xi2 = {}'.format(xi1, xi2))
     assert(abs(xi1 - 1./2.) < tol)
     assert(abs(xi2 - 1./3.) < tol)
 
@@ -228,7 +228,7 @@ def testPartialOverlap3():
     assert(lli.hasSolution(1.e-10))
     pa, pb = lli.getBegEndPoints()
     u = (p1 - p0)/numpy.sqrt((p1 - p0).dot(p1 - p0))
-    print pa, pb
+    print('pa = {} pb = {}'.format(pa, pb))
     assert(abs((pa - p0).dot(u)) < 1.e-10)
     assert(abs((pb - q0).dot(u)) < 1.e-10)
 

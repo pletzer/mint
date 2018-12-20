@@ -69,12 +69,12 @@ class RegridBase(object):
         return self.__getGridLonLat(self.dstGrid)
 
 
+    # @abstractmethod
     def computeWeights(self):
         """
         Compute the interpolation weights
         """
-        raise NotImplementedError, 'ERROR: not implemented. You need to call the derived class method.'
-
+        pass
 
     def applyWeights(self, srcData):
         """

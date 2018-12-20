@@ -88,7 +88,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
 
         // create subsegments. Each subsegment has start and end points. Both
         // the start/end points are in the same cell.
-        for (size_t j = 0; j < n - 1; ++j) {
+        for (int j = 0; j < (int) n - 1; ++j) {
             // indices into the inds lists
             size_t i0 = iVals[j    ];
             size_t i1 = iVals[j + 1];
@@ -263,7 +263,7 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     // can only happen for pairs of segment
     n = this->segCellIds.size(); // changed after removing zero length sub-segments
     // iterate over sub-segment pairs
-    for (size_t i0 = 0; i0 < n - 1; ++i0) {
+    for (int i0 = 0; i0 < (int) n - 1; ++i0) {
         size_t i1 = i0 + 1;
         double ta0 = this->segTas[i0];
         double tb0 = this->segTbs[i0];
