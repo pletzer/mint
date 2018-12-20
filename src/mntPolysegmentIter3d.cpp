@@ -89,7 +89,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
 
         // create subsegments. Each subsegment has start and end points. Both
         // the start/end points are in the same cell.
-        for (size_t j = 0; j < n - 1; ++j) {
+        for (int j = 0; j < (int) n - 1; ++j) {
             // indices into the inds lists
             size_t i0 = iVals[j    ];
             size_t i1 = iVals[j + 1];
@@ -263,17 +263,15 @@ PolysegmentIter3d::__assignCoefficientsToSegments() {
     // is set to 1.0 - overlap/(tb - ta). Assumes overlap 
     // can only happen for pairs of segment
     n = this->segCellIds.size(); // changed after removing zero length sub-segments
-    if (n > 0) {
-        // iterate over sub-segment pairs
-        for (size_t i0 = 0; i0 < n - 1; ++i0) {
-            size_t i1 = i0 + 1;
-            double ta0 = this->segTas[i0];
-            double tb0 = this->segTbs[i0];
-            double ta1 = this->segTas[i1];
-            double tb1 = this->segTbs[i1];
-            double overlap = std::max(0., std::min(tb0, tb1) - std::max(ta1, ta0));
-            this->segCoeffs[i0] = 1.0 - overlap/(tb0 - ta0);
-        }
+    // iterate over sub-segment pairs
+    for (int i0 = 0; i0 < (int) n - 1; ++i0) {
+        size_t i1 = i0 + 1;
+        double ta0 = this->segTas[i0];
+        double tb0 = this->segTbs[i0];
+        double ta1 = this->segTas[i1];
+        double tb1 = this->segTbs[i1];
+        double overlap = std::max(0., std::min(tb0, tb1) - std::max(ta1, ta0));
+        this->segCoeffs[i0] = 1.0 - overlap/(tb0 - ta0);
     }
 
 }

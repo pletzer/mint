@@ -140,7 +140,6 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
             }
         }
     }
-    points->Print(std::cerr);
 
     //
     // create grid
