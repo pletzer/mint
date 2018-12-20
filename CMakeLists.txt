@@ -31,7 +31,6 @@ include(${VTK_USE_FILE})
 message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
 message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
 
-
 #
 # Find the netcdf library and its dependencies by keying off from the nc-config
 # command. 

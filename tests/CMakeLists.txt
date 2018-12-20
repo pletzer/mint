@@ -114,3 +114,11 @@ add_test(NAME testPrintAddressF
 add_test(NAME c2fString
          COMMAND testC2fString)
 
+add_test(NAME regrid_edges
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/um100x60.vtk" 
+                 "-v" "edge_integrated_velocity" 
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.vtk"
+                 "-o" "regrid_edges_output.vtk")
+
+
