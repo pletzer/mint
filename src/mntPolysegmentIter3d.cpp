@@ -5,6 +5,8 @@
 #include <MvVector.h>
 #include <limits>
 
+#define DEBUG_PRINT 0
+
 struct TCmpFunctor {
     TCmpFunctor(const std::vector<double>& ts) {
         this->tVals = ts;
@@ -362,7 +364,9 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
                     etaFace >= (0. - this->eps100) && etaFace <= (1. + this->eps100 - xsiFace)) {
 
                     // compute the intersection point
-                    double p[] = {pBeg[0] + lambRay*dp[0], pBeg[1] + lambRay*dp[1]};
+                    double p[] = {pBeg[0] + lambRay*dp[0], 
+                                  pBeg[1] + lambRay*dp[1], 
+                                  pBeg[2] + lambRay*dp[2]};
 
                     // add to list
                     cIds.push_back(cId);
@@ -444,6 +448,13 @@ PolysegmentIter3d::__collectLineGridSegments(const double p0[], const double p1[
 
     // find the cellIds (cIds), the lambdas and points of intersection with the grid
     this->__collectIntersectionPoints(pBeg, pEnd, cIds, lambRays, points);
+
+#ifdef DEBUG_PRINT
+    std::cerr << "Intersection points between " << pBeg[0] << "," << pBeg[1] << "," << pBeg[2] << " -> " << pEnd[0] << "," << pEnd[1] << "," << pEnd[2] << '\n';
+    for (size_t i = 0; i < cIds.size(); ++i) {
+        std::cerr << "cell id " << cIds[i] << " lambda = " << lambRays[i] << " point: " << points[i][0] << "," << points[i][1] << "," << points[i][2] << '\n';
+    }
+#endif
 
     // iterate over the intersection points
     size_t nXPts = cIds.size();

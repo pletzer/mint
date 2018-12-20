@@ -328,9 +328,9 @@ void testCart(size_t nElv, size_t nLat, size_t nLon) {
 
 int main(int argc, char** argv) {
 
+    testLatLon(1, 2, 3);
     test1Cell();
     testLatLon(1, 1, 1);
-    testLatLon(1, 2, 3);
     //testCart(2, 8, 16);
 
     return 0;
