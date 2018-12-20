@@ -120,5 +120,8 @@ add_test(NAME regrid_edges
                  "-v" "edge_integrated_velocity" 
                  "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.vtk"
                  "-o" "regrid_edges_output.vtk")
+# make sure the max loop integral is very small
+set_tests_properties(regrid_edges PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: 0/[^/]*/[^e]+e-1[0-9]")
 
 
