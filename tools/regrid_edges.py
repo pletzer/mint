@@ -67,7 +67,7 @@ class RegridEdges(RegridBase):
                                       - dxi[0] * (0.0 + xiMid[1]) * coeff,
                                       - dxi[1] * (1.0 - xiMid[0]) * coeff])
 
-                    if not self.weights.has_key(k):
+                    if not k in self.weights:
                         # initialize the weights
                         self.weights[k] = self.ZERO4x4.copy()
 

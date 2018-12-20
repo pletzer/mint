@@ -13,10 +13,10 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 You will need to have:
 
- * Python (2.7.14)
- * numpy (1.14.2)
- * netCDF4 (1.3.1)
- * VTK with python bindings enabled (8.1.0)
+ * Python (tested with 2.7.14 and 3.6.6)
+ * numpy (tested with 1.14.2 and 1.15.4)
+ * netCDF4 (tested with 1.3.1 and 1.4.0)
+ * VTK with python bindings enabled (tested with 8.1.0 and 8.1.1)
 
 
  * C++ compiler (e.g. g++ 6.4)
