@@ -163,14 +163,28 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
     //
     // line segment, elv, lat, lon
     // 
-    size_t nCases = 4;
+    size_t nCases = 11;
     const double paLatLon[] = {0.5, 0., -180.,
                                0., 0., -180.,
                                0., -90., -180.,
-                               0., -90., -180.};
+                               0., -90., -180.,
+                               1., 90., 180.,
+                               0.5, 90., 180., 
+                               0., 90, 180.,
+                               1., 0., 180., 
+                               1., -90., 180.,
+                               1., 90., -180., 
+                               1., 90., 0.};
     const double pbLatLon[] = {0.5, 0., 180.,
                                0., 0., 180.,
                                0., 90., 180.,
+                               1., 90., 180.,
+                               0., -90., -180.,
+                               0.5, -90., -180.,
+                               1., -90., -180., 
+                               0., 0., -180.,
+                               0., -90, 180., 
+                               0., -90., 0.,
                                1., 90., 180.};
 
     for (size_t iCase = 0; iCase < nCases; ++iCase) {
@@ -209,7 +223,7 @@ void testCart(size_t nElv, size_t nLat, size_t nLon) {
     //
     double p[3];
 
-    double dElv = 0.1 / double(nElv);
+    double dElv = 1.0 / double(nElv);
     double dLat = 180.0 / double(nLat);
     double dLon = 360.0 / double(nLon);
 
@@ -316,6 +330,7 @@ int main(int argc, char** argv) {
 
     test1Cell();
     testLatLon(1, 1, 1);
+    testLatLon(1, 2, 3);
     //testCart(2, 8, 16);
 
     return 0;
