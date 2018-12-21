@@ -286,18 +286,24 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
                                                std::vector< std::vector<double> >& points) {
 
     const vtkIdType triangleFaceInds[] = {
-        1, 2, 5, // x-hi 
-        2, 6, 5,
-        0, 3, 4, // x-lo
-        3, 7, 4, 
-        2, 3, 6, // y-hi
-        3, 7, 6, 
-        1, 0, 4, // y-lo
-        4, 5, 1, 
-        4, 5, 6, // z-hi
-        6, 7, 4,
-        0, 1, 2, // z-lo
-        2, 3, 0
+
+        // x face
+        0, 3, 4, // lo
+        1, 2, 5, // hi
+        7, 4, 3, 
+        6, 5, 2,
+
+        // y face
+        0, 1, 4, // lo
+        3, 2, 7, // hi
+        5, 4, 1,
+        6, 7, 2,
+
+        // z face
+        0, 1, 3, // lo
+        4, 5, 7, // hi
+        2, 3, 1,
+        6, 7, 5
     };
 
     LineTriangleIntersector intersector;
@@ -332,20 +338,40 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
         this->grid->GetCellPoints(cId, ptIds);
 
         // iterate over the hex's triangle faces (12)
-        for (vtkIdType j = 0; j < 12; j += 3) {
-            vtkIdType j0 = triangleFaceInds[j + 0];
-            vtkIdType j1 = triangleFaceInds[j + 1];
-            vtkIdType j2 = triangleFaceInds[j + 2];
+        for (vtkIdType j = 0; j < 12; ++j) {
+
+            vtkIdType j0 = triangleFaceInds[3*j + 0];
+            vtkIdType j1 = triangleFaceInds[3*j + 1];
+            vtkIdType j2 = triangleFaceInds[3*j + 2];
+
             this->grid->GetPoint(ptIds->GetId(j0), &v0[0]);
             this->grid->GetPoint(ptIds->GetId(j1), &v1[0]);
             this->grid->GetPoint(ptIds->GetId(j2), &v2[0]);
 
             // look for an intersection
             intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0], &v2[0]);
+#ifdef DEBUG_PRINT
+            std::cerr << "build intersector cell " << cId
+                      << " cell vert inds = " << j0 << ',' << j1 << ',' << j2
+                      << " pt inds = " 
+                      << ptIds->GetId(j0) << ',' 
+                      << ptIds->GetId(j1) << ',' 
+                      << ptIds->GetId(j2) << " pa = "
+                      << pBeg[0] << ',' << pBeg[1] << ',' << pBeg[2]
+                      << " -> "
+                      << pEnd[0] << ',' << pEnd[1] << ',' << pEnd[2]
+                      << " verts: " 
+                      << v0[0] << ',' << v0[1] << ',' << v0[2] << "; "
+                      << v1[0] << ',' << v1[1] << ',' << v1[2] << "; "
+                      << v2[0] << ',' << v2[1] << ',' << v2[2] << '\n';
+#endif
 
             if (! intersector.hasSolution(this->eps)) {
                 // skip if no solution. FindCellsAlongLine may be too generous with
                 // returning the list of intersected cells
+#ifdef DEBUG_PRINT
+                std::cerr << "no solution\n";
+#endif
                 continue;
             }
 
@@ -357,6 +383,9 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
                 double lambRay = sol[0];
                 double xsiFace = sol[1];
                 double etaFace = sol[2];
+#ifdef DEBUG_PRINT
+                std::cerr << "solution: " << sol[0] << ',' << sol[1] << ',' << sol[2] << '\n';
+#endif
 
                 // is it valid? Intersection must be within (p0, p1) and (q0, q1)
                 if (lambRay >= (0. - this->eps100) && lambRay <= (1. + this->eps100)  && 
@@ -376,6 +405,9 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
             }
             else {
                 // det is almost zero, maybe be ray is nearly tangential to triangle
+#ifdef DEBUG_PRINT
+                std::cerr << "almost zero det = " << intersector.getDet() << "\n";
+#endif
 
                 const std::pair<double, double> sol = intersector.getBegEndParamCoords();
                 // linear param coord along line

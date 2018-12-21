@@ -19,6 +19,19 @@ void testGetParamLocation1() {
     assert(std::abs(xi[1] - 0.1) < TOL);
 }
 
+void testGeneral(const double pa[], const double pb[], 
+                 const double q0[], const double q1[], const double q2[], 
+                 double expectedLambda, const double expectedXi[]) {
+    LineTriangleIntersector lti;
+    lti.setPoints(pa, pb, q0, q1, q2);
+    std::cerr << "testGeneral: det = " << lti.getDet() << '\n';
+    assert(lti.hasSolution(TOL));
+    Vector<double> sol = lti.getSolution();
+    assert(std::abs(sol[0] - expectedLambda) < TOL);
+    assert(std::abs(sol[1] - expectedXi[0]) < TOL);
+    assert(std::abs(sol[2] - expectedXi[1]) < TOL);
+}
+
 void testNormal() {
 
     // line
@@ -166,7 +179,24 @@ void testCoPlanarNoSolution() {
 
 int main(int argc, char** argv) {
 
+
+    double pa[] = {0., 0., 0.};
+    double pb[] = {0., 0., 0.};
+    double q0[] = {0., 0., 0.};
+    double q1[] = {0., 0., 0.};
+    double q2[] = {0., 0., 0.};
+    double xi[] = {0., 0.};
+
+    pa[0] = 0.; pa[1] = -90.; pa[2] = -180.;
+    pb[0] = 0.; pb[1] = +90.; pb[2] = +180.;
+    q0[0] = 0.; q0[1] = 0.; q0[2] = -60.;
+    q1[0] = 0.; q1[1] = 0.; q1[2] = +60.;
+    q2[0] = 1.; q2[1] = 0.; q2[2] = +60.;
+    xi[0] = 0.5; xi[1] = 0.;
+    testGeneral(pa, pb, q0, q1, q2, 0.5, xi);
+
     testGetParamLocation1();
+
     testNormal();
     testNoSolution();
     testDegenerate1();

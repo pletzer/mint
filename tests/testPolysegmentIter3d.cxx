@@ -11,11 +11,6 @@
 #include <iostream>
 #include <cmath>
 
-void getXYZFromElvLatLon(double elv, double lat, double lon, double p[]) {
-    p[0] = (1.0 + elv) * cos(lat * M_PI/180.) * cos(lon * M_PI/180.);
-    p[1] = (1.0 + elv) * cos(lat * M_PI/180.) * sin(lon * M_PI/180.);
-    p[2] = (1.0 + elv) * sin(lat * M_PI/180.);
-}
 
 void test1Cell() {
     // a one cell grid, built from scratch
@@ -161,10 +156,10 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
     loc->BuildLocator();
 
     //
-    // line segment, elv, lat, lon
+    // line segment, elv, lat, lon is fully inside the domain
     // 
     size_t nCases = 11;
-    const double paLatLon[] = {0.5, 0., -180.,
+    const double paLatLonFullyInside[] = {0.5, 0., -180.,
                                0., 0., -180.,
                                0., -90., -180.,
                                0., -90., -180.,
@@ -175,7 +170,7 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
                                1., -90., 180.,
                                1., 90., -180., 
                                1., 90., 0.};
-    const double pbLatLon[] = {0.5, 0., 180.,
+    const double pbLatLonFullyInside[] = {0.5, 0., 180.,
                                0., 0., 180.,
                                0., 90., 180.,
                                1., 90., 180.,
@@ -187,9 +182,12 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
                                0., -90., 0.,
                                1., 90., 180.};
 
+
     for (size_t iCase = 0; iCase < nCases; ++iCase) {
-        std::cout << "testLatLon case " << iCase << '\n';
-        PolysegmentIter3d psi(grid, loc, paLatLon, pbLatLon);
+        std::cout << "testLatLon with segment fully inside: case " << iCase << '\n';
+        PolysegmentIter3d psi(grid, loc, 
+                              &paLatLonFullyInside[3*iCase], 
+                              &pbLatLonFullyInside[3*iCase]);
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
         for (size_t i = 0; i < numSegs; ++i) {
@@ -209,116 +207,57 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
         assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
     }
 
-    loc->Delete();
-    ptIds->Delete();
-    grid->Delete();
-    points->Delete();
-}
+    // line segment is fully outside
+    nCases = 11;
+    const double paLatLonFullyOutside[] = {2.0, 0., -180.,
+                               2., 0., -180.,
+                               2., -90., -180.,
+                               2., -90., -180.,
+                               2., 90., 180.,
+                               2.5, 90., 180., 
+                               2., 90, 180.,
+                               2., 0., 180., 
+                               2., -90., 180.,
+                               2., 90., -180., 
+                               2., 90., 0.};
+    const double pbLatLonFullyOutside[] = {2.0, 0., 180.,
+                               2., 0., 180.,
+                               2., 90., 180.,
+                               2., 90., 180.,
+                               2., -90., -180.,
+                               2.5, -90., -180.,
+                               2., -90., -180., 
+                               2., 0., -180.,
+                               2., -90, 180., 
+                               2., -90., 0.,
+                               2., 90., 180.};
 
-
-void testCart(size_t nElv, size_t nLat, size_t nLon) {
-
-    //
-    // generate vertices
-    //
-    double p[3];
-
-    double dElv = 1.0 / double(nElv);
-    double dLat = 180.0 / double(nLat);
-    double dLon = 360.0 / double(nLon);
-
-    vtkPoints* points = vtkPoints::New();
-    size_t nCells = nElv * nLat * nLon;
-    points->SetDataTypeToDouble();
-    points->SetNumberOfPoints(8 * nCells);
-
-    vtkIdType index = 0;
-    for (size_t k = 0; k < nElv; ++k) {
-        double elv0 = 1.0 + dElv*k;
-        double elv1 = elv0 + dElv;
-        for (size_t j = 0; j < nLat; ++j) {
-            double lat0 = -90.0 + j*dLat;
-            double lat1 = lat0 + dLat;
-            for (size_t i = 0; i < nLon; ++i) {
-                double lon0 = -180.0 + i*dLon;
-                double lon1 = lon0 + dLon;
-
-                getXYZFromElvLatLon(elv0, lat0, lon0, p);
-                points->SetPoint(index, p);
-                index++;
-                getXYZFromElvLatLon(elv0, lat0, lon1, p);
-                points->SetPoint(index, p);
-                index++;
-                getXYZFromElvLatLon(elv0, lat1, lon1, p);
-                points->SetPoint(index, p);
-                index++;
-                getXYZFromElvLatLon(elv0, lat1, lon0, p);
-                points->SetPoint(index, p);
-                index++;
-                getXYZFromElvLatLon(elv1, lat0, lon0, p);
-                points->SetPoint(index, p);
-                index++;
-                getXYZFromElvLatLon(elv1, lat0, lon1, p);
-                points->SetPoint(index, p);
-                index++;
-                getXYZFromElvLatLon(elv1, lat1, lon1, p);
-                points->SetPoint(index, p);
-                index++;
-                getXYZFromElvLatLon(elv1, lat1, lon0, p);
-                points->SetPoint(index, p);
-                index++;
-            }
-        }
-    }
-
-    //
-    // create grid
-    //
-    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
-    grid->SetPoints(points);
-    grid->Allocate(1, 1);
-    vtkIdList* ptIds = vtkIdList::New();
-    ptIds->SetNumberOfIds(8);
-    for (size_t iCell = 0; iCell < nCells; ++iCell) {
-        for (vtkIdType iVert = 0; iVert < 8; ++iVert) {
-            ptIds->SetId(iVert, 8*iCell + iVert);
-        }
-        grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
-    }
-
-    vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetDataSet(grid);
-    loc->BuildLocator();
-
-    //
-    // line segment, elv, lat, lon
-    // 
-    const double paLatLon[] = {0.1, 0., 90.};
-    const double pbLatLon[] = {0.9, 0., 0.};
-    double pa[3], pb[3];
-    // convert to x, y, z
-    getXYZFromElvLatLon(paLatLon[0], paLatLon[1], paLatLon[2], pa);
-    getXYZFromElvLatLon(pbLatLon[0], pbLatLon[1], pbLatLon[2], pb);
-
-    PolysegmentIter3d psi(grid, loc, pa, pb);
-    size_t numSegs = psi.getNumberOfSegments();
-    psi.reset();
-    for (size_t i = 0; i < numSegs; ++i) {
-        vtkIdType cellId = psi.getCellId();
-        const std::vector<double>& xia = psi.getBegCellParamCoord();
-        const std::vector<double>& xib = psi.getEndCellParamCoord();
-        double ta = psi.getBegLineParamCoord();
-        double tb = psi.getEndLineParamCoord();
-        double coeff = psi.getCoefficient();
-        std::cout << "testCart: seg " << i << " cell=" << cellId \
+    for (size_t iCase = 0; iCase < nCases; ++iCase) {
+        std::cout << "testLatLon with segment fully outside: case " << iCase << '\n';
+        PolysegmentIter3d psi(grid, loc, 
+                              &paLatLonFullyOutside[3*iCase], 
+                              &pbLatLonFullyOutside[3*iCase]);
+        size_t numSegs = psi.getNumberOfSegments();
+        psi.reset();
+        for (size_t i = 0; i < numSegs; ++i) {
+            vtkIdType cellId = psi.getCellId();
+            const std::vector<double>& xia = psi.getBegCellParamCoord();
+            const std::vector<double>& xib = psi.getEndCellParamCoord();
+            double ta = psi.getBegLineParamCoord();
+            double tb = psi.getEndLineParamCoord();
+            double coeff = psi.getCoefficient();
+            std::cout << "\tseg " << i << " cell=" << cellId \
                                    << " ta=" << ta << " xia=" << xia[0] << ',' << xia[1] 
                                    << " tb=" << tb << " xib=" << xib[0] << ',' << xib[1] 
                                    << '\n';
-        psi.next();
+            psi.next();
+        }
+        std::cerr << "\tintegrated param coord = " << psi.getIntegratedParamCoord() << '\n';
+        assert(std::abs(psi.getIntegratedParamCoord() - 0.0) < 1.e-10);
     }
-    std::cerr << "testLatLon: integrated param coord = " << psi.getIntegratedParamCoord() << '\n';
-    assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
 
+
+    // clean up
     loc->Delete();
     ptIds->Delete();
     grid->Delete();
@@ -328,10 +267,10 @@ void testCart(size_t nElv, size_t nLat, size_t nLon) {
 
 int main(int argc, char** argv) {
 
+    //testLatLon(2, 3, 4);
     testLatLon(1, 2, 3);
-    test1Cell();
-    testLatLon(1, 1, 1);
-    //testCart(2, 8, 16);
+    //testLatLon(1, 1, 1);
+    //test1Cell();
 
     return 0;
 }
