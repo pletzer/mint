@@ -319,8 +319,7 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
     double dp[] = {pEnd[0] - pBeg[0], pEnd[1] - pBeg[1], pEnd[2] - pBeg[2]};
 
     // find all the cells intersected by the line
-    this->locator->FindCellsAlongLine((double*) &pBeg[0], 
-                                      (double*) &pEnd[0], 
+    this->locator->FindCellsAlongLine((double*) pBeg, (double*) pEnd, 
                                       this->tol, cellIds);
 
     //
@@ -332,7 +331,10 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
 
         // this cell's Id
         vtkIdType cId = cellIds->GetId(i);
-
+#ifdef DEBUG_PRINT
+        std::cerr << "line (" << pBeg[0] << ',' << pBeg[1] << ',' << pBeg[2] << ") -> (" 
+        << pEnd[0] << ',' << pEnd[1] << ',' << pEnd[2] << ") intersects with cell " << cId << '\n';
+#endif
         // vertices, ptIds.GetNumberOfIds() should return 8
         // since we're dealing with hexahedral cells
         this->grid->GetCellPoints(cId, ptIds);
