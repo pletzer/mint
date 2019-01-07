@@ -294,10 +294,10 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
         6, 5, 2,
 
         // y face
-        0, 1, 4, // lo
-        3, 2, 7, // hi
-        5, 4, 1,
-        6, 7, 2,
+        0, 4, 1, // lo
+        3, 7, 2, // hi
+        5, 1, 4,
+        6, 2, 7,
 
         // z face
         0, 1, 3, // lo
@@ -369,9 +369,6 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
             if (! intersector.hasSolution(this->eps)) {
                 // skip if no solution. FindCellsAlongLine may be too generous with
                 // returning the list of intersected cells
-#ifdef DEBUG_PRINT
-                std::cerr << "no solution\n";
-#endif
                 continue;
             }
 
@@ -383,9 +380,6 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
                 double lambRay = sol[0];
                 double xsiFace = sol[1];
                 double etaFace = sol[2];
-#ifdef DEBUG_PRINT
-                std::cerr << "solution: " << sol[0] << ',' << sol[1] << ',' << sol[2] << '\n';
-#endif
 
                 // is it valid? Intersection must be within (p0, p1) and (q0, q1)
                 if (lambRay >= (0. - this->eps100) && lambRay <= (1. + this->eps100)  && 
@@ -396,7 +390,11 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
                     double p[] = {pBeg[0] + lambRay*dp[0], 
                                   pBeg[1] + lambRay*dp[1], 
                                   pBeg[2] + lambRay*dp[2]};
-
+#ifdef DEBUG_PRINT
+                    std::cerr << "solution: " << sol[0] << ',' << sol[1] << ',' << sol[2] 
+                    << " adding point " << p[0] << ',' << p[1] << ',' << p[2] << " to cell " << cId 
+                    << " lambda = " << lambRay << '\n';
+#endif
                     // add to list
                     cIds.push_back(cId);
                     lambRays.push_back(lambRay);
@@ -404,15 +402,13 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
                 }
             }
             else {
+                
                 // det is almost zero, maybe be ray is nearly tangential to triangle
-#ifdef DEBUG_PRINT
-                std::cerr << "almost zero det = " << intersector.getDet() << "\n";
-#endif
 
-                const std::pair<double, double> sol = intersector.getBegEndParamCoords();
+                const std::pair<double, double> lamAB = intersector.getBegEndParamCoords();
                 // linear param coord along line
-                double lama = sol.first;
-                double lamb = sol.second;
+                double lama = lamAB.first;
+                double lamb = lamAB.second;
                 // compute the points
                 double pa[] = {pBeg[0] + lama*dp[0], pBeg[1] + lama*dp[1], pBeg[2] + lama*dp[2]};
                 double pb[] = {pBeg[0] + lamb*dp[0], pBeg[1] + lamb*dp[1], pBeg[2] + lamb*dp[2]};
@@ -426,6 +422,11 @@ PolysegmentIter3d::__collectIntersectionPoints(const double pBeg[],
                 lambRays.push_back(lamb); // same Id as before
                 points.push_back(std::vector<double>(pb, pb + 3));
 
+#ifdef DEBUG_PRINT
+                std::cerr << "tangential case: lam =  " << lama 
+                << " (point " << pa[0] << ',' << pa[1] << ',' << pa[2] << ") -> " 
+                << lamb << " (point " << pb[0] << ',' << pb[1] << ',' << pb[2] << ") added to cell " << cId << "\n";
+#endif
             }
 
         } // end of triangle face loop
@@ -504,9 +505,18 @@ PolysegmentIter3d::__collectLineGridSegments(const double p0[], const double p1[
             this->ts.push_back(lambRay);
         }
         else {
+            std::vector<double> vert(3);
+            vtkIdList* vertIds = vtkIdList::New();
+            this->grid->GetCellPoints(cId, vertIds);
             std::cerr << "Warning: param coord search failed for point " << 
                          point[0] << ", " << point[1] << ", " << point[2] <<
-                         " in cell " << cId << '\n';
+                         " in cell " << cId << " verts: ";
+            for (vtkIdType i = 0; i < vertIds->GetNumberOfIds(); ++i) {
+                this->grid->GetPoint(vertIds->GetId(i), &vert[0]);
+                std::cerr << vert[0] << ',' << vert[1] << ',' << vert[2] << "; ";
+            }
+            std::cerr << '\n';
+            vertIds->Delete();
         }
     }
  
