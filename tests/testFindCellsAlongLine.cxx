@@ -1,6 +1,6 @@
 #undef NDEBUG // turn on asserts
 #include <vtkUnstructuredGrid.h>
-#include <vtkCellLocator.h>
+#include <mvtkCellLocator.h>
 #include <vtkPoints.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
@@ -99,7 +99,8 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon, const double pa[], const 
         }
     }
 
-    vtkCellLocator* loc = vtkCellLocator::New();
+    mvtkCellLocator* loc = mvtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 

@@ -45,6 +45,7 @@ void test1Cell() {
     
 
     vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -152,6 +153,7 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
     }
 
     vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 

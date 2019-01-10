@@ -8,6 +8,7 @@ configure_file(testGrid.cpp testGrid.cxx)
 
 add_executable(testFindCellsAlongLine testFindCellsAlongLine.cxx)
 target_link_libraries(testFindCellsAlongLine
+                    mint
                     ${VTK_LIBRARIES}
 )
 

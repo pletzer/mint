@@ -4,6 +4,7 @@ include_directories(
 )
 
 set(LIB_FILES
+  mvtkCellLocator.cpp
   CmdLineArgParser.cpp
   GrExprParser.cpp
   GrExprAdaptor.cpp
@@ -24,6 +25,7 @@ set(LIB_FILES
 )
 
 set(HEADER_FILES
+  mvtkCellLocator.h
   CmdLineArgParser.h
   GrExprParser.h
   GrExprAdaptor.h
