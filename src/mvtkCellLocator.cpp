@@ -1850,6 +1850,12 @@ void mvtkCellLocator::FindCellsAlongLine(double p1[3], double p2[3], double vtkN
     direction3[i] = direction2[i]/tMax;
   }
 
+  std::cerr << "--- bounds2 = "; for (size_t i = 0; i < 6; ++i) std::cerr << bounds2[i] << ','; 
+  cerr << " origin "; for (size_t i = 0; i < 3; ++i) std::cerr << origin[i] << ',';
+  cerr << " direction2 "; for (size_t i = 0; i < 3; ++i) std::cerr << direction2[i] << ',';
+  cerr << " hitPosition "; for (size_t i = 0; i < 3; ++i) std::cerr << hitPosition[i] << ',';
+  std::cerr << '\n';
+
   if (vtkBox::IntersectBox(bounds2, origin, direction2, hitPosition, result))
   {
   	std::cerr << "*** there is an intersection\n";
@@ -1890,6 +1896,7 @@ void mvtkCellLocator::FindCellsAlongLine(double p1[3], double p2[3], double vtkN
 
     idx = leafStart + pos[0] - 1 + (pos[1] - 1)*this->NumberOfDivisions
       + (pos[2] - 1)*prod;
+    std::cerr << "*** leafStart = " << leafStart << " num div = " << this->NumberOfDivisions << " idx = " << idx << " prod = " << prod << " pos = " << pos[0] << ',' << pos[1] << '\n';
 
     while ( (pos[0] > 0) && (pos[1] > 0) && (pos[2] > 0) &&
       (pos[0] <= this->NumberOfDivisions) &&

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cmath>
 
-void testLatLon(size_t nElv, size_t nLat, size_t nLon, const double pa[], const double pb[]) {
+void testLatLon(size_t nElv, size_t nLat, size_t nLon, const double pa[], const double pb[], int expectedNumberOfCells) {
 
     //
     // generate vertices
@@ -112,6 +112,8 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon, const double pa[], const 
       std::cout << "line intersects with cell " << cellIds->GetId(i) << '\n';
     }
 
+    assert(cellIds->GetNumberOfIds() == expectedNumberOfCells);
+
     // clean up
     cellIds->Delete();
     loc->Delete();
@@ -125,7 +127,8 @@ int main(int argc, char** argv) {
 
     double pa[] = {0.1, -90.,-180.};
     double pb[] = {0.1, 90., 180.};
-    testLatLon(2, 4, 4, pa, pb);
+    //testLatLon(2, 4, 4, pa, pb, 10);
+    testLatLon(1, 2, 4, pa, pb, 6);
 
     return 0;
 }
