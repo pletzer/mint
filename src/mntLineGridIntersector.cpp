@@ -27,13 +27,11 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
         this->pA[i] = pa[i];
         pB[i] = pb[i];
     }
-    Vector<double> u = this->direction;
-    u *= (1./std::sqrt(lengthSqr));
 
     // extend the line by a little bit to be sure that the start/end points 
     // are included
-    pBeg = pA - 100 * this->tol * u;
-    pEnd = pB + 100 * this->tol * u;
+    pBeg = pA - 100 * this->tol * this->direction;
+    pEnd = pB + 100 * this->tol * this->direction;
 
     this->tValues.clear();
     vtkIdType cellId;
@@ -42,6 +40,11 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
     cellId = this->locator->FindCell( (double*) pa );
     if (cellId >= 0) { // SHOULD WE USE THE VERSION WITH TOL2?
         this->tValues.push_back(0.0);
+    }
+
+    if (lengthSqr == 0) {
+        // not really a line, just a point
+        return;
     }
 
     //
@@ -66,7 +69,7 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
                 this->tValues.push_back(tVal);
             }
             // slide the starting point 
-            pBeg = xPoint + this->tol * u;
+            pBeg = xPoint + this->tol * this->direction;
         }
     }
 
