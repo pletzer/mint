@@ -142,7 +142,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkOBBTree* loca
         }
         else {
             std::cerr << "Warning: cellId0 = " << cellId0 << " != cellId1 = " << cellId1 << '\n';
-            std::cerr << "Warning: could not resolve in which cell segment ";
+            std::cerr << "Warning: could not resolve in which cell segment t = " << xts[iSeg + 0] << " -> " << xts[iSeg + 1] << " point ";
             for (size_t i = 0; i < 3; ++i) std::cerr << xpoint0[i] << ',';
             std::cerr << " -> ";
             for (size_t i = 0; i < 3; ++i) std::cerr << xpoint1[i] << ',';
