@@ -44,8 +44,10 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     double pcoords[3], pcoords0[3], pcoords1[3]; // parametric coordinates of a point in a cell
     Vector<double> xpoint(3); // intersection point
 
-    // always add the starting point
-    xts.push_back(0.);
+    // add starting point if inside the domain
+    if (this->locator->FindCell(&pA[0]) >= 0) {
+        xts.push_back(0.);
+    }
 
     // collect the intersection points
     int found = 1;
@@ -71,9 +73,16 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
         }
     }
 
-    // always add the end point
-    xts.push_back(1.0);
+    // add the end point if inside domain
+    if (this->locator->FindCell(&pB[0]) >= 0) {
+        xts.push_back(1.0);        
+    }
     std::cerr << "*** 5 xts = "; for (size_t i = 0; i < xts.size(); ++i) std::cerr << xts[i] << ','; std::cerr << "\n";
+
+    if (xts.size() == 0) {
+        // no intersection
+        return;
+    }
 
     // find all the cells between the t values
     for (size_t iSeg = 0; iSeg < xts.size() - 1; ++iSeg) {
@@ -89,6 +98,41 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
         // find the cell index for xpoint0 and xpoint1, should be the same
         vtkIdType cellId0 = this->locator->FindCell(&xpoint0[0], this->eps, cell, pcoords0, weights);
         vtkIdType cellId1 = this->locator->FindCell(&xpoint1[0], this->eps, cell, pcoords1, weights);
+
+        if (cellId0 != cellId1) {
+            // this can happen if a point straddles the boundary of 2 or more cells. In this 
+            // case FindCell may return either cell Id. Try to make cellId0 and cellId1 agree
+
+            double closestPoint[3]; 
+            double dist2;
+            int stat;
+
+            // assume cellId0 is right
+            stat = this->grid->GetCell(cellId0)->EvaluatePosition(&xpoint1[0], 
+                                                                  closestPoint, subId, pcoords1, dist2, weights);
+            std::cerr << "%%% stat = " << stat << " after computing pcoords1 in cellId0\n";
+            if (stat == 1) {
+                // ok will use cellId0 
+                cellId1 = cellId0;
+            }
+            else {
+                // try cellId1 
+                stat = this->grid->GetCell(cellId1)->EvaluatePosition(&xpoint0[0], 
+                                                                      closestPoint, subId, pcoords0, dist2, weights);
+                std::cerr << "%%% stat = " << stat << " after computing pcoords0 in cellId1\n";
+                if (stat == 1) {
+                    // ok will use cellId1
+                    cellId0 = cellId1;
+                }
+                else {
+                    std::cerr << "Warning: could not resolve in which cell the segment point ";
+                    for (size_t i = 0; i < 3; ++i) std::cerr << xpoint0[i] << ',';
+                    std::cerr << " -> ";
+                    for (size_t i = 0; i < 3; ++i) std::cerr << xpoint1[i] << ',';
+                    std::cerr << " lies\n";
+                }
+            }
+        }
 
         std::cerr << "... cellId0 = " << cellId0 << " pcoords0 = ";
         for (size_t i = 0; i < 3; ++i) std::cerr << pcoords0[i] << ','; 
