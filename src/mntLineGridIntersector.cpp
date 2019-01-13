@@ -35,10 +35,12 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
     pBeg = pA - 100 * this->tol * u;
     pEnd = pB + 100 * this->tol * u;
 
-    this->tValues.resize(0);
+    this->tValues.clear();
+    vtkIdType cellId;
 
     // add the start point if it is in a cell
-    if (this->locator->FindCell( (double*) pa ) >= 0) { // SHOULD WE USE THE VERSION WITH TOL2?
+    cellId = this->locator->FindCell( (double*) pa );
+    if (cellId >= 0) { // SHOULD WE USE THE VERSION WITH TOL2?
         this->tValues.push_back(0.0);
     }
 
@@ -50,7 +52,6 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
     double tLocal, tVal;
     double pcoords[3];
     int subId;
-    vtkIdType cellId;
     vtkGenericCell* cell = vtkGenericCell::New();
     while (found) {
         found = this->locator->IntersectWithLine(&pBeg[0], &pEnd[0], this->tol, 
@@ -58,14 +59,25 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
         if (found > 0) {
             // compute the linear parameter using the intersection point
             tVal = dot(xPoint - pA, direction)/lengthSqr;
-            this->tValues.push_back(tVal);
+            // add if different from previous
+            size_t nValues = this->tValues.size();
+            double absDiff = std::abs( tVal - this->tValues[nValues - 1] );
+            if (nValues == 0 || absDiff > this->tol) {
+                this->tValues.push_back(tVal);
+            }
             // slide the starting point 
-            pBeg = xPoint + this->tol * direction;
+            pBeg = xPoint + this->tol * u;
         }
     }
 
     // add the end point if it is in a cell
-    if (this->locator->FindCell( (double*) pb ) >= 0) { // SHOULD WE USE THE VERSION WITH TOL2?
+    cellId = this->locator->FindCell( (double*) pb );
+    double absDiff = std::numeric_limits<double>::max();
+    size_t nValues = this->tValues.size();
+    if (nValues > 0) {
+        absDiff = std::abs( 1.0 - this->tValues[nValues - 1] );
+    }
+    if (cellId >= 0 && absDiff > this->tol) { // SHOULD WE USE THE VERSION WITH TOL2?
         this->tValues.push_back(1.0);
     }
 
