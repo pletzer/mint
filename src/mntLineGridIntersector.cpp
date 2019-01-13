@@ -5,7 +5,7 @@ LineGridIntersector::LineGridIntersector(vtkUnstructuredGrid* grid) {
 
     this->tol = 10 * std::numeric_limits<double>::epsilon();
 
-    this->locator = vtkOBBTree::New();
+    this->locator = vtkCellLocator::New();
     this->locator->SetDataSet(grid);
     this->locator->BuildLocator();
 }

@@ -1,5 +1,5 @@
 #include <vtkUnstructuredGrid.h>
-#include <vtkOBBTree.h>
+#include <vtkCellLocator.h>
 #include <MvVector.h>
 #include <vector>
 
@@ -42,7 +42,7 @@ public:
 private:
 
     // cell locator
-    vtkOBBTree* locator;
+    vtkCellLocator* locator;
 
     // start point
     Vector<double> pA;
