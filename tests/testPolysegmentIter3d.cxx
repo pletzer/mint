@@ -5,7 +5,7 @@
 #include <cmath>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPoints.h>
-#include <vtkCellLocator.h>
+#include <vtkOBBTree.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <iostream>
@@ -44,8 +44,8 @@ void test1Cell() {
     grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
     
 
-    vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetNumberOfCellsPerBucket(1);
+    vtkOBBTree* loc = vtkOBBTree::New();
+    //loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -107,8 +107,8 @@ void test1Cell2() {
     grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
     
 
-    vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetNumberOfCellsPerBucket(1);
+    vtkOBBTree* loc = vtkOBBTree::New();
+    //loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -170,8 +170,8 @@ void test1Cell3() {
     grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
     
 
-    vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetNumberOfCellsPerBucket(1);
+    vtkOBBTree* loc = vtkOBBTree::New();
+    //loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -279,8 +279,8 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
         grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
     }
 
-    vtkCellLocator* loc = vtkCellLocator::New();
-    loc->SetNumberOfCellsPerBucket(1);
+    vtkOBBTree* loc = vtkOBBTree::New();
+    //loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -313,7 +313,7 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 
 
     for (size_t iCase = 0; iCase < nCases; ++iCase) {
-        std::cout << "testLatLon with segment fully inside: case " << iCase << '\n';
+        std::cout << "===== testLatLon with segment fully inside: case " << iCase << '\n';
         PolysegmentIter3d psi(grid, loc, 
                               &paLatLonFullyInside[3*iCase], 
                               &pbLatLonFullyInside[3*iCase]);
@@ -363,7 +363,7 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
                                2., 90., 180.};
 
     for (size_t iCase = 0; iCase < nCases; ++iCase) {
-        std::cout << "testLatLon with segment fully outside: case " << iCase << '\n';
+        std::cout << "===== testLatLon with segment fully outside: case " << iCase << '\n';
         PolysegmentIter3d psi(grid, loc, 
                               &paLatLonFullyOutside[3*iCase], 
                               &pbLatLonFullyOutside[3*iCase]);
@@ -382,7 +382,6 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
                                    << '\n';
             psi.next();
         }
-        std::cerr << "*** done iterating over the segments\n";
         std::cerr << "\tintegrated param coord = " << psi.getIntegratedParamCoord() << '\n';
         assert(std::abs(psi.getIntegratedParamCoord() - 0.0) < 1.e-10);
     }
@@ -399,9 +398,10 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 int main(int argc, char** argv) {
 
     //testLatLon(10, 11, 12); // fails
-    //testLatLon(2, 4, 4);
-    //testLatLon(2, 4, 4);
-    //testLatLon(1, 2, 4);
+    testLatLon(1, 5, 10);
+    testLatLon(1, 4, 8);
+    testLatLon(2, 4, 4);
+    testLatLon(1, 2, 4);
     testLatLon(1, 1, 1);
     test1Cell3();
     test1Cell2();

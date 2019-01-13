@@ -7,7 +7,7 @@
 #define DEBUG_PRINT 0
 
 
-PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
+PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkOBBTree* locator, 
                                      const double pa[], const double pb[]) {
 
     // small tolerances 
@@ -58,14 +58,11 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
 
     Vector<double> pBeg = pA;
     while (found && dot(direction, pB - pBeg) > 0.0) {
-        std::cerr << "*** 4. pBeg = " << pBeg << " pB = " << pB << " eps = " << this->eps << " \n";
         found = this->locator->IntersectWithLine(&pBeg[0], &pB[0], this->eps, 
                                                  t, &xpoint[0], pcoords, subId, cellId, cell);  // output
-        std::cerr << "*** 4.2 found = " << found << " t = " << t << " xpoint = " << xpoint << "\n";
         if (found > 0) {
             // compute the linear parameter using the intersection point
             tGlobal = dot(xpoint - pA, direction)/lengthSqr;
-            std::cerr << "--- tGlobal = " << tGlobal << '\n';
             xts.push_back(tGlobal);
 
             // slide the starting point 
@@ -77,7 +74,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     if (this->locator->FindCell(&pB[0]) >= 0) {
         xts.push_back(1.0);        
     }
-    std::cerr << "*** 5 xts = "; for (size_t i = 0; i < xts.size(); ++i) std::cerr << xts[i] << ','; std::cerr << "\n";
+    std::cerr << "*** tvalues = "; for (size_t i = 0; i < xts.size(); ++i) std::cerr << xts[i] << ','; std::cerr << "\n";
 
     if (xts.size() == 0) {
         // no intersection
@@ -107,29 +104,20 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
             double dist2;
             int stat;
 
-            // assume cellId0 is right
+            // is xpoint1 is in cellid0?
             stat = this->grid->GetCell(cellId0)->EvaluatePosition(&xpoint1[0], 
                                                                   closestPoint, subId, pcoords1, dist2, weights);
-            std::cerr << "%%% stat = " << stat << " after computing pcoords1 in cellId0\n";
             if (stat == 1) {
-                // ok will use cellId0 
+                // xpoint1 is in cellId0
                 cellId1 = cellId0;
             }
             else {
                 // try cellId1 
                 stat = this->grid->GetCell(cellId1)->EvaluatePosition(&xpoint0[0], 
                                                                       closestPoint, subId, pcoords0, dist2, weights);
-                std::cerr << "%%% stat = " << stat << " after computing pcoords0 in cellId1\n";
                 if (stat == 1) {
                     // ok will use cellId1
                     cellId0 = cellId1;
-                }
-                else {
-                    std::cerr << "Warning: could not resolve in which cell the segment point ";
-                    for (size_t i = 0; i < 3; ++i) std::cerr << xpoint0[i] << ',';
-                    std::cerr << " -> ";
-                    for (size_t i = 0; i < 3; ++i) std::cerr << xpoint1[i] << ',';
-                    std::cerr << " lies\n";
                 }
             }
         }
@@ -149,11 +137,16 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
                 this->segXibs.push_back( std::vector<double>(pcoords1, pcoords1 + 3) );
             }
             else {
-                std::cerr << "Warning: cellId0 is not valid " << cellId0 << '\n';
+                std::cerr << "Warning: cellId0 and cellId1 are not valid " << cellId0 << '\n';
             }
         }
         else {
             std::cerr << "Warning: cellId0 = " << cellId0 << " != cellId1 = " << cellId1 << '\n';
+            std::cerr << "Warning: could not resolve in which cell segment ";
+            for (size_t i = 0; i < 3; ++i) std::cerr << xpoint0[i] << ',';
+            std::cerr << " -> ";
+            for (size_t i = 0; i < 3; ++i) std::cerr << xpoint1[i] << ',';
+            std::cerr << " lies\n";
         }
     }
 
