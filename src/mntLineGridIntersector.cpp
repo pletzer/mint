@@ -62,10 +62,9 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
         if (found > 0) {
             // compute the linear parameter using the intersection point
             tVal = dot(xPoint - pA, direction)/lengthSqr;
-            // add if different from previous
+            // add if first intersection or different from previous
             size_t nValues = this->tValues.size();
-            double absDiff = std::abs( tVal - this->tValues[nValues - 1] );
-            if (nValues == 0 || absDiff > this->tol) {
+            if (nValues == 0 || std::abs( tVal - this->tValues[nValues - 1] ) > this->tol) {
                 this->tValues.push_back(tVal);
             }
             // slide the starting point 

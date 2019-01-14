@@ -36,7 +36,9 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     LineGridIntersector intersector(grid);
 
     intersector.setLine(pa, pb);
+    std::cerr << "*** 0\n";
     const std::vector<double>& tValues = intersector.getIntersectionLineParamCoords();
+    std::cerr << "*** 1\n";
 
     if (tValues.size() == 0) {
         // the line does not intersect with the grid
@@ -53,6 +55,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
         return;
     }
     std::vector< Vector<double> > xpoints = intersector.getIntersectionPoints();
+    std::cerr << "*** 3\n";
 
     // find all the cells between the t values
     for (size_t iSeg = 0; iSeg < tValues.size() - 1; ++iSeg) {
