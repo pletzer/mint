@@ -1,6 +1,7 @@
 #include <mntLineTriangleIntersector.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkOBBTree.h>
+//#include <vtkOBBTree.h>
+#include <vtkCellLocator.h>
 #include <map>
 #include <algorithm>
 
@@ -18,7 +19,7 @@ public:
      * @param p0 start point
      * @param p1 end point
      */
-    PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkOBBTree* locator, 
+    PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
                       const double p0[], const double p1[]);
 
     /**
@@ -104,7 +105,8 @@ private:
 
     vtkUnstructuredGrid* grid;
 
-    vtkOBBTree* locator;
+    //vtkOBBTree* locator;
+    vtkCellLocator* locator;
 
     double eps;
     double eps100;

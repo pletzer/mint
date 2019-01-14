@@ -3,7 +3,8 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 #include <cmath>
-#include <vtkOBBTree.h>
+//#include <vtkOBBTree.h>
+#include <vtkCellLocator.h>
 #include <iostream>
 
 
@@ -39,8 +40,9 @@ void test1Cell() {
     grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
     
 
-    vtkOBBTree* loc = vtkOBBTree::New();
-    //loc->SetNumberOfCellsPerBucket(1);
+    //vtkOBBTree* loc = vtkOBBTree::New();
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -102,8 +104,9 @@ void test1Cell2() {
     grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
     
 
-    vtkOBBTree* loc = vtkOBBTree::New();
-    //loc->SetNumberOfCellsPerBucket(1);
+    //vtkOBBTree* loc = vtkOBBTree::New();
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -165,8 +168,9 @@ void test1Cell3() {
     grid->InsertNextCell(VTK_HEXAHEDRON, ptIds);
     
 
-    vtkOBBTree* loc = vtkOBBTree::New();
-    //loc->SetNumberOfCellsPerBucket(1);
+    //vtkOBBTree* loc = vtkOBBTree::New();
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -204,8 +208,9 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 
     latLonGrid(nElv, nLat, nLon, grid, points);
 
-    vtkOBBTree* loc = vtkOBBTree::New();
-    //loc->SetNumberOfCellsPerBucket(1);
+    //vtkOBBTree* loc = vtkOBBTree::New();
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -322,14 +327,14 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 int main(int argc, char** argv) {
 
     //testLatLon(10, 11, 12); // fails
-    testLatLon(1, 11, 12);
-    testLatLon(1, 5, 10);
-    testLatLon(1, 4, 8);
-    testLatLon(2, 4, 4);
-    testLatLon(1, 2, 4);
-    testLatLon(1, 1, 1);
-    test1Cell3();
-    test1Cell2();
+    //testLatLon(1, 11, 12);
+    //testLatLon(1, 5, 10);
+    //testLatLon(1, 4, 8);
+    //testLatLon(2, 4, 4);
+    //testLatLon(1, 2, 4);
+    //testLatLon(1, 1, 1);
+    //test1Cell3();
+    //test1Cell2();
     test1Cell();
 
     return 0;

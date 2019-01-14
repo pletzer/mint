@@ -38,6 +38,18 @@ public:
      */
     std::vector< Vector<double> > getIntersectionPoints() const;
 
+    /**
+     * Get direction of line
+     * @return vector
+     */
+    const Vector<double>& getDirection() const;
+
+    /**
+     * Get start point
+     * @return vector
+     */
+    const Vector<double>& getStartPoint() const;
+
 
 private:
 

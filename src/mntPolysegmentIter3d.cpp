@@ -1,22 +1,31 @@
 #include "mntPolysegmentIter3d.h"
+#include "mntLineGridIntersector.h"
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <MvVector.h>
 #include <limits>
 
-#define DEBUG_PRINT 0
+#define DEBUG_PRINT 1
 
 
-PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkOBBTree* locator, 
+PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
                                      const double pa[], const double pb[]) {
 
     // small tolerances 
     this->eps = 10 * std::numeric_limits<double>::epsilon();
-    this->eps100 = 100 * this->eps;
 
     // store the grid and the grid locator
     this->grid = grid;
     this->locator = locator;
+
+    vtkGenericCell* cell;
+    double pcoords0[3];
+    double pcoords1[3];
+    double weights[8];
+    int subId;
+    double dist2;
+    double closestPoint[3];
+    int inside0, inside1; // 1=inside, 0=outside, -1=error
 
     // reset
     this->cellIds.resize(0);
@@ -25,129 +34,81 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkOBBTree* loca
     this->segXias.resize(0);
     this->segXibs.resize(0);
 
-    // store the begin/end positions
-    Vector<double> pA(3), pB(3), direction(3);
-    double lengthSqr = 0.0;
-    for (size_t i = 0; i < 3; ++i) {
-        pA[i] = pa[i];
-        pB[i] = pb[i];
-        double dist = pb[i] - pa[i];
-        direction[i] = dist;
-        lengthSqr += dist * dist;
-    }
+    LineGridIntersector intersector(grid);
 
-    // length must be > 0
-    if (lengthSqr == 0) return;
+    intersector.setLine(pa, pb);
+    const std::vector<double>& tValues = intersector.getIntersectionLineParamCoords();
 
-    double weights[8]; // hex cell
-    std::vector<double> xts; // linear parametric coord of the intersection points
-    double pcoords[3], pcoords0[3], pcoords1[3]; // parametric coordinates of a point in a cell
-    Vector<double> xpoint(3); // intersection point
-
-    // add starting point if inside the domain
-    if (this->locator->FindCell(&pA[0]) >= 0) {
-        xts.push_back(0.);
-    }
-
-    // collect the intersection points
-    int found = 1;
-    double t, tGlobal;
-    int subId;
-    vtkIdType cellId;
-    vtkGenericCell* cell = vtkGenericCell::New();
-
-    Vector<double> pBeg = pA;
-    while (found && dot(direction, pB - pBeg) > 0.0) {
-        found = this->locator->IntersectWithLine(&pBeg[0], &pB[0], this->eps, 
-                                                 t, &xpoint[0], pcoords, subId, cellId, cell);  // output
-        if (found > 0) {
-            // compute the linear parameter using the intersection point
-            tGlobal = dot(xpoint - pA, direction)/lengthSqr;
-            xts.push_back(tGlobal);
-
-            // slide the starting point 
-            pBeg = xpoint + this->eps100 * direction;
-        }
-    }
-
-    // add the end point if inside domain
-    if (this->locator->FindCell(&pB[0]) >= 0) {
-        xts.push_back(1.0);        
-    }
-    std::cerr << "*** tvalues = "; for (size_t i = 0; i < xts.size(); ++i) std::cerr << xts[i] << ','; std::cerr << "\n";
-
-    if (xts.size() == 0) {
-        // no intersection
+    if (tValues.size() == 0) {
+        // the line does not intersect with the grid
+#ifdef DEBUG_PRINT
+        std::cerr << "Warning: no intersection\n";
+#endif
         return;
     }
+    if (tValues.size() == 1) {
+        // zero length overlap between the line and the grid
+#ifdef DEBUG_PRINT
+        std::cerr << "Warning: zero length overlap between line and grid\n";
+#endif
+        return;
+    }
+    std::vector< Vector<double> > xpoints = intersector.getIntersectionPoints();
 
     // find all the cells between the t values
-    for (size_t iSeg = 0; iSeg < xts.size() - 1; ++iSeg) {
+    for (size_t iSeg = 0; iSeg < tValues.size() - 1; ++iSeg) {
 
-        if (std::abs(xts[iSeg + 1] - xts[iSeg]) < this->eps) {
+        if (std::abs(tValues[iSeg + 1] - tValues[iSeg]) < this->eps) {
+            // skip if the segment has zero length in t-space
+#ifdef DEBUG_PRINT
+            std::cerr << "Warning: duplicate intersection points t = " << tValues[iSeg] << ", " << tValues[iSeg + 1] << "\n";
+#endif
             continue;
         }
 
-        // make the sure the target points are slightly inside the cell
-        Vector<double> xpoint0 = pA + (xts[iSeg + 0] + this->eps100)*direction;
-        Vector<double> xpoint1 = pA + (xts[iSeg + 1] - this->eps100)*direction;
+        const Vector<double>& pA = intersector.getStartPoint();
+        const Vector<double>& direction = intersector.getDirection();
 
-        // find the cell index for xpoint0 and xpoint1, should be the same
-        vtkIdType cellId0 = this->locator->FindCell(&xpoint0[0], this->eps, cell, pcoords0, weights);
-        vtkIdType cellId1 = this->locator->FindCell(&xpoint1[0], this->eps, cell, pcoords1, weights);
+        double tDiff = tValues[iSeg + 1] - tValues[iSeg + 0];
+        double tMid = 0.5*(tValues[iSeg + 0] + tValues[iSeg + 1]);
+        Vector<double> pMid = direction;
+        pMid *= tMid;
+        pMid += pA;
 
-        if (cellId0 != cellId1) {
-            // this can happen if a point straddles the boundary of 2 or more cells. In this 
-            // case FindCell may return either cell Id. Try to make cellId0 and cellId1 agree
+        vtkIdType cellId = this->locator->FindCell(&pMid[0]);
+        if (cellId < 0) {
+            std::cerr << "Warning: could not find cell at seg mid point t = " 
+                      << tMid << " point = " << pMid << " (cellId = " << cellId << ")\n";
+            continue;
 
-            double closestPoint[3]; 
-            double dist2;
-            int stat;
-
-            // is xpoint1 is in cellid0?
-            stat = this->grid->GetCell(cellId0)->EvaluatePosition(&xpoint1[0], 
-                                                                  closestPoint, subId, pcoords1, dist2, weights);
-            if (stat == 1) {
-                // xpoint1 is in cellId0
-                cellId1 = cellId0;
-            }
-            else {
-                // try cellId1 
-                stat = this->grid->GetCell(cellId1)->EvaluatePosition(&xpoint0[0], 
-                                                                      closestPoint, subId, pcoords0, dist2, weights);
-                if (stat == 1) {
-                    // ok will use cellId1
-                    cellId0 = cellId1;
-                }
-            }
         }
 
-        std::cerr << "... cellId0 = " << cellId0 << " pcoords0 = ";
-        for (size_t i = 0; i < 3; ++i) std::cerr << pcoords0[i] << ','; 
-        std::cerr << " cellId1 = " << cellId1 << " pcoords1 = ";
-        for (size_t i = 0; i < 3; ++i) std::cerr << pcoords1[i] << ','; 
-        std::cerr << '\n';
+        // paramatric coords at the start of the segment
+        Vector<double> pt = direction;
+        pt *= tValues[iSeg + 0];
+        pt += pA;
+        inside0 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], closestPoint, subId, pcoords0, dist2, weights);
+        if (inside0 != 1) {
+            std::cerr << "Warning: could not find pcoords at seg start t = " 
+                      << tValues[iSeg + 0] << " point = " << pt << " code = " << inside0 << '\n';
+            continue;
+        }
 
-        if ( cellId0 == cellId1 ) {
-            if (cellId0 >= 0) {
-                this->cellIds.push_back(cellId0);
-                this->segTas.push_back(xts[iSeg + 0]);
-                this->segTbs.push_back(xts[iSeg + 1]);
-                this->segXias.push_back( std::vector<double>(pcoords0, pcoords0 + 3) );
-                this->segXibs.push_back( std::vector<double>(pcoords1, pcoords1 + 3) );
-            }
-            else {
-                std::cerr << "Warning: cellId0 and cellId1 are not valid " << cellId0 << '\n';
-            }
+        // parametric coords at the end of the segment
+        pt += tDiff * direction;
+        inside1 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], closestPoint, subId, pcoords1, dist2, weights);
+        if (inside1 != 1) {
+            std::cerr << "Warning: could not find pcoords at seg end t = " 
+                      << tValues[iSeg + 1] << " point = " << pt << " code = " << inside0 << '\n';
+            continue;
         }
-        else {
-            std::cerr << "Warning: cellId0 = " << cellId0 << " != cellId1 = " << cellId1 << '\n';
-            std::cerr << "Warning: could not resolve in which cell segment t = " << xts[iSeg + 0] << " -> " << xts[iSeg + 1] << " point ";
-            for (size_t i = 0; i < 3; ++i) std::cerr << xpoint0[i] << ',';
-            std::cerr << " -> ";
-            for (size_t i = 0; i < 3; ++i) std::cerr << xpoint1[i] << ',';
-            std::cerr << " lies\n";
-        }
+
+        this->cellIds.push_back(cellId);
+        this->segTas.push_back(tValues[iSeg + 0]);
+        this->segTbs.push_back(tValues[iSeg + 1]);
+        this->segXias.push_back( std::vector<double>(pcoords0, pcoords0 + 3) );
+        this->segXibs.push_back( std::vector<double>(pcoords1, pcoords1 + 3) );
+
     }
 
     this->numSegs = this->cellIds.size(); 
@@ -155,7 +116,8 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkOBBTree* loca
     // reset the iterator
     this->reset();
 
-    cell->Delete();
+    //cell->Delete();
+
 }
 
 

@@ -103,3 +103,15 @@ LineGridIntersector::getIntersectionPoints() const {
     }
     return res;
 }
+
+const Vector<double>& 
+LineGridIntersector::getDirection() const {
+    return this->direction;
+}
+
+const Vector<double>& 
+LineGridIntersector::getStartPoint() const {
+    return this->pA;
+}
+
+
