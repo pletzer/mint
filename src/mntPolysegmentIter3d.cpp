@@ -24,7 +24,6 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     double weights[8];
     int subId;
     double dist2;
-    double closestPoint[3];
     int inside0, inside1; // 1=inside, 0=outside, -1=error
 
     // reset
@@ -87,7 +86,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
         Vector<double> pt = direction;
         pt *= tValues[iSeg + 0];
         pt += pA;
-        inside0 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], closestPoint, subId, pcoords0, dist2, weights);
+        inside0 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], NULL, subId, pcoords0, dist2, weights);
         if (inside0 != 1) {
             std::cerr << "Warning: could not find pcoords at seg start t = " 
                       << tValues[iSeg + 0] << " point = " << pt << " code = " << inside0 << '\n';
@@ -96,7 +95,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
 
         // parametric coords at the end of the segment
         pt += tDiff * direction;
-        inside1 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], closestPoint, subId, pcoords1, dist2, weights);
+        inside1 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], NULL, subId, pcoords1, dist2, weights);
         if (inside1 != 1) {
             std::cerr << "Warning: could not find pcoords at seg end t = " 
                       << tValues[iSeg + 1] << " point = " << pt << " code = " << inside0 << '\n';
