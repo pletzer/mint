@@ -222,7 +222,7 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
                                0., 0., -180.,
                                0., -90., -180.,
                                0., -90., -180.,
-                               1., 90., 180.,
+                               1., 90., 180., // point
                                0.5, 90., 180., 
                                0., 90, 180.,
                                1., 0., 180., 
@@ -243,11 +243,14 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 
 
     for (size_t iCase = 0; iCase < nCases; ++iCase) {
-        std::cout << "===== testLatLon with segment fully inside: case " << iCase << '\n';
+        std::cout << "===== testLatLon with segment fully inside: case " << iCase << " line "; 
+        for (size_t i = 0; i < 3; ++i) std::cout << paLatLonFullyInside[3*iCase + i] << ',';
+        std::cout << " -> "; 
+        for (size_t i = 0; i < 3; ++i) std::cout << pbLatLonFullyInside[3*iCase + i] << ',';
+        std::cout << '\n';
         PolysegmentIter3d psi(grid, loc, 
                               &paLatLonFullyInside[3*iCase], 
                               &pbLatLonFullyInside[3*iCase]);
-        std::cerr << "*** done constructing\n";
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
         for (size_t i = 0; i < numSegs; ++i) {
@@ -327,14 +330,14 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 int main(int argc, char** argv) {
 
     //testLatLon(10, 11, 12); // fails
-    //testLatLon(1, 11, 12);
-    //testLatLon(1, 5, 10);
-    //testLatLon(1, 4, 8);
-    //testLatLon(2, 4, 4);
-    //testLatLon(1, 2, 4);
-    //testLatLon(1, 1, 1);
-    //test1Cell3();
-    //test1Cell2();
+    testLatLon(1, 11, 12); // seg fault case 4 
+    testLatLon(1, 5, 10);
+    testLatLon(1, 4, 8);
+    testLatLon(2, 4, 4);
+    testLatLon(1, 2, 4);
+    testLatLon(1, 1, 1);
+    test1Cell3();
+    test1Cell2();
     test1Cell();
 
     return 0;

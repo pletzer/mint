@@ -37,8 +37,8 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
     vtkIdType cellId;
 
     // add the start point if it is in a cell
-    cellId = this->locator->FindCell( (double*) pa );
-    if (cellId >= 0) { // SHOULD WE USE THE VERSION WITH TOL2?
+    cellId = this->locator->FindCell( (double*) pa ); // SHOULD WE USE THE VERSION WITH TOL2?
+    if (cellId >= 0) { 
         this->tValues.push_back(0.0);
     }
 
@@ -72,15 +72,16 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
             pBeg = xPoint + this->tol * this->direction;
         }
     }
+    cell->Delete();
 
     // add the end point if it is in a cell
-    cellId = this->locator->FindCell( (double*) pb );
+    cellId = this->locator->FindCell( (double*) pb ); // SHOULD WE USE THE VERSION WITH TOL2?
     double absDiff = std::numeric_limits<double>::max();
     size_t nValues = this->tValues.size();
     if (nValues > 0) {
         absDiff = std::abs( 1.0 - this->tValues[nValues - 1] );
     }
-    if (cellId >= 0 && absDiff > this->tol) { // SHOULD WE USE THE VERSION WITH TOL2?
+    if (cellId >= 0 && absDiff > this->tol) { 
         this->tValues.push_back(1.0);
     }
 
