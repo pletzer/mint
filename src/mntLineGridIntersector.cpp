@@ -30,15 +30,17 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
 
     // extend the line by a little bit to be sure that the start/end points 
     // are included
-    pBeg = pA - 100 * this->tol * this->direction;
-    pEnd = pB + 100 * this->tol * this->direction;
+    pBeg = pA; // - 100 * this->tol * this->direction;
+    pEnd = pB; // + 100 * this->tol * this->direction;
+    std::cerr << "+++ pBeg = " << pBeg << " pEnd = " << pEnd << '\n';
 
     this->tValues.clear();
     vtkIdType cellId;
 
     // add the start point if it is in a cell
     cellId = this->locator->FindCell( (double*) pa ); // SHOULD WE USE THE VERSION WITH TOL2?
-    if (cellId >= 0) { 
+    if (cellId >= 0) {
+        std::cerr << "+++ adding t value 0.0\n";
         this->tValues.push_back(0.0);
     }
 
@@ -56,10 +58,13 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
     double pcoords[3];
     int subId;
     vtkGenericCell* cell = vtkGenericCell::New();
-    while (found) {
+    while (found == 1) {
+
+        cellId = -1;
         found = this->locator->IntersectWithLine(&pBeg[0], &pEnd[0], this->tol, 
                                                  tLocal, &xPoint[0], pcoords, subId, cellId, cell);  // output
-        if (found > 0) {
+        std::cerr << "+++ found = " << found << " cellId = " << cellId << " xPoint = " << xPoint << '\n';
+        if (found == 1) {
             // compute the linear parameter using the intersection point
             tVal = dot(xPoint - pA, direction)/lengthSqr;
             // add if first intersection or different from previous
@@ -80,7 +85,8 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
     if (nValues > 0) {
         absDiff = std::abs( 1.0 - this->tValues[nValues - 1] );
     }
-    if (cellId >= 0 && absDiff > this->tol) { 
+    if (cellId >= 0 && absDiff > this->tol) {
+        std::cerr << "+++ adding t = 1.0\n";
         this->tValues.push_back(1.0);
     }
 

@@ -201,6 +201,79 @@ void test1Cell3() {
 }
 
 
+void testLatLon1(size_t nElv, size_t nLat, size_t nLon) {
+
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+    vtkPoints* points = vtkPoints::New();
+
+    latLonGrid(nElv, nLat, nLon, grid, points);
+
+    //vtkOBBTree* loc = vtkOBBTree::New();
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
+    loc->SetDataSet(grid);
+    loc->BuildLocator();
+
+    const double pa[] = {0., -90., -180.};
+    const double pb[] = {0., 90., 180.};
+        
+    std::cout << "=== testLatLon1 ===\n";
+    PolysegmentIter3d psi(grid, loc, pa, pb);
+    size_t numSegs = psi.getNumberOfSegments();
+    psi.reset();
+    for (size_t i = 0; i < numSegs; ++i) {
+        vtkIdType cellId = psi.getCellId();
+        const std::vector<double>& xia = psi.getBegCellParamCoord();
+        const std::vector<double>& xib = psi.getEndCellParamCoord();
+        double ta = psi.getBegLineParamCoord();
+        double tb = psi.getEndLineParamCoord();
+        std::cout << "\tseg " << i << " cell=" << cellId \
+                                   << " ta=" << ta << " xia=" << xia[0] << ',' << xia[1] 
+                                   << " tb=" << tb << " xib=" << xib[0] << ',' << xib[1] 
+                                   << '\n';
+        psi.next();
+    }
+    std::cerr << "\tintegrated param coord = " << psi.getIntegratedParamCoord() << '\n';
+    assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
+}
+
+void testLatLon2(size_t nElv, size_t nLat, size_t nLon) {
+
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+    vtkPoints* points = vtkPoints::New();
+
+    latLonGrid(nElv, nLat, nLon, grid, points);
+
+    //vtkOBBTree* loc = vtkOBBTree::New();
+    vtkCellLocator* loc = vtkCellLocator::New();
+    loc->SetNumberOfCellsPerBucket(1);
+    loc->SetDataSet(grid);
+    loc->BuildLocator();
+
+    const double pa[] = {1., 90., 0.};
+    const double pb[] = {1., 90., 180.};
+        
+    std::cout << "=== testLatLon2 ===\n";
+    PolysegmentIter3d psi(grid, loc, pa, pb);
+    size_t numSegs = psi.getNumberOfSegments();
+    psi.reset();
+    for (size_t i = 0; i < numSegs; ++i) {
+        vtkIdType cellId = psi.getCellId();
+        const std::vector<double>& xia = psi.getBegCellParamCoord();
+        const std::vector<double>& xib = psi.getEndCellParamCoord();
+        double ta = psi.getBegLineParamCoord();
+        double tb = psi.getEndLineParamCoord();
+        std::cout << "\tseg " << i << " cell=" << cellId \
+                                   << " ta=" << ta << " xia=" << xia[0] << ',' << xia[1] 
+                                   << " tb=" << tb << " xib=" << xib[0] << ',' << xib[1] 
+                                   << '\n';
+        psi.next();
+    }
+    std::cerr << "\tintegrated param coord = " << psi.getIntegratedParamCoord() << '\n';
+    assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
+}
+
+
 void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 
     vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
@@ -329,6 +402,8 @@ void testLatLon(size_t nElv, size_t nLat, size_t nLon) {
 
 int main(int argc, char** argv) {
 
+    testLatLon2(1, 11, 12);
+    testLatLon1(1, 11, 12);
     //testLatLon(10, 11, 12); // fails
     testLatLon(1, 11, 12); // seg fault case 4 
     testLatLon(1, 5, 10);

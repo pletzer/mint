@@ -18,7 +18,6 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     this->grid = grid;
     this->locator = locator;
 
-    vtkGenericCell* cell;
     double pcoords0[3];
     double pcoords1[3];
     double weights[8];
@@ -32,6 +31,8 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     this->segTbs.resize(0);
     this->segXias.resize(0);
     this->segXibs.resize(0);
+
+    this->numSegs = 0;
 
     LineGridIntersector intersector(grid);
 
@@ -54,7 +55,6 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
 #endif
         return;
     }
-    std::vector< Vector<double> > xpoints = intersector.getIntersectionPoints();
     std::cerr << "*** 3\n";
 
     // find all the cells between the t values
@@ -114,12 +114,8 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     }
 
     this->numSegs = this->cellIds.size(); 
-
     // reset the iterator
     this->reset();
-
-    //cell->Delete();
-
 }
 
 
