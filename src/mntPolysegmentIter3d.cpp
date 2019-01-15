@@ -32,8 +32,6 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     this->segXias.resize(0);
     this->segXibs.resize(0);
 
-    this->numSegs = 0;
-
     LineGridIntersector intersector(grid);
 
     intersector.setLine(pa, pb);
@@ -113,7 +111,6 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
 
     }
 
-    this->numSegs = this->cellIds.size(); 
     // reset the iterator
     this->reset();
 }
@@ -121,8 +118,9 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
 
 double 
 PolysegmentIter3d::getIntegratedParamCoord() const {
-    if (this->numSegs > 0) {
-        return this->segTbs[this->numSegs - 1];
+    size_t numSegs = this->cellIds.size();
+    if (numSegs > 0) {
+        return this->segTbs[numSegs - 1];
     }
     else {
         return 0;
@@ -138,7 +136,8 @@ PolysegmentIter3d::reset() {
 
 bool
 PolysegmentIter3d::next() {
-    if (this->index < this->numSegs - 1) {
+    size_t numSegs = this->cellIds.size();
+    if (this->index < numSegs - 1) {
         this->index++;
         return true;
     }
@@ -182,7 +181,7 @@ PolysegmentIter3d::getCoefficient() const {
  
 size_t
 PolysegmentIter3d::getNumberOfSegments() const {
-    return this->numSegs;
+    return this->cellIds.size();
 }
 
 

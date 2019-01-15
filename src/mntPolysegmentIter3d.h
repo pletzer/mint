@@ -111,8 +111,6 @@ private:
     double eps;
     double eps100;
     size_t index;
-    int numSegs;
-
 };
 
 #endif // MNT_POLYSEGMENT_ITER_3D
