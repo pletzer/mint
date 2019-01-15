@@ -33,6 +33,11 @@ LineGridIntersector::setLine(const double pa[], const double pb[]) {
     pBeg = pA; //+ 100 * this->tol * this->direction;
     pEnd = pB; //- 100 * this->tol * this->direction;
 
+    // random perturbation
+    //pBeg[0] += this->tol * 1.4862362;
+    //pBeg[1] -= this->tol * 5.2876536;
+    //pBeg[2] += this->tol * 3.9255956;
+
     this->tValues.clear();
     vtkIdType cellId;
 
