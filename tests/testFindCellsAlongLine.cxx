@@ -6,6 +6,7 @@
 #include <vtkGenericCell.h>
 #include <iostream>
 #include <cmath>
+#include <cassert>
 
 void testLatLon(size_t nElv, size_t nLat, size_t nLon, const double pa[], const double pb[], int expectedNumberOfCells) {
 
