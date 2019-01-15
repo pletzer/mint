@@ -250,8 +250,8 @@ void testLatLon2(size_t nElv, size_t nLat, size_t nLon) {
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
-    const double pa[] = {1., 90., 0.};
-    const double pb[] = {1., 90., 180.};
+    const double pa[] = {1., 89., 0.};
+    const double pb[] = {1., 89., 180.};
         
     std::cout << "=== testLatLon2 ===\n";
     PolysegmentIter3d psi(grid, loc, pa, pb);
