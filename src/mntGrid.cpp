@@ -35,7 +35,7 @@ int mnt_grid_del(Grid_t** self) {
 }
 
 extern "C"
-int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]) {
+int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]) {
 
     (*self)->pointData = vtkDoubleArray::New();
     (*self)->points = vtkPoints::New();
@@ -50,7 +50,6 @@ int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const
     (*self)->points->SetData((*self)->pointData);
 
     (*self)->grid->Allocate(ncells, 1);
-    (*self)->grid->SetPoints((*self)->points);
 
     int cellType = -1;
     if (nVertsPerCell == 4) {
@@ -66,6 +65,7 @@ int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const
 
     // connect
     vtkIdList* ptIds = vtkIdList::New();
+
     ptIds->SetNumberOfIds(nVertsPerCell);
     for (int i = 0; i < ncells; ++i) {
         for (int j = 0; j < nVertsPerCell; ++j) {
@@ -73,6 +73,10 @@ int mnt_grid_setpoints(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const
         }
         (*self)->grid->InsertNextCell(cellType, ptIds);
     }
+    (*self)->grid->SetPoints((*self)->points);
+    (*self)->grid->BuildLinks(); // DO WE NEED THIS?
+
+    // clean
     ptIds->Delete();
 
     return 0;

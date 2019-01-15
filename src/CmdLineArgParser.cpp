@@ -91,7 +91,7 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
         || stringArg.find(arg) != stringArg.end()
         || boolArg.find(arg) != boolArg.end();
       if (!isValidOptName) {
-        std::cerr << "Warning: '" << arg << "'' is not a valid option.\n";
+        std::cerr << "Warning: '" << arg << "' is not a valid option.\n";
         return false;
       }
     }

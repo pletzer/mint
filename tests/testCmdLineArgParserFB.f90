@@ -1,47 +1,63 @@
 program test
     ! defines the C API
     use mnt_cmdlineargparser_capi_mod
-    use, intrinsic :: iso_c_binding, only: c_loc
-
-    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double
+    use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
 
     implicit none
-    integer(c_size_t)                                :: prsr
-    integer(c_int)                                   :: ier, nargs, i, n, verbosity
-    character(len=mnt_string_size), allocatable      :: args(:)
-    character(len=mnt_string_size)                   :: argv_full, inp_filename, out_filename, inp_filename_f
+    type(c_ptr)                                      :: prsr
+    integer(c_int)                                   :: ier, nargs, i, n, verbosity, nargs1
+    character(len=1), allocatable                    :: args(:)
+    character(len=mnt_string_size)                   :: argv_full, out_filename, inp_filename_f
+    character(len=1), dimension(mnt_string_size)     :: inp_filename
     integer(c_int)                                   :: num_cells_per_bucket
 
-    nargs = command_argument_count() + 1 ! must include the executable itself
+    ! parse
+    nargs = command_argument_count() ! excludes the executable
+    nargs1 = nargs + 1               ! includes the executable
+
+    allocate(args(nargs1*mnt_string_size))
+
+    do i = 0, nargs
+        ! make sure to include the name of the executable
+        call get_command_argument(i, argv_full)
+        ! add termination character, trim...
+        call mnt_f2c_string(argv_full, args(i*mnt_string_size + 1:(i+1)*mnt_string_size))
+    enddo
 
     ier = mnt_cmdlineargparser_new(prsr)
-    !                                     "Average number of cells per bucket"//char(0))
-    ier = mnt_cmdlineargparser_setstring(prsr, "-i"//char(0), &
-                                         "notvalid.vtk"//char(0), &
-                                         "Input VTK file"//char(0))
-    ! parse
-    allocate(args(nargs))
-    do i = 1, nargs
-        ! make sure to include the name of the executable
-        call get_command_argument(i - 1, argv_full)
-        ! add termination character, trim...
-        call mnt_f2c_string(argv_full, args(i))
-    enddo
-    ier = mnt_cmdlineargparser_help(prsr)
-
-    ier = mnt_cmdlineargparser_parse(prsr, nargs, mnt_string_size, args)
     if (ier /= 0) then
-        print *,'ERROR while parsing command line arguments'
+        print *,'ERROR after calling mnt_cmdlineargparser_new'
+    endif
+
+    ier = mnt_cmdlineargparser_setstring(prsr, "-i"//char(0), &
+                                               "notvalid.vtk"//char(0), &
+                                               "Input VTK file"//char(0))
+    if (ier /= 0) then
+        print *,'ERROR after calling mnt_cmdlineargparser_setstring'
     endif
 
     ier = mnt_cmdlineargparser_help(prsr)
+    if (ier /= 0) then
+        print *,'ERROR after calling mnt_cmdlineargparser_help'
+    endif
+
+    ier = mnt_cmdlineargparser_parse(prsr, nargs1, mnt_string_size, args(1))
+    if (ier /= 0) then
+        print *,'ERROR after calling mnt_cmdlineargparser_parse'
+    endif
 
     ! extract the arguments
-    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), inp_filename, n)
+    ier = mnt_cmdlineargparser_getstring(prsr, "-i"//char(0), size(inp_filename), inp_filename)
+    if (ier /= 0) then
+        print *,'ERROR after calling mnt_cmdlineargparser_getstring'
+    endif
     call mnt_c2f_string(inp_filename, inp_filename_f)
 
     ! done
     ier = mnt_cmdlineargparser_del(prsr)
+    if (ier /= 0) then
+        print *,'ERROR after calling mnt_cmdlineargparser_del'
+    endif
 
     print *, '-i arg is "'//trim(inp_filename_f)//'"'
 

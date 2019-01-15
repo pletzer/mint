@@ -43,21 +43,34 @@ extern "C"
 int mnt_celllocator_del(CellLocator_t** self);
 
 /**
- * Set the points (vertices)
+ * Set the points (vertices) array pointer
  * @param nVertsPerCell numnber of vertices per cell
  * @param ncells number of cells
  * @param points flat array of size 4*ncells*3
  * @return error code (0 is OK)
+ * @note the caller is responsible for managing the memory of the points array, which
+ *       is expected to exist until the grid object is destroyed.
  */
 extern "C"
-int mnt_celllocator_setpoints(CellLocator_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
+int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, size_t ncells, const double points[]);
+
+/**
+ * Check if cell areas/volumes are positive
+ * @param tol tolerance, area volume must be >= to be valid
+ * @param numBadCells number of bad cells (output)
+ * @paran badCellids pointer to the array of bad cellIds
+ * @return error code (0 is OK)
+ * @note pointer badCellIds is invalid if numBadCells is zero
+ */
+extern "C"
+int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells);
 
 /**
  * Run grid diagnostics
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_rungriddiagnostics(CellLocator_t** self);
+int mnt_celllocator_runGridDiagnostics(CellLocator_t** self);
 
 /**
  * Build the regridder
@@ -74,7 +87,7 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, size_t n);
+int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, size_t n);
 
 /**
  * Find the cell and the parametric coordinates
@@ -84,7 +97,7 @@ int mnt_celllocator_dumpgrid(CellLocator_t** self, const char* fort_filename, si
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* cellId, double pcoords[]);
+int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* cellId, double pcoords[]);
 
 /**
  * Interpolate the position
@@ -94,7 +107,9 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], vtkIdType* 
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_interp_point(CellLocator_t** self, vtkIdType cellId, const double pcoords[], double point[]);
+int mnt_celllocator_interpPoint(CellLocator_t** self, long long cellId, const double pcoords[], double point[]);
 
+extern "C"
+void mnt_celllocator_printAddress(void* something);
 
 #endif // MNT_CELL_LOCATOR

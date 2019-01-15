@@ -43,6 +43,27 @@ void testPi() {
 
 }
 
+void testMinusPi() {
+    
+    Vec ts(11);
+    ts.space(0., 1.);
+
+    const std::string xLineExpr = "-pi";
+
+    std::cout << "expr: " << xLineExpr << '\n';
+    GrExprAdaptor xa(xLineExpr);
+    const std::string polishPrefixExpr = xa.getPrefixExpr();
+    std::cout << "Polish prefix expr: " << polishPrefixExpr << '\n';
+    GrExprParser xExpr(ts.size(), polishPrefixExpr);
+    xExpr.defineVariable("t", &ts);
+    Vec* xs = xExpr.eval();
+
+    for (size_t i = 0; i < ts.size(); ++i) {
+        std::cout << "i = " << i << " ts = " << ts[i] << " xs = " << (*xs)[i] << '\n';
+    }
+
+}
+
 void testPiDiv1() {
     
     Vec ts(11);
@@ -195,13 +216,14 @@ int main(int argc, char** argv) {
 
     testZero();
     testPi();
+    testMinusPi();
     testPiDiv1();
     testSubtraction();
     testCos();
     testQuarterPi();
     testFull();
     testLine();
-    testLine2();
+    testLine2(); // currently failing
 
     return 0;
 }

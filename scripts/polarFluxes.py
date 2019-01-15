@@ -1,4 +1,5 @@
 from matplotlib import pylab
+import numpy
 
 a = 0.3; nt = 16
 x0s = [ -0.355, -0.31, -0.265, -0.22, -0.175, -0.13, -0.085, -0.04, 0.005, 0.05, ]
@@ -18,7 +19,8 @@ pylab.plot(x, fluxes, 'ko', markerfacecolor='None')
 pylab.plot(x, fluxesTrapezoidalBilinear, 'ko', markerfacecolor='None')
 pylab.plot([0, 9], [1, 1], '-', color='grey')
 pylab.plot([0, 9], [0, 0], '-', color='grey')
+pylab.xticks( numpy.linspace(0, 9, 10) )
 pylab.xlabel('Contour E index')
-pylab.ylabel('flux')
+pylab.ylabel('Flux')
 pylab.title('Flux integral vs contour')
 pylab.show()

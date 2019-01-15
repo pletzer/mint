@@ -6,7 +6,7 @@
 
 # Project information
 project(mint)
-set(VERSION_MAJOR "0")
+set(VERSION_MAJOR "1")
 set(VERSION_MINOR "1")
 set(VERSION_PATCH "0")
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -15,6 +15,7 @@ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 cmake_minimum_required(VERSION 3.1)
 enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 11)
+enable_testing()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 
@@ -30,7 +31,6 @@ find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
 message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
-
 
 #
 # Find the netcdf library and its dependencies by keying off from the nc-config

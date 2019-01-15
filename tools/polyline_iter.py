@@ -82,7 +82,7 @@ def test():
     bl = PolylineIter(points=pts)
     bl.reset()
     for s in bl:
-        print s.getIndex(), s.getBegParamCoord(), s.getEndParamCoord()
+        print('index: {} beg->end coord: {}->{}'.format(s.getIndex(), s.getBegParamCoord(), s.getEndParamCoord()))
 
 
 if __name__ == '__main__':
