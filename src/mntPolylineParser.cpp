@@ -1,16 +1,23 @@
 #include "mntPolylineParser.h"
 #include <cstdlib>
+#include <iostream>
 
 Vector<double> 
 PolylineParser::parsePosition(const std::string& posStr) const {
     Vector<double> res(this->ndims, 0);
-    size_t posBeg = 0;
-    size_t posEnd = posStr.find(',');
-    size_t counter = 0;
-    while (posEnd != std::string::npos && counter < this->ndims) {
-        double number = std::atof( posStr.substr(posBeg, posEnd - posBeg - 1).c_str() );
-        res[counter] = number;
-        counter++;
+    size_t posBeg, posEnd;
+    posBeg = 0;
+    for (size_t i = 0; i < this->ndims; ++i) {
+        // index of ',' or end of string, starting at posBeg
+        posEnd = posStr.find(',', posBeg);
+        // convert substring to number
+        double number = std::atof( posStr.substr(posBeg, posEnd - posBeg).c_str() );
+        res[i] = number;
+        if (posEnd == std::string::npos && i < (int)(this->ndims) - 1) {
+            std::cerr << "Warning: missing comma in \"" << posStr << "\"\n";
+            break;
+        }
+        posBeg = posEnd + 1;
     }
     return res;
 }
@@ -34,5 +41,18 @@ PolylineParser::parse(const std::string& expr) {
         std::string posStr = expr.substr(leftPos, n);
         this->points.push_back(this->parsePosition(posStr));
     }
+}
+
+void
+PolylineParser::print() const {
+    std::cout << "Points:\n";
+    for (size_t i = 0; i < this->points.size(); ++i) {
+        const Vector<double>& point = this->points[i];
+        for (size_t j = 0; j < this->ndims; ++j) {
+            std::cout << point[j] << ',';
+        }
+        std::cout << '\n';
+    }
+
 }
 

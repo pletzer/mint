@@ -31,6 +31,11 @@ public:
         return this->points;
     }
 
+    /**
+     * Print the points
+     */
+    void print() const; 
+
 
 private:
 
