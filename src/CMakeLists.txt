@@ -4,6 +4,7 @@ include_directories(
 )
 
 set(LIB_FILES
+  mntPolylineParser.cpp
   mntLineGridIntersector.cpp
   mvtkCellLocator.cpp
   CmdLineArgParser.cpp
@@ -26,6 +27,7 @@ set(LIB_FILES
 )
 
 set(HEADER_FILES
+  mntPolylineParser.h
   mvtkCellLocator.h
   mntLineGridIntersector.h
   CmdLineArgParser.h

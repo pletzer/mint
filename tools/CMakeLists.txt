@@ -18,6 +18,12 @@ target_link_libraries(line_proj
                       ${VTK_LIBRARIES}
 )
 
+add_executable(line_proj3d line_proj3d.cxx)
+target_link_libraries(line_proj3d
+                      mint
+                      ${VTK_LIBRARIES}
+)
+
 add_executable(flux flux.cxx)
 target_link_libraries(flux
                       mint

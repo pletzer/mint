@@ -1,3 +1,4 @@
+#include <mntPolylineParser.h>
 #include <mntGrid.h>
 #include <mntPolysegmentIter.h>
 #include <CmdLineArgParser.h>
@@ -8,34 +9,11 @@
 #include <iostream>
 #include <cstdio>
 
-std::vector<double> parsePosition(const std::string& posStr) {
-    std::vector<double> res(3, 0);
-    size_t commaPos = posStr.find(',');
-    res[0] = atof(posStr.substr(0, commaPos).c_str());
-    res[1] = atof(posStr.substr(commaPos + 1).c_str());
-    return res;
-}
 
-std::vector< std::vector<double> > parsePoints(const std::string& pointsStr) {
-    std::vector< std::vector<double> > res;
-    const char leftDelim = '(';
-    const char rghtDelim = ')';
-    size_t leftPos = 0;
-    size_t rghtPos = pointsStr.size();
-    while(true) {
-        leftPos = pointsStr.find(leftDelim, leftPos);
-        rghtPos = pointsStr.find(rghtDelim, leftPos);
-        if (leftPos == std::string::npos || rghtPos == std::string::npos) {
-            // could not find a point or parentheses don't match
-            break;
-        }
-        leftPos++;
-        size_t n = rghtPos - leftPos;
-        std::string posStr = pointsStr.substr(leftPos, n);
-        res.push_back(parsePosition(posStr));
-    }
-    return res;
-}
+/**
+ * Compute line integral of edge field
+ *
+ */
 
 int main(int argc, char** argv) {
 
@@ -53,7 +31,9 @@ int main(int argc, char** argv) {
 
     if (success && !help) {
         std::string srcFile = args.get<std::string>("-i");
-        std::vector< std::vector<double> > points = parsePoints(args.get<std::string>("-p"));
+        PolylineParser pp(3); // 3d
+        pp.parse(args.get<std::string>("-p"));
+        const std::vector< Vector<double> >& points = pp.getPoints();
         size_t npts = points.size();
         std::cout << "Path:\n";
         for (size_t i = 0; i< npts; ++i) {

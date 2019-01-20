@@ -6,6 +6,12 @@ include_directories(
 
 configure_file(testGrid.cpp testGrid.cxx)
 
+add_executable(testPolylineParser testPolylineParser.cxx)
+target_link_libraries(testPolylineParser
+                    mint
+                    ${VTK_LIBRARIES}
+)
+
 add_executable(testLineGridIntersector testLineGridIntersector.cxx)
 target_link_libraries(testLineGridIntersector
                     mint
@@ -115,6 +121,7 @@ target_link_libraries(testCmdLineArgParserFB
                       ${VTK_LIBRARIES}
 )
 
+add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineGridIntersector COMMAND testLineGridIntersector)
 add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
