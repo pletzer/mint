@@ -144,12 +144,12 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
             for (size_t iseg = 0; iseg < numSegs; ++iseg) {
 
                 const vtkIdType srcCellId = polySegIter.getCellId();
-                const std::vector<double>& xia = polySegIter.getBegCellParamCoord();
-                const std::vector<double>& xib = polySegIter.getEndCellParamCoord();
+                const Vector<double>& xia = polySegIter.getBegCellParamCoord();
+                const Vector<double>& xib = polySegIter.getEndCellParamCoord();
                 const double coeff = polySegIter.getCoefficient();
 
-                std::vector<double> dxi({xib[0] - xia[0], xib[1] - xia[1]});
-                std::vector<double> xiMid({0.5*(xia[0] + xib[0]), 0.5*(xia[1] + xib[1])});
+                Vector<double> dxi = xib - xia;
+                Vector<double> xiMid = 0.5*(xia + xib);
 
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
                                                                                     srcCellId);

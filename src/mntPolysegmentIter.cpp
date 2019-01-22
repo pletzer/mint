@@ -97,8 +97,8 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
             size_t ib = inds[i1];
             double ta = this->ts[ia];
             double tb = this->ts[ib];
-            const std::vector<double>& xia = this->xis[ia];
-            const std::vector<double>& xib = this->xis[ib];
+            const Vector<double>& xia = this->xis[ia];
+            const Vector<double>& xib = this->xis[ib];
 
             // add the cell index, start linear param coord, etc.
             this->segCellIds.push_back(cId);
@@ -127,8 +127,8 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* loca
     std::vector<vtkIdType> sCellIds = this->segCellIds;
     std::vector<double> sTas = this->segTas;
     std::vector<double> sTbs = this->segTbs;
-    std::vector< std::vector<double> > sXias = this->segXias;
-    std::vector< std::vector<double> > sXibs = this->segXibs;
+    std::vector< Vector<double> > sXias = this->segXias;
+    std::vector< Vector<double> > sXibs = this->segXibs;
 
     // no need to sort this->segCoeffs since all the values are one
     for (size_t j = 0; j < n; ++j) {
@@ -189,13 +189,13 @@ PolysegmentIter::getCellId() const {
     return this->segCellIds[this->index];
 }
 
-const std::vector<double>& 
+const Vector<double>& 
 PolysegmentIter::getBegCellParamCoord() const {
     return this->segXias[this->index];
 }        
 
 
-const std::vector<double>& 
+const Vector<double>& 
 PolysegmentIter::getEndCellParamCoord() const {
     return this->segXibs[this->index];
 }
@@ -235,8 +235,8 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     std::vector<vtkIdType> sCellIds = this->segCellIds;
     std::vector<double> sTas = this->segTas;
     std::vector<double> sTbs = this->segTbs;
-    std::vector< std::vector<double> > sXias = this->segXias;
-    std::vector< std::vector<double> > sXibs = this->segXibs;
+    std::vector< Vector<double> > sXias = this->segXias;
+    std::vector< Vector<double> > sXibs = this->segXibs;
     std::vector<double> sCoeffs = this->segCoeffs;
     this->segCellIds.resize(0);
     this->segTas.resize(0);
@@ -391,7 +391,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     vtkGenericCell* cell = vtkGenericCell::New();
     vtkIdList* cellIds = vtkIdList::New();
 
-    double xi[] = {0., 0., 0.};
+    Vector<double> xi(3);
     double closestPoint[] = {0., 0., 0.};
     double weights[] = {0., 0., 0., 0.};
 
@@ -403,11 +403,11 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     double pEnd[] = {p1[0], p1[1], 0.};
 
     // add starting point
-    vtkIdType cId = this->locator->FindCell(pBeg, this->eps, cell, xi, weights);
+    vtkIdType cId = this->locator->FindCell(pBeg, this->eps, cell, &xi[0], weights);
     if (cId >= 0) {
         // success
         this->cellIds.push_back(cId);
-        this->xis.push_back(std::vector<double>(xi, xi + 2)); // copy
+        this->xis.push_back(xi); // copy
         this->ts.push_back(0.); // start of line
     }
 
@@ -429,10 +429,10 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
         const std::vector<double>& point = points[i];
 
         int found = this->grid->GetCell(cId)->EvaluatePosition((double*) &point[0], closestPoint, 
-                                                                subId, xi, dist, weights);
+                                                                subId, &xi[0], dist, weights);
         if (found) {
             this->cellIds.push_back(cId);
-            this->xis.push_back(std::vector<double>(xi, xi + 2));
+            this->xis.push_back(xi);
             this->ts.push_back(lambRay);
         }
         else {
@@ -442,11 +442,11 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     }
  
     // add end point 
-    cId = this->locator->FindCell(pEnd, this->eps, cell, xi, weights);
+    cId = this->locator->FindCell(pEnd, this->eps, cell, &xi[0], weights);
     if (cId >= 0) {
         // success
         this->cellIds.push_back(cId);
-        this->xis.push_back(std::vector<double>(xi, xi + 2));
+        this->xis.push_back(xi);
         this->ts.push_back(1.); // end of line
     }
 
