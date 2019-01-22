@@ -64,8 +64,8 @@ class RegridEdges(RegridBase):
                     # compute the weights from each src edge
                     ws = numpy.array([+ dxi[0] * (1.0 - xiMid[1]) * coeff,
                                       + dxi[1] * (0.0 + xiMid[0]) * coeff,
-                                      - dxi[0] * (0.0 + xiMid[1]) * coeff,
-                                      - dxi[1] * (1.0 - xiMid[0]) * coeff])
+                                      + dxi[0] * (0.0 + xiMid[1]) * coeff,
+                                      + dxi[1] * (1.0 - xiMid[0]) * coeff])
 
                     if not k in self.weights:
                         # initialize the weights

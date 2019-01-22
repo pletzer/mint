@@ -19,6 +19,22 @@ class ReaderBase(object):
             'grid': vtk.vtkUnstructuredGrid(),
         }
 
+        #       2
+        #   3--->----2
+        #   |        |
+        # 3 ^        ^ 1
+        #   |        |
+        #   0--->----1
+        #       0      
+
+
+        self.edgeIndex2PointInds = {
+        0: (0, 1),
+        1: (1, 2),
+        2: (3, 2), 
+        3: (0, 3),
+        }
+
 
     def getLonLatPoints(self):
         """
@@ -134,10 +150,9 @@ class ReaderBase(object):
         """
         numCells = self.getNumberOfCells()
         edgeArray = numpy.zeros((numCells, 4), numpy.float64)
-        for i0 in range(4):
-            # edge direction is counter-clockwise
-            i1 = (i0 + 1) % 4
-            edgeArray[:, i0] = streamFuncData[:, i1] - streamFuncData[:, i0]
+        for ie in range(4):
+            i0, i1 = self.edgeIndex2PointInds[ie]
+            edgeArray[:, ie] = streamFuncData[:, i1] - streamFuncData[:, i0]
         return edgeArray
 
     def getLoopIntegralsFromStreamData(self, streamFuncData):

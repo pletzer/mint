@@ -106,6 +106,12 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     double dstEdgePt1[] = {0., 0., 0.};
     double srcEdgePt0[] = {0., 0., 0.};
     double srcEdgePt1[] = {0., 0., 0.};
+    Vector<double> pcoords0(3);
+    Vector<double> pcoords1(3);
+    double dist2;
+    int subId;
+    double weights[8];
+
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
     vtkPoints* srcPoints = (*self)->srcGrid->GetPoints();
 
@@ -154,12 +160,46 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
                                                                                     srcCellId);
+                vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
 
                 // compute the weight contributions from each src edge
+                //std::vector<double> ws(numEdges, 1.0);
+
                 double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
                                + dxi[1] * (0.0 + xiMid[0]) * coeff,
-                               - dxi[0] * (0.0 + xiMid[1]) * coeff,
-                               - dxi[1] * (1.0 - xiMid[0]) * coeff};
+                               + dxi[0] * (0.0 + xiMid[1]) * coeff,
+                               + dxi[1] * (1.0 - xiMid[0]) * coeff};
+                        
+
+                /*
+                for (size_t j0 = 0; j0 < numEdges; ++j0) {
+                    vtkCell* srcEdge = srcCell->GetEdge(j0);
+                    vtkIdType jd0 = srcEdge->GetPointId(0);
+                    vtkIdType jd1 = srcEdge->GetPointId(1);
+                    srcPoints->GetPoint(jd0, srcEdgePt0);
+                    srcPoints->GetPoint(jd1, srcEdgePt1);
+                    srcCell->EvaluatePosition(srcEdgePt0, NULL, subId, &pcoords0[0], dist2, weights);
+                    srcCell->EvaluatePosition(srcEdgePt1, NULL, subId, &pcoords1[0], dist2, weights);
+                    Vector<double> xiEdge = 0.5*(pcoords0 + pcoords1);
+
+                    for (size_t d = 0; d < 3; ++d) {
+                        double xiM = xiMid[d];
+                        double xiMBar = 1.0 - xiM;
+                        double xiE = xiEdge[d];
+                        double xiEBar = 1.0 - xiE;
+
+                        //ws[j0] *= (1. - xiM)*(xiE - 0.5)*(xiE - 1.0)/((0.0 - 0.5)*(0.0 - 1.0)) \
+                        //        +        xiM*(xiE - 0.0)*(xiE - 1.0)/((0.5 - 0.0)*(0.5 - 1.0)) \
+                        //        +    dxi[j0]*(xiE - 0.0)*(xiE - 0.5)/((1.0 - 0.0)*(1.0 - 0.5));
+                        ws[j0] *= (xiM*xiE + xiMBar*xiEBar) * (1.0 + 4.0*xiEBar*xiE*(2.0*dxi[d] - 1.0));
+                    }
+                    ws[j0] *= coeff;
+
+                    std::cerr << "xiMid=" << xiMid << " dxi=" << dxi << " coeff=" << coeff << " ws=" << ws[j0] << " wsOld=" << wsOld[j0] << " xiEdge=" << xiEdge << '\n';
+                }
+                */
+
+
 
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
