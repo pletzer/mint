@@ -1,6 +1,6 @@
 #include <mntPolylineParser.h>
 #include <mntGrid.h>
-#include <mntPolysegmentIter.h>
+#include <mntPolysegmentIter3d.h>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
@@ -11,7 +11,7 @@
 
 
 /**
- * Compute line integral of edge field
+ * Compute line integral of a 3d edge field
  *
  */
 
@@ -52,14 +52,14 @@ int main(int argc, char** argv) {
             return 2;
         }
         // compute length of path and check it is != 0
-        double pathLength = 0;
+        double pathLengthSq = 0;
         for (size_t i = 0; i < npts - 1; ++i) {
             double dx = points[i + 1][0] - points[i + 0][0];
             double dy = points[i + 1][1] - points[i + 0][1];
             double dz = points[i + 1][2] - points[i + 0][2];
-            pathLength += sqrt(dx*dx + dy*dy + dz*dz);
+            pathLengthSq += dx*dx + dy*dy + dz*dz;
         }
-        if (pathLength == 0) {
+        if (pathLengthSq == 0) {
             std::cerr << "ERROR: path length must be > 0\n";
             return 3;
         }
@@ -81,10 +81,10 @@ int main(int argc, char** argv) {
         loc->SetNumberOfCellsPerBucket(args.get<int>("-N"));
         loc->BuildLocator();
 
-        double totFlux = 0.0;
         vtkDataArray* arr = grid->GetCellData()->GetArray(args.get<std::string>("-v").c_str());
 
         // iterate over segments
+        double lineIntegral = 0.0;
         size_t nsegs = npts - 1;
         for (size_t iseg0 = 0; iseg0 < nsegs; ++iseg0) {
 
@@ -99,9 +99,9 @@ int main(int argc, char** argv) {
             }
             std::cout << ")\n";
 
-            PolysegmentIter polyseg(grid, loc, &points[iseg0][0], &points[iseg1][0]);
+            PolysegmentIter3d polyseg(grid, loc, &points[iseg0][0], &points[iseg1][0]);
 
-            double fluxFromSegment = 0;
+            double integralFromSegment = 0;
             size_t numSegs = polyseg.getNumberOfSegments();
             polyseg.reset();
             for (size_t i = 0; i < numSegs; ++i) {
@@ -109,34 +109,63 @@ int main(int argc, char** argv) {
                 vtkIdType cellId = polyseg.getCellId();
                 double ta = polyseg.getBegLineParamCoord();
                 double tb = polyseg.getEndLineParamCoord();
-                const std::vector<double>& xia = polyseg.getBegCellParamCoord();
-                const std::vector<double>& xib = polyseg.getEndCellParamCoord();
+                const Vector<double>& xia = polyseg.getBegCellParamCoord();
+                const Vector<double>& xib = polyseg.getEndCellParamCoord();
                 double coeff = polyseg.getCoefficient();
 
                 if (args.get<bool>("-verbose")) {
                     std::cout << "\tsub segment: " << i << " cell=" << cellId << " coeff=" << coeff << " ta=" << ta << " tb=" << tb 
-                              << " xia=" << xia[0] << "," << xia[1] << " xib=" << xib[0] << "," << xib[1] << '\n';
+                              << " xia = " << xia << " xib = " << xib << '\n';
                 }
 
-                std::vector<double> dxi({xib[0] - xia[0], xib[1] - xia[1]});
-                std::vector<double> xiMid({0.5*(xia[0] + xib[0]), 0.5*(xia[1] + xib[1])});
+                // difference from start to end
+                Vector<double> dxi = xib - xia;
+                // mid point of the line
+                Vector<double> xiMid = 0.5*(xia + xib);
 
-                // interpolation weights
-                double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
-                               + dxi[1] * (0.0 + xiMid[0]) * coeff,
-                               + dxi[0] * (0.0 + xiMid[1]) * coeff,
-                               + dxi[1] * (1.0 - xiMid[0]) * coeff};
+                // this cell
+                vtkCell* cell = grid->GetCell(cellId);
+
+                double pointEdge0[3];
+                double pointEdge1[3];
+                double paramEdge0[3];
+                double paramEdge1[3];
+                int subId;
+                double dist2;
+                double weights[8];
+                vtkIdType pointId0, pointId1;
+                vtkPoints* gridPoints = grid->GetPoints();
 
                 double* fieldVals = arr->GetTuple(cellId);
 
-                if (args.get<bool>("-verbose")) {
-                    std::cout << "\t             weights        : " << ws[0] << "," << ws[1] << "," << ws[2] << "," << ws[3] << '\n';
-                    std::cout << "\t             edge field vals: " << fieldVals[0] << "," << fieldVals[1] << "," << fieldVals[2] << "," << fieldVals[3] << '\n';
-                }
+                // iterate over the edges
+                for (int iEdge = 0; iEdge < cell->GetNumberOfEdges(); ++iEdge) {
 
-                // iterate over edges
-                for (size_t ie = 0; ie < 4; ++ie) {
-                    fluxFromSegment += ws[ie] * fieldVals[ie];
+                    vtkCell* edge = cell->GetEdge(iEdge);
+                    pointId0 = edge->GetPointId(0);
+                    pointId1 = edge->GetPointId(1);
+                    gridPoints->GetPoint(pointId0, pointEdge0);
+                    gridPoints->GetPoint(pointId1, pointEdge1);
+                    // get the parametric edge positions
+                    edge->EvaluatePosition(pointEdge0, NULL, subId, paramEdge0, dist2, weights);
+                    edge->EvaluatePosition(pointEdge1, NULL, subId, paramEdge1, dist2, weights);
+
+                    // compute the projection of the line onto the edge basis function
+                    double basisIntegral = 1.0;
+                    for ( size_t j = 0; j < 3; ++j) {
+                        double paramEdgeMid = 0.5*(paramEdge0[j] + paramEdge1[j]);
+                        double paramEdgeMidBar = 1.0 - paramEdgeMid;
+                        double xiM = xiMid[j];
+                        double xiMBar = 1.0 - xiM;
+                        basisIntegral *= paramEdgeMidBar*xiMBar + paramEdgeMid*xiM + 4.0*paramEdgeMidBar*paramEdgeMid*dxi[j];
+                    }
+
+                    lineIntegral += fieldVals[iEdge] * basisIntegral;
+
+                    if (args.get<bool>("-verbose")) {
+                        std::cout << "\t\tedge: " << iEdge << " weight: " << basisIntegral << " field: " << fieldVals[iEdge] << '\n';
+                    }
+
                 }
 
                 polyseg.next();
@@ -148,12 +177,9 @@ int main(int argc, char** argv) {
             if (std::abs(tTotal - 1.0) > tol) {
                 std::cout << "Warning: total integrated length for segment " << iseg0 << " is " << tTotal << " != 1 (diff=" << tTotal - 1. << ")\n";
             }
-
-            // add this cell contribution
-            totFlux += fluxFromSegment;
         }
 
-        std::cout << "total flux is: " << totFlux << '\n';
+        std::cout << "total line integral is: " << lineIntegral << '\n';
 
         // cleanup
         mnt_grid_del(&srcGrid);

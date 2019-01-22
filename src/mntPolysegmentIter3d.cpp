@@ -18,8 +18,8 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
     this->grid = grid;
     this->locator = locator;
 
-    double pcoords0[3];
-    double pcoords1[3];
+    Vector<double> pcoords0(3);
+    Vector<double> pcoords1(3);
     double weights[8];
     int subId;
     double dist2;
@@ -84,7 +84,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
         Vector<double> pt = direction;
         pt *= tValues[iSeg + 0];
         pt += pA;
-        inside0 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], NULL, subId, pcoords0, dist2, weights);
+        inside0 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], NULL, subId, &pcoords0[0], dist2, weights);
         if (inside0 != 1) {
             std::cerr << "Warning: could not find pcoords at seg start t = " 
                       << tValues[iSeg + 0] << " point = " << pt << " code = " << inside0 << '\n';
@@ -93,7 +93,7 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
 
         // parametric coords at the end of the segment
         pt += tDiff * direction;
-        inside1 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], NULL, subId, pcoords1, dist2, weights);
+        inside1 = this->grid->GetCell(cellId)->EvaluatePosition(&pt[0], NULL, subId, &pcoords1[0], dist2, weights);
         if (inside1 != 1) {
             std::cerr << "Warning: could not find pcoords at seg end t = " 
                       << tValues[iSeg + 1] << " point = " << pt << " code = " << inside0 << '\n';
@@ -103,8 +103,8 @@ PolysegmentIter3d::PolysegmentIter3d(vtkUnstructuredGrid* grid, vtkCellLocator* 
         this->cellIds.push_back(cellId);
         this->segTas.push_back(tValues[iSeg + 0]);
         this->segTbs.push_back(tValues[iSeg + 1]);
-        this->segXias.push_back( std::vector<double>(pcoords0, pcoords0 + 3) );
-        this->segXibs.push_back( std::vector<double>(pcoords1, pcoords1 + 3) );
+        this->segXias.push_back(pcoords0);
+        this->segXibs.push_back(pcoords1);
 
     }
 
@@ -147,13 +147,13 @@ PolysegmentIter3d::getCellId() const {
     return this->cellIds[this->index];
 }
 
-const std::vector<double>& 
+const Vector<double>& 
 PolysegmentIter3d::getBegCellParamCoord() const {
     return this->segXias[this->index];
 }        
 
 
-const std::vector<double>& 
+const Vector<double>& 
 PolysegmentIter3d::getEndCellParamCoord() const {
     return this->segXibs[this->index];
 }

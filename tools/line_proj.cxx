@@ -1,3 +1,5 @@
+#include <MvVector.h>
+#include <mntPolylineParser.h>
 #include <mntGrid.h>
 #include <mntPolysegmentIter.h>
 #include <CmdLineArgParser.h>
@@ -8,34 +10,10 @@
 #include <iostream>
 #include <cstdio>
 
-std::vector<double> parsePosition(const std::string& posStr) {
-    std::vector<double> res(3, 0);
-    size_t commaPos = posStr.find(',');
-    res[0] = atof(posStr.substr(0, commaPos).c_str());
-    res[1] = atof(posStr.substr(commaPos + 1).c_str());
-    return res;
-}
-
-std::vector< std::vector<double> > parsePoints(const std::string& pointsStr) {
-    std::vector< std::vector<double> > res;
-    const char leftDelim = '(';
-    const char rghtDelim = ')';
-    size_t leftPos = 0;
-    size_t rghtPos = pointsStr.size();
-    while(true) {
-        leftPos = pointsStr.find(leftDelim, leftPos);
-        rghtPos = pointsStr.find(rghtDelim, leftPos);
-        if (leftPos == std::string::npos || rghtPos == std::string::npos) {
-            // could not find a point or parentheses don't match
-            break;
-        }
-        leftPos++;
-        size_t n = rghtPos - leftPos;
-        std::string posStr = pointsStr.substr(leftPos, n);
-        res.push_back(parsePosition(posStr));
-    }
-    return res;
-}
+/**
+ * Compute line integral of a 2d edge field
+ *
+ */
 
 int main(int argc, char** argv) {
 
@@ -53,13 +31,13 @@ int main(int argc, char** argv) {
 
     if (success && !help) {
         std::string srcFile = args.get<std::string>("-i");
-        std::vector< std::vector<double> > points = parsePoints(args.get<std::string>("-p"));
+        PolylineParser pp(2);
+        pp.parse(args.get<std::string>("-p"));
+        const std::vector< Vector<double> >& points = pp.getPoints();
         size_t npts = points.size();
         std::cout << "Path:\n";
         for (size_t i = 0; i< npts; ++i) {
-            std::cout << i << ": ";
-            for (size_t j = 0; j < points[i].size(); ++j) std::cout << points[i][j] << ", ";
-            std::cout << '\n';
+            std::cout << i << ": " << points[i] << '\n';
         }
 
         // checks
@@ -72,14 +50,14 @@ int main(int argc, char** argv) {
             return 2;
         }
         // compute length of path and check it is != 0
-        double pathLength = 0;
+        double pathLengthSq = 0;
         for (size_t i = 0; i < npts - 1; ++i) {
             double dx = points[i + 1][0] - points[i + 0][0];
             double dy = points[i + 1][1] - points[i + 0][1];
             double dz = points[i + 1][2] - points[i + 0][2];
-            pathLength += sqrt(dx*dx + dy*dy + dz*dz);
+            pathLengthSq += dx*dx + dy*dy + dz*dz;
         }
-        if (pathLength == 0) {
+        if (pathLengthSq == 0) {
             std::cerr << "ERROR: path length must be > 0\n";
             return 3;
         }

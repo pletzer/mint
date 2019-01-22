@@ -1,3 +1,4 @@
+#include <MvVector.h>
 #include <mntLineTriangleIntersector.h>
 #include <vtkUnstructuredGrid.h>
 //#include <vtkOBBTree.h>
@@ -59,14 +60,14 @@ public:
      * Get the current cell parametric coordinates at the beginning of segment
      * @return 2d array
      */
-    const std::vector<double>& getBegCellParamCoord() const;
+    const Vector<double>& getBegCellParamCoord() const;
 
 
     /**
      * Get the current cell parametric coordinates at the end of segment
      * @return 2d array
      */
-    const std::vector<double>& getEndCellParamCoord() const;
+    const Vector<double>& getEndCellParamCoord() const;
 
 
     /**
@@ -100,8 +101,8 @@ private:
     std::vector<double> segTbs;
 
     // begin/end cell param coords
-    std::vector< std::vector<double> > segXias;
-    std::vector< std::vector<double> > segXibs;    
+    std::vector< Vector<double> > segXias;
+    std::vector< Vector<double> > segXibs;    
 
     vtkUnstructuredGrid* grid;
 
