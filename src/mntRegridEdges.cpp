@@ -104,6 +104,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     vtkIdList* srcCellIds = vtkIdList::New();
     double dstEdgePt0[] = {0., 0., 0.};
     double dstEdgePt1[] = {0., 0., 0.};
+    double srcEdgePt0[] = {0., 0., 0.};
+    double srcEdgePt1[] = {0., 0., 0.};
+    vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
+    vtkPoints* srcPoints = (*self)->srcGrid->GetPoints();
 
     (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
     (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
@@ -114,26 +118,23 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
         // get this cell vertex Ids
         (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
 
+        vtkCell* dstCell = (*self)->dstGrid->GetCell(dstCellId);
+        int numEdges = dstCell->GetNumberOfEdges();
+
         // iterate over the four edges of each dst cell
-        for (size_t i0 = 0; i0 < 4; ++i0) {
+        for (size_t i0 = 0; i0 < numEdges; ++i0) {
 
-            size_t i1 = (i0 + 1) % 4;
-
-            // get the start/end points of the dst edge
-            vtkIdType id0 = dstPtIds->GetId(i0);
-            vtkIdType id1 = dstPtIds->GetId(i1);
-                
-            (*self)->dstGrid->GetPoints()->GetPoint(id0, dstEdgePt0);
-            (*self)->dstGrid->GetPoints()->GetPoint(id1, dstEdgePt1);
+            vtkCell* dstEdge = dstCell->GetEdge(i0);
+            vtkIdType id0 = dstEdge->GetPointId(0);
+            vtkIdType id1 = dstEdge->GetPointId(1);
+              
+            dstPoints->GetPoint(id0, dstEdgePt0);
+            dstPoints->GetPoint(id1, dstEdgePt1);
 
             // break the edge into sub-edges
             PolysegmentIter polySegIter = PolysegmentIter((*self)->srcGrid, 
                                                           (*self)->srcLoc,
                                                           dstEdgePt0, dstEdgePt1);
-
-            //std::cout << "dst cell " << dstCellId
-            //          << " dstEdgePt0=" << dstEdgePt0[0] << ',' << dstEdgePt0[1]
-            //          << " dstEdgePt1=" << dstEdgePt1[0] << ',' << dstEdgePt1[1] << '\n';
 
             // number of sub-segments
             size_t numSegs = polySegIter.getNumberOfSegments();
@@ -160,11 +161,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                                - dxi[0] * (0.0 + xiMid[1]) * coeff,
                                - dxi[1] * (1.0 - xiMid[0]) * coeff};
 
-                //std::cout << "\t seg=" << iseg << " srcCellId=" << srcCellId << " xia=" << xia[0] << ',' << xia[1] << " xib=" << xib[0] << ',' << xib[1]
-                //          << " coeff=" << coeff << " dxi=" << dxi[0] << ',' << dxi[1] << '\n';
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
-                    // initialize the weights to a zero 4x4 matrix
+                    // initialize the weights to a zero matrix
                     std::vector<double> zeros(4, 0.0);
                     std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv 
                       = std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> >(k, zeros);
