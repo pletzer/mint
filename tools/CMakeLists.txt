@@ -12,6 +12,13 @@ target_link_libraries(regrid_edges
                       ${NETCDF_LIBRARIES}
 )
 
+add_executable(regrid_edges3d regrid_edges3d.cxx)
+target_link_libraries(regrid_edges3d
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES}
+)
+
 add_executable(line_proj line_proj.cxx)
 target_link_libraries(line_proj
                       mint
