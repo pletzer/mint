@@ -157,7 +157,7 @@ add_test(NAME regrid_edges16
                  "-o" "regrid_edges_output.vtk")
 # make sure the max loop integral is very small
 set_tests_properties(regrid_edges16 PROPERTIES
-                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: 0/[^/]*/[^e]+e-1[0-9]")
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regrid_edges64
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
@@ -167,5 +167,5 @@ add_test(NAME regrid_edges64
                  "-o" "regrid_edges_output.vtk")
 # make sure the max loop integral is very small
 set_tests_properties(regrid_edges64 PROPERTIES
-                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: 0/[^/]*/[^e]+e-1[0-9]")
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 

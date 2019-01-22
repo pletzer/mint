@@ -163,15 +163,16 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
 
                 // compute the weight contributions from each src edge
-                //std::vector<double> ws(numEdges, 1.0);
+                std::vector<double> ws(numEdges, 1.0);
 
-                double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
+                /*
+                double wsOld[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
                                + dxi[1] * (0.0 + xiMid[0]) * coeff,
                                + dxi[0] * (0.0 + xiMid[1]) * coeff,
                                + dxi[1] * (1.0 - xiMid[0]) * coeff};
+                               */
                         
 
-                /*
                 for (size_t j0 = 0; j0 < numEdges; ++j0) {
                     vtkCell* srcEdge = srcCell->GetEdge(j0);
                     vtkIdType jd0 = srcEdge->GetPointId(0);
@@ -195,12 +196,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                     }
                     ws[j0] *= coeff;
 
-                    std::cerr << "xiMid=" << xiMid << " dxi=" << dxi << " coeff=" << coeff << " ws=" << ws[j0] << " wsOld=" << wsOld[j0] << " xiEdge=" << xiEdge << '\n';
+                    //std::cerr << "xiMid=" << xiMid << " dxi=" << dxi << " coeff=" << coeff << " ws=" << ws[j0] << " wsOld=" << wsOld[j0] << " xiEdge=" << xiEdge << '\n';
                 }
-                */
-
-
-
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
                     // initialize the weights to a zero matrix
