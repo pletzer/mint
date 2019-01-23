@@ -180,18 +180,16 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                     for (size_t d = 0; d < 3; ++d) {
 
                         double xiM = xiMid[d];
-                        double xiMBar = 1.0 - xiM;
+                        double x = 0.5*(srcCellParamCoords[i01[0]*3 + d] + srcCellParamCoords[i01[1]*3 + d]);
 
-                        // mid-edge paramatric position, serves to determine on which edge we are
-                        double xiE = 0.5*(srcCellParamCoords[i01[0]*3 + d] + srcCellParamCoords[i01[1]*3 + d]);
-                        double xiEBar = 1.0 - xiE;
+                        // use Lagrange interpolation to evaluate the basis function integral for
+                        // any for ht e3 possible x values in {0, 0.5, 1}
+                        ws[j0] *= (1.0 - xiM) * 2*(x - 0.5)*(x - 1.0) \
+                                -      dxi[d] * 2*(x - 0.0)*(x - 1.0) \
+                                + (0.0 + xiM) * 2*(x - 0.0)*(x - 0.5);
 
-                        //ws[j0] *= (1. - xiM)*(xiE - 0.5)*(xiE - 1.0)/((0.0 - 0.5)*(0.0 - 1.0)) \
-                        //        +        xiM*(xiE - 0.0)*(xiE - 1.0)/((0.5 - 0.0)*(0.5 - 1.0)) \
-                        //        +    dxi[j0]*(xiE - 0.0)*(xiE - 0.5)/((1.0 - 0.0)*(1.0 - 0.5));
-                        ws[j0] *= (xiM*xiE + xiMBar*xiEBar) * (1.0 + 4.0*xiEBar*xiE*(2.0*dxi[d] - 1.0));
                     }
-                    
+
                     // coeff accounts for the duplicity, some segments are shared between cells
                     ws[j0] *= coeff;
                 }
