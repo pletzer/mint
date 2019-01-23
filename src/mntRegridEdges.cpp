@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <vtkIdList.h>
 #include <netcdf.h>
+#include <vtkHexahedron.h>
+#include <vtkCell.h>
 
 extern "C"
 int mnt_regridedges_new(RegridEdges_t** self) {
@@ -146,7 +148,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
             size_t numSegs = polySegIter.getNumberOfSegments();
 
             // iterate over the sub-segments. Each sub-segment gets a src cell Id,
-            //start/end cell param coords, the coefficient...
+            // start/end cell param coords, the coefficient...
             polySegIter.reset();
             for (size_t iseg = 0; iseg < numSegs; ++iseg) {
 
@@ -161,32 +163,27 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
                                                                                     srcCellId);
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
+                double* srcCellParamCoords = srcCell->GetParametricCoords();
+                vtkHexahedron* srcHex = dynamic_cast<vtkHexahedron*>(srcCell);
 
-                // compute the weight contributions from each src edge
+                // compute the weight contributions from each src edge, one value 
+                // per edge
                 std::vector<double> ws(numEdges, 1.0);
-
-                /*
-                double wsOld[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
-                               + dxi[1] * (0.0 + xiMid[0]) * coeff,
-                               + dxi[0] * (0.0 + xiMid[1]) * coeff,
-                               + dxi[1] * (1.0 - xiMid[0]) * coeff};
-                               */
                         
-
+                // iterate over the edges of the src cell
                 for (size_t j0 = 0; j0 < numEdges; ++j0) {
-                    vtkCell* srcEdge = srcCell->GetEdge(j0);
-                    vtkIdType jd0 = srcEdge->GetPointId(0);
-                    vtkIdType jd1 = srcEdge->GetPointId(1);
-                    srcPoints->GetPoint(jd0, srcEdgePt0);
-                    srcPoints->GetPoint(jd1, srcEdgePt1);
-                    srcCell->EvaluatePosition(srcEdgePt0, NULL, subId, &pcoords0[0], dist2, weights);
-                    srcCell->EvaluatePosition(srcEdgePt1, NULL, subId, &pcoords1[0], dist2, weights);
-                    Vector<double> xiEdge = 0.5*(pcoords0 + pcoords1);
 
+                    // get the cell indices of the vertices for the edge
+                    int* i01 = srcHex->GetEdgeArray(j0);
+
+                    // compute the interpolation weight, a product for every dimension
                     for (size_t d = 0; d < 3; ++d) {
+
                         double xiM = xiMid[d];
                         double xiMBar = 1.0 - xiM;
-                        double xiE = xiEdge[d];
+
+                        // mid-edge paramatric position, serves to determine on which edge we are
+                        double xiE = 0.5*(srcCellParamCoords[i01[0]*3 + d] + srcCellParamCoords[i01[1]*3 + d]);
                         double xiEBar = 1.0 - xiE;
 
                         //ws[j0] *= (1. - xiM)*(xiE - 0.5)*(xiE - 1.0)/((0.0 - 0.5)*(0.0 - 1.0)) \
@@ -194,9 +191,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                         //        +    dxi[j0]*(xiE - 0.0)*(xiE - 0.5)/((1.0 - 0.0)*(1.0 - 0.5));
                         ws[j0] *= (xiM*xiE + xiMBar*xiEBar) * (1.0 + 4.0*xiEBar*xiE*(2.0*dxi[d] - 1.0));
                     }
+                    
+                    // coeff accounts for the duplicity, some segments are shared between cells
                     ws[j0] *= coeff;
-
-                    //std::cerr << "xiMid=" << xiMid << " dxi=" << dxi << " coeff=" << coeff << " ws=" << ws[j0] << " wsOld=" << wsOld[j0] << " xiEdge=" << xiEdge << '\n';
                 }
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
