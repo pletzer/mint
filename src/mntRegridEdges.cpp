@@ -16,6 +16,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->weights.clear();
     (*self)->numSrcCells = 0;
     (*self)->numDstCells = 0;
+    (*self)->numPointsPerCell = 4; // 2d
     (*self)->numEdgesPerCell = 4; // 2d
     (*self)->srcGridObj = NULL;
     (*self)->dstGridObj = NULL;
@@ -43,8 +44,9 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 extern "C"
 int mnt_regridedges_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) {
     // check
-    if (grid->GetNumberOfPoints() != 4 * grid->GetNumberOfCells()) {
-        std::cerr << "mnt_regridedges_setSrcGrid: ERROR num points != 4 * num cells!\n";
+    if (grid->GetNumberOfPoints() != (*self)->numPointsPerCell * grid->GetNumberOfCells()) {
+        std::cerr << "mnt_regridedges_setSrcGrid: ERROR num points != "
+                  << (*self)->numPointsPerCell << " * num cells!\n";
         return 1;
     }
 
@@ -57,8 +59,9 @@ int mnt_regridedges_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) 
 extern "C"
 int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) {
     // check
-    if (grid->GetNumberOfPoints() != 4 * grid->GetNumberOfCells()) {
-        std::cerr << "mnt_regridedges_setDstGrid: ERROR num points != 4 * num cells!\n";
+    if (grid->GetNumberOfPoints() != (*self)->numPointsPerCell * grid->GetNumberOfCells()) {
+        std::cerr << "mnt_regridedges_setDstGrid: ERROR num points != "
+                  << (*self)->numPointsPerCell << "* num cells!\n";
         return 1;
     }
 
@@ -203,7 +206,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
                     // initialize the weights to a zero matrix
-                    std::vector<double> zeros(4, 0.0);
+                    std::vector<double> zeros( (*self)->numEdgesPerCell, 0.0 );
                     std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv 
                       = std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> >(k, zeros);
                     (*self)->weights.insert(kv);

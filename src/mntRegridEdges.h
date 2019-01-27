@@ -19,6 +19,7 @@ struct RegridEdges_t {
     std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> > weights;
     size_t numSrcCells;
     size_t numDstCells;
+    size_t numPointsPerCell;
     size_t numEdgesPerCell;
     Grid_t* srcGridObj;
     Grid_t* dstGridObj;

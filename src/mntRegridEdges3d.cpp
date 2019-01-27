@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <vtkIdList.h>
 #include <netcdf.h>
+#include <vtkHexahedron.h>
+#include <vtkCell.h>
 
 extern "C"
 int mnt_regridedges3d_new(RegridEdges3d_t** self) {
@@ -14,7 +16,8 @@ int mnt_regridedges3d_new(RegridEdges3d_t** self) {
     (*self)->weights.clear();
     (*self)->numSrcCells = 0;
     (*self)->numDstCells = 0;
-    (*self)->numEdgesPerCell = 8; // 3d
+    (*self)->numPointsPerCell = 8; // 3d
+    (*self)->numEdgesPerCell = 12; // 3d
     (*self)->srcGridObj = NULL;
     (*self)->dstGridObj = NULL;
     return 0;
@@ -41,8 +44,9 @@ int mnt_regridedges3d_del(RegridEdges3d_t** self) {
 extern "C"
 int mnt_regridedges3d_setSrcGrid(RegridEdges3d_t** self, vtkUnstructuredGrid* grid) {
     // check
-    if (grid->GetNumberOfPoints() != 8 * grid->GetNumberOfCells()) {
-        std::cerr << "mnt_regridedges3d_setSrcGrid: ERROR num points != 8 * num cells!\n";
+    if (grid->GetNumberOfPoints() != (*self)->numPointsPerCell * grid->GetNumberOfCells()) {
+        std::cerr << "mnt_regridedges3d_setSrcGrid: ERROR num points != "
+                  << (*self)->numPointsPerCell << " * num cells!\n";
         return 1;
     }
 
@@ -55,8 +59,9 @@ int mnt_regridedges3d_setSrcGrid(RegridEdges3d_t** self, vtkUnstructuredGrid* gr
 extern "C"
 int mnt_regridedges3d_setDstGrid(RegridEdges3d_t** self, vtkUnstructuredGrid* grid) {
     // check
-    if (grid->GetNumberOfPoints() != 8 * grid->GetNumberOfCells()) {
-        std::cerr << "mnt_regridedges3d_setDstGrid: ERROR num points != 8 * num cells!\n";
+    if (grid->GetNumberOfPoints() != (*self)->numPointsPerCell * grid->GetNumberOfCells()) {
+        std::cerr << "mnt_regridedges3d_setDstGrid: ERROR num points != " 
+                  << (*self)->numPointsPerCell << " * num cells!\n";
         return 1;
     }
 
@@ -86,11 +91,11 @@ int mnt_regridedges3d_build(RegridEdges3d_t** self, int numCellsPerBucket) {
 
     // checks
     if (!(*self)->srcGrid) {
-        std::cerr << "mnt_regridedges3d_build: ERROR must set source grid!\n";
+        std::cerr << "mnt_regridedges_build: ERROR must set source grid!\n";
         return 1;
     }
     if (!(*self)->dstGrid) {
-        std::cerr << "mnt_regridedges3d_build: ERROR must set destination grid!\n";
+        std::cerr << "mnt_regridedges_build: ERROR must set destination grid!\n";
         return 2;
     }
 
@@ -108,15 +113,15 @@ int mnt_regridedges3d_build(RegridEdges3d_t** self, int numCellsPerBucket) {
     double srcEdgePt1[] = {0., 0., 0.};
     Vector<double> pcoords0(3);
     Vector<double> pcoords1(3);
-    double interpWeights[12];
-    int subId;
     double dist2;
-
-    (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
-    (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    int subId;
+    double weights[8];
 
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
     vtkPoints* srcPoints = (*self)->srcGrid->GetPoints();
+
+    (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
+    (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // iterate over the dst grid cells
     for (vtkIdType dstCellId = 0; dstCellId < (*self)->numDstCells; ++dstCellId) {
@@ -125,16 +130,15 @@ int mnt_regridedges3d_build(RegridEdges3d_t** self, int numCellsPerBucket) {
         (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
 
         vtkCell* dstCell = (*self)->dstGrid->GetCell(dstCellId);
+        int numEdges = dstCell->GetNumberOfEdges();
 
-        // iterate over the edges of each dst cell
-        for (size_t i0 = 0; i0 < dstCell->GetNumberOfEdges(); ++i0) {
+        // iterate over the four edges of each dst cell
+        for (size_t i0 = 0; i0 < numEdges; ++i0) {
 
             vtkCell* dstEdge = dstCell->GetEdge(i0);
-
-            // get the start/end points of the dst edge
             vtkIdType id0 = dstEdge->GetPointId(0);
             vtkIdType id1 = dstEdge->GetPointId(1);
-                
+              
             dstPoints->GetPoint(id0, dstEdgePt0);
             dstPoints->GetPoint(id1, dstEdgePt1);
 
@@ -143,57 +147,66 @@ int mnt_regridedges3d_build(RegridEdges3d_t** self, int numCellsPerBucket) {
                                                               (*self)->srcLoc,
                                                               dstEdgePt0, dstEdgePt1);
 
-            //std::cout << "dst cell " << dstCellId
-            //          << " dstEdgePt0=" << dstEdgePt0[0] << ',' << dstEdgePt0[1]
-            //          << " dstEdgePt1=" << dstEdgePt1[0] << ',' << dstEdgePt1[1] << '\n';
-
             // number of sub-segments
             size_t numSegs = polySegIter.getNumberOfSegments();
 
             // iterate over the sub-segments. Each sub-segment gets a src cell Id,
-            //start/end cell param coords, the coefficient...
+            // start/end cell param coords, the coefficient...
             polySegIter.reset();
             for (size_t iseg = 0; iseg < numSegs; ++iseg) {
 
                 const vtkIdType srcCellId = polySegIter.getCellId();
                 const Vector<double>& xia = polySegIter.getBegCellParamCoord();
                 const Vector<double>& xib = polySegIter.getEndCellParamCoord();
+                const double coeff = polySegIter.getCoefficient();
 
                 Vector<double> dxi = xib - xia;
                 Vector<double> xiMid = 0.5*(xia + xib);
 
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
                                                                                     srcCellId);
-
-                // compute the interpolation weights
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
-                int numSrcCellEdges = srcCell->GetNumberOfEdges();
-                std::vector<double> ws(numSrcCellEdges);
-                for (int j0 = 0; j0 < numSrcCellEdges; ++j0) {
-                    vtkCell* srcEdge = srcCell->GetEdge(j0);
-                    // get the start/end points of the dst edge
-                    vtkIdType jd0 = srcEdge->GetPointId(0);
-                    vtkIdType jd1 = srcEdge->GetPointId(1);
-            
-                    srcPoints->GetPoint(jd0, srcEdgePt0);
-                    srcPoints->GetPoint(jd1, srcEdgePt1);
+                double* srcCellParamCoords = srcCell->GetParametricCoords();
+                vtkHexahedron* srcHex = dynamic_cast<vtkHexahedron*>(srcCell);
 
-                    srcCell->EvaluatePosition(srcEdgePt0, NULL, subId, &pcoords0[0], dist2, interpWeights);
-                    srcCell->EvaluatePosition(srcEdgePt1, NULL, subId, &pcoords1[0], dist2, interpWeights);
+                // compute the weight contributions from each src edge, one value 
+                // per edge
+                std::vector<double> ws(numEdges, 1.0);
+                        
+                // iterate over the edges of the src cell
+                for (size_t j0 = 0; j0 < numEdges; ++j0) {
 
-                    ws[j0] = 1.0;
-                    for (size_t k = 0; k < 3; ++k) {
-                        double xiM = xiMid[k];
-                        double xiMBar = 1.0 - xiMid[k];
-                        double xiEdge = 0.5*(pcoords0[k] + pcoords1[k]);
-                        double xiEdgeBar = 1.0 - xiEdge;
-                        ws[j0] *= xiMBar*xiEdgeBar + xiM*xiEdge + 4.0*xiEdgeBar*xiEdge*dxi[k];
+                    // get the cell indices of the vertices for the edge
+                    int* i01 = srcHex->GetEdgeArray(j0);
+
+                    // compute the interpolation weight, a product for every dimension
+                    for (size_t d = 0; d < 3; ++d) {
+
+                        double xiM = xiMid[d];
+                        int i0 = i01[0];
+                        int i1 = i01[1];
+
+                        // mid point of edge in parameter space
+                        double x = 0.5*(srcCellParamCoords[i0*3 + d] + srcCellParamCoords[i1*3 + d]);
+
+                        // use Lagrange interpolation to evaluate the basis function integral for
+                        // any for hte 3 possible x values in {0, 0.5, 1}
+                        double xm00 = x;
+                        double xm05 = x - 0.5;
+                        double xm10 = x - 1.0;
+                        ws[j0] *= (1.0 - xiM) * xm05*xm10 \
+                                -      dxi[d] * xm00*xm10 \
+                                + (0.0 + xiM) * xm00*xm05;
+
                     }
+
+                    // coeff accounts for the duplicity, some segments are shared between cells
+                    ws[j0] *= 2*coeff;
                 }
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
-                    // initialize the weights to a zero 4x4 matrix
-                    std::vector<double> zeros(numSrcCellEdges, 0.0);
+                    // initialize the weights to a zero matrix
+                    std::vector<double> zeros( (*self)->numEdgesPerCell, 0.0 );
                     std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv 
                       = std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> >(k, zeros);
                     (*self)->weights.insert(kv);
@@ -365,7 +378,7 @@ int mnt_regridedges3d_dump(RegridEdges3d_t** self, const char* filename) {
         dstCellIds[i] = it->first.first;
         srcCellIds[i] = it->first.second;
         for (int j = 0; j < (*self)->numEdgesPerCell; ++j) {
-        weights[(*self)->numEdgesPerCell*i + j] = it->second[j];
+            weights[(*self)->numEdgesPerCell*i + j] = it->second[j];
         }
         i++;
     }

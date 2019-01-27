@@ -70,7 +70,7 @@ extern "C"
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
 
 /**
- * Load grid from file
+ * Load grid from a VTK file
  * @param self instance of Grid_t
  * @param filename file name
  * @return error code (0 = OK)
@@ -80,7 +80,7 @@ extern "C"
 int mnt_grid_load(Grid_t** self, const char* filename);
 
 /**
- * Load grid to file
+ * Dump the grid to a VTK file
  * @param self instance of Grid_t
  * @param filename file name
  * @return error code (0 = OK)
