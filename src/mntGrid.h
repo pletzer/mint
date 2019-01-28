@@ -10,9 +10,15 @@
 #define MNT_GRID
 
 struct Grid_t {
+
+	// vertix raw data
+	double* verts;
+
+    // VTK data needed to construct a grid
     vtkDoubleArray* pointData;
     vtkPoints* points;
     vtkUnstructuredGrid* grid;
+
     vtkUnstructuredGridReader* reader;
     vtkUnstructuredGridWriter* writer;
     std::vector<vtkDoubleArray*> doubleArrays;
@@ -63,11 +69,20 @@ int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const 
 /**
  * Get the VTK unstructured grid
  * @param self instance of Grid_t
- * @param grid_ptr prointer to the VTK grid
  * @return error code (0 = OK)
  */
 extern "C"
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
+
+/**
+ * Load grid from a 2D Ugrid file
+ * @param self instance of Grid_t
+ * @param filename file name
+ * @return error code (0 = OK)
+ * @note user should invoke mnt_grid_del to free memory
+ */
+extern "C"
+int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename);
 
 /**
  * Load grid from a VTK file

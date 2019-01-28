@@ -52,12 +52,14 @@ add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES}
 )
 
 add_executable(testCellLocator testCellLocator.cxx)
 target_link_libraries(testCellLocator
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES}
 )
 
 add_executable(testPrintAddressF testPrintAddressF.f90)
@@ -65,6 +67,7 @@ set_target_properties(testPrintAddressF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testPrintAddressF
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES}
 )
 
 add_executable(testCellLocatorF testCellLocatorF.f90)
@@ -72,6 +75,7 @@ set_target_properties(testCellLocatorF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCellLocatorF
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES}
 )
 
 add_executable(testCellLocatorFromFileF testCellLocatorFromFileF.f90)
@@ -79,6 +83,7 @@ set_target_properties(testCellLocatorFromFileF PROPERTIES LINKER_LANGUAGE Fortra
 target_link_libraries(testCellLocatorFromFileF
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES}
 )
 
 add_executable(testC2fString testC2fString.f90)
