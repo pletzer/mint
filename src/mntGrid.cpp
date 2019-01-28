@@ -128,6 +128,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     // open the file
     int ncid;
     int ier = nc_open(filename, NC_NOWRITE, &ncid);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: cannot open " << filename << "\n";
+        return 1;
+    }
 
     size_t ncells = 0;
     const int four = 4;
@@ -141,6 +145,11 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     // get the number of variables
     int nvars;
     ier = nc_inq_nvars(ncid, &nvars);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: after inquiring the number of variables (ier = " 
+                  << ier << ")\n";
+        return 1;
+    }
 
     // find the latitudes, longitudes and cell connectivity
     int latId = -1;
@@ -158,6 +167,11 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
         // get the number of dimensions of this variable
         ier = nc_inq_varndims(ncid, ivar, &ndims);
+        if (ier != NC_NOERR) {
+            std::cerr << "ERROR: after inquiring the number of dimensions for var = " 
+                      << ivar << " (ier = " << ier << ")\n";
+            return 2;
+        }
 
         // get the dimensions of this variable
         int* dimids = new int[ndims];
@@ -181,6 +195,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 for (int i = 0; i < ndims; ++i) {
                     size_t dim;
                     ier = nc_inq_dimlen(ncid, dimids[i], &dim);
+                    if (ier != NC_NOERR) {
+                        std::cerr << "ERROR: after getting the dimension size (ier = " << ier << ")\n";
+                        return 1;
+                    }
                     nlats *= dim;
                 }
 
@@ -191,6 +209,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
                     // read the latitudes
                     ier = nc_get_var_double(ncid, ivar, lats);
+                    if (ier != NC_NOERR) {
+                        std::cerr << "ERROR: after reading cell latitudes (ier = " << ier << ")\n";
+                        return 1;
+                    }
                 }
             }
             else if (strcmp(standard_name, "longitude") == 0 && 
@@ -201,6 +223,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 for (int i = 0; i < ndims; ++i) {
                     size_t dim;
                     ier = nc_inq_dimlen(ncid, dimids[i], &dim);
+                    if (ier != NC_NOERR) {
+                        std::cerr << "ERROR: after getting the dimension size (ier = " << ier << ")\n";
+                        return 1;
+                    }
                     nlons *= dim;
                 }
 
@@ -210,6 +236,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
                     // read the longitudes
                     ier = nc_get_var_double(ncid, ivar, lons);
+                    if (ier != NC_NOERR) {
+                        std::cerr << "ERROR: after reading cell longitudes (ier = " << ier << ")\n";
+                        return 1;
+                    }
                 }
             }
         }
@@ -227,6 +257,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
                 // read the connectivity
                 ier = nc_get_var_int(ncid, ivar, quad_connectivity);
+                if (ier != NC_NOERR) {
+                    std::cerr << "ERROR: after reading cell connectivity (ier = " << ier << ")\n";
+                    return 1;
+                }
             }
 
         }
