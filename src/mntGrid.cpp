@@ -138,9 +138,9 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
     size_t nlats = 0;
     size_t nlons = 0;
-    double* lats = NULL;
-    double* lons = NULL;
-    int* quad_connectivity = NULL;
+    std::vector<double> lats;
+    std::vector<double> lons;
+    std::vector<int> quad_connectivity;
 
     // get the number of variables
     int nvars;
@@ -205,10 +205,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 if (xtype == NC_DOUBLE) {
 
                     // allocate the data to receive the lats
-                    lats = new double[ntot];
+                    lats.resize(ntot);
 
                     // read the latitudes
-                    ier = nc_get_var_double(ncid, ivar, lats);
+                    ier = nc_get_var_double(ncid, ivar, &lats[0]);
                     if (ier != NC_NOERR) {
                         std::cerr << "ERROR: after reading cell latitudes (ier = " << ier << ")\n";
                         return 1;
@@ -232,10 +232,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
                 if (xtype == NC_DOUBLE) {
                     // allocate the data to receive the lons
-                    lons = new double[ntot];
+                    lons.resize(ntot);
 
                     // read the longitudes
-                    ier = nc_get_var_double(ncid, ivar, lons);
+                    ier = nc_get_var_double(ncid, ivar, &lons[0]);
                     if (ier != NC_NOERR) {
                         std::cerr << "ERROR: after reading cell longitudes (ier = " << ier << ")\n";
                         return 1;
@@ -253,10 +253,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             if (xtype == NC_INT) {
 
                 // allocate the data
-                quad_connectivity = new int[ntot];
+                quad_connectivity.resize(ntot);
 
                 // read the connectivity
-                ier = nc_get_var_int(ncid, ivar, quad_connectivity);
+                ier = nc_get_var_int(ncid, ivar, &quad_connectivity[0]);
                 if (ier != NC_NOERR) {
                     std::cerr << "ERROR: after reading cell connectivity (ier = " << ier << ")\n";
                     return 1;
@@ -271,7 +271,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     // close the netcdf file
     ier = nc_close(ncid);
 
-    if (lons && lats && quad_connectivity) {
+    if (lons.size() > 0 && lats .size() > 0 && quad_connectivity.size() > 0) {
 
         // allocate the vertices and set the values
         (*self)->verts = new double[ncells * four * 3];
@@ -285,12 +285,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             }
         }
     }
-
-
-    // clean up
-    if (lats) delete[] lats;
-    if (lons) delete[] lons;
-    if (quad_connectivity) delete[] quad_connectivity;
 
     return 0;
 }
