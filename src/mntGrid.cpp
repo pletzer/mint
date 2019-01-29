@@ -140,7 +140,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     size_t nlons = 0;
     std::vector<double> lats;
     std::vector<double> lons;
-    std::vector<int> quad_connectivity;
+    std::vector<vtkIdType> quad_connectivity;
 
     // get the number of variables
     int nvars;
@@ -162,6 +162,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     nc_type xtype;
     int ndims;
     int natts;
+    int startIndex = 0;
     for (int ivar = 0; ivar < nvars; ++ivar) {
 
         // get the number of dimensions of this variable
@@ -186,6 +187,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         int ier1 = nc_get_att_text(ncid, ivar, "standard_name", &standard_name[0]);
         int ier2 = nc_get_att_text(ncid, ivar, "long_name", &long_name[0]);
         int ier3 = nc_get_att_text(ncid, ivar, "cf_role", &cf_role[0]);
+        int ier4 = nc_get_att_int(ncid, ivar, "start_index", &startIndex);
 
         if (ier1 == NC_NOERR && ier2 == NC_NOERR) {
 
@@ -265,23 +267,41 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 }
             }
         }
-        else if (ier3 == NC_NOERR && 
+        else if (ier3 == NC_NOERR && ier4 == NC_NOERR &&
                  cf_role.find("face_node_connectivity") != std::string::npos) {
 
             // get the number of cells
             ier = nc_inq_dimlen(ncid, dimids[0], &ncells);
-            int nelems = ncells * four;
+            size_t nelems = ncells * four;
 
+            // allocate the data
+            quad_connectivity.resize(nelems);
+
+            // read the connectivity
             if (xtype == NC_INT) {
 
-                // allocate the data
-                quad_connectivity.resize(nelems);
-
-                // read the connectivity
-                ier = nc_get_var_int(ncid, ivar, &quad_connectivity[0]);
+                std::vector<int> data(nelems);
+                ier = nc_get_var_int(ncid, ivar, &data[0]);
                 if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after reading cell connectivity (ier = " << ier << ")\n";
+                    std::cerr << "ERROR: after reading cell connectivity using ints (ier = " << ier << ")\n";
                     return 1;
+                }
+                // copy into vtkIdType array
+                for (size_t i = 0; i < nelems; ++i) {
+                    quad_connectivity[i] = (vtkIdType) data[i] - startIndex;
+                }
+
+            }
+            else if (xtype == NC_INT64) {
+
+                ier = nc_get_var_longlong(ncid, ivar, &quad_connectivity[0]);
+                if (ier != NC_NOERR) {
+                    std::cerr << "ERROR: after reading cell connectivity using int64 (ier = " << ier << ")\n";
+                    return 1;
+                }
+                // substract start index
+                for (size_t i = 0; i < nelems; ++i) {
+                    quad_connectivity[i] -= startIndex;
                 }
             }
 
@@ -298,15 +318,36 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         // allocate the vertices and set the values
         (*self)->verts = new double[ncells * four * 3];
 
-        for (int icell = 0; icell < ncells; ++icell) {
+        std::vector<double> diffLonMinusZeroPlus(four);
+
+        for (size_t icell = 0; icell < ncells; ++icell) {
+
+            // fix longitude if crossing the dateline
+            // use the first longitude as the base
+            size_t kBase = quad_connectivity[four*icell];
+            double lonBase = lons[kBase];
+
 
             for (int node = 0; node < four; ++node) {
 
-                int k = quad_connectivity[node + four*icell];
+                size_t k = quad_connectivity[node + four*icell];
+                double lon = lons[k];
+
+                // add/subtract 360.0, whatever it takes to reduce the distance 
+                // between this longitude and the base longitude
+                double diffLon = lon - lonBase;
+                diffLonMinusZeroPlus[0] = std::abs(diffLon - 360.);
+                diffLonMinusZeroPlus[1] = std::abs(diffLon - 0.);
+                diffLonMinusZeroPlus[2] = std::abs(diffLon + 360.);
+                std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), 
+                                                                    diffLonMinusZeroPlus.end());
+                int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
+                // fix the longitude
+                lon += (indexMin - 1) * 360.0;
 
                 // even in 2d we have three components
                 (*self)->verts[0 + node*3 + icell*four*3] = lats[k];
-                (*self)->verts[1 + node*3 + icell*four*3] = lons[k];
+                (*self)->verts[1 + node*3 + icell*four*3] = lon;
                 (*self)->verts[2 + node*3 + icell*four*3] = 0.0;
             }
         }
