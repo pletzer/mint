@@ -16,6 +16,10 @@ void testUgrid() {
     assert(ier == 0);
     ier = mnt_grid_loadFrom2DUgrid(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc");
     assert(ier == 0);
+    ier = mnt_grid_print(&grd);
+    assert(ier == 0);
+    ier = mnt_grid_dump(&grd, "cs_16.vtk");
+    assert(ier == 0);
     ier = mnt_grid_del(&grd);
     assert(ier == 0); 
 }

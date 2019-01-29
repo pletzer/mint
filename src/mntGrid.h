@@ -103,4 +103,12 @@ int mnt_grid_load(Grid_t** self, const char* filename);
 extern "C"
 int mnt_grid_dump(Grid_t** self, const char* filename);
 
+/**
+ * Print the content of the grid
+ * @param self instance of Grid_t
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_print(Grid_t** self);
+
 #endif // MNT_GRID
