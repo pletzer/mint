@@ -304,14 +304,17 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         (*self)->verts = new double[ncells * four * 3];
 
         for (int icell = 0; icell < ncells; ++icell) {
+
+            std::cerr << "*** cell " << icell << '\n';
             for (int node = 0; node < four; ++node) {
+
                 int k = quad_connectivity[node + four*icell];
 
-                std::cerr << "*** storing k = " << k << " lat = " << lats[k] << " lon = " << lons[k] << '\n';
+                std::cerr << "\tk = " << k << " lat = " << lats[k] << " lon = " << lons[k] << '\n';
                 // even in 2d we have three components
-                (*self)->verts[0 + icell*four*3] = lats[k];
-                (*self)->verts[1 + icell*four*3] = lons[k];
-                (*self)->verts[2 + icell*four*3] = 0.0;
+                (*self)->verts[0 + node*3 + icell*four*3] = lats[k];
+                (*self)->verts[1 + node*3 + icell*four*3] = lons[k];
+                (*self)->verts[2 + node*3 + icell*four*3] = 0.0;
             }
         }
     }
@@ -359,16 +362,18 @@ int mnt_grid_print(Grid_t** self) {
     vtkIdType ncells = (*self)->grid->GetNumberOfCells();
     std::cerr << "Number of cells: " << ncells << '\n';
 
-    //for (vtkIdType i = 0; i < ncells; ++i) {
+    std::vector<double> pt(3);
 
-        //vtkCell* cell = (*self)->grid->GetCell(i);
-        //vtkPoints* cellPoints = cell->GetPoints();
-        //std::cout << "cell " << i << '\n';
-        //for (vtkIdType j = 0; j < cellPoints->GetNumberOfPoints(); ++j) {
-        //    double* pt = cellPoints->GetPoint(j); 
-        //    std::cout << "\tpoint " << pt[0] << ',' << pt[1] << ',' << pt[2] << '\n';
-        //}
-    //}
+    for (vtkIdType i = 0; i < ncells; ++i) {
+
+        vtkCell* cell = (*self)->grid->GetCell(i);
+
+        for (int j = 0; j < cell->GetNumberOfPoints(); ++j) {
+            vtkIdType k = cell->GetPointId(j);
+            (*self)->points->GetPoint(k, &pt[0]);
+            std::cout << "\tpoint " << pt[0] << ',' << pt[1] << ',' << pt[2] << '\n';
+        }
+    }
 
     return 0;
 }
