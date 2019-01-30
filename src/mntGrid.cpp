@@ -154,7 +154,11 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     // find the latitudes, longitudes and cell connectivity
     int latId = -1;
     int lonId = -1;
+
+    // allocate space for the variable name
     char varname[NC_MAX_NAME];
+
+    // allocate and fill in with ' '
     std::string standard_name(NC_MAX_NAME, ' ');
     std::string long_name(NC_MAX_NAME, ' ');
     std::string cf_role(NC_MAX_NAME, ' ');
@@ -163,6 +167,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     int ndims;
     int natts;
     int startIndex = 0;
+
+    // iterate over the variables in the netcdf file
     for (int ivar = 0; ivar < nvars; ++ivar) {
 
         // get the number of dimensions of this variable
@@ -173,10 +179,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             return 2;
         }
 
-        // get the dimensions of this variable
-        int* dimids = new int[ndims];
+        // get each of the dimensions of this variable
+        std::vector<int> dimids(ndims);
 
-        ier = nc_inq_var(ncid, ivar, varname, &xtype, &ndims, dimids, &natts);
+        ier = nc_inq_var(ncid, ivar, varname, &xtype, &ndims, &dimids[0], &natts);
 
         // reset
         standard_name.assign(NC_MAX_NAME, ' ');
@@ -188,6 +194,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         int ier2 = nc_get_att_text(ncid, ivar, "long_name", &long_name[0]);
         int ier3 = nc_get_att_text(ncid, ivar, "cf_role", &cf_role[0]);
         int ier4 = nc_get_att_int(ncid, ivar, "start_index", &startIndex);
+        int ier5 = nc_get_att_text(ncid, ivar, "units", units);
 
         if (ier1 == NC_NOERR && ier2 == NC_NOERR) {
 
@@ -205,37 +212,19 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                     nelems *= dim;
             }
 
-            // is it a latitude or a longitude?
+            // is it a latitude or a longitude, defined on nodes?
+
             if (standard_name.find("latitude") != std::string::npos &&
                 long_name.find("node") != std::string::npos) {
 
                 // allocate the data to receive the lats
                 lats.resize(nelems);
 
-                if (xtype == NC_DOUBLE) {
-                    // read the latitudes as doubles
-                    ier = nc_get_var_double(ncid, ivar, &lats[0]);
-                    if (ier != NC_NOERR) {
-                        std::cerr << "ERROR: after reading latitudes as doubles (ier = " << ier << ")\n";
-                        return 1;
-                    }
-                }
-                else if (xtype == NC_FLOAT) {
-                    // read the latitudes as floats
-                    std::vector<float> data(nelems);
-                    ier = nc_get_var_float(ncid, ivar, &data[0]);
-                    if (ier != NC_NOERR) {
-                        std::cerr << "ERROR: after reading latitudes as floats (ier = " << ier << ")\n";
-                        return 1;
-                    }
-                    // copy 
-                    for (size_t i = 0; i < nelems; ++i) {
-                        lats[i] = (double) data[i];
-                    }
-
-                }
-                else {
-
+                // read the latitudes as doubles, netcdf will convert if stored as floats
+                ier = nc_get_var_double(ncid, ivar, &lats[0]);
+                if (ier != NC_NOERR) {
+                    std::cerr << "ERROR: after reading latitudes as doubles (ier = " << ier << ")\n";
+                    return 1;
                 }
             }
             else if (standard_name.find("longitude") != std::string::npos && 
@@ -244,26 +233,11 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 // allocate to receive the lons
                 lons.resize(nelems);
 
-                if (xtype == NC_DOUBLE) {
-                    // read the longitudes as doubles
-                    ier = nc_get_var_double(ncid, ivar, &lons[0]);
-                    if (ier != NC_NOERR) {
-                        std::cerr << "ERROR: after reading longitudes as double (ier = " << ier << ")\n";
-                        return 1;
-                    }
-                }
-                else if (xtype == NC_FLOAT) {
-                    // read the longitudes as floats
-                    std::vector<float> data(nelems);
-                    ier = nc_get_var_float(ncid, ivar, &data[0]);
-                    if (ier != NC_NOERR) {
-                        std::cerr << "ERROR: after reading longitudes as floats (ier = " << ier << ")\n";
-                        return 1;
-                    }
-                    // copy into double array
-                    for (size_t i = 0; i < nelems; ++i) {
-                        lons[i] = (double) data[i];
-                    }
+                // read the longitudes as doubles, netcdf will convert if stored as floats
+                ier = nc_get_var_double(ncid, ivar, &lons[0]);
+                if (ier != NC_NOERR) {
+                    std::cerr << "ERROR: after reading longitudes as double (ier = " << ier << ")\n";
+                    return 1;
                 }
             }
         }
@@ -278,40 +252,25 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             quad_connectivity.resize(nelems);
 
             // read the connectivity
-            if (xtype == NC_INT) {
-
-                std::vector<int> data(nelems);
-                ier = nc_get_var_int(ncid, ivar, &data[0]);
-                if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after reading cell connectivity using ints (ier = " << ier << ")\n";
-                    return 1;
-                }
-                // copy into vtkIdType array
-                for (size_t i = 0; i < nelems; ++i) {
-                    quad_connectivity[i] = (vtkIdType) data[i] - startIndex;
-                }
-
+            ier = nc_get_var_longlong(ncid, ivar, &quad_connectivity[0]);
+            if (ier != NC_NOERR) {
+                std::cerr << "ERROR: after reading cell connectivity using int64 (ier = " << ier << ")\n";
+                return 1;
             }
-            else if (xtype == NC_INT64) {
 
-                ier = nc_get_var_longlong(ncid, ivar, &quad_connectivity[0]);
-                if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after reading cell connectivity using int64 (ier = " << ier << ")\n";
-                    return 1;
-                }
-                // substract start index
-                for (size_t i = 0; i < nelems; ++i) {
-                    quad_connectivity[i] -= startIndex;
-                }
+            // substract start index
+            for (size_t i = 0; i < nelems; ++i) {
+                quad_connectivity[i] -= startIndex;
             }
 
         }
 
-        delete[] dimids;
     }
 
     // close the netcdf file
     ier = nc_close(ncid);
+
+    // repackage the cell vertices as a flat array 
 
     if (lons.size() > 0 && lats .size() > 0 && quad_connectivity.size() > 0) {
 
@@ -326,7 +285,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             // use the first longitude as the base
             size_t kBase = quad_connectivity[four*icell];
             double lonBase = lons[kBase];
-
 
             for (int node = 0; node < four; ++node) {
 
