@@ -134,7 +134,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     }
 
     size_t ncells = 0;
-    const int four = 4;
+    size_t numVertsPerCell = 0;
 
     size_t nlats = 0;
     size_t nlons = 0;
@@ -162,7 +162,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     std::string standard_name(NC_MAX_NAME, ' ');
     std::string long_name(NC_MAX_NAME, ' ');
     std::string cf_role(NC_MAX_NAME, ' ');
-    char units[NC_MAX_NAME];
+    std::string units(NC_MAX_NAME, ' ');
     nc_type xtype;
     int ndims;
     int natts;
@@ -194,7 +194,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         int ier2 = nc_get_att_text(ncid, ivar, "long_name", &long_name[0]);
         int ier3 = nc_get_att_text(ncid, ivar, "cf_role", &cf_role[0]);
         int ier4 = nc_get_att_int(ncid, ivar, "start_index", &startIndex);
-        int ier5 = nc_get_att_text(ncid, ivar, "units", units);
+        int ier5 = nc_get_att_text(ncid, ivar, "units", &units[0]);
 
         if (ier1 == NC_NOERR && ier2 == NC_NOERR) {
 
@@ -223,7 +223,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 // read the latitudes as doubles, netcdf will convert if stored as floats
                 ier = nc_get_var_double(ncid, ivar, &lats[0]);
                 if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after reading latitudes as doubles (ier = " << ier << ")\n";
+                    std::cerr << "ERROR: after reading latitudes (ier = " << ier << ")\n";
                     return 1;
                 }
             }
@@ -236,7 +236,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 // read the longitudes as doubles, netcdf will convert if stored as floats
                 ier = nc_get_var_double(ncid, ivar, &lons[0]);
                 if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after reading longitudes as double (ier = " << ier << ")\n";
+                    std::cerr << "ERROR: after reading longitudes (ier = " << ier << ")\n";
                     return 1;
                 }
             }
@@ -246,7 +246,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
             // get the number of cells
             ier = nc_inq_dimlen(ncid, dimids[0], &ncells);
-            size_t nelems = ncells * four;
+        	ier = nc_inq_dimlen(ncid, dimids[1], &numVertsPerCell);
+            size_t nelems = ncells * numVertsPerCell;
 
             // allocate the data
             quad_connectivity.resize(nelems);
@@ -254,7 +255,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             // read the connectivity
             ier = nc_get_var_longlong(ncid, ivar, &quad_connectivity[0]);
             if (ier != NC_NOERR) {
-                std::cerr << "ERROR: after reading cell connectivity using int64 (ier = " << ier << ")\n";
+                std::cerr << "ERROR: after reading cell connectivity (ier = " << ier << ")\n";
                 return 1;
             }
 
@@ -275,20 +276,20 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     if (lons.size() > 0 && lats .size() > 0 && quad_connectivity.size() > 0) {
 
         // allocate the vertices and set the values
-        (*self)->verts = new double[ncells * four * 3];
+        (*self)->verts = new double[ncells * numVertsPerCell * 3];
 
-        std::vector<double> diffLonMinusZeroPlus(four);
+        std::vector<double> diffLonMinusZeroPlus(numVertsPerCell);
 
         for (size_t icell = 0; icell < ncells; ++icell) {
 
             // fix longitude if crossing the dateline
             // use the first longitude as the base
-            size_t kBase = quad_connectivity[four*icell];
+            size_t kBase = quad_connectivity[numVertsPerCell*icell];
             double lonBase = lons[kBase];
 
-            for (int node = 0; node < four; ++node) {
+            for (int node = 0; node < numVertsPerCell; ++node) {
 
-                size_t k = quad_connectivity[node + four*icell];
+                size_t k = quad_connectivity[node + numVertsPerCell*icell];
                 double lon = lons[k];
 
                 // add/subtract 360.0, whatever it takes to reduce the distance 
@@ -304,15 +305,16 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 lon += (indexMin - 1) * 360.0;
 
                 // even in 2d we have three components
-                (*self)->verts[0 + node*3 + icell*four*3] = lats[k];
-                (*self)->verts[1 + node*3 + icell*four*3] = lon;
-                (*self)->verts[2 + node*3 + icell*four*3] = 0.0;
+                (*self)->verts[0 + node*3 + icell*numVertsPerCell*3] = lats[k];
+                (*self)->verts[1 + node*3 + icell*numVertsPerCell*3] = lon;
+                (*self)->verts[2 + node*3 + icell*numVertsPerCell*3] = 0.0;
             }
         }
     }
 
     // set the pointer
-    ier = mnt_grid_setPointsPtr(self, (vtkIdType) four, (vtkIdType) ncells, (*self)->verts);
+    ier = mnt_grid_setPointsPtr(self, (vtkIdType) numVertsPerCell, (vtkIdType) ncells, 
+    	                        (*self)->verts);
 
     return 0;
 }
