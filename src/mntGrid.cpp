@@ -313,7 +313,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     }
 
     // set the pointer
-    ier = mnt_grid_setPointsPtr(self, (vtkIdType) numVertsPerCell, (vtkIdType) ncells, 
+    ier = mnt_grid_setPointsPtr(self, (int) numVertsPerCell, (vtkIdType) ncells, 
     	                        (*self)->verts);
 
     return 0;

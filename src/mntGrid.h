@@ -11,8 +11,8 @@
 
 struct Grid_t {
 
-	// vertix raw data
-	double* verts;
+    // vertex raw data
+    double* verts;
 
     // VTK data needed to construct a grid
     vtkDoubleArray* pointData;
