@@ -39,6 +39,23 @@ int mnt_regridedges_new(RegridEdges_t** self);
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self);
 
+
+/** 
+ * Load source grid from 2D UGRID
+ * @param filename file name
+ * @param n length of filename string
+ */
+extern "C"
+int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* filename, size_t n);
+
+/** 
+ * Load destination grid from 2D UGRID
+ * @param filename file name
+ * @param n length of filename string
+ */
+extern "C"
+int mnt_regridedges_loadDst(RegridEdges_t** self, const char* filename, size_t n);
+
 /**
  * Set the source grid
  * @param grid 

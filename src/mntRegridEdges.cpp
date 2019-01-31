@@ -23,10 +23,6 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     return 0;
 }
 
-/**
- * Destructor
- * @return error code (0 is OK)
- */
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self) {
     // destroy the source and destination grids if this instance owns them
@@ -40,6 +36,23 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     delete *self;
     return 0;
 }
+
+extern "C"
+int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, size_t n) {
+    // Fortran strings don't come with null-termination character. Copy string 
+    // into a new one and add '\0'
+    std::string filename = std::string(fort_filename, n);
+    return mnt_grid_loadFrom2DUgrid(&(*self)->srcGridObj, filename.c_str());
+}
+
+extern "C"
+int mnt_regridedges_loadDst(RegridEdges_t** self, const char* fort_filename, size_t n) {
+    // Fortran strings don't come with null-termination character. Copy string 
+    // into a new one and add '\0'
+    std::string filename = std::string(fort_filename, n);
+    return mnt_grid_loadFrom2DUgrid(&(*self)->dstGridObj, filename.c_str());
+}
+
 
 extern "C"
 int mnt_regridedges_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) {
