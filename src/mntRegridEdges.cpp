@@ -38,7 +38,7 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 }
 
 extern "C"
-int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, size_t n) {
+int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -46,7 +46,7 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, siz
 }
 
 extern "C"
-int mnt_regridedges_loadDst(RegridEdges_t** self, const char* fort_filename, size_t n) {
+int mnt_regridedges_loadDst(RegridEdges_t** self, const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);

@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 
         if (weightsFile.size() != 0) {
             std::cout << "INFO saving weights in file " << weightsFile << '\n';
-            ier = mnt_regridedges_dump(&rge, weightsFile.c_str());
+            ier = mnt_regridedges_dump(&rge, weightsFile.c_str(), (int) weightsFile.size());
         }
 
         // regrid

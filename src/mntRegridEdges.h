@@ -46,7 +46,7 @@ int mnt_regridedges_del(RegridEdges_t** self);
  * @param n length of filename string
  */
 extern "C"
-int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* filename, size_t n);
+int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* filename, int n);
 
 /** 
  * Load destination grid from 2D UGRID
@@ -54,7 +54,7 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* filename, size_t n
  * @param n length of filename string
  */
 extern "C"
-int mnt_regridedges_loadDst(RegridEdges_t** self, const char* filename, size_t n);
+int mnt_regridedges_loadDst(RegridEdges_t** self, const char* filename, int n);
 
 /**
  * Set the source grid
@@ -139,18 +139,20 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 /**
  * Load the weights from file
  * @param filename file name
+ * length of filename string
  * @return error code (0 is OK)
  * @note this does not create the object, user must call mnt_regridedges_new prior to this call
  */
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, const char* filename);
+int mnt_regridedges_load(RegridEdges_t** self, const char* filename, int n);
 
 /**
  * Dump the weights to file
  * @param filename file name
+ * length of filename string
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, const char* filename);
+int mnt_regridedges_dump(RegridEdges_t** self, const char* filename, int n);
 
 #endif // MNT_REGRID_EDGES

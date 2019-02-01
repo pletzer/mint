@@ -5,6 +5,15 @@ include_directories(
 )
 
 configure_file(testGrid.cpp testGrid.cxx)
+configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
+
+
+add_executable(testRegridEdgesFromUgrid testRegridEdgesFromUgrid.cxx)
+target_link_libraries(testRegridEdgesFromUgrid
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES}
+)
 
 add_executable(testPolylineParser testPolylineParser.cxx)
 target_link_libraries(testPolylineParser
@@ -126,6 +135,7 @@ target_link_libraries(testCmdLineArgParserFB
                       ${VTK_LIBRARIES}
 )
 
+add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineGridIntersector COMMAND testLineGridIntersector)
 add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
