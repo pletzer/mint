@@ -36,7 +36,7 @@ module mnt_regridedges_capi_mod
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
       character(kind=c_char), intent(in)       :: filename(*)
-      integer(c_size_t), value                 :: n
+      integer(c_int), value                    :: n
       integer(c_int)                           :: mnt_regridedges_loadsrc
     end function mnt_regridedges_loadsrc
 
@@ -52,7 +52,7 @@ module mnt_regridedges_capi_mod
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
       character(kind=c_char), intent(in)       :: filename(*)
-      integer(c_size_t), value                 :: n
+      integer(c_int), value                    :: n
       integer(c_int)                           :: mnt_regridedges_loaddst
     end function mnt_regridedges_loaddst
 
@@ -80,7 +80,7 @@ module mnt_regridedges_capi_mod
       implicit none
       type(c_ptr), intent(inout)               :: obj ! void**
       character(kind=c_char), intent(in)       :: filename(*)
-      integer(c_size_t), value                 :: n
+      integer(c_int), value                    :: n
       integer(c_int)                           :: mnt_regridedges_dump    
     end function mnt_regridedges_dump
 
