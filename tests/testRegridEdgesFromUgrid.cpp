@@ -1,4 +1,5 @@
 #include <mntRegridEdges.h>
+#undef NDEBUG // turn on asserts
 
 int main() {
     int ier;
@@ -17,6 +18,9 @@ int main() {
     ier = mnt_regridedges_loadDst(&rg, dstFile.c_str(), (int) dstFile.size());
     assert(ier == 0);
 
+    int numCellsPerBucket = 8;
+    ier = mnt_regridedges_build(&rg, numCellsPerBucket);
+    assert(ier == 0);
 
     ier = mnt_regridedges_dump(&rg, outputFile.c_str(), (int) outputFile.size());
     assert(ier == 0);
