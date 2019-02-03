@@ -7,6 +7,10 @@
 #include <cmath>
 #include <algorithm>
 
+#define LON_INDEX 0
+#define LAT_INDEX 1
+#define ELV_INDEX 2
+
 extern "C" 
 int mnt_grid_new(Grid_t** self) {
 
@@ -313,9 +317,9 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 }
 
                 // even in 2d we have three components
-                (*self)->verts[0 + node*3 + icell*numVertsPerCell*3] = lon;
-                (*self)->verts[1 + node*3 + icell*numVertsPerCell*3] = lats[k];
-                (*self)->verts[2 + node*3 + icell*numVertsPerCell*3] = 0.0;
+                (*self)->verts[LON_INDEX + node*3 + icell*numVertsPerCell*3] = lon;
+                (*self)->verts[LAT_INDEX + node*3 + icell*numVertsPerCell*3] = lats[k];
+                (*self)->verts[ELV_INDEX + node*3 + icell*numVertsPerCell*3] = 0.0;
             }
 
             // check if there if one of the cell nodes is at the north/south pole. In 
@@ -329,7 +333,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                     lonPole += (*self)->verts[0 + node*3 + icell*numVertsPerCell*3];
                 }
                 lonPole /= (double) (numVertsPerCell - 1);
-                (*self)->verts[0 + poleNode*3 + icell*numVertsPerCell*3] = lonPole;
+                (*self)->verts[LON_INDEX + poleNode*3 + icell*numVertsPerCell*3] = lonPole;
             }
         }
     }
