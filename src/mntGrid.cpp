@@ -280,7 +280,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         // allocate the vertices and set the values
         (*self)->verts = new double[ncells * numVertsPerCell * 3];
 
-        std::vector<double> diffLonMinusZeroPlus(numVertsPerCell);
+        std::vector<double> diffLonMinusZeroPlus(3);
 
         for (size_t icell = 0; icell < ncells; ++icell) {
 
@@ -303,12 +303,13 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), 
                                                                     diffLonMinusZeroPlus.end());
                 int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
+
                 // fix the longitude
                 lon += (indexMin - 1) * 360.0;
 
                 // even in 2d we have three components
-                (*self)->verts[0 + node*3 + icell*numVertsPerCell*3] = lats[k];
-                (*self)->verts[1 + node*3 + icell*numVertsPerCell*3] = lon;
+                (*self)->verts[0 + node*3 + icell*numVertsPerCell*3] = lon;
+                (*self)->verts[1 + node*3 + icell*numVertsPerCell*3] = lats[k];
                 (*self)->verts[2 + node*3 + icell*numVertsPerCell*3] = 0.0;
             }
         }
