@@ -289,6 +289,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             size_t kBase = quad_connectivity[numVertsPerCell*icell];
             double lonBase = lons[kBase];
 
+            int poleNode = -1;
             for (int node = 0; node < numVertsPerCell; ++node) {
 
                 size_t k = quad_connectivity[node + numVertsPerCell*icell];
@@ -307,10 +308,28 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 // fix the longitude
                 lon += (indexMin - 1) * 360.0;
 
+                if (std::abs(lats[k]) == 90.0) {
+                    poleNode  = node;
+                }
+
                 // even in 2d we have three components
                 (*self)->verts[0 + node*3 + icell*numVertsPerCell*3] = lon;
                 (*self)->verts[1 + node*3 + icell*numVertsPerCell*3] = lats[k];
                 (*self)->verts[2 + node*3 + icell*numVertsPerCell*3] = 0.0;
+            }
+
+            // check if there if one of the cell nodes is at the north/south pole. In 
+            // this case the longitude is ill-defined. Set the longitude there to the
+            // average of the 3 other longitudes.
+
+            if (poleNode >= 0) {
+                double lonPole = 0;
+                for (size_t i = poleNode + 1; i < poleNode + numVertsPerCell; ++i) {
+                    size_t node = i % numVertsPerCell;
+                    lonPole += (*self)->verts[0 + node*3 + icell*numVertsPerCell*3];
+                }
+                lonPole /= (double) (numVertsPerCell - 1);
+                (*self)->verts[0 + poleNode*3 + icell*numVertsPerCell*3] = lonPole;
             }
         }
     }
