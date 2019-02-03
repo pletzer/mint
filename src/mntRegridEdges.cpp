@@ -42,6 +42,7 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, int
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
+    std::cerr << "1.1\n";
     return mnt_grid_loadFrom2DUgrid(&(*self)->srcGridObj, filename.c_str());
 }
 
@@ -301,7 +302,7 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 }
 
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
+int mnt_regridedges_load(RegridEdges_t** self, const char* filename, int n) {
 
     int ncid, ier;
     ier = nc_open(filename, NC_NOWRITE, &ncid);
@@ -351,7 +352,7 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename) {
 }
 
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, const char* filename) {
+int mnt_regridedges_dump(RegridEdges_t** self, const char* filename, int n) {
 
     size_t numWeights = (*self)->weights.size();
 
