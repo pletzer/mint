@@ -27,10 +27,10 @@ extern "C"
 int mnt_regridedges_del(RegridEdges_t** self) {
     // destroy the source and destination grids if this instance owns them
     if ((*self)->srcGridObj) {
-        mnt_grid_del(&(*self)->srcGridObj);
+        mnt_grid_del(&((*self)->srcGridObj));
     }
     if ((*self)->dstGridObj) {
-        mnt_grid_del(&(*self)->dstGridObj);
+        mnt_grid_del(&((*self)->dstGridObj));
     }
     (*self)->srcLoc->Delete();
     delete *self;
@@ -43,7 +43,12 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, int
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
     std::cerr << "1.1\n";
-    return mnt_grid_loadFrom2DUgrid(&(*self)->srcGridObj, filename.c_str());
+    if (!(*self)->srcGridObj) {
+        mnt_grid_new(&((*self)->srcGridObj));
+    }
+    int ier = mnt_grid_loadFrom2DUgrid(&(*self)->srcGridObj, filename.c_str());
+    (*self)->srcGrid = (*self)->srcGridObj->grid;
+    return ier;
 }
 
 extern "C"
@@ -51,7 +56,12 @@ int mnt_regridedges_loadDst(RegridEdges_t** self, const char* fort_filename, int
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
-    return mnt_grid_loadFrom2DUgrid(&(*self)->dstGridObj, filename.c_str());
+    if (!(*self)->dstGridObj) {
+        mnt_grid_new(&((*self)->dstGridObj));
+    }
+    int ier = mnt_grid_loadFrom2DUgrid(&(*self)->dstGridObj, filename.c_str());
+    (*self)->dstGrid = (*self)->dstGridObj->grid;
+    return ier;
 }
 
 
