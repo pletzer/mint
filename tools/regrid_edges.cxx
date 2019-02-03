@@ -44,12 +44,24 @@ int main(int argc, char** argv) {
         // read/build the src grid
         Grid_t* srcGrid = NULL;
         mnt_grid_new(&srcGrid);
-        mnt_grid_load(&srcGrid, srcFile.c_str());
+        size_t n = srcFile.size();
+        if (srcFile.find(".vtk", n - 4) != std::string::npos) {
+            mnt_grid_load(&srcGrid, srcFile.c_str());
+        }
+        else {
+            mnt_grid_loadFrom2DUgrid(&srcGrid, srcFile.c_str());
+        }
 
         // read/build the dst grid
         Grid_t* dstGrid = NULL;
         mnt_grid_new(&dstGrid);
-        mnt_grid_load(&dstGrid, dstFile.c_str());
+        n = dstFile.size();
+        if (dstFile.find(".vtk", n - 4) != std::string::npos) {
+            mnt_grid_load(&dstGrid, dstFile.c_str());
+        }
+        else {
+            mnt_grid_loadFrom2DUgrid(&dstGrid, dstFile.c_str());
+        }
 
         // get the grid pointers
         mnt_grid_get(&srcGrid, &sg);
