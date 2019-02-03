@@ -3,8 +3,8 @@
 
 int main() {
     int ier;
-    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
-    std::string dstFile = "@CMAKE_SOURCE_DIR@/data/cs_16.nc";
+    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/cs_16.nc";
+    std::string dstFile = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
     std::string outputFile = "weights.nc";
 
     RegridEdges_t* rg;
