@@ -25,6 +25,10 @@ int mnt_regridedges_new(RegridEdges_t** self) {
 
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self) {
+
+    // destroy the cell locator
+    (*self)->srcLoc->Delete();
+   
     // destroy the source and destination grids if this instance owns them
     if ((*self)->srcGridObj) {
         mnt_grid_del(&((*self)->srcGridObj));
@@ -32,8 +36,9 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     if ((*self)->dstGridObj) {
         mnt_grid_del(&((*self)->dstGridObj));
     }
-    (*self)->srcLoc->Delete();
+
     delete *self;
+
     return 0;
 }
 
@@ -42,7 +47,6 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, int
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
-    std::cerr << "1.1\n";
     if (!(*self)->srcGridObj) {
         mnt_grid_new(&((*self)->srcGridObj));
     }

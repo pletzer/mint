@@ -127,7 +127,6 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 extern "C"
 int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
-    std::cerr << "1.2\n";
     // open the file
     int ncid;
     int ier = nc_open(filename, NC_NOWRITE, &ncid);
@@ -136,7 +135,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         return 1;
     }
 
-    std::cerr << "1.3\n";
     size_t ncells = 0;
     size_t numVertsPerCell = 0;
 
@@ -146,7 +144,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     std::vector<double> lons;
     std::vector<vtkIdType> quad_connectivity;
 
-    std::cerr << "1.4\n";
     // get the number of variables
     int nvars;
     ier = nc_inq_nvars(ncid, &nvars);
@@ -156,7 +153,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         return 1;
     }
 
-    std::cerr << "1.5\n";
     // find the latitudes, longitudes and cell connectivity
     int latId = -1;
     int lonId = -1;
@@ -174,7 +170,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     int natts;
     int startIndex = 0;
 
-    std::cerr << "1.6\n";
     // iterate over the variables in the netcdf file
     for (int ivar = 0; ivar < nvars; ++ivar) {
 
@@ -218,7 +213,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 }
                 nelems *= dim;
             }
-            std::cerr << "*** nelems = " << nelems << " for standard_name = " << standard_name << " long_name = " << long_name << '\n';
 
             // is it a latitude or a longitude, defined on nodes?
 
@@ -275,23 +269,16 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         }
 
     }
-    std::cerr << "1.7\n";
 
     // close the netcdf file
     ier = nc_close(ncid);
 
     // repackage the cell vertices as a flat array 
 
-    std::cerr << "1.8\n";
-    std::cerr << "*** lons.size() = " << lons.size() << '\n';
-    std::cerr << "*** lats.size() = " << lats.size() << '\n';
-    std::cerr << "*** quad_connectivity.size() = " << quad_connectivity.size() << '\n';
     if (lons.size() > 0 && lats.size() > 0 && quad_connectivity.size() > 0) {
 
-        std::cerr << "1.8.0 ncells = " << ncells << " numVertsPerCell = " << numVertsPerCell << " verts = " << (size_t) (*self)->verts << "\n";
         // allocate the vertices and set the values
         (*self)->verts = new double[ncells * numVertsPerCell * 3];
-        std::cerr << "1.8.0b allocated verts\n";
 
         std::vector<double> diffLonMinusZeroPlus(numVertsPerCell);
 
@@ -300,15 +287,12 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             // fix longitude when crossing the dateline
             // use the first longitude as the base
             size_t kBase = quad_connectivity[numVertsPerCell*icell];
-            std::cerr << "1.8.1\n";
             double lonBase = lons[kBase];
-            std::cerr << "1.8.2 lonBase = " << lonBase << "\n";
 
             for (int node = 0; node < numVertsPerCell; ++node) {
 
                 size_t k = quad_connectivity[node + numVertsPerCell*icell];
                 double lon = lons[k];
-                std::cerr << "1.8.3 lon = " << lon << "\n";
 
                 // add/subtract 360.0, whatever it takes to reduce the distance 
                 // between this longitude and the base longitude
@@ -316,29 +300,24 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 diffLonMinusZeroPlus[0] = std::abs(diffLon - 360.);
                 diffLonMinusZeroPlus[1] = std::abs(diffLon - 0.);
                 diffLonMinusZeroPlus[2] = std::abs(diffLon + 360.);
-                std::cerr << "1.8.4\n";
                 std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), 
                                                                     diffLonMinusZeroPlus.end());
-                std::cerr << "1.8.5\n";
                 int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
-                std::cerr << "1.8.6 indexMin = " << indexMin << "\n";
                 // fix the longitude
                 lon += (indexMin - 1) * 360.0;
 
                 // even in 2d we have three components
-                (*self)->verts[0 + node*3 + icell*numVertsPerCell*3] = lon;
-                (*self)->verts[1 + node*3 + icell*numVertsPerCell*3] = lats[k];
+                (*self)->verts[0 + node*3 + icell*numVertsPerCell*3] = lats[k];
+                (*self)->verts[1 + node*3 + icell*numVertsPerCell*3] = lon;
                 (*self)->verts[2 + node*3 + icell*numVertsPerCell*3] = 0.0;
             }
         }
     }
-    std::cerr << "1.9\n";
 
     // set the pointer
     ier = mnt_grid_setPointsPtr(self, (int) numVertsPerCell, (vtkIdType) ncells, 
     	                        (*self)->verts);
 
-    std::cerr << "1.10\n";
     return 0;
 }
 
