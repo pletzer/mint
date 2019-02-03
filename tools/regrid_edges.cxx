@@ -6,6 +6,7 @@
 #include <vtkCellData.h>
 #include <iostream>
 #include <limits>
+#include <cmath>
 
 int main(int argc, char** argv) {
 

@@ -4,6 +4,8 @@
 #include <netcdf.h>
 #include <string>
 #include <cstring>
+#include <cmath>
+#include <algorithm>
 
 extern "C" 
 int mnt_grid_new(Grid_t** self) {
