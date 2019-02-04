@@ -43,7 +43,8 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 }
 
 extern "C"
-int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, int n) {
+int mnt_regridedges_loadSrc(RegridEdges_t** self, 
+		            const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -56,7 +57,8 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* fort_filename, int
 }
 
 extern "C"
-int mnt_regridedges_loadDst(RegridEdges_t** self, const char* fort_filename, int n) {
+int mnt_regridedges_loadDst(RegridEdges_t** self, 
+		            const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -310,10 +312,13 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 }
 
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, const char* filename, int n) {
-
+int mnt_regridedges_load(RegridEdges_t** self, 
+		         const char* fort_filename, int n) {
+    // Fortran strings don't come with null-termination character. Copy string 
+    // into a new one and add '\0'
+    std::string filename = std::string(fort_filename, n);
     int ncid, ier;
-    ier = nc_open(filename, NC_NOWRITE, &ncid);
+    ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
 
     // get the sizes
     size_t numWeights, numEdgesPerCell;
@@ -360,12 +365,17 @@ int mnt_regridedges_load(RegridEdges_t** self, const char* filename, int n) {
 }
 
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, const char* filename, int n) {
+int mnt_regridedges_dump(RegridEdges_t** self, 
+		         const char* fort_filename, int n) {
+
+    // Fortran strings don't come with null-termination character. Copy string 
+    // into a new one and add '\0'
+    std::string filename = std::string(fort_filename, n);
 
     size_t numWeights = (*self)->weights.size();
 
     int ncid, ier;
-    ier = nc_create(filename, NC_CLOBBER, &ncid);
+    ier = nc_create(filename.c_str(), NC_CLOBBER, &ncid);
 
     // create dimensions
     int numWeightsId;
