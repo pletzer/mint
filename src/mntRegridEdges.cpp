@@ -349,10 +349,13 @@ int mnt_regridedges_load(RegridEdges_t** self,
 
     // store in map
     for (int i = 0; i < numWeights; ++i) {
+
+        // create (dstCellId, srcCellId) entry
         std::pair< vtkIdType, vtkIdType > k(dstCellIds[i], srcCellIds[i]);
 
         // create vector of weights for this cell
-        std::vector<double> v(&weights[numEdgesPerCell*i], &weights[numEdgesPerCell*i + numEdgesPerCell]);
+        std::vector<double> v(&weights[numEdgesPerCell*i], 
+                              &weights[numEdgesPerCell*i + numEdgesPerCell]);
 
         // create pair of entries
         std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv(k, v);
@@ -395,7 +398,7 @@ int mnt_regridedges_dump(RegridEdges_t** self,
     ier = nc_def_var(ncid, "src_cell_ids", NC_LONG, 1, numWeightsAxis, &srcCellIdsId);
 
     int weightsId;
-    ier = nc_def_var(ncid, "weights", NC_DOUBLE, 1, numWeightsNumEdgesAxes, &weightsId);
+    ier = nc_def_var(ncid, "weights", NC_DOUBLE, 2, numWeightsNumEdgesAxes, &weightsId);
 
     // close define mode
     ier = nc_enddef(ncid);
@@ -404,13 +407,19 @@ int mnt_regridedges_dump(RegridEdges_t** self,
     std::vector<long> dstCellIds(numWeights);
     std::vector<long> srcCellIds(numWeights);
     std::vector<double> weights(numWeights * (*self)->numEdgesPerCell);
+
+    // dst cell, src cell counter
     size_t i = 0;
     for (std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::const_iterator 
         it = (*self)->weights.begin(); it != (*self)->weights.end(); ++it) {
+
+        // get the dst/src cell indices
         dstCellIds[i] = it->first.first;
         srcCellIds[i] = it->first.second;
+
+        // iterate over the edges
         for (int j = 0; j < (*self)->numEdgesPerCell; ++j) {
-        weights[(*self)->numEdgesPerCell*i + j] = it->second[j];
+            weights[(*self)->numEdgesPerCell*i + j] = it->second[j];
         }
         i++;
     }

@@ -13,14 +13,21 @@
  */
 
 struct RegridEdges_t {
+
+    // pointers to the src/dst unstructured grid
     vtkUnstructuredGrid* srcGrid;
     vtkUnstructuredGrid* dstGrid;
+
+    // cell locator (octree-based) for fast cell search
     vtkCellLocator* srcLoc;
+
+    // map of (dstCellId, srcCellId) -> 4-array 
     std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> > weights;
     size_t numSrcCells;
     size_t numDstCells;
     size_t numPointsPerCell;
     size_t numEdgesPerCell;
+
     Grid_t* srcGridObj;
     Grid_t* dstGridObj;
 };
@@ -42,19 +49,21 @@ int mnt_regridedges_del(RegridEdges_t** self);
 
 /** 
  * Load source grid from 2D UGRID
- * @param filename file name
+ * @param fort_filename file name (does not require termination character)
  * @param n length of filename string
  */
 extern "C"
-int mnt_regridedges_loadSrc(RegridEdges_t** self, const char* filename, int n);
+int mnt_regridedges_loadSrc(RegridEdges_t** self, 
+                            const char* fort_filename, int n);
 
 /** 
  * Load destination grid from 2D UGRID
- * @param filename file name
+ * @param fort_filename file name (does not require termination character)
  * @param n length of filename string
  */
 extern "C"
-int mnt_regridedges_loadDst(RegridEdges_t** self, const char* filename, int n);
+int mnt_regridedges_loadDst(RegridEdges_t** self, 
+                            const char* fort_filename, int n);
 
 /**
  * Set the source grid
@@ -138,21 +147,23 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 
 /**
  * Load the weights from file
- * @param filename file name
- * length of filename string
+ * @param fort_filename file name (does not require termination character)
+ * @param n length of filename string
  * @return error code (0 is OK)
  * @note this does not create the object, user must call mnt_regridedges_new prior to this call
  */
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, const char* filename, int n);
+int mnt_regridedges_load(RegridEdges_t** self, 
+                         const char* fort_filename, int n);
 
 /**
  * Dump the weights to file
- * @param filename file name
- * length of filename string
+ * @param fort_filename file name (does not require termination character)
+ * @param n length of above filename string
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, const char* filename, int n);
+int mnt_regridedges_dump(RegridEdges_t** self, 
+                         const char* fort_filename, int n);
 
 #endif // MNT_REGRID_EDGES
