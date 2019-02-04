@@ -15,7 +15,6 @@ extern "C"
 int mnt_grid_new(Grid_t** self) {
 
     *self = new Grid_t();
-    (*self)->verts = NULL;
     (*self)->pointData = NULL;
     (*self)->points = NULL;
     (*self)->grid = NULL;
@@ -41,15 +40,14 @@ int mnt_grid_del(Grid_t** self) {
     if ((*self)->points) (*self)->points->Delete();
     if ((*self)->pointData) (*self)->pointData->Delete();
 
-    if ((*self)->verts) delete[] (*self)->verts;
-
     delete *self;
 
     return 0;
 }
 
 extern "C"
-int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]) {
+int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, 
+	                      vtkIdType ncells, const double points[]) {
 
     (*self)->pointData = vtkDoubleArray::New();
     (*self)->points = vtkPoints::New();
@@ -142,8 +140,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     size_t ncells = 0;
     size_t numVertsPerCell = 0;
 
-    size_t nlats = 0;
-    size_t nlons = 0;
     std::vector<double> lats;
     std::vector<double> lons;
     std::vector<vtkIdType> quad_connectivity;
@@ -157,9 +153,9 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
         return 1;
     }
 
+    //
     // find the latitudes, longitudes and cell connectivity
-    int latId = -1;
-    int lonId = -1;
+    //
 
     // allocate space for the variable name
     char varname[NC_MAX_NAME];
@@ -282,7 +278,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     if (lons.size() > 0 && lats.size() > 0 && quad_connectivity.size() > 0) {
 
         // allocate the vertices and set the values
-        (*self)->verts = new double[ncells * numVertsPerCell * 3];
+        (*self)->verts.resize(ncells * numVertsPerCell * 3);
 
         std::vector<double> diffLonMinusZeroPlus(3);
 
@@ -340,7 +336,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
     // set the pointer
     ier = mnt_grid_setPointsPtr(self, (int) numVertsPerCell, (vtkIdType) ncells, 
-    	                        (*self)->verts);
+    	                        &((*self)->verts[0]));
 
     return 0;
 }

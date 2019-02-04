@@ -12,7 +12,7 @@
 struct Grid_t {
 
     // vertex raw data
-    double* verts;
+    std::vector<double> verts;
 
     // VTK data needed to construct a grid
     vtkDoubleArray* pointData;
