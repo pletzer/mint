@@ -137,16 +137,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     vtkIdList* srcCellIds = vtkIdList::New();
     double dstEdgePt0[] = {0., 0., 0.};
     double dstEdgePt1[] = {0., 0., 0.};
-    double srcEdgePt0[] = {0., 0., 0.};
-    double srcEdgePt1[] = {0., 0., 0.};
     Vector<double> pcoords0(3);
     Vector<double> pcoords1(3);
-    double dist2;
-    int subId;
-    double weights[8];
 
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
-    vtkPoints* srcPoints = (*self)->srcGrid->GetPoints();
 
     (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
     (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
