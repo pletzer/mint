@@ -135,7 +135,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     int ncid;
     int ier = nc_open(filename, NC_NOWRITE, &ncid);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: cannot open " << filename << "\n";
+        std::cerr << "ERROR: cannot open \"" << filename << "\"\n";
         return 1;
     }
 

@@ -6,7 +6,6 @@ include_directories(
 
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
-#configure_file(testRegridEdgesF.f90.in testRegridEdgesF.f90)
 
 add_executable(testRegridEdgesFromUgrid testRegridEdgesFromUgrid.cxx)
 target_link_libraries(testRegridEdgesFromUgrid
@@ -145,8 +144,8 @@ target_link_libraries(testCmdLineArgParserFB
 
 add_test(NAME regridEdgesF
 	     COMMAND testRegridEdgesF 
-	     "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.vtk" 
-	     "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.vtk" 
+	     "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc" 
+	     "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc" 
 	     "-o" "weights.nc")
 set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
