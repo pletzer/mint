@@ -21,10 +21,16 @@ struct RegridEdges_t {
     // cell locator (octree-based) for fast cell search
     vtkCellLocator* srcLoc;
 
-    // map of (dstCellId, srcCellId) -> 4-array 
-    std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> > weights;
+    // interpolation weights and corresponding src/dst grid cell
+    // indices and edges indices
+    std::vector<vtkIdType> weightDstCellIds;
+    std::vector<int> weightDstEdgeIds;
 
-    
+    std::vector<vtkIdType> weightSrcCellIds;
+    std::vector<int> weightSrcEdgeIds;
+
+    std::vector<double> weights;
+
     size_t numSrcCells;
     size_t numDstCells;
     size_t numPointsPerCell;

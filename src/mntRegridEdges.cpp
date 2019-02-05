@@ -14,13 +14,13 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vtkCellLocator::New();
-    (*self)->weights.clear();
     (*self)->numSrcCells = 0;
     (*self)->numDstCells = 0;
     (*self)->numPointsPerCell = 4; // 2d
-    (*self)->numEdgesPerCell = 4; // 2d
+    (*self)->numEdgesPerCell = 4;  // 2d
     (*self)->srcGridObj = NULL;
     (*self)->dstGridObj = NULL;
+
     return 0;
 }
 
@@ -148,6 +148,14 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
     (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
+    // reserve some space for the weights and their cell/edge id arrays
+    size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell * 20;
+    (*self)->weights.reserve(n);
+    (*self)->weightSrcEdgeIds.reserve(n);
+    (*self)->weightDstEdgeIds.reserve(n);
+    (*self)->weightSrcCellIds.reserve(n);
+    (*self)->weightDstCellIds.reserve(n);
+
     // iterate over the dst grid cells
     for (vtkIdType dstCellId = 0; dstCellId < (*self)->numDstCells; ++dstCellId) {
 
@@ -158,9 +166,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
         int numEdges = dstCell->GetNumberOfEdges();
 
         // iterate over the four edges of each dst cell
-        for (size_t i0 = 0; i0 < numEdges; ++i0) {
+        for (int dstEdgeIndex = 0; dstEdgeIndex < numEdges; ++dstEdgeIndex) {
 
-            vtkCell* dstEdge = dstCell->GetEdge(i0);
+            vtkCell* dstEdge = dstCell->GetEdge(dstEdgeIndex);
             vtkIdType id0 = dstEdge->GetPointId(0);
             vtkIdType id1 = dstEdge->GetPointId(1);
               
@@ -196,18 +204,15 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                 // use vtkHexahedron in 3d!
                 vtkQuad* srcQuad = dynamic_cast<vtkQuad*>(srcCell);
-
-                // compute the weight contributions from each src edge, one value 
-                // per edge
-                std::vector<double> ws(numEdges, 1.0);
                         
                 // iterate over the edges of the src cell
-                for (size_t j0 = 0; j0 < numEdges; ++j0) {
+                for (int srcEdgeIndex = 0; srcEdgeIndex < numEdges; ++srcEdgeIndex) {
 
                     // get the indices of the vertices for the edge
-                    int* i01 = srcQuad->GetEdgeArray(j0);
+                    int* i01 = srcQuad->GetEdgeArray(srcEdgeIndex);
 
                     // compute the interpolation weight, a product for every dimension
+                    double weight = 1.0;
                     for (size_t d = 0; d < 3; ++d) {
 
                         double xiM = xiMid[d];
@@ -218,37 +223,25 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                         double x = 0.5*(srcCellParamCoords[i0*3 + d] + srcCellParamCoords[i1*3 + d]);
 
                         // use Lagrange interpolation to evaluate the basis function integral for
-                        // any for the 3 possible x values in {0, 0.5, 1}
+                        // any for the 3 possible x values in {0, 0.5, 1}. This formula will make 
+                        // it easier to extend the code to 3d
                         double xm00 = x;
                         double xm05 = x - 0.5;
                         double xm10 = x - 1.0;
-                        ws[j0] *= (1.0 - xiM) * xm05*xm10 \
+                        weight *= (1.0 - xiM) * xm05*xm10 \
                                 -      dxi[d] * xm00*xm10 \
                                 + (0.0 + xiM) * xm00*xm05;
 
                     }
 
                     // coeff accounts for the duplicity, some segments are shared between cells
-                    ws[j0] *= 2*coeff; // WHY a coefficient 2? Comes from the Lagrange representation?
-                }
+                    weight *= 2*coeff; // WHY a coefficient 2? Comes from the Lagrange representation?
 
-                if ((*self)->weights.find(k) == (*self)->weights.end()) {
-                    // no current entry for dstCellId and srcCellIds
-                    // initialize the weights to a zero matrix
-                    std::vector<double> zeros( (*self)->numEdgesPerCell, 0.0 );
-                    std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv 
-                    // create an entry (dstCellId, srcCellId) -> zeros(numEdges)
-                      = std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> >(k, zeros);
-                    (*self)->weights.insert(kv);
-                }
-
-                // search for entry
-                std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::iterator 
-                     it = (*self)->weights.find(k);
-
-                // add the weights
-                for (size_t j = 0; j < it->second.size(); ++j) {
-                    it->second[j] += ws[j];
+                    (*self)->weights.push_back(weight);
+                    (*self)->weightSrcCellIds.push_back(srcCellId);
+                    (*self)->weightSrcEdgeIds.push_back(srcEdgeIndex);
+                    (*self)->weightDstCellIds.push_back(dstCellId);
+                    (*self)->weightDstEdgeIds.push_back(dstEdgeIndex);
                 }
 
                 // next segment
@@ -295,24 +288,21 @@ extern "C"
 int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], double dst_data[]) {
 
     // initialize the data to zero
-    size_t numEdges = (*self)->numDstCells * (*self)->numEdgesPerCell;
-    for (size_t i = 0; i < numEdges; ++i) {
+    size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell;
+    for (size_t i = 0; i < n; ++i) {
         dst_data[i] = 0.0;
     }
 
-    for (std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::const_iterator 
-         it = (*self)->weights.begin(); it != (*self)->weights.end(); ++it) {
+    // add the contributions from each cell overlaps
+    for (size_t i = 0; i < (*self)->weights.size(); ++i) {
+        vtkIdType dstCellId = (*self)->weightDstCellIds[i];
+        vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
+        int dstEdgeIndex = (*self)->weightDstEdgeIds[i];
+        int srcEdgeIndex = (*self)->weightSrcEdgeIds[i];
 
-        vtkIdType dstCellId = it->first.first;
-        vtkIdType srcCellId = it->first.second;
-        const std::vector<double>& weights = it->second;
-
-        size_t kd = dstCellId * (*self)->numEdgesPerCell;
-        size_t ks = srcCellId * (*self)->numEdgesPerCell;
-
-        for (size_t ie = 0; ie < (*self)->numEdgesPerCell; ++ie) {
-            dst_data[kd + ie] += weights[ie] * src_data[ks + ie];
-        }
+        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstEdgeIndex;
+        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcEdgeIndex;
+        dst_data[dstK] += (*self)->weights[i] * src_data[srcK];
     }
 
     return 0;
@@ -320,55 +310,105 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 
 extern "C"
 int mnt_regridedges_load(RegridEdges_t** self, 
-		         const char* fort_filename, int n) {
+        const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
     int ncid, ier;
     ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not open file \"" << filename << "\"!\n";
+        return 1;
+    }
 
     // get the sizes
-    size_t numWeights, numEdgesPerCell;
+    size_t numWeights;
     int numWeightsId;
-    int numEdgesId;
     ier = nc_inq_dimid(ncid, "num_weights", &numWeightsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not inquire dimension \"num_weights\"!\n";
+        nc_close(ncid);
+        return 2;
+    }
     ier = nc_inq_dimlen(ncid, numWeightsId, &numWeights);
-    ier = nc_inq_dimid(ncid, "num_edges_per_cell", &numEdgesId);
-    ier = nc_inq_dimlen(ncid, numEdgesId, &numEdgesPerCell);
 
     // should check that numEdgesPerCell and (*self)->numEdgesPerCell match
 
-    int dstCellIdsId, srcCellIdsId, weightsId;
+    int dstCellIdsId, srcCellIdsId, dstEdgeIdsId, srcEdgeIdsId, weightsId;
 
     ier = nc_inq_varid(ncid, "dst_cell_ids", &dstCellIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"dst_cell_ids\"!\n";
+        nc_close(ncid);
+        return 3;
+    }
     ier = nc_inq_varid(ncid, "src_cell_ids", &srcCellIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"src_cell_ids\"!\n";
+        nc_close(ncid);
+        return 4;
+    }
+    ier = nc_inq_varid(ncid, "dst_edge_ids", &dstEdgeIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"dst_edge_ids\"!\n";
+        nc_close(ncid);
+        return 5;
+    }
+    ier = nc_inq_varid(ncid, "src_edge_ids", &srcEdgeIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"src_edge_ids\"!\n";
+        nc_close(ncid);
+        return 6;
+    }
     ier = nc_inq_varid(ncid, "weights", &weightsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"weights\"!\n";
+        nc_close(ncid);
+        return 7;
+    }
+
+    (*self)->weights.resize(numWeights);
+    (*self)->weightDstCellIds.resize(numWeights);
+    (*self)->weightSrcCellIds.resize(numWeights);
+    (*self)->weightDstEdgeIds.resize(numWeights);
+    (*self)->weightSrcEdgeIds.resize(numWeights);
 
     // read
-    std::vector<long> dstCellIds(numWeights);
-    std::vector<long> srcCellIds(numWeights);
-    std::vector<double> weights(numWeights * numEdgesPerCell);
-    ier = nc_get_var_long(ncid, dstCellIdsId, &dstCellIds[0]);
-    ier = nc_get_var_long(ncid, srcCellIdsId, &srcCellIds[0]);
-    ier = nc_get_var_double(ncid, weightsId, &weights[0]);
+    ier = nc_get_var_double(ncid, weightsId, &((*self)->weights)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not read var \"weights\"!\n";
+        nc_close(ncid);
+        return 8;
+    }
+    ier = nc_get_var_longlong(ncid, dstCellIdsId, &((*self)->weightDstCellIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not read var \"dst_cell_ids\"!\n";
+        nc_close(ncid);
+        return 9;
+    }
+    ier = nc_get_var_longlong(ncid, srcCellIdsId, &((*self)->weightSrcCellIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"src_cell_ids\"!\n";
+        nc_close(ncid);
+        return 10;
+    }
+    ier = nc_get_var_int(ncid, dstEdgeIdsId, &((*self)->weightDstEdgeIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"dst_edge_ids\"!\n";
+        nc_close(ncid);
+        return 11;
+    }
+    ier = nc_get_var_int(ncid, srcEdgeIdsId, &((*self)->weightSrcEdgeIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not get ID for var \"src_edge_ids\"!\n";
+        nc_close(ncid);
+        return 12;
+    }
 
     ier = nc_close(ncid);    
-
-    // store in map
-    for (int i = 0; i < numWeights; ++i) {
-
-        // create (dstCellId, srcCellId) entry
-        std::pair< vtkIdType, vtkIdType > k(dstCellIds[i], srcCellIds[i]);
-
-        // create vector of weights for this cell
-        std::vector<double> v(&weights[numEdgesPerCell*i], 
-                              &weights[numEdgesPerCell*i + numEdgesPerCell]);
-
-        // create pair of entries
-        std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv(k, v);
-
-        // insert
-        (*self)->weights.insert(kv);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not close file \"" << filename << "\"!\n";
+        return 13;
     }
 
     return 0;
@@ -386,57 +426,111 @@ int mnt_regridedges_dump(RegridEdges_t** self,
 
     int ncid, ier;
     ier = nc_create(filename.c_str(), NC_CLOBBER, &ncid);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not create file \"" << filename << "\"!\n";
+        return 1;
+    }
 
     // create dimensions
     int numWeightsId;
-    int numEdgesId;
     ier = nc_def_dim(ncid, "num_weights", (int) numWeights, &numWeightsId);
-    ier = nc_def_dim(ncid, "num_edges_per_cell", (*self)->numEdgesPerCell, &numEdgesId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define dimension \"num_weights\"!\n";
+        nc_close(ncid);
+        return 2;
+    }
 
 
     // create variables
     int numWeightsAxis[] = {numWeightsId};
-    int numWeightsNumEdgesAxes[] = {numWeightsId, numEdgesId};
 
     int dstCellIdsId;
-    ier = nc_def_var(ncid, "dst_cell_ids", NC_LONG, 1, numWeightsAxis, &dstCellIdsId);
+    ier = nc_def_var(ncid, "dst_cell_ids", NC_INT64, 1, numWeightsAxis, &dstCellIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"dst_cell_ids\"!\n";
+        nc_close(ncid);
+        return 3;
+    }
 
     int srcCellIdsId;
-    ier = nc_def_var(ncid, "src_cell_ids", NC_LONG, 1, numWeightsAxis, &srcCellIdsId);
+    ier = nc_def_var(ncid, "src_cell_ids", NC_INT64, 1, numWeightsAxis, &srcCellIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"src_cell_ids\"!\n";
+        nc_close(ncid);
+        return 4;
+    }
+
+    int dstEdgeIdsId;
+    ier = nc_def_var(ncid, "dst_edge_ids", NC_INT, 1, numWeightsAxis, &dstEdgeIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"dst_edge_ids\"!\n";
+        nc_close(ncid);
+        return 5;
+    }
+
+    int srcEdgeIdsId;
+    ier = nc_def_var(ncid, "src_edge_ids", NC_INT, 1, numWeightsAxis, &srcEdgeIdsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"src_edge_ids\"!\n";
+        nc_close(ncid);
+        return 6;
+    }
 
     int weightsId;
-    ier = nc_def_var(ncid, "weights", NC_DOUBLE, 2, numWeightsNumEdgesAxes, &weightsId);
+    ier = nc_def_var(ncid, "weights", NC_DOUBLE, 1, numWeightsAxis, &weightsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"weights\"!\n";
+        nc_close(ncid);
+        return 7;
+    }
 
     // close define mode
     ier = nc_enddef(ncid);
-
-    // load into arrays
-    std::vector<long> dstCellIds(numWeights);
-    std::vector<long> srcCellIds(numWeights);
-    std::vector<double> weights(numWeights * (*self)->numEdgesPerCell);
-
-    // dst cell, src cell counter
-    size_t i = 0;
-    for (std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::const_iterator 
-        it = (*self)->weights.begin(); it != (*self)->weights.end(); ++it) {
-
-        // get the dst/src cell indices
-        dstCellIds[i] = it->first.first;
-        srcCellIds[i] = it->first.second;
-
-        // iterate over the edges
-        for (int j = 0; j < (*self)->numEdgesPerCell; ++j) {
-            weights[(*self)->numEdgesPerCell*i + j] = it->second[j];
-        }
-        i++;
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not end define mode\n";
+        nc_close(ncid);
+        return 8;
     }
 
     // write
-    ier = nc_put_var_long(ncid, dstCellIdsId, &dstCellIds[0]);
-    ier = nc_put_var_long(ncid, srcCellIdsId, &srcCellIds[0]);
-    ier = nc_put_var_double(ncid, weightsId, &weights[0]);
+    ier = nc_put_var_longlong(ncid, dstCellIdsId, &((*self)->weightDstCellIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"dst_cell_ids\"\n";
+        nc_close(ncid);
+        return 9;
+    }
+    ier = nc_put_var_longlong(ncid, srcCellIdsId, &((*self)->weightSrcCellIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"src_cell_ids\"\n";
+        nc_close(ncid);
+        return 10;
+    }
+    ier = nc_put_var_int(ncid, dstEdgeIdsId, &((*self)->weightDstEdgeIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"dst_edge_ids\"\n";
+        nc_close(ncid);
+        return 10;
+    }
+    ier = nc_put_var_int(ncid, srcEdgeIdsId, &((*self)->weightSrcEdgeIds)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"src_edge_ids\"\n";
+        nc_close(ncid);
+        return 11;
+    }
+    ier = nc_put_var_double(ncid, weightsId, &((*self)->weights)[0]);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"weights\"\n";
+        nc_close(ncid);
+        return 12;
+    }
 
     ier = nc_close(ncid);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not close file \"" << filename << "\"\n";
+        nc_close(ncid);
+        return 13;
+    }
+
 
     return 0;
 }
