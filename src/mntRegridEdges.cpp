@@ -187,6 +187,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 Vector<double> dxi = xib - xia;
                 Vector<double> xiMid = 0.5*(xia + xib);
 
+                // create pair (dstCellId, srcCellId)
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
                                                                                     srcCellId);
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
@@ -200,7 +201,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 // iterate over the edges of the src cell
                 for (size_t j0 = 0; j0 < numEdges; ++j0) {
 
-                    // get the cell indices of the vertices for the edge
+                    // get the indices of the vertices for the edge
                     int* i01 = srcHex->GetEdgeArray(j0);
 
                     // compute the interpolation weight, a product for every dimension
@@ -214,7 +215,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                         double x = 0.5*(srcCellParamCoords[i0*3 + d] + srcCellParamCoords[i1*3 + d]);
 
                         // use Lagrange interpolation to evaluate the basis function integral for
-                        // any for hte 3 possible x values in {0, 0.5, 1}
+                        // any for the 3 possible x values in {0, 0.5, 1}
                         double xm00 = x;
                         double xm05 = x - 0.5;
                         double xm10 = x - 1.0;
@@ -225,17 +226,20 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                     }
 
                     // coeff accounts for the duplicity, some segments are shared between cells
-                    ws[j0] *= 2*coeff;
+                    ws[j0] *= 2*coeff; // WHY a coefficient 2? Comes from the Lagrange representation?
                 }
 
                 if ((*self)->weights.find(k) == (*self)->weights.end()) {
+                    // no current entry for dstCellId and srcCellIds
                     // initialize the weights to a zero matrix
                     std::vector<double> zeros( (*self)->numEdgesPerCell, 0.0 );
                     std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> > kv 
+                    // create an entry (dstCellId, srcCellId) -> zeros(numEdges)
                       = std::pair< std::pair<vtkIdType, vtkIdType>, std::vector<double> >(k, zeros);
                     (*self)->weights.insert(kv);
                 }
 
+                // search for entry
                 std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> >::iterator 
                      it = (*self)->weights.find(k);
 
