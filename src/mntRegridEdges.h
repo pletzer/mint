@@ -23,6 +23,8 @@ struct RegridEdges_t {
 
     // map of (dstCellId, srcCellId) -> 4-array 
     std::map< std::pair<vtkIdType, vtkIdType>, std::vector<double> > weights;
+
+    
     size_t numSrcCells;
     size_t numDstCells;
     size_t numPointsPerCell;

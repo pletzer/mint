@@ -4,7 +4,8 @@
 #include <cstdio>
 #include <vtkIdList.h>
 #include <netcdf.h>
-#include <vtkHexahedron.h>
+#include <vtkHexahedron.h> // for 3d grids
+#include <vtkQuad.h>       // for 2d grids
 #include <vtkCell.h>
 
 extern "C"
@@ -192,7 +193,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                                                                                     srcCellId);
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
                 double* srcCellParamCoords = srcCell->GetParametricCoords();
-                vtkHexahedron* srcHex = dynamic_cast<vtkHexahedron*>(srcCell);
+
+                // use vtkHexahedron in 3d!
+                vtkQuad* srcQuad = dynamic_cast<vtkQuad*>(srcCell);
 
                 // compute the weight contributions from each src edge, one value 
                 // per edge
@@ -202,7 +205,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 for (size_t j0 = 0; j0 < numEdges; ++j0) {
 
                     // get the indices of the vertices for the edge
-                    int* i01 = srcHex->GetEdgeArray(j0);
+                    int* i01 = srcQuad->GetEdgeArray(j0);
 
                     // compute the interpolation weight, a product for every dimension
                     for (size_t d = 0; d < 3; ++d) {
