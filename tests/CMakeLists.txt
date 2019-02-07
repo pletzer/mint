@@ -7,6 +7,13 @@ include_directories(
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 
+add_executable(testSimpleRegridEdges testSimpleRegridEdges.cxx)
+target_link_libraries(testSimpleRegridEdges
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES}
+)
+
 add_executable(testRegridEdgesFromUgrid testRegridEdgesFromUgrid.cxx)
 target_link_libraries(testRegridEdgesFromUgrid
                     mint
@@ -150,6 +157,7 @@ add_test(NAME regridEdgesF
 set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
+add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineGridIntersector COMMAND testLineGridIntersector)
