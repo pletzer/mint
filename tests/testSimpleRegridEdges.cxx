@@ -70,6 +70,9 @@ int main() {
     int num_cells_per_bucket = 8;
     ier = mnt_regridedges_build(&rg, num_cells_per_bucket);
     assert(ier == 0);
+
+    ier = mnt_regridedges_print(&rg);
+    assert(ier == 0);    
     
     std::string outputFilename = "simpleRegridEdgesWeights.nc";
     ier = mnt_regridedges_dump(&rg, outputFilename.c_str(), outputFilename.size());

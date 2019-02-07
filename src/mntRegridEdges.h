@@ -174,4 +174,12 @@ extern "C"
 int mnt_regridedges_dump(RegridEdges_t** self, 
                          const char* fort_filename, int n);
 
+/**
+ * Print the weights
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges_print(RegridEdges_t** self);
+
+
 #endif // MNT_REGRID_EDGES
