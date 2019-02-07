@@ -237,11 +237,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                     // coeff accounts for the duplicity, some segments are shared between cells
                     weight *= 2*coeff; // WHY a coefficient 2? Comes from the Lagrange representation?
 
-                    (*self)->weights.push_back(weight);
-                    (*self)->weightSrcCellIds.push_back(srcCellId);
-                    (*self)->weightSrcEdgeIds.push_back(srcEdgeIndex);
-                    (*self)->weightDstCellIds.push_back(dstCellId);
-                    (*self)->weightDstEdgeIds.push_back(dstEdgeIndex);
+                    if (std::abs(weight) > 1.e-15) {
+                        (*self)->weights.push_back(weight);
+                        (*self)->weightSrcCellIds.push_back(srcCellId);
+                        (*self)->weightSrcEdgeIds.push_back(srcEdgeIndex);
+                        (*self)->weightDstCellIds.push_back(dstCellId);
+                        (*self)->weightDstEdgeIds.push_back(dstEdgeIndex);
+                    }
                 }
 
                 // next segment
@@ -541,7 +543,7 @@ int mnt_regridedges_print(RegridEdges_t** self) {
     std::cout << "Number of weights: " << numWeights << '\n';
     printf("                 dst_cell  dst_edge         src_cell  src_edge           weight\n");
     for (size_t i = 0; i < numWeights; ++i) {
-    printf("%10ld       %8ld         %1d         %8ld         %1d   %15.5lf\n", i, 
+    printf("%10ld       %8ld         %1d         %8ld         %1d   %15.5lg\n", i, 
                (*self)->weightDstCellIds[i], (*self)->weightDstEdgeIds[i], 
                (*self)->weightSrcCellIds[i], (*self)->weightSrcEdgeIds[i],
                (*self)->weights[i]);
