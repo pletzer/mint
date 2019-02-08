@@ -21,6 +21,18 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->srcGridObj = NULL;
     (*self)->dstGridObj = NULL;
 
+    // create a VTK cell and extract the edge to node connectivity for quad
+    vtkQuad* cell = vtkQuad::New(); // 2d
+    for (size_t i = 0; i < (*self)->numPointsPerCell; ++i) {
+        cell->GetPointIds()->SetId(i, i);
+    }
+    for (int e = 0; e < cell->GetNumberOfEdges(); ++e) {
+        int* i01 = cell->GetEdgeArray(e);
+        std::pair<int, std::pair<int, int> > kv(e, std::pair<int, int>(i01[0], i01[1]));
+        (*self)->edgeVertConnectivity.insert(kv);
+    }
+    cell->Delete();
+
     return 0;
 }
 
@@ -540,6 +552,11 @@ int mnt_regridedges_dump(RegridEdges_t** self,
 extern "C"
 int mnt_regridedges_print(RegridEdges_t** self) {
     size_t numWeights = (*self)->weights.size();
+    std::cout << "edge to vertex connectivity:\n";
+    for (std::map<int, std::pair<int, int> >::const_iterator it = (*self)->edgeVertConnectivity.begin();
+         it != (*self)->edgeVertConnectivity.end(); ++it) {
+        std::cout << it->first << " -> " << it->second.first << ',' << it->second.second << '\n';
+    }
     std::cout << "Number of weights: " << numWeights << '\n';
     printf("                 dst_cell  dst_edge         src_cell  src_edge           weight\n");
     for (size_t i = 0; i < numWeights; ++i) {
