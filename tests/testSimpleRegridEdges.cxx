@@ -37,7 +37,7 @@ int main() {
     srcGrid->InsertNextCell(VTK_QUAD, ptIds);
     ptIds->Delete();
 
-    // construct dst grid
+    // construct dst grid, same as src grid
     vtkPoints* dstPoints = vtkPoints::New();
     dstPoints->SetDataTypeToDouble();
     dstPoints->InsertNextPoint(v0);
@@ -88,7 +88,10 @@ int main() {
     assert(ier == 0);
 
     for (size_t i = 0; i < 4; ++i) {
-        std::cout << "edge " << i << " src, dst value = " << srcData[i] << ',' << dstData[i] << '\n';
+        std::cout << "src edge " << i << " data value " << srcData[i] << '\n';
+    }
+    for (size_t i = 0; i < 4; ++i) {
+        std::cout << "dst edge " << i << " data value " << dstData[i] << '\n';
     }
 
     // clean up
