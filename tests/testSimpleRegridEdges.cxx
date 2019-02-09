@@ -78,7 +78,14 @@ int main() {
     ier = mnt_regridedges_dump(&rg, outputFilename.c_str(), outputFilename.size());
     assert(ier == 0);
 
-    double srcData[] = {1., 2., 1., 2.};
+    // edges point in the positive direction
+    //
+    //  3-->---2
+    //  |      |
+    //  ^      ^
+    //  |      |
+    //  0-->---1
+    double srcData[] = {1., 2., -1., -2.};
     double dstData[4];
 
     ier = mnt_regridedges_applyWeights(&rg, srcData, dstData);

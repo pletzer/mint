@@ -26,9 +26,31 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     for (size_t i = 0; i < (*self)->numPointsPerCell; ++i) {
         cell->GetPointIds()->SetId(i, i);
     }
+
+    // get the edges of the cell and coorect for the direction - we want the 
+    // edges always to point in the positive direction
+    double* allParamCoords = cell->GetParametricCoords();
     for (int e = 0; e < cell->GetNumberOfEdges(); ++e) {
         int* i01 = cell->GetEdgeArray(e);
-        std::pair<int, std::pair<int, int> > kv(e, std::pair<int, int>(i01[0], i01[1]));
+        int i0 = i01[0];
+        int i1 = i01[1];
+
+        // check if the direction is positive
+        double dir = 0;
+        double* xi0 = &allParamCoords[3*i0];
+        double* xi1 = &allParamCoords[3*i1];
+        for (size_t d = 0; d < 3; ++d) {
+            // dir is either -1 (negative direction), 0 or +1 (positive direction)
+            dir += xi1[d] - xi0[d];
+        }
+        if (dir < 0) {
+            // swap the direction of the edge so that the edge always points to the 
+            // positive direction
+            int i0Bis = i0;
+            i0 = i1;
+            i1 = i0Bis;
+        }
+        std::pair<int, std::pair<int, int> > kv(e, std::pair<int, int>(i0, i1));
         (*self)->edgeVertConnectivity.insert(kv);
     }
     cell->Delete();
@@ -243,10 +265,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                         double lag00 = + 2 * xm05 * xm10;
                         double lag05 = - 4 * xm00 * xm10;
                         double lag10 = + 2 * xm00 * xm05;
-                        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
+
+                        // taking the abs value because the correct the sign for edges that 
+                        // run from top to bottom or right to left.
+                        weight *= std::abs((1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10);
                     }
 
-                    // coeff accounts for the duplicity, some segments are shared between cells
+                    // coeff accounts for the duplicity in case where segments are shared between cells
                     weight *= coeff;
 
                     if (std::abs(weight) > 1.e-15) {
@@ -310,13 +335,16 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 
     // add the contributions from each cell overlaps
     for (size_t i = 0; i < (*self)->weights.size(); ++i) {
+
         vtkIdType dstCellId = (*self)->weightDstCellIds[i];
         vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
         int dstEdgeIndex = (*self)->weightDstEdgeIds[i];
         int srcEdgeIndex = (*self)->weightSrcEdgeIds[i];
 
-        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstEdgeIndex;
-        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcEdgeIndex;
+        // index into the flat array
+        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstCellId;
+        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
+
         dst_data[dstK] += (*self)->weights[i] * src_data[srcK];
     }
 
