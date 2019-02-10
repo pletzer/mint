@@ -157,13 +157,13 @@ class ReaderBase(object):
 
     def getLoopIntegralsFromStreamData(self, streamFuncData):
         """
-        Get the cell loop integral from nodal the stream function data
+        Get the cell loop integral from the nodal stream function data
         @param streamFuncData stream function data
         """
         numCells = self.getNumberOfCells()
         cellArray = numpy.zeros((numCells,), numpy.float64)
+        # going counterclockwise around the cell
         for i0 in range(4):
-            # edge direction is counter-clockwise
             i1 = (i0 + 1) % 4
             cellArray[:] += streamFuncData[:, i1] - streamFuncData[:, i0]
         return cellArray

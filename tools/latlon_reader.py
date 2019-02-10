@@ -16,7 +16,7 @@ class LatLonReader(ReaderBase):
 
         super(LatLonReader, self).__init__()
         
-        # read UGRID file
+        # read file
         nc = netCDF4.Dataset(filename, 'r')
 
         lon_units = ''

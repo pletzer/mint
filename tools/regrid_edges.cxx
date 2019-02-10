@@ -112,7 +112,10 @@ int main(int argc, char** argv) {
                     size_t k = i*numEdgesPerCell;
                     double loop = 0.0;
                     for (size_t j = 0; j < numEdgesPerCell; ++j) {
-                        loop += dstData[k + j];
+                        // integrate in the counterclockwise direction
+                        // last two edges get a negative sign
+                        int sgn = 1 - 2*(j/2);
+                        loop += sgn * dstData[k + j];
                     }
                     loop_integrals[i] = loop;
                     loop = std::abs(loop);

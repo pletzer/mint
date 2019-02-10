@@ -171,14 +171,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
         int numEdges = dstCell->GetNumberOfEdges();
 
         // iterate over the four edges of each dst cell
-        for (int dstEdgeIndex = 0; dstEdgeIndex < numEdges; ++dstEdgeIndex) {
+        for (int dstEdgeIndex = 0; dstEdgeIndex < edgeIt.getNumberOfEdges(); ++dstEdgeIndex) {
 
-            vtkCell* dstEdge = dstCell->GetEdge(dstEdgeIndex);
-            vtkIdType id0 = dstEdge->GetPointId(0);
-            vtkIdType id1 = dstEdge->GetPointId(1);
+            int id0, id1;
+            edgeIt.getCellPointIds(dstEdgeIndex, &id0, &id1);
               
-            dstPoints->GetPoint(id0, dstEdgePt0);
-            dstPoints->GetPoint(id1, dstEdgePt1);
+            dstPoints->GetPoint(dstCell->GetPointId(id0), dstEdgePt0);
+            dstPoints->GetPoint(dstCell->GetPointId(id1), dstEdgePt1);
 
             // break the edge into sub-edges
             PolysegmentIter polySegIter = PolysegmentIter((*self)->srcGrid, 
@@ -200,7 +199,6 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                 Vector<double> dxi = xib - xia;
                 Vector<double> xiMid = 0.5*(xia + xib);
-                std::cerr << "<<< iseg = " << iseg << " srcCellId = " << srcCellId << " xia = " << xia << " xib = " << xib << " dxi = " << dxi << '\n';
 
                 // create pair (dstCellId, srcCellId)
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
@@ -234,8 +232,6 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                         // taking the abs value because the correct the sign for edges that 
                         // run from top to bottom or right to left.
-                        std::cerr << "\tsrcEdgeIndex = " << srcEdgeIndex << " d=" << d << " lags " << lag00 << ',' << lag05 << ',' << lag10 
-                                  << " xiM, dxi=" << xiM << ',' << dxi[d] << '\n';
                         weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
                     }
 
