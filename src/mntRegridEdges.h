@@ -36,9 +36,6 @@ struct RegridEdges_t {
     size_t numPointsPerCell;
     size_t numEdgesPerCell;
 
-    // maps an edge index to a pair of vertex indices
-    std::map< int, std::pair<int, int> > edgeVertConnectivity;
-
     Grid_t* srcGridObj;
     Grid_t* dstGridObj;
 };

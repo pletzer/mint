@@ -1,5 +1,6 @@
 #include <mntRegridEdges.h>
 #include <mntPolysegmentIter.h>
+#include <mntQuadEdgeIter.h>
 #include <iostream>
 #include <cstdio>
 #include <vtkIdList.h>
@@ -21,39 +22,6 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->srcGridObj = NULL;
     (*self)->dstGridObj = NULL;
 
-    // create a VTK cell and extract the edge to node connectivity for quad
-    vtkQuad* cell = vtkQuad::New(); // 2d
-    for (size_t i = 0; i < (*self)->numPointsPerCell; ++i) {
-        cell->GetPointIds()->SetId(i, i);
-    }
-
-    // get the edges of the cell and coorect for the direction - we want the 
-    // edges always to point in the positive direction
-    double* allParamCoords = cell->GetParametricCoords();
-    for (int e = 0; e < cell->GetNumberOfEdges(); ++e) {
-        int* i01 = cell->GetEdgeArray(e);
-        int i0 = i01[0];
-        int i1 = i01[1];
-
-        // check if the direction is positive
-        double dir = 0;
-        double* xi0 = &allParamCoords[3*i0];
-        double* xi1 = &allParamCoords[3*i1];
-        for (size_t d = 0; d < 3; ++d) {
-            // dir is either -1 (negative direction), 0 or +1 (positive direction)
-            dir += xi1[d] - xi0[d];
-        }
-        if (dir < 0) {
-            // swap the direction of the edge so that the edge always points to the 
-            // positive direction
-            int i0Bis = i0;
-            i0 = i1;
-            i1 = i0Bis;
-        }
-        std::pair<int, std::pair<int, int> > kv(e, std::pair<int, int>(i0, i1));
-        (*self)->edgeVertConnectivity.insert(kv);
-    }
-    cell->Delete();
 
     return 0;
 }
@@ -164,6 +132,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
         return 2;
     }
 
+    // build the cell edge iterator
+    QuadEdgeIter edgeIt;
+
     // build the locator
     (*self)->srcLoc->SetDataSet((*self)->srcGrid);
     (*self)->srcLoc->SetNumberOfCellsPerBucket(numCellsPerBucket);
@@ -229,6 +200,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                 Vector<double> dxi = xib - xia;
                 Vector<double> xiMid = 0.5*(xia + xib);
+                std::cerr << "<<< iseg = " << iseg << " srcCellId = " << srcCellId << " xia = " << xia << " xib = " << xib << " dxi = " << dxi << '\n';
 
                 // create pair (dstCellId, srcCellId)
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
@@ -236,22 +208,16 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
                 double* srcCellParamCoords = srcCell->GetParametricCoords();
 
-                // use vtkHexahedron in 3d!
-                vtkQuad* srcQuad = dynamic_cast<vtkQuad*>(srcCell);
-                        
-                // iterate over the edges of the src cell
-                for (int srcEdgeIndex = 0; srcEdgeIndex < numEdges; ++srcEdgeIndex) {
+                for (int srcEdgeIndex = 0; srcEdgeIndex < edgeIt.getNumberOfEdges(); ++srcEdgeIndex) {
 
-                    // get the indices of the vertices for the edge
-                    int* i01 = srcQuad->GetEdgeArray(srcEdgeIndex);
+                    int i0, i1;
+                    edgeIt.getCellPointIds(srcEdgeIndex, &i0, &i1);
 
                     // compute the interpolation weight, a product for every dimension
                     double weight = 1.0;
                     for (size_t d = 0; d < 2; ++d) { // 2d 
 
                         double xiM = xiMid[d];
-                        int i0 = i01[0];
-                        int i1 = i01[1];
 
                         // mid point of edge in parameter space
                         double x = 0.5*(srcCellParamCoords[i0*3 + d] + srcCellParamCoords[i1*3 + d]);
@@ -268,7 +234,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                         // taking the abs value because the correct the sign for edges that 
                         // run from top to bottom or right to left.
-                        weight *= std::abs((1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10);
+                        std::cerr << "\tsrcEdgeIndex = " << srcEdgeIndex << " d=" << d << " lags " << lag00 << ',' << lag05 << ',' << lag10 
+                                  << " xiM, dxi=" << xiM << ',' << dxi[d] << '\n';
+                        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
                     }
 
                     // coeff accounts for the duplicity in case where segments are shared between cells
@@ -607,10 +575,12 @@ int mnt_regridedges_dump(RegridEdges_t** self,
 extern "C"
 int mnt_regridedges_print(RegridEdges_t** self) {
     size_t numWeights = (*self)->weights.size();
+    QuadEdgeIter edgeIt;
     std::cout << "edge to vertex connectivity:\n";
-    for (std::map<int, std::pair<int, int> >::const_iterator it = (*self)->edgeVertConnectivity.begin();
-         it != (*self)->edgeVertConnectivity.end(); ++it) {
-        std::cout << it->first << " -> " << it->second.first << ',' << it->second.second << '\n';
+    for (int edgeId = 0; edgeId < edgeIt.getNumberOfEdges(); ++edgeId) {
+        int i0, i1;
+        edgeIt.getCellPointIds(edgeId, &i0, &i1);
+        std::cout << "edge " << edgeId << ": " << i0 << "->" << i1 << '\n';
     }
     std::cout << "Number of weights: " << numWeights << '\n';
     printf("                 dst_cell  dst_edge         src_cell  src_edge           weight\n");
