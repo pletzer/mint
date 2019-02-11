@@ -4,6 +4,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <mntGrid.h>
+#include <mntQuadEdgeIter.h>
 
 #ifndef MNT_REGRID_EDGES
 #define MNT_REGRID_EDGES
@@ -38,6 +39,8 @@ struct RegridEdges_t {
 
     Grid_t* srcGridObj;
     Grid_t* dstGridObj;
+
+    QuadEdgeIter edgeConnectivity;
 };
 
 /**

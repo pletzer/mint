@@ -1,6 +1,5 @@
 #include <mntRegridEdges.h>
 #include <mntPolysegmentIter.h>
-#include <mntQuadEdgeIter.h>
 #include <iostream>
 #include <cstdio>
 #include <vtkIdList.h>
@@ -132,9 +131,6 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
         return 2;
     }
 
-    // build the cell edge iterator
-    QuadEdgeIter edgeIt;
-
     // build the locator
     (*self)->srcLoc->SetDataSet((*self)->srcGrid);
     (*self)->srcLoc->SetNumberOfCellsPerBucket(numCellsPerBucket);
@@ -171,10 +167,12 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
         int numEdges = dstCell->GetNumberOfEdges();
 
         // iterate over the four edges of each dst cell
-        for (int dstEdgeIndex = 0; dstEdgeIndex < edgeIt.getNumberOfEdges(); ++dstEdgeIndex) {
+        for (int dstEdgeIndex = 0; 
+             dstEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
+             ++dstEdgeIndex) {
 
             int id0, id1;
-            edgeIt.getCellPointIds(dstEdgeIndex, &id0, &id1);
+            (*self)->edgeConnectivity.getCellPointIds(dstEdgeIndex, &id0, &id1);
               
             dstPoints->GetPoint(dstCell->GetPointId(id0), dstEdgePt0);
             dstPoints->GetPoint(dstCell->GetPointId(id1), dstEdgePt1);
@@ -206,10 +204,12 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
                 double* srcCellParamCoords = srcCell->GetParametricCoords();
 
-                for (int srcEdgeIndex = 0; srcEdgeIndex < edgeIt.getNumberOfEdges(); ++srcEdgeIndex) {
+                for (int srcEdgeIndex = 0; 
+                     srcEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
+                     ++srcEdgeIndex) {
 
                     int i0, i1;
-                    edgeIt.getCellPointIds(srcEdgeIndex, &i0, &i1);
+                    (*self)->edgeConnectivity.getCellPointIds(srcEdgeIndex, &i0, &i1);
 
                     // compute the interpolation weight, a product for every dimension
                     double weight = 1.0;
@@ -453,6 +453,25 @@ int mnt_regridedges_dump(RegridEdges_t** self,
     }
 
     // create dimensions
+
+    int numSpaceDimsId;
+    ier = nc_def_dim(ncid, "num_space_dims", 3, &numSpaceDimsId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define dimension \"num_space_dims\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 2;
+    }    
+
+    int numEdgesPerCellId;
+    ier = nc_def_dim(ncid, "num_edges_per_cell", (*self)->numEdgesPerCell, &numEdgesPerCellId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define dimension \"num_edges_per_cell\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 2;
+    }
+
     int numWeightsId;
     ier = nc_def_dim(ncid, "num_weights", (int) numWeights, &numWeightsId);
     if (ier != NC_NOERR) {
@@ -462,9 +481,25 @@ int mnt_regridedges_dump(RegridEdges_t** self,
         return 2;
     }
 
-
     // create variables
+    int paramCoordsAxis[] = {numEdgesPerCellId, numSpaceDimsId};
     int numWeightsAxis[] = {numWeightsId};
+
+    int edgeParamCoordBegId, edgeParamCoordEndId;
+    ier = nc_def_var(ncid, "edge_param_coord_beg", NC_DOUBLE, 2, paramCoordsAxis, &edgeParamCoordBegId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"edge_param_coord_beg\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 3;
+    }
+    ier = nc_def_var(ncid, "edge_param_coord_end", NC_DOUBLE, 2, paramCoordsAxis, &edgeParamCoordEndId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"edge_param_coord_end\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 3;
+    }
 
     int dstCellIdsId;
     ier = nc_def_var(ncid, "dst_cell_ids", NC_INT64, 1, numWeightsAxis, &dstCellIdsId);
@@ -520,7 +555,35 @@ int mnt_regridedges_dump(RegridEdges_t** self,
         return 8;
     }
 
+    double edgeParamCoordBegs[(*self)->numEdgesPerCell * 3];
+    double edgeParamCoordEnds[(*self)->numEdgesPerCell * 3];
+    double* xiBeg;
+    double* xiEnd;
+    for (int e = 0; e < (*self)->numEdgesPerCell; ++e) {
+        (*self)->edgeConnectivity.getParamCoords(e, &xiBeg, &xiEnd);
+        for (size_t j = 0; j < 3; ++j) { // always 3d
+            edgeParamCoordBegs[e*3 + j] = xiBeg[j];
+            edgeParamCoordEnds[e*3 + j] = xiEnd[j];
+        }
+    }
+
     // write
+    ier = nc_put_var_double(ncid, edgeParamCoordBegId, edgeParamCoordBegs);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"edge_param_coord_beg\"\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 9;
+    }
+
+    ier = nc_put_var_double(ncid, edgeParamCoordEndId, edgeParamCoordEnds);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"edge_param_coord_end\"\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 9;
+    }
+
     ier = nc_put_var_longlong(ncid, dstCellIdsId, &((*self)->weightDstCellIds)[0]);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not write variable \"dst_cell_ids\"\n";
@@ -571,11 +634,12 @@ int mnt_regridedges_dump(RegridEdges_t** self,
 extern "C"
 int mnt_regridedges_print(RegridEdges_t** self) {
     size_t numWeights = (*self)->weights.size();
-    QuadEdgeIter edgeIt;
     std::cout << "edge to vertex connectivity:\n";
-    for (int edgeId = 0; edgeId < edgeIt.getNumberOfEdges(); ++edgeId) {
+    for (int edgeId = 0; 
+         edgeId < (*self)->edgeConnectivity.getNumberOfEdges(); 
+         ++edgeId) {
         int i0, i1;
-        edgeIt.getCellPointIds(edgeId, &i0, &i1);
+        (*self)->edgeConnectivity.getCellPointIds(edgeId, &i0, &i1);
         std::cout << "edge " << edgeId << ": " << i0 << "->" << i1 << '\n';
     }
     std::cout << "Number of weights: " << numWeights << '\n';
