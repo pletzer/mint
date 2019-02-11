@@ -445,7 +445,7 @@ int mnt_regridedges_dump(RegridEdges_t** self,
     size_t numWeights = (*self)->weights.size();
 
     int ncid, ier;
-    ier = nc_create(filename.c_str(), NC_CLOBBER, &ncid);
+    ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not create file \"" << filename << "\"! ier = " << ier << "\n";
         std::cerr << nc_strerror (ier);
@@ -467,7 +467,7 @@ int mnt_regridedges_dump(RegridEdges_t** self,
     int numWeightsAxis[] = {numWeightsId};
 
     int dstCellIdsId;
-    ier = nc_def_var(ncid, "dst_cell_ids", NC_INT, 1, numWeightsAxis, &dstCellIdsId);
+    ier = nc_def_var(ncid, "dst_cell_ids", NC_INT64, 1, numWeightsAxis, &dstCellIdsId);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not define variable \"dst_cell_ids\"! ier = " << ier << "\n";
         std::cerr << nc_strerror (ier);
@@ -476,7 +476,7 @@ int mnt_regridedges_dump(RegridEdges_t** self,
     }
 
     int srcCellIdsId;
-    ier = nc_def_var(ncid, "src_cell_ids", NC_INT, 1, numWeightsAxis, &srcCellIdsId);
+    ier = nc_def_var(ncid, "src_cell_ids", NC_INT64, 1, numWeightsAxis, &srcCellIdsId);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not define variable \"src_cell_ids\"!\n";
         std::cerr << nc_strerror (ier);
