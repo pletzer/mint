@@ -3,7 +3,6 @@
 #include <vtkPoints.h>
 #include <vtkIdList.h>
 #include <vtkUnstructuredGridReader.h>
-#include <vtkUnstructuredGridWriter.h>
 #include <vtkGenericCell.h>
 
 #ifndef MNT_GRID
@@ -20,7 +19,6 @@ struct Grid_t {
     vtkUnstructuredGrid* grid;
 
     vtkUnstructuredGridReader* reader;
-    vtkUnstructuredGridWriter* writer;
     std::vector<vtkDoubleArray*> doubleArrays;
 };
 

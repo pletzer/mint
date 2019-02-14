@@ -1,5 +1,6 @@
 #include <mntGrid.h>
 #include <vtkCellData.h>
+#include <vtkUnstructuredGridWriter.h>
 #include <fstream>
 #include <netcdf.h>
 #include <string>
@@ -19,7 +20,6 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->points = NULL;
     (*self)->grid = NULL;
     (*self)->reader = NULL;
-    (*self)->writer = NULL;
     (*self)->doubleArrays.resize(0);
     return 0;
 }
@@ -30,7 +30,6 @@ int mnt_grid_del(Grid_t** self) {
     for (size_t i = 0; i < (*self)->doubleArrays.size(); ++i) {
         (*self)->doubleArrays[i]->Delete();
     }
-    if ((*self)->writer) (*self)->writer->Delete();
     if ((*self)->reader) {
         (*self)->reader->Delete();
     }
@@ -361,10 +360,11 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
 
 extern "C"
 int mnt_grid_dump(Grid_t** self, const char* filename) {
-    (*self)->writer = vtkUnstructuredGridWriter::New();
-    (*self)->writer->SetFileName(filename);
-    (*self)->writer->SetInputData((*self)->grid);
-    (*self)->writer->Update();
+    vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
+    writer->SetFileName(filename);
+    writer->SetInputData((*self)->grid);
+    writer->Update();
+    writer->Delete();
     return 0;
 }
 
