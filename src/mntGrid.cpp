@@ -247,7 +247,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
             // get the number of cells
             ier = nc_inq_dimlen(ncid, dimids[0], &ncells);
-        	ier = nc_inq_dimlen(ncid, dimids[1], &numVertsPerCell);
+            // get the number of vertices per cell
+            ier = nc_inq_dimlen(ncid, dimids[1], &numVertsPerCell);
             size_t nelems = ncells * numVertsPerCell;
 
             // allocate the data
