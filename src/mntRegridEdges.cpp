@@ -152,8 +152,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     // reserve some space for the weights and their cell/edge id arrays
     size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell * 20;
     (*self)->weights.reserve(n);
-    (*self)->weightSrcEdgeIds.reserve(n);
-    (*self)->weightDstEdgeIds.reserve(n);
+    (*self)->weightSrcFaceEdgeIds.reserve(n);
+    (*self)->weightDstFaceEdgeIds.reserve(n);
     (*self)->weightSrcCellIds.reserve(n);
     (*self)->weightDstCellIds.reserve(n);
 
@@ -242,9 +242,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                         // only store the weights if they non-zero
                         (*self)->weights.push_back(weight);
                         (*self)->weightSrcCellIds.push_back(srcCellId);
-                        (*self)->weightSrcEdgeIds.push_back(srcEdgeIndex);
+                        (*self)->weightSrcFaceEdgeIds.push_back(srcEdgeIndex);
                         (*self)->weightDstCellIds.push_back(dstCellId);
-                        (*self)->weightDstEdgeIds.push_back(dstEdgeIndex);
+                        (*self)->weightDstFaceEdgeIds.push_back(dstEdgeIndex);
                     }
                 }
 
@@ -302,8 +302,8 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 
         vtkIdType dstCellId = (*self)->weightDstCellIds[i];
         vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
-        int dstEdgeIndex = (*self)->weightDstEdgeIds[i];
-        int srcEdgeIndex = (*self)->weightSrcEdgeIds[i];
+        int dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
+        int srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
 
         // index into the flat array
         size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstCellId;
@@ -343,7 +343,7 @@ int mnt_regridedges_load(RegridEdges_t** self,
 
     // should check that numEdgesPerCell and (*self)->numEdgesPerCell match
 
-    int dstCellIdsId, srcCellIdsId, dstEdgeIdsId, srcEdgeIdsId, weightsId;
+    int dstCellIdsId, srcCellIdsId, dstFaceEdgeIdsId, srcFaceEdgeIdsId, weightsId;
 
     ier = nc_inq_varid(ncid, "dst_cell_ids", &dstCellIdsId);
     if (ier != NC_NOERR) {
@@ -359,16 +359,16 @@ int mnt_regridedges_load(RegridEdges_t** self,
         nc_close(ncid);
         return 4;
     }
-    ier = nc_inq_varid(ncid, "dst_edge_ids", &dstEdgeIdsId);
+    ier = nc_inq_varid(ncid, "dst_face_edge_ids", &dstFaceEdgeIdsId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"dst_edge_ids\"!\n";
+        std::cerr << "ERROR: could not get ID for var \"dst_face_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 5;
     }
-    ier = nc_inq_varid(ncid, "src_edge_ids", &srcEdgeIdsId);
+    ier = nc_inq_varid(ncid, "src_face_edge_ids", &srcFaceEdgeIdsId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"src_edge_ids\"!\n";
+        std::cerr << "ERROR: could not get ID for var \"src_face_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 6;
@@ -384,8 +384,8 @@ int mnt_regridedges_load(RegridEdges_t** self,
     (*self)->weights.resize(numWeights);
     (*self)->weightDstCellIds.resize(numWeights);
     (*self)->weightSrcCellIds.resize(numWeights);
-    (*self)->weightDstEdgeIds.resize(numWeights);
-    (*self)->weightSrcEdgeIds.resize(numWeights);
+    (*self)->weightDstFaceEdgeIds.resize(numWeights);
+    (*self)->weightSrcFaceEdgeIds.resize(numWeights);
 
     // read
     ier = nc_get_var_double(ncid, weightsId, &((*self)->weights)[0]);
@@ -409,16 +409,16 @@ int mnt_regridedges_load(RegridEdges_t** self,
         nc_close(ncid);
         return 10;
     }
-    ier = nc_get_var_int(ncid, dstEdgeIdsId, &((*self)->weightDstEdgeIds)[0]);
+    ier = nc_get_var_int(ncid, dstFaceEdgeIdsId, &((*self)->weightDstFaceEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"dst_edge_ids\"!\n";
+        std::cerr << "ERROR: could not get ID for var \"dst_face_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 11;
     }
-    ier = nc_get_var_int(ncid, srcEdgeIdsId, &((*self)->weightSrcEdgeIds)[0]);
+    ier = nc_get_var_int(ncid, srcFaceEdgeIdsId, &((*self)->weightSrcFaceEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"src_edge_ids\"!\n";
+        std::cerr << "ERROR: could not get ID for var \"src_face_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 12;
@@ -519,19 +519,19 @@ int mnt_regridedges_dump(RegridEdges_t** self,
         return 4;
     }
 
-    int dstEdgeIdsId;
-    ier = nc_def_var(ncid, "dst_edge_ids", NC_INT, 1, numWeightsAxis, &dstEdgeIdsId);
+    int dstFaceEdgeIdsId;
+    ier = nc_def_var(ncid, "dst_face_edge_ids", NC_INT, 1, numWeightsAxis, &dstFaceEdgeIdsId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"dst_edge_ids\"!\n";
+        std::cerr << "ERROR: could not define variable \"dst_face_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 5;
     }
 
-    int srcEdgeIdsId;
-    ier = nc_def_var(ncid, "src_edge_ids", NC_INT, 1, numWeightsAxis, &srcEdgeIdsId);
+    int srcFaceEdgeIdsId;
+    ier = nc_def_var(ncid, "src_face_edge_ids", NC_INT, 1, numWeightsAxis, &srcFaceEdgeIdsId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"src_edge_ids\"!\n";
+        std::cerr << "ERROR: could not define variable \"src_face_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 6;
@@ -598,16 +598,16 @@ int mnt_regridedges_dump(RegridEdges_t** self,
         nc_close(ncid);
         return 10;
     }
-    ier = nc_put_var_int(ncid, dstEdgeIdsId, &((*self)->weightDstEdgeIds)[0]);
+    ier = nc_put_var_int(ncid, dstFaceEdgeIdsId, &((*self)->weightDstFaceEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"dst_edge_ids\"\n";
+        std::cerr << "ERROR: could not write variable \"dst_face_edge_ids\"\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 10;
     }
-    ier = nc_put_var_int(ncid, srcEdgeIdsId, &((*self)->weightSrcEdgeIds)[0]);
+    ier = nc_put_var_int(ncid, srcFaceEdgeIdsId, &((*self)->weightSrcFaceEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"src_edge_ids\"\n";
+        std::cerr << "ERROR: could not write variable \"src_face_edge_ids\"\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 11;
@@ -635,19 +635,19 @@ extern "C"
 int mnt_regridedges_print(RegridEdges_t** self) {
     size_t numWeights = (*self)->weights.size();
     std::cout << "edge to vertex connectivity:\n";
-    for (int edgeId = 0; 
-         edgeId < (*self)->edgeConnectivity.getNumberOfEdges(); 
-         ++edgeId) {
+    for (int faceEdgeId = 0; 
+         faceEdgeId < (*self)->edgeConnectivity.getNumberOfEdges(); 
+         ++faceEdgeId) {
         int i0, i1;
-        (*self)->edgeConnectivity.getCellPointIds(edgeId, &i0, &i1);
-        std::cout << "edge " << edgeId << ": " << i0 << "->" << i1 << '\n';
+        (*self)->edgeConnectivity.getCellPointIds(faceEdgeId, &i0, &i1);
+        std::cout << "edge " << faceEdgeId << ": " << i0 << "->" << i1 << '\n';
     }
     std::cout << "Number of weights: " << numWeights << '\n';
-    printf("                 dst_cell  dst_edge         src_cell  src_edge           weight\n");
+    printf("                 dst_cell  dst_face_edge     src_cell  src_face_edge       weight\n");
     for (size_t i = 0; i < numWeights; ++i) {
     printf("%10ld       %8ld         %1d         %8ld         %1d   %15.5lg\n", i, 
-               (*self)->weightDstCellIds[i], (*self)->weightDstEdgeIds[i], 
-               (*self)->weightSrcCellIds[i], (*self)->weightSrcEdgeIds[i],
+               (*self)->weightDstCellIds[i], (*self)->weightDstFaceEdgeIds[i], 
+               (*self)->weightSrcCellIds[i], (*self)->weightSrcFaceEdgeIds[i],
                (*self)->weights[i]);
     }
     return 0;

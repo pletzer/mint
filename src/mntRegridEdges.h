@@ -25,10 +25,10 @@ struct RegridEdges_t {
     // interpolation weights and corresponding src/dst grid cell
     // indices and edges indices
     std::vector<vtkIdType> weightDstCellIds;
-    std::vector<int> weightDstEdgeIds;
+    std::vector<int> weightDstFaceEdgeIds;
 
     std::vector<vtkIdType> weightSrcCellIds;
-    std::vector<int> weightSrcEdgeIds;
+    std::vector<int> weightSrcFaceEdgeIds;
 
     std::vector<double> weights;
 
