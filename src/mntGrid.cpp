@@ -137,11 +137,13 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     }
 
     size_t ncells = 0;
+    size_t nedges = 0;
     size_t numVertsPerCell = 0;
+    size_t numEdgesPerCell = 0;
+    size_t numVertsPerEdge = 0;
 
     std::vector<double> lats;
     std::vector<double> lons;
-    std::vector<vtkIdType> quad_connectivity;
 
     // get the number of variables
     int nvars;
@@ -252,18 +254,68 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             size_t nelems = ncells * numVertsPerCell;
 
             // allocate the data
-            quad_connectivity.resize(nelems);
+            (*self)->faceNodeConnectivity.resize(nelems);
 
             // read the connectivity
-            ier = nc_get_var_longlong(ncid, ivar, &quad_connectivity[0]);
+            ier = nc_get_var_longlong(ncid, ivar, &(*self)->faceNodeConnectivity[0]);
             if (ier != NC_NOERR) {
-                std::cerr << "ERROR: after reading cell connectivity (ier = " << ier << ")\n";
+                std::cerr << "ERROR: after reading face-node connectivity (ier = " << ier << ")\n";
                 return 1;
             }
 
             // substract start index
             for (size_t i = 0; i < nelems; ++i) {
-                quad_connectivity[i] -= startIndex;
+                (*self)->faceNodeConnectivity[i] -= startIndex;
+            }
+
+        }
+        else if (ier3 == NC_NOERR && ier4 == NC_NOERR &&
+                 cf_role.find("face_edge_connectivity") != std::string::npos) {
+
+            // get the number of cells
+            ier = nc_inq_dimlen(ncid, dimids[0], &ncells);
+            // get the number of edges per cell
+            ier = nc_inq_dimlen(ncid, dimids[1], &numEdgesPerCell);
+            size_t nelems = ncells * numEdgesPerCell;
+
+            // allocate the data
+            (*self)->faceEdgeConnectivity.resize(nelems);
+
+            // read the connectivity
+            ier = nc_get_var_longlong(ncid, ivar, &(*self)->faceEdgeConnectivity[0]);
+            if (ier != NC_NOERR) {
+                std::cerr << "ERROR: after reading face-edge connectivity (ier = " << ier << ")\n";
+                return 1;
+            }
+
+            // substract start index
+            for (size_t i = 0; i < nelems; ++i) {
+                (*self)->faceEdgeConnectivity[i] -= startIndex;
+            }
+
+        }
+        else if (ier3 == NC_NOERR && ier4 == NC_NOERR &&
+                 cf_role.find("edge_node_connectivity") != std::string::npos) {
+
+            // get the number of edges
+            ier = nc_inq_dimlen(ncid, dimids[0], &nedges);
+            // get the number of edges per cell
+            ier = nc_inq_dimlen(ncid, dimids[1], &numVertsPerEdge);
+            size_t nelems = nedges * numVertsPerEdge;
+
+            // allocate the data
+            (*self)->edgeNodeConnectivity.resize(nelems);
+
+            // read the connectivity
+            ier = nc_get_var_longlong(ncid, ivar, &(*self)->edgeNodeConnectivity[0]);
+            if (ier != NC_NOERR) {
+                std::cerr << "ERROR: after reading face-edge connectivity (ier = " << ier << ")\n";
+                return 1;
+            }
+
+            // substract start index
+            for (size_t i = 0; i < nelems; ++i) {
+                (*self)->edgeNodeConnectivity[i] -= startIndex;
             }
 
         }
@@ -275,7 +327,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
     // repackage the cell vertices as a flat array 
 
-    if (lons.size() > 0 && lats.size() > 0 && quad_connectivity.size() > 0) {
+    if (lons.size() > 0 && lats.size() > 0 && (*self)->faceNodeConnectivity.size() > 0) {
 
         // allocate the vertices and set the values
         (*self)->verts.resize(ncells * numVertsPerCell * 3);
@@ -286,13 +338,13 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
             // fix longitude when crossing the dateline
             // use the first longitude as the base
-            size_t kBase = quad_connectivity[numVertsPerCell*icell];
+            size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
             double lonBase = lons[kBase];
 
             int poleNode = -1;
             for (int node = 0; node < numVertsPerCell; ++node) {
 
-                size_t k = quad_connectivity[node + numVertsPerCell*icell];
+                size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + node];
                 double lon = lons[k];
 
                 // add/subtract 360.0, whatever it takes to reduce the distance 

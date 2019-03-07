@@ -20,6 +20,11 @@ struct Grid_t {
 
     vtkUnstructuredGridReader* reader;
     std::vector<vtkDoubleArray*> doubleArrays;
+
+    std::vector<vtkIdType> faceNodeConnectivity;
+    std::vector<vtkIdType> faceEdgeConnectivity;
+    std::vector<vtkIdType> edgeNodeConnectivity;
+
 };
 
 
