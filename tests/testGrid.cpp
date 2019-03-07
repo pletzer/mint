@@ -18,6 +18,9 @@ void testUgrid() {
     assert(ier == 0);
     ier = mnt_grid_print(&grd);
     assert(ier == 0);
+    size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grd, &numCells);
+    assert(ier == 0);
     ier = mnt_grid_dump(&grd, "cs_16.vtk");
     assert(ier == 0);
     ier = mnt_grid_del(&grd);

@@ -114,4 +114,25 @@ int mnt_grid_dump(Grid_t** self, const char* filename);
 extern "C"
 int mnt_grid_print(Grid_t** self);
 
+/**
+ * Get the node Ids of a cellId, edge index pair
+ * @param self instance of Grid_t
+ * @param cellId cell Id
+ * @param edgeIndex edge index in the range 0-3
+ * @param nodeIds node Ids for the start/end vertices on the original grid (output)
+ * @return error code (0 = OK)
+ */
+extern "C" 
+int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]);
+
+/**
+ * Get the nnumber of cells
+ * @param self instance of Grid_t
+ * @param numCells number of cells (output)
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells);
+
+
 #endif // MNT_GRID

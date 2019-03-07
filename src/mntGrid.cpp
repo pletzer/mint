@@ -446,3 +446,33 @@ int mnt_grid_print(Grid_t** self) {
 
     return 0;
 }
+
+extern "C" 
+int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]) {
+    
+    // nodeIndex0,1 are the local cell indices of the vertices in the range 0-3
+    int nodeIndex0 = edgeIndex;
+    // 4 vertices per cell
+    int nodeIndex1 = (edgeIndex + 1) % 4;
+
+    // edges 2-3 go clockwise
+    // edges 0-1 go anticlockwise
+    if (edgeIndex >= 2) {
+        // swap order
+        int tmp = nodeIndex0;
+        nodeIndex0 = nodeIndex1;
+        nodeIndex1 = tmp;
+    }
+
+    nodeIds[0] = (*self)->faceNodeConnectivity[4*cellId + nodeIndex0];
+    nodeIds[1] = (*self)->faceNodeConnectivity[4*cellId + nodeIndex1];
+
+    return 0;
+}
+
+extern "C"
+int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells) {
+
+    *numCells = (*self)->grid->GetNumberOfCells();
+    return 0;
+}
