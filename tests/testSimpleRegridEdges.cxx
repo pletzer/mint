@@ -99,7 +99,11 @@ int main() {
     }
     for (size_t i = 0; i < 4; ++i) {
         std::cout << "dst edge " << i << " data value " << dstData[i] << '\n';
+        // expect the same value as srcData
+        assert(std::abs(dstData[i] - srcData[i]) < 1.e-12);
     }
+
+
 
     // clean up
     srcGrid->Delete();
