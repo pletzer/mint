@@ -21,6 +21,18 @@ void testUgrid() {
     size_t numCells;
     ier = mnt_grid_getNumberOfCells(&grd, &numCells);
     assert(ier == 0);
+
+    vtkIdType nodeIds[2];
+    std::vector<vtkIdType> cellIds{0, 1, 2, 3, 12, 456, 1535};
+    for (auto cellId : cellIds) {
+        for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
+            ier = mnt_grid_getNodeIds(&grd, cellId, edgeIndex, nodeIds);
+            std::cout << " cell " << cellId << " edge index " << edgeIndex 
+                      << " connects to nodes "  << nodeIds[0] << ',' << nodeIds[1] << '\n';
+            assert(ier == 0);
+        }
+    }
+    
     ier = mnt_grid_dump(&grd, "cs_16.vtk");
     assert(ier == 0);
     ier = mnt_grid_del(&grd);
