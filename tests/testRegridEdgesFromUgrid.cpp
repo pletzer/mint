@@ -66,39 +66,34 @@ void test2() {
     double p1[3];
 
     // set the source data
-    Grid_t* srcGrid;
-    ier = mnt_grid_new(&srcGrid);
-    ier = mnt_grid_loadFrom2DUgrid(&srcGrid, srcFile.c_str());
+    ier = mnt_grid_new(&rg->srcGridObj);
+    ier = mnt_grid_loadFrom2DUgrid(&rg->srcGridObj, srcFile.c_str());
     size_t numSrcCells, numSrcEdges;
-    ier = mnt_grid_getNumberOfCells(&srcGrid, &numSrcCells);
-    ier = mnt_grid_getNumberOfUniqueEdges(&srcGrid, &numSrcEdges);
+    ier = mnt_grid_getNumberOfCells(&rg->srcGridObj, &numSrcCells);
+    ier = mnt_grid_getNumberOfUniqueEdges(&rg->srcGridObj, &numSrcEdges);
     std::vector<double> srcDataExact(numSrcEdges);
     for (size_t cellId = 0; cellId < numSrcCells; ++cellId) {
         for (int ie = 0; ie < 4; ++ie) {
-            ier = mnt_grid_getPoints(&srcGrid, cellId, ie, p0, p1);
-            ier = mnt_grid_getEdgeId(&srcGrid, cellId, ie, &edgeId, &edgeSign);
+            ier = mnt_grid_getPoints(&rg->srcGridObj, cellId, ie, p0, p1);
+            ier = mnt_grid_getEdgeId(&rg->srcGridObj, cellId, ie, &edgeId, &edgeSign);
             srcDataExact[edgeId] = edgeSign * (streamFunc(p1) - streamFunc(p0));
         }
     }
-    ier = mnt_grid_del(&srcGrid);
-
 
     // set the exact destination data
-    Grid_t* dstGrid;
-    ier = mnt_grid_new(&dstGrid);
-    ier = mnt_grid_loadFrom2DUgrid(&dstGrid, dstFile.c_str());
+    ier = mnt_grid_new(&rg->dstGridObj);
+    ier = mnt_grid_loadFrom2DUgrid(&rg->dstGridObj, dstFile.c_str());
     size_t numDstCells, numDstEdges;
-    ier = mnt_grid_getNumberOfCells(&dstGrid, &numDstCells);
-    ier = mnt_grid_getNumberOfUniqueEdges(&dstGrid, &numDstEdges);
+    ier = mnt_grid_getNumberOfCells(&rg->dstGridObj, &numDstCells);
+    ier = mnt_grid_getNumberOfUniqueEdges(&rg->dstGridObj, &numDstEdges);
     std::vector<double> dstDataExact(numDstEdges);
     for (size_t cellId = 0; cellId < numDstCells; ++cellId) {
         for (int ie = 0; ie < 4; ++ie) {
-            ier = mnt_grid_getPoints(&dstGrid, cellId, ie, p0, p1);
-            ier = mnt_grid_getEdgeId(&dstGrid, cellId, ie, &edgeId, &edgeSign);
+            ier = mnt_grid_getPoints(&rg->dstGridObj, cellId, ie, p0, p1);
+            ier = mnt_grid_getEdgeId(&rg->dstGridObj, cellId, ie, &edgeId, &edgeSign);
             dstDataExact[edgeId] = edgeSign * (streamFunc(p1) - streamFunc(p0));
         }
     }
-    ier = mnt_grid_del(&dstGrid);
 
     // regrid
     std::vector<double> dstData(numDstEdges);
