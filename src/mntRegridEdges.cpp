@@ -321,6 +321,16 @@ int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self,
 	                                          size_t numDstEdges, double dst_data[]) {
 
 
+    // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
+    if ((*self)->srcGridObj->faceNodeConnectivity.size() == 0 || 
+        (*self)->srcGridObj->faceEdgeConnectivity.size() == 0 ||
+        (*self)->srcGridObj->edgeNodeConnectivity.size() == 0) {
+        std::cerr << "ERROR: looks like the src grid connectivity is not set.\n";
+        std::cerr << "Typically this would occur if you did not read the grid\n";
+        std::cerr << "from the netcdf Ugrid file.\n";
+        return 1;
+    }
+
     int ier; 
     
     // initialize the data to zero

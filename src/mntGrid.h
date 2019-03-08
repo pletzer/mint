@@ -115,6 +115,20 @@ extern "C"
 int mnt_grid_print(Grid_t** self);
 
 /**
+ * Get the start or end point coordinates of an edge
+ * @param self instance of Grid_t
+ * @param cellId cell Id
+ * @param edgeIndex edge index in the range 0-3
+ * @param pointIndex point index in the range 0-1 (0 = start, 1 = end)
+ * @param point the coordinates of the start point (output)
+ * @param point the coordinates of the end point (output)
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex, 
+	                   double point0[], double point1[]);
+
+/**
  * Get the node Ids of a cellId, edge index pair
  * @param self instance of Grid_t
  * @param cellId cell Id
@@ -146,6 +160,17 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
  */
 extern "C"
 int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells);
+
+/**
+ * Get the nnumber of cells
+ * @param self instance of Grid_t
+ * @param numCells number of edges (output)
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_getNumberOfUniqueEdges(Grid_t** self, size_t* numEdges);
+
+
 
 
 #endif // MNT_GRID

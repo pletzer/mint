@@ -447,6 +447,25 @@ int mnt_grid_print(Grid_t** self) {
     return 0;
 }
 
+extern "C"
+int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
+                       double point0[], double point1[]) {
+
+    // flat index for the start point, 4 points per cell, 3d coordinates
+    size_t k0 = 4*3*cellId + 3*((edgeIndex + 0) % 4);
+
+    // falt index for the end point, 4 points per cell, 3d coordinates
+    size_t k1 = 4*3*cellId + 3*((edgeIndex + 1) % 4);
+
+    // fill
+    for (size_t i = 0; i < 3; ++i) {
+        point0[i] = (*self)->verts[i + k0];
+        point1[i] = (*self)->verts[i + k1];
+    }
+
+    return 0;
+}
+
 extern "C" 
 int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]) {
     
@@ -516,5 +535,11 @@ extern "C"
 int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells) {
 
     *numCells = (*self)->grid->GetNumberOfCells();
+    return 0;
+}
+
+int mnt_grid_getNumberOfUniqueEdges(Grid_t** self, size_t* numEdges) {
+    
+    *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
     return 0;
 }
