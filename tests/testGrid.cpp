@@ -22,13 +22,20 @@ void testUgrid() {
     ier = mnt_grid_getNumberOfCells(&grd, &numCells);
     assert(ier == 0);
 
-    vtkIdType nodeIds[2];
     std::vector<vtkIdType> cellIds{0, 1, 2, 3, 12, 456, 1535};
+
+    vtkIdType nodeIds[2];
+    vtkIdType edgeId;
+    int signEdge;
     for (auto cellId : cellIds) {
         for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
             ier = mnt_grid_getNodeIds(&grd, cellId, edgeIndex, nodeIds);
             std::cout << " cell " << cellId << " edge index " << edgeIndex 
                       << " connects to nodes "  << nodeIds[0] << ',' << nodeIds[1] << '\n';
+            assert(ier == 0);
+            ier = mnt_grid_getEdgeId(&grd, cellId, edgeIndex, &edgeId, &signEdge);
+            std::cout << " cell " << cellId << " edge index " << edgeIndex 
+                      << " maps to edge Id = " << edgeId << " (direction " << signEdge << ")\n";
             assert(ier == 0);
         }
     }

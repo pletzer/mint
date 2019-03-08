@@ -470,6 +470,48 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
     return 0;
 }
 
+extern "C" 
+int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
+                       vtkIdType* edgeId, int* signEdge) {
+
+    // initialize
+    *edgeId = -1;
+    *signEdge = 0;
+
+    // fetch the node Ids of this edge
+    vtkIdType nodeIds[2];
+    int ier = mnt_grid_getNodeIds(self, cellId, edgeIndex, nodeIds);
+
+    // iterate over the edges of this face until we find the edge
+    // that has vertices nodeIds (but not necessarily in the same
+    // order)
+    for (int ie = 0; ie < 4; ++ie) {
+
+        // edgeId under consideration
+        vtkIdType eId = (*self)->faceEdgeConnectivity[4*cellId + ie];
+
+        // vertex Ids of the edge
+        vtkIdType nId0 = (*self)->edgeNodeConnectivity[eId*2 + 0];
+        vtkIdType nId1 = (*self)->edgeNodeConnectivity[eId*2 + 1];
+
+        if (nId0 == nodeIds[0] && nId1 == nodeIds[1]) {
+            // found edge and the direction is left->right, bottom -> up
+            *signEdge = 1;
+            *edgeId = eId;
+            break;
+        }
+        else if (nId0 == nodeIds[1] && nId1 == nodeIds[0]) {
+            // found edge and the direction is opposite
+            *signEdge = -1;
+            *edgeId = eId;
+            break;
+        }
+    }
+
+    return 0;
+}
+
+
 extern "C"
 int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells) {
 
