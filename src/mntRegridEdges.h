@@ -147,14 +147,26 @@ extern "C"
 int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n);
 
 /**
- * Apply interpolation weights to field
+ * Apply interpolation weights to cell by cell field, each cell having four independent edges
  * @param src_data edge centred data on the source grid 
  * @param dst_data edge centred data on the destination grid
  * @return error code (0 is OK)
  * @note edges go anticlockwise
  */
 extern "C"
-int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], double dst_data[]);
+int mnt_regridedges_applyWeightsToCellEdgeField(RegridEdges_t** self, const double src_data[], double dst_data[]);
+
+/**
+ * Apply interpolation weights to edge field with unique edge Ids
+ * @param src_data edge centred data on the source grid
+ * @param numDstEdges number of destination grid edges
+ * @param dst_data edge centred data on the destination grid
+ * @return error code (0 is OK)
+ * @note edges go anticlockwise
+ */
+extern "C"
+int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self, const double src_data[], 
+	                                          size_t numDstEdges, double dst_data[]);
 
 /**
  * Load the weights from file

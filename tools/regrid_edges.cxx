@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
                 std::vector<double> dstData(numDstCells * numEdgesPerCell);
 
                 // regrid
-                mnt_regridedges_applyWeights(&rge, srcData, &dstData[0]);
+                mnt_regridedges_applyWeightsToCellEdgeField(&rge, srcData, &dstData[0]);
 
                 // compute loop integrals for each cell
                 std::vector<double> loop_integrals(numDstCells);

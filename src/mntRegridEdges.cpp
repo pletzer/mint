@@ -289,7 +289,7 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
 
 
 extern "C"
-int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], double dst_data[]) {
+int mnt_regridedges_applyWeightsToCellEdgeField(RegridEdges_t** self, const double src_data[], double dst_data[]) {
 
     // initialize the data to zero
     size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell;
@@ -314,6 +314,43 @@ int mnt_regridedges_applyWeights(RegridEdges_t** self, const double src_data[], 
 
     return 0;
 }
+
+extern "C"
+int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self, 
+	                                          const double src_data[], 
+	                                          size_t numDstEdges, double dst_data[]) {
+
+
+    int ier; 
+    
+    // initialize the data to zero
+    for (size_t i = 0; i < numDstEdges; ++i) {
+        dst_data[i] = 0.0;
+    }
+
+    // add the contributions from each cell overlaps
+    for (size_t i = 0; i < (*self)->weights.size(); ++i) {
+
+        vtkIdType dstCellId = (*self)->weightDstCellIds[i];
+        vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
+        int dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
+        int srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
+
+        vtkIdType srcEdgeId, dstEdgeId;
+        int srcEdgeSign, dstEdgeSign;
+        ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
+        ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
+
+        // index into the flat array
+        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstCellId;
+        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
+
+        dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
+    }
+
+    return 0;
+}
+
 
 extern "C"
 int mnt_regridedges_load(RegridEdges_t** self, 

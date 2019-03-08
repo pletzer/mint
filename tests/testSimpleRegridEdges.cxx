@@ -88,7 +88,7 @@ int main() {
     double srcData[] = {1., 2., -1., -2.};
     double dstData[4];
 
-    ier = mnt_regridedges_applyWeights(&rg, srcData, dstData);
+    ier = mnt_regridedges_applyWeightsToCellEdgeField(&rg, srcData, dstData);
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
