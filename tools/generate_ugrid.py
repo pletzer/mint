@@ -2,7 +2,7 @@ import netCDF4
 import numpy
 
 
-nx, ny = 1, 2
+nx, ny = 1, 1
 
 nc = netCDF4.Dataset('tiny.nc', 'w')
 
