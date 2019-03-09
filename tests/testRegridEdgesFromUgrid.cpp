@@ -54,8 +54,9 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
     std::cerr << testName << ": loadDst...OK\n";
 
     int numCellsPerBucket = 1;
-    ier = mnt_regridedges_build(&rg, numCellsPerBucket);
+    
     assert(ier == 0);
+    ier = mnt_regridedges_build(&rg, numCellsPerBucket);
     std::cerr << testName << ": build...OK\n";
 
     vtkIdType edgeId;
@@ -83,12 +84,19 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
     assert(ier == 0);
 
     // check
+    printf("%s\n dstCellId         edge        interpVal      exact        error\n", testName.c_str());
     double totError = 0;
     for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
         for (int ie = 0; ie < 4; ++ie) {
+
+            ier = mnt_grid_getPoints(&rg->dstGridObj, dstCellId, ie, p0, p1);
+            double exact = streamFunc(p1) - streamFunc(p0);
+
             size_t k = dstCellId*4 + ie;
-            std::cerr << testName << ": dst edge Id: " << dstCellId << " edge " << ie << " dstData = " << dstData[k] << " exact: " << srcData[k] << '\n';
-            totError += std::abs(dstData[k] - srcData[k]);
+            double interpVal = dstData[k];
+            double error = interpVal - exact;
+            printf("%10ld           %1d        %10.6lf   %10.6lf    %12.5lg\n", dstCellId, ie, interpVal, exact, error);
+            totError += std::abs(error);
         }
     }
 
@@ -105,11 +113,11 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
 
 int main() {
 
-    test1();
-    regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc");
-    regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc");
+    //test1();
+    //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc");
+    //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc");
     regridTest("same", "@CMAKE_SOURCE_DIR@/data/cs_4.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
-    regridTest("cs16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
+    //regridTest("cs16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
 
     return 0;
 }   
