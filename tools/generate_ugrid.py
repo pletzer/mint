@@ -44,6 +44,8 @@ for j in range(ny + 1):
 x[:] = lons
 y[:] = lats
 
+
+# face-node connectivity
 fn = numpy.zeros((nfaces, 4), numpy.int64)
 count = 0
 for j in range(ny):
@@ -59,6 +61,7 @@ faceNodeConn[...] = fn
 
 en = numpy.zeros((nedges, 2), numpy.int64)
 
+# edge-node connectivity
 # x edges
 count = 0
 for j in range(ny + 1):
@@ -78,7 +81,7 @@ for j in range(ny):
 
 edgeNodeConn[...] = en
 
-# face - edge connectivity
+# face-edge connectivity
 fe = numpy.zeros((nfaces, 4), numpy.int64)
 count = 0
 for j in range(ny):
@@ -87,7 +90,7 @@ for j in range(ny):
 		is1 = 0 + i + 0 + (nx + 0)*(j + 1)
 		i0s = nx*(ny + 1) + i + 0 + (nx + 1)*(j + 0)
 		i1s = nx*(ny + 1) + i + 1 + (nx + 1)*(j + 0)
-		fe[count, :] = is0, i1s, is1, is0
+		fe[count, :] = is0, i1s, is1, i0s
 		count += 1
 
 faceEdgeConn[...] = fe
