@@ -59,6 +59,11 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
     ier = mnt_regridedges_build(&rg, numCellsPerBucket);
     std::cerr << testName << ": build...OK\n";
 
+    std::string weightFile = testName + "Weights.nc";
+    ier = mnt_regridedges_dump(&rg, weightFile.c_str(), (int) weightFile.size());
+    assert(ier == 0);
+
+
     vtkIdType edgeId;
     int edgeSign;
     double p0[3];
@@ -68,10 +73,12 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
     size_t numSrcCells;
     ier = mnt_grid_getNumberOfCells(&rg->srcGridObj, &numSrcCells);
     std::vector<double> srcData(numSrcCells * 4);
-    for (size_t cellId = 0; cellId < numSrcCells; ++cellId) {
+    for (size_t srcCellId = 0; srcCellId < numSrcCells; ++srcCellId) {
         for (int ie = 0; ie < 4; ++ie) {
-            ier = mnt_grid_getPoints(&rg->srcGridObj, cellId, ie, p0, p1);
-            srcData[cellId*4 + ie] = streamFunc(p1) - streamFunc(p0);
+            ier = mnt_grid_getPoints(&rg->srcGridObj, srcCellId, ie, p0, p1);
+
+            size_t k = srcCellId*4 + ie;
+            srcData[k] = streamFunc(p1) - streamFunc(p0);
         }
     }
 
@@ -84,7 +91,7 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
     assert(ier == 0);
 
     // check
-    printf("%s\n dstCellId         edge        interpVal      exact        error\n", testName.c_str());
+    printf("%s\n dstCellId         edge        interpVal      exact        error               p0               p1\n", testName.c_str());
     double totError = 0;
     for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
         for (int ie = 0; ie < 4; ++ie) {
@@ -95,13 +102,14 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
             size_t k = dstCellId*4 + ie;
             double interpVal = dstData[k];
             double error = interpVal - exact;
-            printf("%10ld           %1d        %10.6lf   %10.6lf    %12.5lg\n", dstCellId, ie, interpVal, exact, error);
+            printf("%10ld           %1d        %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
+                    dstCellId, ie, interpVal, exact, error, p0[0], p0[1], p1[0], p1[1]);
             totError += std::abs(error);
         }
     }
 
     std::cout << testName << ": total interpolation |error|: " << totError << '\n';
-    assert(totError < 1.e-12);
+    assert(totError < 1.e-8);
 
     // clean up
     ier = mnt_regridedges_del(&rg);
@@ -113,11 +121,11 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
 
 int main() {
 
-    //test1();
+    test1();
     //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc");
     //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc");
     regridTest("same", "@CMAKE_SOURCE_DIR@/data/cs_4.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
-    //regridTest("cs16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
+    regridTest("cs16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
 
     return 0;
 }   

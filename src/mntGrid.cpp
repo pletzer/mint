@@ -454,14 +454,23 @@ int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
     // flat index for the start point, 4 points per cell, 3d coordinates
     size_t k0 = 4*3*cellId + 3*((edgeIndex + 0) % 4);
 
-    // falt index for the end point, 4 points per cell, 3d coordinates
+    // flat index for the end point, 4 points per cell, 3d coordinates
     size_t k1 = 4*3*cellId + 3*((edgeIndex + 1) % 4);
 
     // fill
-    for (size_t i = 0; i < 3; ++i) {
-        point0[i] = (*self)->verts[i + k0];
-        point1[i] = (*self)->verts[i + k1];
+    if (edgeIndex < 2) {
+        for (size_t i = 0; i < 3; ++i) {
+            point0[i] = (*self)->verts[i + k0];
+            point1[i] = (*self)->verts[i + k1];
+        }
     }
+    else {
+        // make sure point0 is to the left/bottom of point1
+        for (size_t i = 0; i < 3; ++i) {
+            point1[i] = (*self)->verts[i + k0];
+            point0[i] = (*self)->verts[i + k1];
+        }        
+    } 
 
     return 0;
 }
