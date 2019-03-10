@@ -102,8 +102,10 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
             size_t k = dstCellId*4 + ie;
             double interpVal = dstData[k];
             double error = interpVal - exact;
-            printf("%10ld           %1d        %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
+            if (std::abs(error) > 1.e-8) {
+                printf("%10ld           %1d        %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
                     dstCellId, ie, interpVal, exact, error, p0[0], p0[1], p1[0], p1[1]);
+            }
             totError += std::abs(error);
         }
     }
