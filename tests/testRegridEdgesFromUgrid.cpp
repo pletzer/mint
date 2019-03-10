@@ -35,7 +35,7 @@ void test1() {
 
 }
 
-void regridTest(const std::string& testName, const std::string& srcFile, const std::string& dstFile) {
+void regridCellEdgeFieldTest(const std::string& testName, const std::string& srcFile, const std::string& dstFile) {
 
     int ier;
     std::string outputFile = testName + "Weights.nc";
@@ -53,7 +53,7 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
     assert(ier == 0);
     std::cerr << testName << ": loadDst...OK\n";
 
-    int numCellsPerBucket = 1;
+    int numCellsPerBucket = 8;
     
     assert(ier == 0);
     ier = mnt_regridedges_build(&rg, numCellsPerBucket);
@@ -120,14 +120,127 @@ void regridTest(const std::string& testName, const std::string& srcFile, const s
 
 }
 
+void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string& srcFile, const std::string& dstFile) {
+
+    int ier;
+    std::string outputFile = testName + "Weights.nc";
+
+    RegridEdges_t* rg;
+
+    ier = mnt_regridedges_new(&rg);
+    assert(ier == 0);
+
+    ier = mnt_regridedges_loadSrc(&rg, srcFile.c_str(), (int) srcFile.size());
+    assert(ier == 0);
+    std::cerr << testName << ": loadSrc...OK\n";
+
+    ier = mnt_regridedges_loadDst(&rg, dstFile.c_str(), (int) dstFile.size());
+    assert(ier == 0);
+    std::cerr << testName << ": loadDst...OK\n";
+
+    int numCellsPerBucket = 8;
+    
+    assert(ier == 0);
+    ier = mnt_regridedges_build(&rg, numCellsPerBucket);
+    std::cerr << testName << ": build...OK\n";
+
+    std::string weightFile = testName + "Weights.nc";
+    ier = mnt_regridedges_dump(&rg, weightFile.c_str(), (int) weightFile.size());
+    assert(ier == 0);
+
+
+    vtkIdType edgeId;
+    int edgeSign;
+    double p0[3];
+    double p1[3];
+
+    // set the source data
+    size_t numSrcCells, numSrcEdges;
+    vtkIdType srcEdgeId;
+    int srcEdgeSign;
+    ier = mnt_grid_getNumberOfCells(&rg->srcGridObj, &numSrcCells);
+    assert(ier == 0);
+    ier = mnt_grid_getNumberOfUniqueEdges(&rg->srcGridObj, &numSrcEdges);
+    assert(ier == 0);
+
+    std::vector<double> srcData(numSrcEdges);
+
+    for (size_t srcCellId = 0; srcCellId < numSrcCells; ++srcCellId) {
+        for (int ie = 0; ie < 4; ++ie) {
+
+            ier = mnt_grid_getEdgeId(&rg->srcGridObj, srcCellId, ie, &srcEdgeId, &srcEdgeSign);
+            assert(ier == 0);
+
+            ier = mnt_grid_getPoints(&rg->srcGridObj, srcCellId, ie, p0, p1);
+            assert(ier == 0);
+
+            srcData[srcEdgeId] = srcEdgeSign * (streamFunc(p1) - streamFunc(p0));
+        }
+    }
+
+    size_t numDstCells, numDstEdges;
+    vtkIdType dstEdgeId;
+    int dstEdgeSign;
+    ier = mnt_grid_getNumberOfCells(&rg->dstGridObj, &numDstCells);
+    assert(ier == 0);
+    ier = mnt_grid_getNumberOfUniqueEdges(&rg->dstGridObj, &numDstEdges);
+    assert(ier == 0);
+
+    std::vector<double> dstData(numDstEdges);
+
+    // regrid
+    ier = mnt_regridedges_applyWeightsToEdgeIdField(&rg, &srcData[0], numDstEdges, &dstData[0]);
+    assert(ier == 0);
+
+    // check
+    printf("%s\n dstCellId         edgeIndex        edgeId      interpVal      exact        error               p0               p1\n", testName.c_str());
+    double totError = 0;
+    for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+        for (int ie = 0; ie < 4; ++ie) {
+
+            ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
+            assert(ier == 0);
+
+            ier = mnt_grid_getPoints(&rg->dstGridObj, dstCellId, ie, p0, p1);
+            assert(ier == 0);
+
+            double exact = dstEdgeSign * (streamFunc(p1) - streamFunc(p0));
+
+            double interpVal = dstData[dstEdgeId];
+
+            double error = interpVal - exact;
+
+            if (std::abs(error) > 1.e-8) {
+                printf("%10ld           %1d         %9ld      %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
+                    dstCellId, ie, dstEdgeId, interpVal, exact, error, p0[0], p0[1], p1[0], p1[1]);
+            }
+            totError += std::abs(error);
+        }
+    }
+
+    std::cout << testName << ": total interpolation |error|: " << totError << '\n';
+    assert(totError < 1.e-8);
+
+    // clean up
+    ier = mnt_regridedges_del(&rg);
+    assert(ier == 0);
+
+
+}
+
 
 int main() {
 
     test1();
+
+    // crashe when buildkng the cell locator
     //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc");
     //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc");
-    regridTest("same", "@CMAKE_SOURCE_DIR@/data/cs_4.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
-    regridTest("cs16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
+
+    regridCellEdgeFieldTest("sameCellField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
+    regridUniqueEdgeIdFieldTest("sameUniqueEdgeIdField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc");
+
+    regridCellEdgeFieldTest("cs16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
 
     return 0;
 }   
