@@ -1,8 +1,11 @@
 #include <mntRegridEdges.h>
+#include <cmath>
 #undef NDEBUG // turn on asserts
 
 double streamFunc(const double p[]) {
-    return p[0];
+    double lon = p[0];
+    double lat = p[1];
+    return cos(M_PI*lat/180.0) * sin(M_PI*lon/180.);
 }
 
 void test1() {
@@ -210,7 +213,7 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
 
             double error = interpVal - exact;
 
-            if (std::abs(error) > 1.e-8) {
+            if (std::abs(error) > 1.e-6) {
                 printf("%10ld           %1d         %9ld      %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
                     dstCellId, ie, dstEdgeId, interpVal, exact, error, p0[0], p0[1], p1[0], p1[1]);
             }
@@ -240,7 +243,7 @@ int main() {
     regridCellEdgeFieldTest("sameCellField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
     regridUniqueEdgeIdFieldTest("sameUniqueEdgeIdField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc");
 
-    regridCellEdgeFieldTest("cs16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
+    regridCellEdgeFieldTest("uniqueEdgeIdField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc", "@CMAKE_SOURCE_DIR@/data/cs_4.nc"); 
 
     return 0;
 }   

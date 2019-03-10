@@ -331,10 +331,16 @@ int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self,
         return 1;
     }
 
-    int ier; 
+    int ier;
+
+    // multiple edges in the cell by cell representation 
+    // contribute to a unique edge. dst_multicity keeps
+    // track...
+    std::vector<double> dst_multiplicity(numDstEdges);
     
     // initialize the data to zero
     for (size_t i = 0; i < numDstEdges; ++i) {
+        dst_multiplicity[i] = 0.0;
         dst_data[i] = 0.0;
     }
 
@@ -356,6 +362,13 @@ int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self,
         size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
 
         dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
+        dst_multiplicity[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i];
+
+    }
+
+    // correct for multiplicity
+    for (size_t i = 0; i < numDstEdges; ++i) {
+       dst_data[i] /= dst_multiplicity[i];
     }
 
     return 0;
