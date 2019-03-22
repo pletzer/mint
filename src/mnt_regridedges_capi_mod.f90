@@ -69,6 +69,21 @@ module mnt_regridedges_capi_mod
       integer(c_int)                   :: mnt_regridedges_build
     end function mnt_regridedges_build
 
+    function mnt_regridedges_load(obj, filename, n) & 
+                                  bind(C, name='mnt_regridedges_load')
+      ! Load interpolation weights from NetCDF file
+      ! @param obj instance of mntregridedges_t (opaque handle)
+      ! @param filename file name, \0 (char(0)) terminated
+      ! @param n length of filename 
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char
+      implicit none
+      type(c_ptr), intent(inout)               :: obj ! void**
+      character(kind=c_char), intent(in)       :: filename(*)
+      integer(c_int), value                    :: n
+      integer(c_int)                           :: mnt_regridedges_load  
+    end function mnt_regridedges_load
+
     function mnt_regridedges_dump(obj, filename, n) & 
                                   bind(C, name='mnt_regridedges_dump')
       ! Dump interpolation weights in NetCDF file
