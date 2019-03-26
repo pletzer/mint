@@ -20,17 +20,17 @@ void test1() {
     ier = mnt_regridedges_new(&rg);
     assert(ier == 0);
 
-    ier = mnt_regridedges_loadSrc(&rg, srcFile.c_str(), (int) srcFile.size());
+    ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), (int) srcFile.size());
     assert(ier == 0);
 
-    ier = mnt_regridedges_loadDst(&rg, dstFile.c_str(), (int) dstFile.size());
+    ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
     assert(ier == 0);
 
     int numCellsPerBucket = 8;
     ier = mnt_regridedges_build(&rg, numCellsPerBucket);
     assert(ier == 0);
 
-    ier = mnt_regridedges_dump(&rg, outputFile.c_str(), (int) outputFile.size());
+    ier = mnt_regridedges_dumpWeights(&rg, outputFile.c_str(), (int) outputFile.size());
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
@@ -48,11 +48,11 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
     ier = mnt_regridedges_new(&rg);
     assert(ier == 0);
 
-    ier = mnt_regridedges_loadSrc(&rg, srcFile.c_str(), (int) srcFile.size());
+    ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), (int) srcFile.size());
     assert(ier == 0);
     std::cerr << testName << ": loadSrc...OK\n";
 
-    ier = mnt_regridedges_loadDst(&rg, dstFile.c_str(), (int) dstFile.size());
+    ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
     assert(ier == 0);
     std::cerr << testName << ": loadDst...OK\n";
 
@@ -63,7 +63,7 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
     std::cerr << testName << ": build...OK\n";
 
     std::string weightFile = testName + "Weights.nc";
-    ier = mnt_regridedges_dump(&rg, weightFile.c_str(), (int) weightFile.size());
+    ier = mnt_regridedges_dumpWeights(&rg, weightFile.c_str(), (int) weightFile.size());
     assert(ier == 0);
 
 
@@ -90,7 +90,7 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
     std::vector<double> dstData(numDstCells * 4);
 
     // regrid
-    ier = mnt_regridedges_applyWeightsToCellEdgeField(&rg, &srcData[0], &dstData[0]);
+    ier = mnt_regridedges_applyCellEdge(&rg, &srcData[0], &dstData[0]);
     assert(ier == 0);
 
     // check
@@ -133,11 +133,11 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
     ier = mnt_regridedges_new(&rg);
     assert(ier == 0);
 
-    ier = mnt_regridedges_loadSrc(&rg, srcFile.c_str(), (int) srcFile.size());
+    ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), (int) srcFile.size());
     assert(ier == 0);
     std::cerr << testName << ": loadSrc...OK\n";
 
-    ier = mnt_regridedges_loadDst(&rg, dstFile.c_str(), (int) dstFile.size());
+    ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
     assert(ier == 0);
     std::cerr << testName << ": loadDst...OK\n";
 
@@ -148,7 +148,7 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
     std::cerr << testName << ": build...OK\n";
 
     std::string weightFile = testName + "Weights.nc";
-    ier = mnt_regridedges_dump(&rg, weightFile.c_str(), (int) weightFile.size());
+    ier = mnt_regridedges_dumpWeights(&rg, weightFile.c_str(), (int) weightFile.size());
     assert(ier == 0);
 
 
@@ -192,7 +192,7 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
     std::vector<double> dstData(numDstEdges);
 
     // regrid
-    ier = mnt_regridedges_applyWeightsToEdgeIdField(&rg, &srcData[0], numDstEdges, &dstData[0]);
+    ier = mnt_regridedges_applyUniqueEdge(&rg, &srcData[0], &dstData[0]);
     assert(ier == 0);
 
     // check

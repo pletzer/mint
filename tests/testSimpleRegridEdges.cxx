@@ -75,7 +75,7 @@ int main() {
     assert(ier == 0);    
     
     std::string outputFilename = "simpleRegridEdgesWeights.nc";
-    ier = mnt_regridedges_dump(&rg, outputFilename.c_str(), outputFilename.size());
+    ier = mnt_regridedges_dumpWeights(&rg, outputFilename.c_str(), outputFilename.size());
     assert(ier == 0);
 
     // edges point in the positive direction
@@ -88,7 +88,7 @@ int main() {
     double srcData[] = {1., 2., -1., -2.};
     double dstData[4];
 
-    ier = mnt_regridedges_applyWeightsToCellEdgeField(&rg, srcData, dstData);
+    ier = mnt_regridedges_applyCellEdge(&rg, srcData, dstData);
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
@@ -102,7 +102,6 @@ int main() {
         // expect the same value as srcData
         assert(std::abs(dstData[i] - srcData[i]) < 1.e-12);
     }
-
 
 
     // clean up

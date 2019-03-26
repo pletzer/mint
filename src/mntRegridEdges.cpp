@@ -45,8 +45,8 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 }
 
 extern "C"
-int mnt_regridedges_loadSrc(RegridEdges_t** self, 
-		            const char* fort_filename, int n) {
+int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
+		                        const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -59,8 +59,8 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_loadDst(RegridEdges_t** self, 
-		            const char* fort_filename, int n) {
+int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
+		                        const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -289,7 +289,8 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
 
 
 extern "C"
-int mnt_regridedges_applyWeightsToCellEdgeField(RegridEdges_t** self, const double src_data[], double dst_data[]) {
+int mnt_regridedges_applyCellEdge(RegridEdges_t** self, 
+                                  const double src_data[], double dst_data[]) {
 
     // initialize the data to zero
     size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell;
@@ -316,9 +317,8 @@ int mnt_regridedges_applyWeightsToCellEdgeField(RegridEdges_t** self, const doub
 }
 
 extern "C"
-int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self, 
-	                                          const double src_data[], 
-	                                          size_t numDstEdges, double dst_data[]) {
+int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self, 
+	                                const double src_data[], double dst_data[]) {
 
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
@@ -333,9 +333,11 @@ int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self,
 
     int ier;
 
-    // multiple edges in the cell by cell representation 
-    // contribute to a unique edge. dst_multicity keeps
-    // track...
+    // number of unique edges on the destination grid
+    size_t numDstEdges;
+    ier = mnt_grid_getNumberOfUniqueEdges(&(*self)->dstGridObj, &numDstEdges);
+
+    // dst_multiplicity keeps track of the cells that share the same edge
     std::vector<double> dst_multiplicity(numDstEdges);
     
     // initialize the data to zero
@@ -376,8 +378,8 @@ int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self,
 
 
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, 
-        const char* fort_filename, int n) {
+int mnt_regridedges_loadWeights(RegridEdges_t** self, 
+                                const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -495,8 +497,8 @@ int mnt_regridedges_load(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, 
-		         const char* fort_filename, int n) {
+int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
+		                        const char* fort_filename, int n) {
 
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'

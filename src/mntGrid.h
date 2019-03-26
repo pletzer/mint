@@ -19,10 +19,17 @@ struct Grid_t {
     vtkUnstructuredGrid* grid;
 
     vtkUnstructuredGridReader* reader;
+
+    // stores the field (4 * numFaces)
     std::vector<vtkDoubleArray*> doubleArrays;
 
+    // flat array of size numFaces * 4
     std::vector<vtkIdType> faceNodeConnectivity;
+
+    // flat array of size numFaces * 4
     std::vector<vtkIdType> faceEdgeConnectivity;
+
+    // flat array of size numEdges * 2
     std::vector<vtkIdType> edgeNodeConnectivity;
 
 };

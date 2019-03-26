@@ -64,8 +64,8 @@ int mnt_regridedges_del(RegridEdges_t** self);
  * @param n length of filename string
  */
 extern "C"
-int mnt_regridedges_loadSrc(RegridEdges_t** self, 
-                            const char* fort_filename, int n);
+int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
+                                const char* fort_filename, int n);
 
 /** 
  * Load destination grid from 2D UGRID
@@ -73,8 +73,8 @@ int mnt_regridedges_loadSrc(RegridEdges_t** self,
  * @param n length of filename string
  */
 extern "C"
-int mnt_regridedges_loadDst(RegridEdges_t** self, 
-                            const char* fort_filename, int n);
+int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
+                                const char* fort_filename, int n);
 
 /**
  * Set the source grid
@@ -154,7 +154,8 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n);
  * @note edges go anticlockwise
  */
 extern "C"
-int mnt_regridedges_applyWeightsToCellEdgeField(RegridEdges_t** self, const double src_data[], double dst_data[]);
+int mnt_regridedges_applyCellEdge(RegridEdges_t** self, 
+	                              const double src_data[], double dst_data[]);
 
 /**
  * Apply interpolation weights to edge field with unique edge Ids
@@ -165,8 +166,8 @@ int mnt_regridedges_applyWeightsToCellEdgeField(RegridEdges_t** self, const doub
  * @note edges go anticlockwise
  */
 extern "C"
-int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self, const double src_data[], 
-	                                          size_t numDstEdges, double dst_data[]);
+int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self, 
+	                                const double src_data[], double dst_data[]);
 
 /**
  * Load the weights from file
@@ -176,8 +177,8 @@ int mnt_regridedges_applyWeightsToEdgeIdField(RegridEdges_t** self, const double
  * @note this does not create the object, user must call mnt_regridedges_new prior to this call
  */
 extern "C"
-int mnt_regridedges_load(RegridEdges_t** self, 
-                         const char* fort_filename, int n);
+int mnt_regridedges_loadWeights(RegridEdges_t** self, 
+                                const char* fort_filename, int n);
 
 /**
  * Dump the weights to file
@@ -186,8 +187,8 @@ int mnt_regridedges_load(RegridEdges_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_dump(RegridEdges_t** self, 
-                         const char* fort_filename, int n);
+int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
+                                const char* fort_filename, int n);
 
 /**
  * Print the weights

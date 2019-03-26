@@ -65,17 +65,17 @@ program test
     ier = mnt_regridedges_new(crg)
     if(ier /= 0) print*,'ERROR after new ier = ', ier
 
-    ier = mnt_regridedges_loadsrc(crg, src_filename_f, len_trim(src_filename_f))
+    ier = mnt_regridedges_loadSrcGrid(crg, src_filename_f, len_trim(src_filename_f))
     if(ier /= 0) print*,'ERROR after loadsrc ier = ', ier
 
-    ier = mnt_regridedges_loaddst(crg, dst_filename_f, len_trim(dst_filename_f))
+    ier = mnt_regridedges_loadDstGrid(crg, dst_filename_f, len_trim(dst_filename_f))
     if(ier /= 0) print*,'ERROR after loaddst ier = ', ier
 
     num_cells_per_bucket = 8
     ier = mnt_regridedges_build(crg, num_cells_per_bucket)
     if(ier /= 0) print*,'ERROR ier = after build', ier
     
-    ier = mnt_regridedges_dump(crg, output_filename_f, len_trim(output_filename_f))
+    ier = mnt_regridedges_dumpWeights(crg, output_filename_f, len_trim(output_filename_f))
     if(ier /= 0) print*,'ERROR ier = after dump', ier
 
     ier = mnt_regridedges_del(crg)
