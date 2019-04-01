@@ -2,6 +2,8 @@ import netCDF4
 import numpy
 import argparse
 import sys
+import time
+import functools
 
 parser = argparse.ArgumentParser(description='Generate edge field')
 parser.add_argument('-s', dest='streamFunction', default='sin(x*pi/180.)*cos(y*pi/180.)',
@@ -48,9 +50,21 @@ i0, i1 = edgeNodeConnectivity[:, 0], edgeNodeConnectivity[:, 1]
 integratedVelocity = streamValues[i1] - streamValues[i0]
 
 # write the velocity to disk
-nc = netCDF4.Dataset(args.data_file, 'w')
+if args.data_file == args.grid_file:
+    # append to grid file
+    print('NOTE: edge field will be appended to grid file {}'.format(args.grid_file))
+    nc = netCDF4.Dataset(args.data_file, 'r+')
+else:
+    # new file
+    print('NOTE: saving edge field in {}'.format(args.data_file))
+    nc = netCDF4.Dataset(args.data_file, 'w')
+    # write global attributes
+    nc.date = 'Created on {}'.format(time.asctime())
+nc.command = functools.reduce(lambda x, y: x+' '+y, sys.argv)
 nc.createDimension(numEdgesDimName, numEdges)
-vel = nc.createVariable('integrated_velocity', 'f8', (numEdgesDimName,))
+vel = nc.createVariable('edge_integrated_velocity', 'f8', (numEdgesDimName,))
+vel.location = 'edge'
+vel.long_name = 'edge_integrated_velocity'
 vel[:] = integratedVelocity
 nc.close()
 
