@@ -8,6 +8,8 @@ import functools
 parser = argparse.ArgumentParser(description='Generate edge field')
 parser.add_argument('-s', dest='streamFunction', default='sin(x*pi/180.)*cos(y*pi/180.)',
                     help='Specify the stream function of x (deg. east) and y (deg. north)')
+parser.add_argument('-n', dest='fieldName', default='edge_integrated_velocity',
+                    help='Specify the name of the edge field')
 parser.add_argument('-g', dest='grid_file', default='', 
                     help='Specify the netcdf file containing the grid geometry/topology')
 parser.add_argument('-d', dest='data_file', default='', 
@@ -58,13 +60,16 @@ else:
     # new file
     print('NOTE: saving edge field in {}'.format(args.data_file))
     nc = netCDF4.Dataset(args.data_file, 'w')
-    # write global attributes
-    nc.date = 'Created on {}'.format(time.asctime())
+# write global attributes
+nc.date = 'Created on {}'.format(time.asctime())
 nc.command = functools.reduce(lambda x, y: x+' '+y, sys.argv)
-nc.createDimension(numEdgesDimName, numEdges)
-vel = nc.createVariable('edge_integrated_velocity', 'f8', (numEdgesDimName,))
+try:
+    nc.createDimension(numEdgesDimName, numEdges)
+except:
+    # might already have a dimension called numEdgesDimName in the file
+    pass
+vel = nc.createVariable(args.fieldName, 'f8', (numEdgesDimName,))
 vel.location = 'edge'
-vel.long_name = 'edge_integrated_velocity'
 vel[:] = integratedVelocity
 nc.close()
 
