@@ -30,7 +30,10 @@ y = nc.variables['physics_node_y'][:]
 edgeNodeConnectivity = nc.variables['physics_edge_nodes'][:]
 
 # subtract base index
-edgeNodeConnectivity -= nc.variables['physics_edge_nodes'].start_index
+start_index = getattr(nc.variables['physics_edge_nodes'], 'start_index', 0)
+edgeNodeConnectivity -= start_index
+
+numEdgesDimName = nc.variables['physics_edge_nodes'].dimensions[0]
 
 nc.close()
 
@@ -46,8 +49,8 @@ integratedVelocity = streamValues[i1] - streamValues[i0]
 
 # write the velocity to disk
 nc = netCDF4.Dataset(args.data_file, 'w')
-nc.createDimension('num_edges', numEdges)
-vel = nc.createVariable('integrated_velocity', 'f8', ('num_edges',))
+nc.createDimension(numEdgesDimName, numEdges)
+vel = nc.createVariable('integrated_velocity', 'f8', (numEdgesDimName,))
 vel[:] = integratedVelocity
 nc.close()
 
