@@ -209,7 +209,7 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
  */
 extern "C"
 int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self, 
-	                                const double src_data[], double dst_data[]);
+                                    const double src_data[], double dst_data[]);
 
 /**
  * Load the weights from file

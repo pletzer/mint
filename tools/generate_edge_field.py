@@ -1,0 +1,53 @@
+import netCDF4
+import numpy
+import argparse
+import sys
+
+parser = argparse.ArgumentParser(description='Generate edge field')
+parser.add_argument('-s', dest='streamFunction', default='sin(x*pi/180.)*cos(y*pi/180.)',
+                    help='Specify the stream function of x (deg. east) and y (deg. north)')
+parser.add_argument('-g', dest='grid_file', default='', 
+                    help='Specify the netcdf file containing the grid geometry/topology')
+parser.add_argument('-d', dest='data_file', default='', 
+                    help='Specify the netcdf file containing the edge integrated velocity data')
+args = parser.parse_args()
+
+if len(args.grid_file) == 0:
+    print('ERROR: must provide grid file (-g)')
+    sys.exit(1)
+
+if len(args.data_file) == 0:
+    print('ERROR: must provide data file (-d)')
+    sys.exit(2)
+
+nc = netCDF4.Dataset(args.grid_file, 'r')
+
+# read the coordinates
+x = nc.variables['physics_node_x'][:]
+y = nc.variables['physics_node_y'][:]
+
+# read the edge-node connectivity
+edgeNodeConnectivity = nc.variables['physics_edge_nodes'][:]
+
+# subtract base index
+edgeNodeConnectivity -= nc.variables['physics_edge_nodes'].start_index
+
+nc.close()
+
+# compute the stream function on nodes
+from numpy import sin, cos, pi 
+streamValues = eval(args.streamFunction)
+
+# compute the integrated velocity on edges
+numEdges = edgeNodeConnectivity.shape[0]
+integratedVelocity = numpy.zeros( (numEdges,), numpy.float64 )
+i0, i1 = edgeNodeConnectivity[:, 0], edgeNodeConnectivity[:, 1]
+integratedVelocity = streamValues[i1] - streamValues[i0]
+
+# write the velocity to disk
+nc = netCDF4.Dataset(args.data_file, 'w')
+nc.createDimension('num_edges', numEdges)
+vel = nc.createVariable('integrated_velocity', 'f8', ('num_edges',))
+vel[:] = integratedVelocity
+nc.close()
+

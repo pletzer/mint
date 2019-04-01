@@ -36,6 +36,8 @@ void test1() {
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
 
+    // reead the weights and interpolate
+
     ier = mnt_regridedges_new(&rg);
     assert(ier == 0);
 
