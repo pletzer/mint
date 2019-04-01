@@ -73,19 +73,33 @@ int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
     }
 
     // check that the field has the "location" attribute
-    char* attValue;
-    ier = nc_get_att_string(ncid, varId, "location", &attValue);
+    size_t nLoc;
+    ier = nc_inq_attlen(ncid, varId, "location", &nLoc);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: variable \"" << fieldname << "\" does not have attribute 'location'\n";
+        std::cerr << "ERROR: variable \"" << fieldname << "\" does not appear to have attribute 'location' (ier = " << ier << ")\n";
         nc_close(ncid);
         return 2;
+    }
+    char location[nLoc + 1];
+    ier = nc_get_att_text(ncid, varId, "location", location);
+    location[nLoc] = '\0';
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: attribute \"location\" of variable \"" << fieldname << "\" could not be read (ier = " << ier << ")\n";
+        nc_close(ncid);
+        return 6;
+    }
+    // check location is set to "edge"
+    if (strcmp(location, "edge") != 0) {
+        std::cerr << "ERROR: attribute \"location\" of variable " << fieldname << " is not edge  ("
+                  << location << ")\n";
+        nc_close(ncid);
+        return 3;
     }
 
     // check if the data has the right dimension
     int ndims;
     ier = nc_inq_varndims(ncid, varId, &ndims);
     int dimIds[ndims];
-
     ier = nc_inq_vardimid(ncid, varId, dimIds);
     size_t n;
     ier = nc_inq_dimlen(ncid, dimIds[0], &n);
@@ -98,14 +112,6 @@ int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
 
     // TO DO 
     // is there are way to check if a field is an edge integral? Assume this to be the case
-
-    // check location is set to "edge"
-    if (strcmp(attValue, "edge") != 0) {
-        std::cerr << "ERROR: variable " << fieldname << "'s attribute location ("
-                  << attValue << ") is not 'edge'\n";
-        nc_close(ncid);
-        return 3;
-    }
 
     // now read
     ier = nc_get_var_double(ncid, varId, data);
@@ -185,7 +191,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     if (!(*self)->srcGridObj) {
         mnt_grid_new(&((*self)->srcGridObj));
     }
-    int ier = mnt_grid_loadFrom2DUgrid(&(*self)->srcGridObj, filename.c_str());
+    int ier = mnt_grid_loadFrom2DUgrid(&((*self)->srcGridObj), filename.c_str());
     (*self)->srcGrid = (*self)->srcGridObj->grid;
     return ier;
 }
@@ -199,7 +205,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     if (!(*self)->dstGridObj) {
         mnt_grid_new(&((*self)->dstGridObj));
     }
-    int ier = mnt_grid_loadFrom2DUgrid(&(*self)->dstGridObj, filename.c_str());
+    int ier = mnt_grid_loadFrom2DUgrid(&((*self)->dstGridObj), filename.c_str());
     (*self)->dstGrid = (*self)->dstGridObj->grid;
     return ier;
 }
@@ -236,17 +242,17 @@ int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) 
 
 extern "C"
 int mnt_regridedges_setSrcPointsPtr(RegridEdges_t** self, size_t nVertsPerCell, size_t ncells, const double verts[]) {
-    mnt_grid_new(&(*self)->srcGridObj);
-    mnt_grid_setPointsPtr(&(*self)->srcGridObj, (int) nVertsPerCell, (vtkIdType) ncells, verts);
-    mnt_grid_get(&(*self)->srcGridObj, &(*self)->srcGrid);
+    mnt_grid_new(&((*self)->srcGridObj));
+    mnt_grid_setPointsPtr(&((*self)->srcGridObj), (int) nVertsPerCell, (vtkIdType) ncells, verts);
+    mnt_grid_get(&((*self)->srcGridObj), &(*self)->srcGrid);
     return 0;
 }
 
 extern "C"
 int mnt_regridedges_setDstPointsPtr(RegridEdges_t** self, size_t nVertsPerCell, size_t ncells, const double verts[]) {
-    mnt_grid_new(&(*self)->dstGridObj);
-    mnt_grid_setPointsPtr(&(*self)->dstGridObj, (int) nVertsPerCell, (vtkIdType) ncells, verts);
-    mnt_grid_get(&(*self)->dstGridObj, &(*self)->dstGrid);
+    mnt_grid_new(&((*self)->dstGridObj));
+    mnt_grid_setPointsPtr(&((*self)->dstGridObj), (int) nVertsPerCell, (vtkIdType) ncells, verts);
+    mnt_grid_get(&((*self)->dstGridObj), &(*self)->dstGrid);
     return 0;
 }
 
@@ -421,13 +427,21 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
 
 extern "C"
 int mnt_regridedges_getNumSrcUniqueEdges(RegridEdges_t** self, size_t* nPtr) {
-    int ier = mnt_grid_getNumberOfUniqueEdges(&(*self)->srcGridObj, nPtr);
+    if (!(*self)->srcGridObj) {
+        std::cerr << "ERROR: source grid was not loaded\n";
+        return 1;
+    }
+    int ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->srcGridObj), nPtr);
     return ier;
 }
 
 extern "C"
 int mnt_regridedges_getNumDstUniqueEdges(RegridEdges_t** self, size_t* nPtr) {
-    int ier = mnt_grid_getNumberOfUniqueEdges(&(*self)->dstGridObj, nPtr);
+    if (!(*self)->dstGridObj) {
+        std::cerr << "ERROR: destination grid was not loaded\n";
+        return 1;
+    }
+    int ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->dstGridObj), nPtr);
     return ier;
 }
 
@@ -465,7 +479,8 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
 
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
-    if ((*self)->srcGridObj->faceNodeConnectivity.size() == 0 || 
+    if (!(*self)->srcGridObj ||
+        (*self)->srcGridObj->faceNodeConnectivity.size() == 0 || 
         (*self)->srcGridObj->faceEdgeConnectivity.size() == 0 ||
         (*self)->srcGridObj->edgeNodeConnectivity.size() == 0) {
         std::cerr << "ERROR: looks like the src grid connectivity is not set.\n";
@@ -478,7 +493,7 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
 
     // number of unique edges on the destination grid
     size_t numDstEdges;
-    ier = mnt_grid_getNumberOfUniqueEdges(&(*self)->dstGridObj, &numDstEdges);
+    ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->dstGridObj), &numDstEdges);
 
     // dst_multiplicity keeps track of the cells that share the same edge
     std::vector<double> dst_multiplicity(numDstEdges);

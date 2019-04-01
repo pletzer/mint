@@ -11,7 +11,7 @@ double streamFunc(const double p[]) {
 void test1() {
 
     int ier;
-    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/cs_16.nc";
+    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/vel_cs_16.nc";
     std::string dstFile = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
     std::string outputFile = "weights.nc";
 
@@ -26,6 +26,14 @@ void test1() {
     ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
     assert(ier == 0);
 
+    size_t numSrcEdges, numDstEdges;
+
+    ier = mnt_regridedges_getNumSrcUniqueEdges(&rg, &numSrcEdges);
+    assert(ier == 0);
+
+    ier = mnt_regridedges_getNumDstUniqueEdges(&rg, &numDstEdges);
+    assert(ier == 0);
+
     int numCellsPerBucket = 8;
     ier = mnt_regridedges_build(&rg, numCellsPerBucket);
     assert(ier == 0);
@@ -36,12 +44,37 @@ void test1() {
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
 
-    // reead the weights and interpolate
+    // read the weights and interpolate
 
     ier = mnt_regridedges_new(&rg);
     assert(ier == 0);
 
+    ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), (int) srcFile.size());
+    assert(ier == 0);
+
+    ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
+    assert(ier == 0);
+
     ier = mnt_regridedges_loadWeights(&rg, outputFile.c_str(), (int) outputFile.size());
+    assert(ier == 0);
+
+    std::vector<double> srcData(numSrcEdges);
+    std::vector<double> dstData(numDstEdges);
+
+    // load the source data from file
+    std::string fieldName = "line_integrated_velocity";
+    ier = mnt_regridedges_loadUniqueEdgeField(&rg, srcFile.c_str(), (int) srcFile.size(),
+                                              fieldName.c_str(), (int) fieldName.size(),
+                                              numSrcEdges, &srcData[0]);
+    assert(ier == 0);
+
+    ier = mnt_regridedges_applyUniqueEdge(&rg, &srcData[0], &dstData[0]);
+    assert(ier == 0);
+
+    std::string resFile = "regridded_line_integrated_velocity.nc";
+    ier = mnt_regridedges_dumpUniqueEdgeField(&rg, resFile.c_str(), (int) resFile.size(),
+                                              fieldName.c_str(), (int) fieldName.size(),
+                                              numDstEdges, &dstData[0]);
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
