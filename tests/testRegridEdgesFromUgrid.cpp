@@ -36,6 +36,15 @@ void test1() {
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
 
+    ier = mnt_regridedges_new(&rg);
+    assert(ier == 0);
+
+    ier = mnt_regridedges_loadWeights(&rg, outputFile.c_str(), (int) outputFile.size());
+    assert(ier == 0);
+
+    ier = mnt_regridedges_del(&rg);
+    assert(ier == 0);
+
 }
 
 void regridCellEdgeFieldTest(const std::string& testName, const std::string& srcFile, const std::string& dstFile) {
