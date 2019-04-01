@@ -2,6 +2,7 @@
 #include <mntPolysegmentIter.h>
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 #include <vtkIdList.h>
 #include <netcdf.h>
 #include <vtkHexahedron.h> // for 3d grids
@@ -43,6 +44,137 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 
     return 0;
 }
+
+extern "C"
+int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
+                                        const char* fort_filename, int nFilenameLength,
+                                        const char* field_name, int nFieldNameLength,
+                                        size_t ndata, double data[]) {
+
+    std::string filename = std::string(fort_filename, nFilenameLength);
+    std::string fieldname = std::string(field_name, nFieldNameLength);
+
+    // open the file
+    int ncid;
+    int ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: cannot open \"" << filename << "\"\n";
+        nc_close(ncid);
+        return 1;
+    }
+
+    // check if the variable/field exists
+    int varId;
+    ier = nc_inq_varid(ncid, fieldname.c_str(), &varId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not find variable \"" << fieldname << "\"\n";
+        nc_close(ncid);
+        return 1;
+    }
+
+    // check that the field has the "location" attribute
+    char* attValue;
+    ier = nc_get_att_string(ncid, varId, "location", &attValue);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: variable \"" << fieldname << "\" does not have attribute 'location'\n";
+        nc_close(ncid);
+        return 2;
+    }
+
+    // check if the data has the right dimension
+    int ndims;
+    ier = nc_inq_varndims(ncid, varId, &ndims);
+    int dimIds[ndims];
+
+    ier = nc_inq_vardimid(ncid, varId, dimIds);
+    size_t n;
+    ier = nc_inq_dimlen(ncid, dimIds[0], &n);
+    if (n != ndata) {
+        std::cerr << "ERROR: size of \"" << fieldname << "\" should be " << n
+                  << " but got " << ndata << "\n";
+        nc_close(ncid);
+        return 5;        
+    }
+
+    // TO DO 
+    // is there are way to check if a field is an edge integral? Assume this to be the case
+
+    // check location is set to "edge"
+    if (strcmp(attValue, "edge") != 0) {
+        std::cerr << "ERROR: variable " << fieldname << "'s attribute location ("
+                  << attValue << ") is not 'edge'\n";
+        nc_close(ncid);
+        return 3;
+    }
+
+    // now read
+    ier = nc_get_var_double(ncid, varId, data);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: while reading variable '" << fieldname << "'\n";
+        nc_close(ncid);
+        return 4;
+    }
+
+    // close the netcdf file
+    ier = nc_close(ncid);
+
+    return 0;
+}
+
+extern "C"
+int mnt_regridedges_dumpUniqueEdgeField(RegridEdges_t** self,
+                                        const char* fort_filename, int nFilenameLength,
+                                        const char* field_name, int nFieldNameLength,
+                                        size_t ndata, const double data[]) {
+    
+    std::string filename = std::string(fort_filename, nFilenameLength);
+    std::string fieldname = std::string(field_name, nFieldNameLength);
+
+    int ncid, ier;
+    ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not create file \"" << filename << "\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        return 1;
+    }
+
+    // create dimensions
+    int numEdgesId;
+
+    ier = nc_def_dim(ncid, "num_edges", ndata, &numEdgesId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define dimension \"num_edges\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 2;
+    }    
+
+    // create variable
+    int dataId;
+    int dims[] = {numEdgesId};
+    ier = nc_def_var(ncid, fieldname.c_str(), NC_DOUBLE, 1, dims, &dataId);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not define variable \"data\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 3;
+    }
+
+    // write the data
+    ier = nc_put_var_double(ncid, dataId, data);
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not write variable \"data\"\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 4;
+    }
+
+    // close the netcdf file
+    ier = nc_close(ncid);    
+
+    return 0;
+}
+
 
 extern "C"
 int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
@@ -287,6 +419,17 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
     return 0;
 }
 
+extern "C"
+int mnt_regridedges_getNumSrcUniqueEdges(RegridEdges_t** self, size_t* nPtr) {
+    int ier = mnt_grid_getNumberOfUniqueEdges(&(*self)->srcGridObj, nPtr);
+    return ier;
+}
+
+extern "C"
+int mnt_regridedges_getNumDstUniqueEdges(RegridEdges_t** self, size_t* nPtr) {
+    int ier = mnt_grid_getNumberOfUniqueEdges(&(*self)->dstGridObj, nPtr);
+    return ier;
+}
 
 extern "C"
 int mnt_regridedges_applyCellEdge(RegridEdges_t** self, 
