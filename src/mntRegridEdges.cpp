@@ -865,7 +865,8 @@ int mnt_regridedges_print(RegridEdges_t** self) {
     std::cout << "Number of weights: " << numWeights << '\n';
     printf("                 dst_cell  dst_face_edge     src_cell  src_face_edge       weight\n");
     for (size_t i = 0; i < numWeights; ++i) {
-    printf("%10ld       %8ld         %1d         %8ld         %1d   %15.5lg\n", i, 
+    printf("%10ld       %8lld         %1d         %8lld         %1d   %15.5lg\n", 
+               i, 
                (*self)->weightDstCellIds[i], (*self)->weightDstFaceEdgeIds[i], 
                (*self)->weightSrcCellIds[i], (*self)->weightSrcFaceEdgeIds[i],
                (*self)->weights[i]);
