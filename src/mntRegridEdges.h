@@ -64,6 +64,7 @@ int mnt_regridedges_del(RegridEdges_t** self);
  * @param nFilenameLength length of filename string (excluding '\0' if present)
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
+ * @param ndata number of edges and size of data
  * @param data array of size number of unique edges (output)
  */
 extern "C"
@@ -78,6 +79,7 @@ int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
  * @param nFilenameLength length of filename string (excluding '\0' if present)
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
+ * @param ndata number of edges and size of data
  * @param data array of size number of unique edges (input)
  */
 extern "C"

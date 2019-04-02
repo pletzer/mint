@@ -24,6 +24,55 @@ module mnt_regridedges_capi_mod
       integer(c_int)                   :: mnt_regridedges_del
     end function mnt_regridedges_del
 
+    function mnt_regridedges_loadUniqueEdgeField(obj, filename, nFilenameLength, &
+                                                field_name, nFieldNameLength, &
+                                                ndata, data) &
+                                                bind(C, name='mnt_regridedges_loadUniqueEdgeField')
+
+       ! Load field from 2D UGRID file
+       ! @param filename file name (does not require termination character)
+       ! @param nFilenameLength length of filename string (excluding '\0' if present)
+       ! @param field_name name of the field
+       ! @param nFieldNameLength length of field_name string (excluding '\0' if present)
+       ! @param ndata number of edges
+       ! @param data array of size number of unique edges (output)
+
+        use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        character(kind=c_char), intent(in)       :: filename(*)
+        integer(c_int), value                    :: nFilenameLength
+        character(kind=c_char), intent(in)       :: field_name(*)
+        integer(c_int), value                    :: nFieldNameLength
+        integer(c_size_t), value                 :: ndata
+        real(c_double), intent(out)              :: data(*)
+        integer(c_int)                           :: mnt_regridedges_loadUniqueEdgeField
+    end function mnt_regridedges_loadUniqueEdgeField
+
+    function mnt_regridedges_dumpUniqueEdgeField(obj, filename, nFilenameLength, &
+                                                field_name, nFieldNameLength, &
+                                                ndata, data) &
+                                                bind(C, name='mnt_regridedges_dumpUniqueEdgeField')
+       ! Dump field to 2D UGRID file
+       ! @param filename file name (does not require termination character)
+       ! @param nFilenameLength length of filename string (excluding '\0' if present)
+       ! @param field_name name of the field
+       ! @param nFieldNameLength length of field_name string (excluding '\0' if present)
+       ! @param ndata number of edges
+       ! @param data array of size number of unique edges (output)
+
+        use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        character(kind=c_char), intent(in)       :: filename(*)
+        integer(c_int), value                    :: nFilenameLength
+        character(kind=c_char), intent(in)       :: field_name(*)
+        integer(c_int), value                    :: nFieldNameLength
+        integer(c_size_t), value                 :: ndata
+        real(c_double), intent(in)               :: data(*)
+        integer(c_int)                           :: mnt_regridedges_dumpUniqueEdgeField
+    end function mnt_regridedges_dumpUniqueEdgeField
+
     function mnt_regridedges_loadSrcGrid(obj, filename, n) &
                                          bind(C, name='mnt_regridedges_loadSrcGrid')
       ! Load source grid from 2d UGRID file 
@@ -68,6 +117,28 @@ module mnt_regridedges_capi_mod
       integer(c_int), value            :: num_cells_per_bucket
       integer(c_int)                   :: mnt_regridedges_build
     end function mnt_regridedges_build
+
+    function mnt_regridedges_getNumSrcUniqueEdges(obj, n) &
+                            bind(C, name='mnt_regridedges_getNumSrcUniqueEdges')
+      ! Get the number of unique edges in the source grid
+      ! @param n number (output)
+      use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_size_t
+      type(c_ptr), intent(inout)       :: obj ! void**
+      integer(c_size_t), intent(out)   :: n 
+      integer(c_int)                   :: mnt_regridedges_getNumSrcUniqueEdges
+
+    end function mnt_regridedges_getNumSrcUniqueEdges
+
+    function mnt_regridedges_getNumDstUniqueEdges(obj, n) &
+                            bind(C, name='mnt_regridedges_getNumDstUniqueEdges')
+      ! Get the number of unique edges in the destination grid
+      ! @param n number (output)
+      use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_size_t
+      type(c_ptr), intent(inout)       :: obj ! void**
+      integer(c_size_t), intent(out)   :: n 
+      integer(c_int)                   :: mnt_regridedges_getNumDstUniqueEdges
+
+    end function mnt_regridedges_getNumDstUniqueEdges
 
     function mnt_regridedges_loadWeights(obj, filename, n) & 
                                          bind(C, name='mnt_regridedges_loadWeights')
