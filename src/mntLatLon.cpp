@@ -84,7 +84,7 @@ int mnt_latlon_dump(LatLon_t** self, const std::string& filename) {
     size_t numLat0 = numLat - 1;
     size_t numLon0 = numLon;
 
-    ier = nc_create(filename.c_str(), NC_CLOBBER, &ncid);
+    ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
     if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when creating the file\n";
 
     // latitude dimension

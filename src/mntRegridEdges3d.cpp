@@ -343,7 +343,7 @@ int mnt_regridedges3d_dump(RegridEdges3d_t** self, const char* filename) {
     size_t numWeights = (*self)->weights.size();
 
     int ncid, ier;
-    ier = nc_create(filename, NC_CLOBBER, &ncid);
+    ier = nc_create(filename, NC_CLOBBER|NC_NETCDF4, &ncid);
 
     // create dimensions
     int numWeightsId;
