@@ -272,7 +272,6 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
 
-
 }
 
 
@@ -280,7 +279,7 @@ int main() {
 
     test1();
 
-    // crashe when buildkng the cell locator
+    // crashes when building the cell locator
     //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc");
     //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc");
 
