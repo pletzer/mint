@@ -53,7 +53,13 @@ public:
     
     @param n vector size 
     @param e value of each element */
-  Vector(size_t n, T e); 
+  Vector(size_t n, T e);
+
+  /** Constructor: create vector from C array.
+    
+    @param vBeg start address 
+    @param vEnd one beyond last address */
+  Vector(const T* vBeg, const T* vEnd);
 
   /** Copy constructor: elements are copied into a new vector. 
    @param otherVec vector to be copied */
@@ -126,6 +132,8 @@ public:
       to random will generate different elements).
   */
   void random(void);
+
+  
 
   /** Return the index of the element closest to the left of/at position of elem. 
       This assumes that the sequence is monotonically increasing. The 

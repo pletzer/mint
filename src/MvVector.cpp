@@ -25,6 +25,11 @@ Vector<T>::Vector(size_t n, T e) : std::vector<T>(n, e)
 }
 
 template<class T>
+Vector<T>::Vector(const T* vBeg, const T* vEnd) : std::vector<T>(vBeg, vEnd)
+{
+}
+
+template<class T>
 Vector<T>::Vector(const Vector<T> &w)
 {
   (*this) = w;
@@ -708,6 +713,33 @@ template Vector<size_t> operator-(const Vector<size_t>&);
 template Vector<size_t> operator*(const Vector<size_t>&, size_t);
 template Vector<size_t> operator*(size_t, const Vector<size_t>&);
 template Vector<size_t> operator*(const Vector<size_t>&, const Vector<size_t>&);
+
+// int
+template class Vector<int>;
+template Vector<int> space(int, int, size_t);
+template int max(const Vector<int>&);
+template Vector<int> max(const Vector<int>&, int);
+template Vector<int> max(int, const Vector<int>&);
+template Vector<int> max(const Vector<int>&, const Vector<int>&);
+template int min(const Vector<int>&);
+template Vector<int> min(const Vector<int>&, int);
+template Vector<int> min(int, const Vector<int>&);
+template Vector<int> min(const Vector<int>&, const Vector<int>&);
+template int dot(const Vector<int>&, const Vector<int>&);
+template int sum(const Vector<int>&);
+template std::ostream& operator<<(std::ostream& s, const Vector<int>&);
+template Vector<int> cat(const Vector<int>&, const Vector<int>&);
+template Vector<int> operator+(const Vector<int>&, int);
+template Vector<int> operator+(int, const Vector<int>&);
+template Vector<int> operator+(const Vector<int>&, const Vector<int>&);
+template Vector<int> operator-(const Vector<int>&, int);
+template Vector<int> operator-(int, const Vector<int>&);
+template Vector<int> operator-(const Vector<int>&, const Vector<int>&);
+template Vector<int> operator-(const Vector<int>&);
+template Vector<int> operator*(const Vector<int>&, int);
+template Vector<int> operator*(int, const Vector<int>&);
+template Vector<int> operator*(const Vector<int>&, const Vector<int>&);
+
 
 template class Vector< std::complex<double> >;
 template Vector< std::complex<double> > space( std::complex<double> ,  std::complex<double> , size_t);
