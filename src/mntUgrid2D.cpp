@@ -114,17 +114,16 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
                 "face_node_connectivity", this->face2Points);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: variable \"" << meshname
-        << "\" does not have attribute cf_role \"face_node_connectivity\"\n";
+        << "\" does not have attribute \"face_node_connectivity\"\n";
         nc_close(ncid);
         return 3;
     }
-
 
     ier = this->readConnectivityData(ncid, meshid, 
                 "face_edge_connectivity", this->face2Edges);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: variable \"" << meshname
-        << "\" does not have attribute cf_role \"face_edge_connectivity\"\n";
+        << "\" does not have attribute \"face_edge_connectivity\"\n";
         nc_close(ncid);
         return 4;
     }
@@ -133,7 +132,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
                 "edge_node_connectivity", this->edge2Points);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: variable \"" << meshname
-        << "\" does not have attribute cf_role \"edge_node_connectivity\"\n";
+        << "\" does not have attribute \"edge_node_connectivity\"\n";
         nc_close(ncid);
         return 5;
     }
@@ -157,22 +156,25 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
 
 int
 Ugrid2D::readConnectivityData(int ncid, int meshid, 
-                              const std::string& cf_role,
+                              const std::string& role,
                               std::vector<long long>& data) {
 
     int ier;
 
     // get the lengths of the attribute string
     size_t len;
-    ier = nc_inq_attlen(ncid, meshid, cf_role.c_str(), &len);
+    ier = nc_inq_attlen(ncid, meshid, role.c_str(), &len);
+    if (ier != NC_NOERR) return 1;
 
-    // read the attribute, ie the name of the variables to read
-    char varname[len];
-    ier = nc_get_att_text(ncid, meshid, cf_role.c_str(), varname);
+    // read the attribute value, ie the name of the variables we will need to read
+    std::string varname(len, ' ');
+    ier = nc_get_att_text(ncid, meshid, role.c_str(), &varname[0]);
+    if (ier != NC_NOERR) return 2;
 
     // fetch the variable Id for this variable name
     int varid;
-    ier = nc_inq_varid(ncid, varname, &varid);
+    ier = nc_inq_varid(ncid, varname.c_str(), &varid);
+    if (ier != NC_NOERR) return 3;
 
     // dimensions of the variable to read
     int dimids[2];
@@ -182,13 +184,22 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
 
     // read the data
     ier = nc_inq_vardimid(ncid, varid, dimids);
+    if (ier != NC_NOERR) return 4;
+
     ier = nc_inq_dimlen(ncid, dimids[0], &n0);
+    if (ier != NC_NOERR) return 5;
+
     ier = nc_inq_dimlen(ncid, dimids[1], &n1);
+    if (ier != NC_NOERR) return 6;
+
+    ier = nc_get_att_int(ncid, varid, "start_index", &startIndex);
+    if (ier != NC_NOERR) return 8;
+
     data.resize(n0 * n1);
     ier = nc_get_var_longlong(ncid, varid, &data[0]);
+    if (ier != NC_NOERR) return 7;
 
     // subtract start_index
-    ier = nc_get_att_int(ncid, varid, "start_index", &startIndex);
     for (size_t i = 0; i < n0 * n1; ++i) {
         data[i] -= startIndex;
     }
@@ -203,22 +214,29 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 
     // get the lengths of the attribute string
     size_t len;
-    ier = nc_inq_attlen(ncid, meshid, "node_ccordinates", &len);
+    ier = nc_inq_attlen(ncid, meshid, "node_coordinates", &len);
+    if (ier != NC_NOERR) return 10;
 
     // read the attribute, lists the name of the lon and lat coordinates
-    std::string val(' ', len);
-    ier = nc_get_att_text(ncid, meshid, "node_ccordinates", &val[0]);
+    std::string val(len, ' ');
+    ier = nc_get_att_text(ncid, meshid, "node_coordinates", &val[0]);
+    if (ier != NC_NOERR) return 11;
 
     // val is "varx vary" where var{x,y} are the variable names
     size_t n = val.size();
-    size_t space = val.find(0, ' ', n);
-    size_t loc;
-    std::string varx = val.substr(0, loc);
-    std::string vary = val.substr(loc + 1, n);
+    size_t space = val.find(' ', 0);
+    if (space >= n) {
+        // could not find space
+        return 19;
+    }
+    std::string varx = val.substr(0, space);
+    std::string vary = val.substr(space + 1, n);
 
     int varxid, varyid;
     ier = nc_inq_varid(ncid, varx.c_str(), &varxid);
+    if (ier != NC_NOERR) return 12;
     ier = nc_inq_varid(ncid, vary.c_str(), &varyid);
+    if (ier != NC_NOERR) return 13;
 
     int dimids[1];
 
@@ -234,16 +252,20 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         if (ier != NC_NOERR) {
             std::cerr << "ERROR: variable with varid = " << varid
             << " has no attribute \"standard_name\"\n";
-            return 1;
+            return 14;
         }
-        std::string var_stdn(' ', len);
+        std::string var_stdn(len, ' ');
 
         // read the attribute
         ier = nc_get_att_text(ncid, varid, "standard_name", &var_stdn[0]);
+        if (ier != NC_NOERR) return 15;
 
         // get the dimension
         ier = nc_inq_vardimid(ncid, varid, dimids);
+        if (ier != NC_NOERR) return 16;
+
         ier = nc_inq_dimlen(ncid, dimids[0], &this->numPoints);
+        if (ier != NC_NOERR) return 17;
 
         // allocate/resize
         std::vector<double> data(this->numPoints);
@@ -256,24 +278,24 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         if (ier != NC_NOERR) {
             std::cerr << "ERROR: could not read \""
             << varx << "\"\n";
-            return 1;
+            return 18;
         }
         
-        // associate to our coordinate variable
+        // associate data  our coordinate variable
+        size_t j;
         if (var_stdn == "longitude") {
-            for (size_t i = 0; i < this->numPoints; ++i) {
-                this->points[LON_INDEX + NUM_SPACE_DIMS*i] = data[i];
-            }
+            j = LON_INDEX;
         }
-        else if (var_stdn == "longitude") {
-            for (size_t i = 0; i < this->numPoints; ++i) {
-                this->points[LAT_INDEX + NUM_SPACE_DIMS*i] = data[i];
-            }            
+        else if (var_stdn == "latitude") {
+            j = LAT_INDEX;
         }
         else {
-           std::cerr << "ERROR: unknown coordinate with standard_name \""
+            std::cerr << "ERROR: unknown coordinate with standard_name \""
             << var_stdn << "\"\n";
-            return 1; 
+            return 19; 
+        }
+        for (size_t i = 0; i < this->numPoints; ++i) {
+            this->points[j + NUM_SPACE_DIMS*i] = data[i];
         }
     }
 

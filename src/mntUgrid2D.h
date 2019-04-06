@@ -165,7 +165,7 @@ private:
     std::vector<long long> edge2Points;
 
 	int readConnectivityData(int ncid, int meshid, 
-		                     const std::string& cf_role,
+		                     const std::string& role,
 		                     std::vector<long long>& data);
 
     int readPoints(int ncid, int meshid);
