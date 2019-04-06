@@ -19,7 +19,7 @@ public:
 /**
  * Constructor
  */
-Ugrid2D(const std::string& meshName) {
+Ugrid2D() {
 }
 
 /**

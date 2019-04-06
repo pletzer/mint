@@ -4,8 +4,17 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
+configure_file(testUgrid2D.cpp testUgrid2D.cxx)
+configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
+
+add_executable(testUgrid2D testUgrid2D.cxx)
+target_link_libraries(testUgrid2D
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES}
+)
 
 add_executable(testSimpleRegridEdges testSimpleRegridEdges.cxx)
 target_link_libraries(testSimpleRegridEdges
@@ -157,6 +166,7 @@ add_test(NAME regridEdgesF
 set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
+add_test(NAME ugrid2D COMMAND testUgrid2D)
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
