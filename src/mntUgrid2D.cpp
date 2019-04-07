@@ -200,6 +200,7 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     if (ier != NC_NOERR) return 7;
 
     // subtract start_index
+    data.resize(n0 * n1);
     for (size_t i = 0; i < n0 * n1; ++i) {
         data[i] = buffer[i] - startIndex;
     }
@@ -224,13 +225,16 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 
     // val is "varx vary" where var{x,y} are the variable names
     size_t n = val.size();
-    size_t space = val.find(' ', 0);
-    if (space >= n) {
+    size_t spaceL = val.find(' ');
+    size_t spaceR = val.rfind(' ');
+    if (spaceL >= n) {
         // could not find space
+        std::cerr << "ERROR: node_coordinates attribute \""
+        << val << "\" should contain space separated list of coordinate names\n";
         return 19;
     }
-    std::string varx = val.substr(0, space);
-    std::string vary = val.substr(space + 1, n);
+    std::string varx = val.substr(0, spaceL);
+    std::string vary = val.substr(spaceR + 1, n - spaceR - 1);
 
     int varxid, varyid;
     ier = nc_inq_varid(ncid, varx.c_str(), &varxid);
