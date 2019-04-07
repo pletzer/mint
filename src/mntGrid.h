@@ -24,13 +24,13 @@ struct Grid_t {
     std::vector<vtkDoubleArray*> doubleArrays;
 
     // flat array of size numFaces * 4
-    std::vector<vtkIdType> faceNodeConnectivity;
+    std::vector<size_t> faceNodeConnectivity;
 
     // flat array of size numFaces * 4
-    std::vector<vtkIdType> faceEdgeConnectivity;
+    std::vector<size_t> faceEdgeConnectivity;
 
     // flat array of size numEdges * 2
-    std::vector<vtkIdType> edgeNodeConnectivity;
+    std::vector<size_t> edgeNodeConnectivity;
 
 };
 

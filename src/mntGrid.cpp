@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
+#include "mntUgrid2D.h"
 
 #define LON_INDEX 0
 #define LAT_INDEX 1
@@ -128,206 +129,32 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 extern "C"
 int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
 
-    // open the file
-    int ncid;
-    int ier = nc_open(filename, NC_NOWRITE, &ncid);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: cannot open \"" << filename << "\"\n";
+    std::string meshname = "physics"; // hardwired for the time being
+
+    Ugrid2D ugrid;
+    int ier = ugrid.load(filename, meshname);
+    if (ier != 0) {
+        std::cerr << "ERROR: could not read mesh \""
+                  << meshname << "\" in UGRID file \"" << filename << "\"\n";
         return 1;
     }
 
-    size_t ncells = 0;
-    size_t nedges = 0;
-    size_t numVertsPerCell = 0;
-    size_t numEdgesPerCell = 0;
-    size_t numVertsPerEdge = 0;
+    // copy 
+    (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
+    (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
+    (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
+    const std::vector<double>& points = ugrid.getPoints();
 
-    std::vector<double> lats;
-    std::vector<double> lons;
-
-    // get the number of variables
-    int nvars;
-    ier = nc_inq_nvars(ncid, &nvars);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: after inquiring the number of variables (ier = " 
-                  << ier << ")\n";
-        return 1;
-    }
-
-    //
-    // find the latitudes, longitudes and cell connectivity
-    //
-
-    // allocate space for the variable name
-    char varname[NC_MAX_NAME];
-
-    // allocate and fill in with ' '
-    std::string standard_name(NC_MAX_NAME, ' ');
-    std::string long_name(NC_MAX_NAME, ' ');
-    std::string cf_role(NC_MAX_NAME, ' ');
-    std::string units(NC_MAX_NAME, ' ');
-    nc_type xtype;
-    int ndims;
-    int natts;
-    int startIndex = 0;
-
-    // iterate over the variables in the netcdf file
-    for (int ivar = 0; ivar < nvars; ++ivar) {
-
-        // get the number of dimensions of this variable
-        ier = nc_inq_varndims(ncid, ivar, &ndims);
-        if (ier != NC_NOERR) {
-            std::cerr << "ERROR: after inquiring the number of dimensions for var = " 
-                      << ivar << " (ier = " << ier << ")\n";
-            return 2;
-        }
-
-        // get each of the dimensions of this variable
-        std::vector<int> dimids(ndims);
-
-        ier = nc_inq_var(ncid, ivar, varname, &xtype, &ndims, &dimids[0], &natts);
-
-        // reset
-        standard_name.assign(NC_MAX_NAME, ' ');
-        long_name.assign(NC_MAX_NAME, ' ');
-        cf_role.assign(NC_MAX_NAME, ' ');
-
-        // get the variable attributes
-        int ier1 = nc_get_att_text(ncid, ivar, "standard_name", &standard_name[0]);
-        int ier2 = nc_get_att_text(ncid, ivar, "long_name", &long_name[0]);
-        int ier3 = nc_get_att_text(ncid, ivar, "cf_role", &cf_role[0]);
-        int ier4 = nc_get_att_int(ncid, ivar, "start_index", &startIndex);
-        int ier5 = nc_get_att_text(ncid, ivar, "units", &units[0]);
-
-        if (ier1 == NC_NOERR && ier2 == NC_NOERR) {
-
-            // variable has "standard_name" and long_name attributes
-
-            // get the number of elements
-            int nelems = 1;
-            for (int i = 0; i < ndims; ++i) {
-                size_t dim;
-                ier = nc_inq_dimlen(ncid, dimids[i], &dim);
-                if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after getting the dimension size (ier = " << ier << ")\n";
-                        return 1;
-                }
-                nelems *= dim;
-            }
-
-            // is it a latitude or a longitude, defined on nodes?
-
-            if (standard_name.find("latitude") != std::string::npos &&
-                long_name.find("node") != std::string::npos) {
-
-                // allocate the data to receive the lats
-                lats.resize(nelems);
-
-                // read the latitudes as doubles, netcdf will convert if stored as floats
-                ier = nc_get_var_double(ncid, ivar, &lats[0]);
-                if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after reading latitudes (ier = " << ier << ")\n";
-                    return 1;
-                }
-            }
-            else if (standard_name.find("longitude") != std::string::npos && 
-                     long_name.find("node") != std::string::npos) {
-
-                // allocate to receive the lons
-                lons.resize(nelems);
-
-                // read the longitudes as doubles, netcdf will convert if stored as floats
-                ier = nc_get_var_double(ncid, ivar, &lons[0]);
-                if (ier != NC_NOERR) {
-                    std::cerr << "ERROR: after reading longitudes (ier = " << ier << ")\n";
-                    return 1;
-                }
-            }
-        }
-        else if (ier3 == NC_NOERR && ier4 == NC_NOERR &&
-                 cf_role.find("face_node_connectivity") != std::string::npos) {
-
-            // get the number of cells
-            ier = nc_inq_dimlen(ncid, dimids[0], &ncells);
-            // get the number of vertices per cell
-            ier = nc_inq_dimlen(ncid, dimids[1], &numVertsPerCell);
-            size_t nelems = ncells * numVertsPerCell;
-
-            // allocate the data
-            (*self)->faceNodeConnectivity.resize(nelems);
-
-            // read the connectivity
-            ier = nc_get_var_longlong(ncid, ivar, &(*self)->faceNodeConnectivity[0]);
-            if (ier != NC_NOERR) {
-                std::cerr << "ERROR: after reading face-node connectivity (ier = " << ier << ")\n";
-                return 1;
-            }
-
-            // substract start index
-            for (size_t i = 0; i < nelems; ++i) {
-                (*self)->faceNodeConnectivity[i] -= startIndex;
-            }
-
-        }
-        else if (ier3 == NC_NOERR && ier4 == NC_NOERR &&
-                 cf_role.find("face_edge_connectivity") != std::string::npos) {
-
-            // get the number of cells
-            ier = nc_inq_dimlen(ncid, dimids[0], &ncells);
-            // get the number of edges per cell
-            ier = nc_inq_dimlen(ncid, dimids[1], &numEdgesPerCell);
-            size_t nelems = ncells * numEdgesPerCell;
-
-            // allocate the data
-            (*self)->faceEdgeConnectivity.resize(nelems);
-
-            // read the connectivity
-            ier = nc_get_var_longlong(ncid, ivar, &(*self)->faceEdgeConnectivity[0]);
-            if (ier != NC_NOERR) {
-                std::cerr << "ERROR: after reading face-edge connectivity (ier = " << ier << ")\n";
-                return 1;
-            }
-
-            // substract start index
-            for (size_t i = 0; i < nelems; ++i) {
-                (*self)->faceEdgeConnectivity[i] -= startIndex;
-            }
-
-        }
-        else if (ier3 == NC_NOERR && ier4 == NC_NOERR &&
-                 cf_role.find("edge_node_connectivity") != std::string::npos) {
-
-            // get the number of edges
-            ier = nc_inq_dimlen(ncid, dimids[0], &nedges);
-            // get the number of edges per cell
-            ier = nc_inq_dimlen(ncid, dimids[1], &numVertsPerEdge);
-            size_t nelems = nedges * numVertsPerEdge;
-
-            // allocate the data
-            (*self)->edgeNodeConnectivity.resize(nelems);
-
-            // read the connectivity
-            ier = nc_get_var_longlong(ncid, ivar, &(*self)->edgeNodeConnectivity[0]);
-            if (ier != NC_NOERR) {
-                std::cerr << "ERROR: after reading face-edge connectivity (ier = " << ier << ")\n";
-                return 1;
-            }
-
-            // substract start index
-            for (size_t i = 0; i < nelems; ++i) {
-                (*self)->edgeNodeConnectivity[i] -= startIndex;
-            }
-
-        }
-
-    }
-
-    // close the netcdf file
-    ier = nc_close(ncid);
+    size_t ncells = ugrid.getNumberOfFaces();
+    size_t nedges = ugrid.getNumberOfEdges();
+    size_t npoints = ugrid.getNumberOfPoints();
+    size_t numVertsPerCell = 4;
+    size_t numEdgesPerCell = 4;
+    size_t numVertsPerEdge = 2;
 
     // repackage the cell vertices as a flat array 
 
-    if (lons.size() > 0 && lats.size() > 0 && (*self)->faceNodeConnectivity.size() > 0) {
+    if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
 
         // allocate the vertices and set the values
         (*self)->verts.resize(ncells * numVertsPerCell * 3);
@@ -339,13 +166,14 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
             // fix longitude when crossing the dateline
             // use the first longitude as the base
             size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
-            double lonBase = lons[kBase];
+            double lonBase = ugrid.getPoint(kBase)[LON_INDEX]; //lons[kBase];
 
             int poleNode = -1;
             for (int node = 0; node < numVertsPerCell; ++node) {
 
                 size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + node];
-                double lon = lons[k];
+                double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
+                double lat = ugrid.getPoint(k)[LAT_INDEX];
 
                 // add/subtract 360.0, whatever it takes to reduce the distance 
                 // between this longitude and the base longitude
@@ -360,13 +188,13 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
                 // fix the longitude
                 lon += (indexMin - 1) * 360.0;
 
-                if (std::abs(lats[k]) == 90.0) {
+                if (std::abs(lat) == 90.0) {
                     poleNode  = node;
                 }
 
                 // even in 2d we have three components
                 (*self)->verts[LON_INDEX + node*3 + icell*numVertsPerCell*3] = lon;
-                (*self)->verts[LAT_INDEX + node*3 + icell*numVertsPerCell*3] = lats[k];
+                (*self)->verts[LAT_INDEX + node*3 + icell*numVertsPerCell*3] = lat;
                 (*self)->verts[ELV_INDEX + node*3 + icell*numVertsPerCell*3] = 0.0;
             }
 

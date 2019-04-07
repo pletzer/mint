@@ -62,6 +62,9 @@ size_t getNumberOfPoints() const {
 const size_t* getFacePointIds(size_t faceId) const {
     return &this->face2Points[faceId*4];
 }
+const std::vector<size_t>& getFacePointIds() const {
+    return this->face2Points;
+}
 
 /**
  * Get pointer to the edge Ids
@@ -70,6 +73,9 @@ const size_t* getFacePointIds(size_t faceId) const {
  */
 const size_t* getFaceEdgeIds(size_t faceId) const {
     return &this->face2Edges[faceId*4];
+}
+const std::vector<size_t>& getFaceEdgeIds() const {
+    return this->face2Edges;
 }
 
 /**
@@ -80,6 +86,9 @@ const size_t* getFaceEdgeIds(size_t faceId) const {
 const size_t* getEdgePointIds(size_t edgeId) const {
     return &this->edge2Points[edgeId*2];
 }
+const std::vector<size_t>& getEdgePointIds() const {
+    return this->edge2Points;
+}
 
 /**
  * Get pointer to the coordinates
@@ -88,6 +97,9 @@ const size_t* getEdgePointIds(size_t edgeId) const {
  */
 const double* getPoint(size_t pointId) const {
     return &this->points[pointId*NUM_SPACE_DIMS];
+}
+const std::vector<double>& getPoints() const {
+    return this->points;
 }
 
 /**
@@ -144,9 +156,6 @@ std::vector< Vector<double> > getEdgePoints(size_t edgeId) const;
 
 private:
 
-    // face to node connectivity
-    std::vector<size_t> face2Points;
-
     // vertex coordinates
     std::vector<double> points;
 
@@ -157,6 +166,9 @@ private:
     size_t numPoints;
     size_t numEdges;
     size_t numFaces;
+
+    // face to node connectivity
+    std::vector<size_t> face2Points;
 
     // face to edge connectivity
     std::vector<size_t> face2Edges;
