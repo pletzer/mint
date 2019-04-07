@@ -274,11 +274,11 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         // allocate/resize
         std::vector<double> data(this->numPoints);
         if (this->points.size() == 0) {
-            this->points.resize(this->numPoints * NUM_SPACE_DIMS);
+            this->points.resize(this->numPoints * NUM_SPACE_DIMS, 0.0);
         }
 
         // read the data
-        ier = nc_get_var_double(ncid, varxid, &data[0]);
+        ier = nc_get_var_double(ncid, varid, &data[0]);
         if (ier != NC_NOERR) {
             std::cerr << "ERROR: could not read \""
             << varx << "\"\n";
