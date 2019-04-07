@@ -13,8 +13,8 @@ int main(int argc, char** argv) {
     int ier;
     CmdLineArgParser args;
     args.setPurpose("Regrid an edge centred field.");
-    args.set("-s", std::string(""), "Source grid file in VTK format");
-    args.set("-v", std::string("edge_integrated_velocity"), "Specify edge staggered field variable name in source VTK file");
+    args.set("-s", std::string(""), "Source grid file in VTK/UGRID format. For UGRID specify the file name and the mesh name as \"filename:meshname\"");
+    args.set("-v", std::string("edge_integrated_velocity"), "Specify edge staggered field variable name in source VTK/UGRID file");
     args.set("-d", std::string(""), "Destination grid file in VTK format");
     args.set("-w", std::string(""), "Write interpolation weights to file");
     args.set("-o", std::string(""), "Specify output VTK file where regridded edge data is saved");
