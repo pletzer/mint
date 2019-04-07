@@ -51,7 +51,12 @@ int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
                                         const char* field_name, int nFieldNameLength,
                                         size_t ndata, double data[]) {
 
-    std::string filename = std::string(fort_filename, nFilenameLength);
+    std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
+
+    // filter out the mesh name, if present (not used here)
+    size_t columnL = fileAndMeshName.find(':');
+    std::string filename = fileAndMeshName.substr(0, columnL);
+
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
     // open the file

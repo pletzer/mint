@@ -160,8 +160,8 @@ target_link_libraries(testCmdLineArgParserFB
 
 add_test(NAME regridEdgesF
 	     COMMAND testRegridEdgesF 
-	     "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc" 
-	     "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc" 
+	     "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics" 
+	     "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" 
 	     "-o" "weights.nc")
 set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
@@ -209,9 +209,9 @@ set_tests_properties(regrid_edgesVTK16 PROPERTIES
 
 add_test(NAME regrid_edgesUgrid16To4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics" 
                  "-v" "edge_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
                  "-o" "regrid_edges_output_Ugrid16To4.vtk")
 #set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
 #                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")

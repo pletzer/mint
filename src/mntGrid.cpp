@@ -127,9 +127,20 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 }
 
 extern "C"
-int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
+int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
 
-    std::string meshname = "physics"; // hardwired for the time being
+    // extract the filename and the mesh name from "filename:meshname"
+    std::string fm = std::string(fileAndMeshName);
+    size_t columnPosL = fm.find(':');
+    size_t columnPosR = fm.rfind(':');
+    if (columnPosL == std::string::npos) {
+        std::cerr << "ERROR: could not find ':' in \"" << fileAndMeshName << "\".";
+        std::cerr << " use \"filename:meshname\" format to specify the file and mesh names, respectively\n";
+        return 2;
+    }
+
+    std::string filename = fm.substr(0, columnPosL);
+    std::string meshname = fm.substr(columnPosR + 1, std::string::npos);
 
     Ugrid2D ugrid;
     int ier = ugrid.load(filename, meshname);
@@ -143,6 +154,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* filename) {
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
     (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
     (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
+    // reference
     const std::vector<double>& points = ugrid.getPoints();
 
     size_t ncells = ugrid.getNumberOfFaces();

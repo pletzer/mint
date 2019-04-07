@@ -14,7 +14,8 @@ void testUgrid() {
     Grid_t* grd;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
-    ier = mnt_grid_loadFrom2DUgrid(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc");
+    // one or more ":" to discriminate file and mesh names
+    ier = mnt_grid_loadFrom2DUgrid(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc::physics");
     assert(ier == 0);
     ier = mnt_grid_print(&grd);
     assert(ier == 0);
