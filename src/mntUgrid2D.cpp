@@ -102,7 +102,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     }
 
     // mesh variable
-    int meshid, f2nid, f2eid, e2nid;
+    int meshid;
     ier = nc_inq_varid(ncid, meshname.c_str(), &meshid);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: cannot find variable named \"" << meshname << "\"\n";
