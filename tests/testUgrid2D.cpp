@@ -11,6 +11,13 @@ void test1() {
     ier = ugr.load(file, "physics");
     assert(ier == 0);
 
+    size_t numPoints = ugr.getNumberOfPoints();
+    size_t numEdges = ugr.getNumberOfEdges();
+    size_t numFaces = ugr.getNumberOfFaces();
+
+    assert(numFaces == 96);
+    assert(numEdges == 192);
+    assert(numPoints == 98);
 }
 
 
