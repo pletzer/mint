@@ -11,9 +11,9 @@
 
 
 std::vector< Vector<double> > 
-Ugrid2D::getFacePoints(long long faceId) const {
+Ugrid2D::getFacePoints(size_t faceId) const {
 
-    const long long* pointIds = this->getFacePointIds(faceId);
+    const size_t* pointIds = this->getFacePointIds(faceId);
     std::vector< Vector<double> > res(4);
 
     // iterate over the 4 points
@@ -27,7 +27,7 @@ Ugrid2D::getFacePoints(long long faceId) const {
 
 
 std::vector< Vector<double> > 
-Ugrid2D::getEdgePoints(long long edgeId) const {
+Ugrid2D::getEdgePoints(size_t edgeId) const {
 
     std::vector< Vector<double> > res;
 
@@ -35,7 +35,7 @@ Ugrid2D::getEdgePoints(long long edgeId) const {
     for (size_t i = 0; i < 2; ++i) {
 
         // get the point id
-        long long pointId = this->edge2Points[i + edgeId*2];
+        size_t pointId = this->edge2Points[i + edgeId*2];
 
         // get the coordinates of this point
         const double* p = this->getPoint(pointId);
@@ -47,7 +47,7 @@ Ugrid2D::getEdgePoints(long long edgeId) const {
 }
 
 bool 
-Ugrid2D::containsPoint(long long faceId, const double point[], double tol) const {
+Ugrid2D::containsPoint(size_t faceId, const double point[], double tol) const {
 
     bool res = false;
     double circ = 0;
@@ -157,7 +157,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
 int
 Ugrid2D::readConnectivityData(int ncid, int meshid, 
                               const std::string& role,
-                              std::vector<long long>& data) {
+                              std::vector<size_t>& data) {
 
     int ier;
 
@@ -195,13 +195,13 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     ier = nc_get_att_int(ncid, varid, "start_index", &startIndex);
     if (ier != NC_NOERR) return 8;
 
-    data.resize(n0 * n1);
-    ier = nc_get_var_longlong(ncid, varid, &data[0]);
+    std::vector<unsigned long long> buffer(n0 * n1);
+    ier = nc_get_var_ulonglong(ncid, varid, &buffer[0]);
     if (ier != NC_NOERR) return 7;
 
     // subtract start_index
     for (size_t i = 0; i < n0 * n1; ++i) {
-        data[i] -= startIndex;
+        data[i] = buffer[i] - startIndex;
     }
 
     return 0;
@@ -314,7 +314,7 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 }
 
 std::vector< Vector<double> > 
-Ugrid2D::getFacePointsRegularized(long long faceId) const {
+Ugrid2D::getFacePointsRegularized(size_t faceId) const {
 
     std::vector< Vector<double> > res = this->getFacePoints(faceId);
 
@@ -360,9 +360,9 @@ Ugrid2D::getFacePointsRegularized(long long faceId) const {
 
 
 std::vector< Vector<double> > 
-Ugrid2D::getEdgePointsRegularized(long long edgeId) const {
+Ugrid2D::getEdgePointsRegularized(size_t edgeId) const {
 
-    const long long* ptIds = this->getEdgePointIds(edgeId);
+    const size_t* ptIds = this->getEdgePointIds(edgeId);
     const double* p0 = this->getPoint(ptIds[0]);
     const double* p1 = this->getPoint(ptIds[1]);
 

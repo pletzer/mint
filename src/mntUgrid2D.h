@@ -59,7 +59,7 @@ size_t getNumberOfPoints() const {
  * @param face Id
  * @return pointer
  */
-const long long* getFacePointIds(long long faceId) const {
+const size_t* getFacePointIds(size_t faceId) const {
     return &this->face2Points[faceId*4];
 }
 
@@ -68,7 +68,7 @@ const long long* getFacePointIds(long long faceId) const {
  * @param face Id 
  * @return pointer
  */
-const long long* getFaceEdgeIds(long long faceId) const {
+const size_t* getFaceEdgeIds(size_t faceId) const {
     return &this->face2Edges[faceId*4];
 }
 
@@ -77,7 +77,7 @@ const long long* getFaceEdgeIds(long long faceId) const {
  * @param edge Id 
  * @return pointer
  */
-const long long* getEdgePointIds(long long edgeId) const {
+const size_t* getEdgePointIds(size_t edgeId) const {
     return &this->edge2Points[edgeId*2];
 }
 
@@ -86,7 +86,7 @@ const long long* getEdgePointIds(long long edgeId) const {
  * @param pointId point id
  * @return pointer
  */
-const double* getPoint(long long pointId) const {
+const double* getPoint(size_t pointId) const {
     return &this->points[pointId*NUM_SPACE_DIMS];
 }
 
@@ -95,14 +95,14 @@ const double* getPoint(long long pointId) const {
  * @param edgeId edge Id
  * @return the two points with 360 added/substracted to minimize the edge length
  */
-std::vector< Vector<double> > getEdgePointsRegularized(long long edgeId) const;
+std::vector< Vector<double> > getEdgePointsRegularized(size_t edgeId) const;
 
 /**
  * Get the regularized points of the face
  * @param faceId face Id
  * @return the four points with 360 added/substracted to make the cell have a positive area
  */
-std::vector< Vector<double> > getFacePointsRegularized(long long faceId) const;
+std::vector< Vector<double> > getFacePointsRegularized(size_t faceId) const;
 
 /**
  * Is point inside face?
@@ -111,7 +111,7 @@ std::vector< Vector<double> > getFacePointsRegularized(long long faceId) const;
  * @param tol tolerance
  * @return true/false
  */
-bool containsPoint(long long faceId, const double point[], double tol) const;
+bool containsPoint(size_t faceId, const double point[], double tol) const;
 
 /**
  * Get min/max range of the domain
@@ -133,19 +133,19 @@ int load(const std::string& filename, const std::string& meshname);
  * Get the face vertex coordinates
  * @return array of points
  */
-std::vector< Vector<double> > getFacePoints(long long faceId) const;
+std::vector< Vector<double> > getFacePoints(size_t faceId) const;
 
 /**
  * Get the edge vertex coordinates
  * @return array of points
  */
-std::vector< Vector<double> > getEdgePoints(long long edgeId) const;
+std::vector< Vector<double> > getEdgePoints(size_t edgeId) const;
 
 
 private:
 
     // face to node connectivity
-    std::vector<long long> face2Points;
+    std::vector<size_t> face2Points;
 
     // vertex coordinates
     std::vector<double> points;
@@ -159,14 +159,14 @@ private:
     size_t numFaces;
 
     // face to edge connectivity
-    std::vector<long long> face2Edges;
+    std::vector<size_t> face2Edges;
 
     // edge to node connectivity
-    std::vector<long long> edge2Points;
+    std::vector<size_t> edge2Points;
 
 	int readConnectivityData(int ncid, int meshid, 
 		                     const std::string& role,
-		                     std::vector<long long>& data);
+		                     std::vector<size_t>& data);
 
     int readPoints(int ncid, int meshid);
 
