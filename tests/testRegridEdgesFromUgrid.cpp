@@ -137,12 +137,14 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
     ier = mnt_regridedges_applyCellEdge(&rg, &srcData[0], &dstData[0]);
     assert(ier == 0);
 
+    double totalLoopIntegrals = 0.0;
+
     // check
     printf("%s\n dstCellId         edge        interpVal      exact        error               p0               p1\n", testName.c_str());
     double totError = 0;
     for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
         
-        double loopIntegral = 0.0;
+        double cellLoopIntegral = 0.0;
 
         for (int ie = 0; ie < 4; ++ie) {
 
@@ -158,8 +160,10 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
             double interpVal = dstData[k];
 
             // orientation for loop integral is counterclockwise
+            // the first two edges are the direction of the contour
+            // integral, the last two are in opposite direction
             int sgn = 1 - 2*(ie / 2); 
-            loopIntegral += interpVal * sgn;
+            cellLoopIntegral += interpVal * sgn;
 
             // numerical error
             double error = interpVal - exact;
@@ -170,12 +174,15 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
             totError += std::abs(error);
         }
 
-        if (std::abs(loopIntegral) > 1.e-8) {
-          printf("%10ld loop integral = %12.5lg\n", dstCellId, loopIntegral);
+        if (std::abs(cellLoopIntegral) > 1.e-8) {
+          printf("%10ld loop integral = %12.5lg\n", dstCellId, cellLoopIntegral);
         }
+
+        totalLoopIntegrals += std::abs(cellLoopIntegral);
     }
 
     std::cout << testName << ": total interpolation |error|: " << totError << '\n';
+    std::cout << testName << ": sum of |loop integrals|    : " << totalLoopIntegrals << '\n';
     assert(totError < 1.e-8);
 
     // clean up
