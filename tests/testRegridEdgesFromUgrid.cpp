@@ -141,19 +141,37 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
     printf("%s\n dstCellId         edge        interpVal      exact        error               p0               p1\n", testName.c_str());
     double totError = 0;
     for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+        
+        double loopIntegral = 0.0;
+
         for (int ie = 0; ie < 4; ++ie) {
 
+            // get the coordinates of the start (p0) and end (p1) points. This may involve
+            // adding/subtracting 360 deg to the longitude of the cell crosses the dateline
             ier = mnt_grid_getPoints(&rg->dstGridObj, dstCellId, ie, p0, p1);
+
+            // exact line integral
             double exact = streamFunc(p1) - streamFunc(p0);
 
+            // interpolated line integral 
             size_t k = dstCellId*4 + ie;
             double interpVal = dstData[k];
+
+            // orientation for loop integral is counterclockwise
+            int sgn = 1 - 2*(ie / 2); 
+            loopIntegral += interpVal * sgn;
+
+            // numerical error
             double error = interpVal - exact;
             if (std::abs(error) > 1.e-8) {
                 printf("%10ld           %1d        %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
                     dstCellId, ie, interpVal, exact, error, p0[0], p0[1], p1[0], p1[1]);
             }
             totError += std::abs(error);
+        }
+
+        if (std::abs(loopIntegral) > 1.e-8) {
+          printf("%10ld loop integral = %12.5lg\n", dstCellId, loopIntegral);
         }
     }
 
