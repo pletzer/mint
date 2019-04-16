@@ -184,6 +184,7 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
     std::cout << testName << ": total interpolation |error|: " << totError << '\n';
     std::cout << testName << ": sum of |loop integrals|    : " << totalLoopIntegrals << '\n';
     assert(totError < 1.e-8);
+    assert(totalLoopIntegrals  < 1.e-8);
 
     // clean up
     ier = mnt_regridedges_del(&rg);
