@@ -150,7 +150,8 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
 
             // get the coordinates of the start (p0) and end (p1) points. This may involve
             // adding/subtracting 360 deg to the longitude of the cell crosses the dateline
-            ier = mnt_grid_getPoints(&rg->dstGridObj, dstCellId, ie, p0, p1);
+         	int circSign;
+        	ier = mnt_regridedges_getDstEdgePoints(&rg, dstCellId, ie, &circSign, p0, p1);
 
             // exact line integral
             double exact = streamFunc(p1) - streamFunc(p0);
@@ -162,8 +163,8 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
             // orientation for loop integral is counterclockwise
             // the first two edges are the direction of the contour
             // integral, the last two are in opposite direction
-            int sgn = 1 - 2*(ie / 2); 
-            cellLoopIntegral += interpVal * sgn;
+            // the value circSign relfects this.
+            cellLoopIntegral += interpVal * circSign;
 
             // numerical error
             double error = interpVal - exact;
