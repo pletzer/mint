@@ -284,10 +284,10 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
 
             double error = interpVal - exact;
 
-            if (std::abs(error) > 1.e-6) {
+            //if (std::abs(error) > 1.e-6) {
                 printf("%10ld           %1d         %9lld      %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
                     dstCellId, ie, dstEdgeId, interpVal, exact, error, p0[0], p0[1], p1[0], p1[1]);
-            }
+            //}
             totError += std::abs(error);
         }
     }
@@ -312,7 +312,8 @@ int main() {
 
     regridCellEdgeFieldTest("sameCellField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
     regridUniqueEdgeIdFieldTest("sameUniqueEdgeIdField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
-    regridCellEdgeFieldTest("uniqueEdgeIdField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
+    regridCellEdgeFieldTest("cellField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
+    regridUniqueEdgeIdFieldTest("uniqueEdgeIdField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
 
     return 0;
 }   
