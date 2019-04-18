@@ -499,13 +499,9 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
     // number of unique edges on the destination grid
     size_t numDstEdges;
     ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->dstGridObj), &numDstEdges);
-
-    // dst_multiplicity keeps track of the cells that share the same edge
-    std::vector<double> dst_multiplicity(numDstEdges);
     
     // initialize the data to zero
     for (size_t i = 0; i < numDstEdges; ++i) {
-        dst_multiplicity[i] = 0.0;
         dst_data[i] = 0.0;
     }
 
@@ -522,14 +518,9 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
         ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
 
-        dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
-        dst_multiplicity[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i];
+        // factor 0.5 because each edge is shared between two cells
+        dst_data[dstEdgeId] += 0.5 * srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
 
-    }
-
-    // correct for multiplicity
-    for (size_t i = 0; i < numDstEdges; ++i) {
-       dst_data[i] /= dst_multiplicity[i];
     }
 
     return 0;
