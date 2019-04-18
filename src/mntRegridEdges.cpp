@@ -522,10 +522,6 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
         ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
 
-        // index into the flat array
-        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstCellId;
-        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
-
         dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
         dst_multiplicity[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i];
 
