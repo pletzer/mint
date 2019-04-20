@@ -53,7 +53,6 @@ size_t getNumberOfPoints() const {
     return this->numPoints;
 }
 
-
 /**
  * Get pointer to the point Ids
  * @param face Id
@@ -123,7 +122,7 @@ std::vector< Vector<double> > getFacePointsRegularized(size_t faceId) const;
  * @param tol tolerance
  * @return true/false
  */
-bool containsPoint(size_t faceId, const double point[], double tol) const;
+bool containsPoint(size_t faceId, const Vector<double>& point, double tol) const;
 
 /**
  * Get min/max range of the domain
@@ -153,6 +152,30 @@ std::vector< Vector<double> > getFacePoints(size_t faceId) const;
  */
 std::vector< Vector<double> > getEdgePoints(size_t edgeId) const;
 
+/**
+ * Build 2d locator
+ * @param avgNumFacesPerBucket approximate number of faces per bucket
+ */
+void buildLocator2D(int avgNumFacesPerBucket);
+
+/**
+ * Find the cell that contains a point
+ * @param point target point
+ * @param tol tolerance
+ * @param cellId cellId (output)
+ * @return true if a cell was found, false otherwise
+ */
+bool findCell(const Vector<double>& point, double tol, size_t& cellId) const;
+
+/**
+ * Find all the cells that are intesected by a line
+ * @param point0 start point of the line
+ * @param point1 end point of the line
+ * @param tol tolerance
+ * @return array of cell Ids
+ */
+std::vector<size_t> findCellsAlongLine(const Vector<double>& point0, const Vector<double>& point1, double tol) const;
+
 
 private:
 
@@ -176,13 +199,21 @@ private:
     // edge to node connectivity
     std::vector<size_t> edge2Points;
 
-	int readConnectivityData(int ncid, int meshid, 
+    // number of buckets along each direction
+    int numBucketsX;
+
+    // maps a bucket to a list of faces
+    std::map<int, std::vector<size_t> > bucket2Faces;
+
+    int readConnectivityData(int ncid, int meshid, 
 		                     const std::string& role,
 		                     std::vector<size_t>& data);
 
     int readPoints(int ncid, int meshid);
 
     void fixPeriodicity();
+
+    int getBucketId(const Vector<double>& point) const;
 
 };
 

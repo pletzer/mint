@@ -4,6 +4,7 @@
 #include <set>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 
 #define LON_INDEX 0
 #define LAT_INDEX 1
@@ -47,7 +48,7 @@ Ugrid2D::getEdgePoints(size_t edgeId) const {
 }
 
 bool 
-Ugrid2D::containsPoint(size_t faceId, const double point[], double tol) const {
+Ugrid2D::containsPoint(size_t faceId, const Vector<double>& point, double tol) const {
 
     bool res = false;
     double circ = 0;
@@ -150,6 +151,21 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     this->numFaces = n / 4; // 4 points per face
     n = this->edge2Points.size();
     this->numEdges = n / 2; // 2 points per edge
+
+
+    // compute min/max values after regularizing the coords across the faces
+    // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
+    this->xmin.resize(NUM_SPACE_DIMS, +std::numeric_limits<double>::max());
+    this->xmax.resize(NUM_SPACE_DIMS, -std::numeric_limits<double>::max());
+    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+        std::vector< Vector<double> > nodes = this->getFacePointsRegularized(faceId);
+        for (const Vector<double>& p : nodes) {
+            for (size_t j = 0; j < this->xmin.size(); ++j) {
+                this->xmin[j] = (p[j] < this->xmin[j]? p[j]: this->xmin[j]);
+                this->xmax[j] = (p[j] > this->xmax[j]? p[j]: this->xmax[j]);
+            }                     
+        }
+    }
 
     return 0;
 }
@@ -303,17 +319,6 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         }
     }
 
-    // compute min/max values
-    this->xmin.resize(NUM_SPACE_DIMS, +std::numeric_limits<double>::max());
-    this->xmax.resize(NUM_SPACE_DIMS, -std::numeric_limits<double>::max());
-    for (size_t j = 0; j < NUM_SPACE_DIMS; ++j) {
-        for (size_t i = 0; i < this->numPoints; ++i) {
-            double p = this->points[j + NUM_SPACE_DIMS*i];
-            this->xmin[j] = (p < this->xmin[j]? p: this->xmin[j]);
-            this->xmax[j] = (p > this->xmax[j]? p: this->xmax[j]);            
-        }
-    }
-
     return 0;
 }
 
@@ -393,5 +398,68 @@ Ugrid2D::getEdgePointsRegularized(size_t edgeId) const {
 
     return res;
 }
+
+int
+Ugrid2D::getBucketId(const Vector<double>& point) const {
+
+    // required to make sure std::floor does not return the next integer below if we're close to an integer
+    const double eps = 10 * std::numeric_limits<double>::epsilon();
+
+    Vector<double> x = (point - this->xmin) / (this->xmax - this->xmin); // must have some thickness!
+    int m = (int) std::floor( numBucketsX * x[0] + eps);
+    int n = (int) std::floor( numBucketsX * x[1] + eps);
+
+    return m * this->numBucketsX + n;
+}
+
+void 
+Ugrid2D::buildLocator2D(int avgNumFacesPerBucket) {
+
+
+    // number of buckets along one dimension (2D)
+    this->numBucketsX = (int) std::max(1.0, 
+                              std::sqrt((double) this->getNumberOfFaces() / (double) avgNumFacesPerBucket)
+                                      );
+
+    // attach an empty array of face Ids to each bucket
+    for (int m = 0; m < numBucketsX; ++m) {
+        for (int n = 0; n < numBucketsX; ++n) {
+            int bucketId = m * numBucketsX + n;
+            this->bucket2Faces.insert( std::pair< int, std::vector<size_t> >(bucketId, std::vector<size_t>()));
+        }
+    }
+
+    // assign each face to one or more buckets depending on where the face's nodes fall
+    for (size_t faceId = 0; faceId < this->getNumberOfFaces(); ++faceId) {
+        std::vector< Vector<double> > nodes = getFacePointsRegularized(faceId);
+        for (const Vector<double>& p : nodes) {
+            int bucketId = this->getBucketId(p);
+            this->bucket2Faces[bucketId].push_back(faceId);
+        }
+    }
+
+}
+
+bool
+Ugrid2D::findCell(const Vector<double>& point, double tol, size_t& faceId) const {
+
+    // normalize
+    int bucketId = this->getBucketId(point);
+    const std::vector<size_t>& faces = this->bucket2Faces.find(bucketId)->second;
+    for (const size_t& cId : faces) {
+        if (this->containsPoint(cId, point, tol)) {
+            faceId = cId;
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<size_t> 
+Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& point1, double tol) const {
+    // TO DO
+
+}
+
 
 
