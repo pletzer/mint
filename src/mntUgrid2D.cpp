@@ -429,13 +429,13 @@ Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
 }
 
 bool
-Ugrid2D::findCell(const Vector<double>& point, double tol, size_t& faceId) const {
+Ugrid2D::findCell(const Vector<double>& point, double tol, size_t* faceId) const {
 
     int bucketId = this->getBucketId(point);
     const std::vector<size_t>& faces = this->bucket2Faces.find(bucketId)->second;
     for (const size_t& cId : faces) {
         if (this->containsPoint(cId, point, tol)) {
-            faceId = cId;
+            *faceId = cId;
             return true;
         }
     }

@@ -20,7 +20,7 @@ void testPoint(const Vector<double>& p) {
     // find face
     const double tol = 1.e-10;
     size_t faceId;
-    bool found = ug.findCell(p, tol, faceId);
+    bool found = ug.findCell(p, tol, &faceId);
     if (found) {
         std::vector< Vector<double> > nodes = ug.getFacePointsRegularized(faceId);
         std::cout << "OK: point " << p << " is inside face " << faceId << " which has nodes:\n";
@@ -53,6 +53,27 @@ void testLine(const Vector<double>& p0, const Vector<double>& p1) {
         std::cout << faceId << ' ';
     }
     std::cout << '\n';
+
+    // check that we found all the cells by dividing the line in 1000 segments, checking that each point 
+    // is inside of the cells we found
+    size_t nSegments = 1000;
+    Vector<double> du = p1 - p0;
+    du /= (double) nSegments;
+    size_t cId;
+    const double tol = 1.e-14;
+    for (size_t iSegment = 0; iSegment < nSegments; ++iSegment) {
+        Vector<double> p = p0 + (double) iSegment * du;
+        bool found = ug.findCell(p, tol, &cId);
+        if (found) {
+            if (faceIds.find(cId) == faceIds.end()) {
+                std::cerr << "ERROR: unable to find point " << p << " belonging to face " << cId 
+                          << " and along line " << p0 << " -> " << p1 << " among the above faces/cells!\n";
+                assert(false);
+            }
+        }
+    }
+
+
 
 }
 

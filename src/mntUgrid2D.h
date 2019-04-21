@@ -165,7 +165,7 @@ void buildLocator(int avgNumFacesPerBucket);
  * @param cellId cellId (output)
  * @return true if a cell was found, false otherwise
  */
-bool findCell(const Vector<double>& point, double tol, size_t& cellId) const;
+bool findCell(const Vector<double>& point, double tol, size_t* cellId) const;
 
 /**
  * Find all the cells that are intesected by a line
