@@ -171,11 +171,10 @@ bool findCell(const Vector<double>& point, double tol, size_t& cellId) const;
  * Find all the cells that are intesected by a line
  * @param point0 start point of the line
  * @param point1 end point of the line
- * @param tol tolerance
  * @return array of cell Ids
  */
 std::vector<size_t> findCellsAlongLine(const Vector<double>& point0,
-                                       const Vector<double>& point1, double tol) const;
+                                       const Vector<double>& point1) const;
 
 /**
  * Dump the grid to a Vtk file

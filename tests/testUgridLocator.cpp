@@ -35,22 +35,49 @@ void testPoint(const Vector<double>& p) {
 
 }
 
+void testLine(const Vector<double>& p0, const Vector<double>& p1) {
+
+    std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
+
+    Ugrid2D ug;
+
+    int ier = ug.load(file, "physics");
+    assert(ier == 0);
+
+    // build the locator
+    ug.buildLocator(1);
+
+    std::vector<size_t> faceIds = ug.findCellsAlongLine(p0, p1);
+    std::cout << "point " << p0 << " -> " << p1 << "overlaps with " << faceIds.size() << " cells:\n";
+    for (const size_t& faceId : faceIds) {
+        std::cout << faceId << ' ';
+    }
+    std::cout << '\n';
+
+}
+
 
 int main() {
 
-    Vector<double> p(3, 0.0);
+    Vector<double> p0(3, 0.0);
 
-    p[0] = 180.; p[1] = 0.;
-    testPoint(p);
+    p0[0] = 180.; p0[1] = 0.;
+    testPoint(p0);
 
-    p[0] = 90.; p[1] = 90.;
-    testPoint(p);
+    p0[0] = 90.; p0[1] = 90.;
+    testPoint(p0);
 
-    p[0] = 90.; p[1] = -90.;
-    testPoint(p);
+    p0[0] = 90.; p0[1] = -90.;
+    testPoint(p0);
 
-    p[0] = 0.; p[1] = 67.;
-    testPoint(p);
+    p0[0] = 0.; p0[1] = 67.;
+    testPoint(p0);
+
+    Vector<double> p1(3, 0.0);
+    p0[0] =   0.; p0[1] = -67.;
+    p1[0] = 360.; p1[1] =  67.;
+    testLine(p0, p1);
+
 
     return 0;
 }   

@@ -444,7 +444,6 @@ Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
 bool
 Ugrid2D::findCell(const Vector<double>& point, double tol, size_t& faceId) const {
 
-    // normalize
     int bucketId = this->getBucketId(point);
     const std::vector<size_t>& faces = this->bucket2Faces.find(bucketId)->second;
     for (const size_t& cId : faces) {
@@ -457,9 +456,32 @@ Ugrid2D::findCell(const Vector<double>& point, double tol, size_t& faceId) const
 }
 
 std::vector<size_t> 
-Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& point1, double tol) const {
-    // TO DO
+Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& point1) const {
 
+    std::vector<size_t> res;
+    res.reserve(10 * this->numFaces / this->numBucketsX);
+    
+    // get the start bucket
+    int begBucketId = this->getBucketId(point0);
+    int begM = begBucketId / this->numBucketsX;
+    int begN = begBucketId % this->numBucketsX;
+
+    // get end bucket
+    int endBucketId = this->getBucketId(point1);
+    int endM = endBucketId / this->numBucketsX;
+    int endN = endBucketId % this->numBucketsX;
+
+    // iterate over the buckets
+    for (int m = begM; m <= endM; ++m) {
+        for (int n = begN; n <= endN; ++n) {
+            int bucketId = m * numBucketsX + n;
+            for (const size_t& faceId : this->bucket2Faces.find(bucketId)->second) {
+                res.push_back(faceId);
+            }
+        }
+    }
+
+    return res;
 }
 
 void
