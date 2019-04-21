@@ -174,7 +174,14 @@ bool findCell(const Vector<double>& point, double tol, size_t& cellId) const;
  * @param tol tolerance
  * @return array of cell Ids
  */
-std::vector<size_t> findCellsAlongLine(const Vector<double>& point0, const Vector<double>& point1, double tol) const;
+std::vector<size_t> findCellsAlongLine(const Vector<double>& point0,
+                                       const Vector<double>& point1, double tol) const;
+
+/**
+ * Dump the grid to a Vtk file
+ * @param filename file name
+ */
+void dumpGridVtk(const std::string& filename);
 
 
 private:

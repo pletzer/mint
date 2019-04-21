@@ -5,6 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <fstream>
 
 #define LON_INDEX 0
 #define LAT_INDEX 1
@@ -461,5 +462,34 @@ Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& 
 
 }
 
+void
+Ugrid2D::dumpGridVtk(const std::string& filename) {
+    std::ofstream f;
+    f.open(filename);
+    f << "# vtk DataFile Version 4.2\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n";
+    f << "POINTS " << 4 * this->numFaces << " double\n";
+    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+        const std::vector< Vector<double> > nodes = this->getFacePointsRegularized(faceId);
+        for (const Vector<double>& node : nodes) {
+            f << node << ' ';
+        }
+        f << '\n';
+    }
+    f << "CELLS " << this->numFaces << ' ' << 5 * this->numFaces << '\n'; // 2D
+    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+        // 4 points per face
+        f << "4 " << faceId*4 + 0 << ' '
+                  << faceId*4 + 1 << ' '
+                  << faceId*4 + 2 << ' '
+                  << faceId*4 + 3 << '\n';
+    }
+    f << "CELL_TYPES " << this->numFaces << '\n';
+    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+        f << "9 ";
+        if (faceId % 10 == 0) f << '\n';
+    }
+    f << '\n';
+    f.close();
+}
 
 

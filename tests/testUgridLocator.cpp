@@ -12,6 +12,8 @@ void testPoint(const Vector<double>& p) {
     int ier = ug.load(file, "physics");
     assert(ier == 0);
 
+    ug.dumpGridVtk("ug_cs_4.vtk");
+
     // build the locator
     ug.buildLocator(1);
 
@@ -21,7 +23,7 @@ void testPoint(const Vector<double>& p) {
     bool found = ug.findCell(p, tol, faceId);
     if (found) {
         std::vector< Vector<double> > nodes = ug.getFacePointsRegularized(faceId);
-        std::cout << "point " << p << " is inside face " << faceId << " which has nodes:\n";
+        std::cout << "OK: point " << p << " is inside face " << faceId << " which has nodes:\n";
         for (const Vector<double>& node : nodes) {
             std::cout << node << '\n';
         }
@@ -41,8 +43,14 @@ int main() {
     p[0] = 180.; p[1] = 0.;
     testPoint(p);
 
-    //p[0] = 180.; p[1] = 89.;
-    //testPoint(p);
+    p[0] = 90.; p[1] = 90.;
+    testPoint(p);
+
+    p[0] = 90.; p[1] = -90.;
+    testPoint(p);
+
+    p[0] = 0.; p[1] = 67.;
+    testPoint(p);
 
     return 0;
 }   
