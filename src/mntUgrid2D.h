@@ -156,7 +156,7 @@ std::vector< Vector<double> > getEdgePoints(size_t edgeId) const;
  * Build 2d locator
  * @param avgNumFacesPerBucket approximate number of faces per bucket
  */
-void buildLocator2D(int avgNumFacesPerBucket);
+void buildLocator(int avgNumFacesPerBucket);
 
 /**
  * Find the cell that contains a point

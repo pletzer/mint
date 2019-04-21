@@ -413,7 +413,7 @@ Ugrid2D::getBucketId(const Vector<double>& point) const {
 }
 
 void 
-Ugrid2D::buildLocator2D(int avgNumFacesPerBucket) {
+Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
 
 
     // number of buckets along one dimension (2D)

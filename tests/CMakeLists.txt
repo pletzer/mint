@@ -4,11 +4,19 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
+configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
+
+add_executable(testUgridLocator testUgridLocator.cxx)
+target_link_libraries(testUgridLocator
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES}
+)
 
 add_executable(testNetcdf testNetcdf.cxx)
 target_link_libraries(testNetcdf
@@ -174,6 +182,7 @@ add_test(NAME regridEdgesF
 set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
+add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME ugrid2D COMMAND testUgrid2D)
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
