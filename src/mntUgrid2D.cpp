@@ -400,19 +400,6 @@ Ugrid2D::getEdgePointsRegularized(size_t edgeId) const {
     return res;
 }
 
-int
-Ugrid2D::getBucketId(const Vector<double>& point) const {
-
-    // required to make sure std::floor does not return the next integer below if we're close to an integer
-    const double eps = 10 * std::numeric_limits<double>::epsilon();
-
-    Vector<double> x = (point - this->xmin) / (this->xmax - this->xmin); // must have some thickness!
-    int m = (int) std::floor( numBucketsX * x[0] + eps);
-    int n = (int) std::floor( numBucketsX * x[1] + eps);
-
-    return m * this->numBucketsX + n;
-}
-
 void 
 Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
 
@@ -455,28 +442,45 @@ Ugrid2D::findCell(const Vector<double>& point, double tol, size_t& faceId) const
     return false;
 }
 
-std::vector<size_t> 
+std::set<size_t> 
 Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& point1) const {
 
-    std::vector<size_t> res;
-    res.reserve(10 * this->numFaces / this->numBucketsX);
+    std::set<size_t> res;
+    int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
+
+    // choose the number of sections heuristically. Too few and we'll end up adding too many
+    // cells. No point in having more sections than the number of buckets
+    this->getBucketIndices(this->getBucketId(point0), &begM, &begN);
+    this->getBucketIndices(this->getBucketId(point1), &endM, &endN);
+    int dm = endM - begM + 1;
+    int dn = endN - begN + 1;
+    // want more segments when the line is 45 deg. Want more segments when 
+    // the points are far apart.
+    size_t nSections = std::max(1, std::min(dn, dm));
+
+    Vector<double> du = point1 - point0;
+    du /= (double) nSections;
+
+    for (size_t iSection = 0; iSection < nSections; ++iSection) {
+
+        Vector<double> p0 = point0 + (double) iSection * du;
+        Vector<double> p1 = p0 + du;
     
-    // get the start bucket
-    int begBucketId = this->getBucketId(point0);
-    int begM = begBucketId / this->numBucketsX;
-    int begN = begBucketId % this->numBucketsX;
+        // get the start bucket
+        begBucketId = this->getBucketId(p0);
+        this->getBucketIndices(begBucketId, &begM, &begN);
 
-    // get end bucket
-    int endBucketId = this->getBucketId(point1);
-    int endM = endBucketId / this->numBucketsX;
-    int endN = endBucketId % this->numBucketsX;
+        // get end bucket
+        endBucketId = this->getBucketId(p1);
+        this->getBucketIndices(endBucketId, &endM, &endN);
 
-    // iterate over the buckets
-    for (int m = begM; m <= endM; ++m) {
-        for (int n = begN; n <= endN; ++n) {
-            int bucketId = m * numBucketsX + n;
-            for (const size_t& faceId : this->bucket2Faces.find(bucketId)->second) {
-                res.push_back(faceId);
+        // iterate over the buckets
+        for (int m = begM; m <= endM; ++m) {
+            for (int n = begN; n <= endN; ++n) {
+                bucketId = m * numBucketsX + n;
+                for (const size_t& faceId : this->bucket2Faces.find(bucketId)->second) {
+                    res.insert(faceId);
+                }
             }
         }
     }

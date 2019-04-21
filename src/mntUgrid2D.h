@@ -173,7 +173,7 @@ bool findCell(const Vector<double>& point, double tol, size_t& cellId) const;
  * @param point1 end point of the line
  * @return array of cell Ids
  */
-std::vector<size_t> findCellsAlongLine(const Vector<double>& point0,
+std::set<size_t> findCellsAlongLine(const Vector<double>& point0,
                                        const Vector<double>& point1) const;
 
 /**
@@ -219,7 +219,21 @@ private:
 
     void fixPeriodicity();
 
-    int getBucketId(const Vector<double>& point) const;
+    inline int getBucketId(const Vector<double>& point) const {
+        // required to make sure std::floor does not return the 
+        // next integer below if we're close to an integer
+        const double eps = 10 * std::numeric_limits<double>::epsilon();
+
+        Vector<double> x = (point - this->xmin) / (this->xmax - this->xmin); // must have some thickness!
+        int m = std::max(0, (int) std::floor( numBucketsX * x[0] + eps));
+        int n = std::min(this->numBucketsX - 1, (int) std::floor( numBucketsX * x[1] + eps));
+        return m * this->numBucketsX + n;
+    }
+
+    inline void getBucketIndices(int bucketId, int* m, int* n) const {
+        *m = bucketId / this->numBucketsX;
+        *n = bucketId % this->numBucketsX;
+    }
 
 };
 

@@ -47,7 +47,7 @@ void testLine(const Vector<double>& p0, const Vector<double>& p1) {
     // build the locator
     ug.buildLocator(1);
 
-    std::vector<size_t> faceIds = ug.findCellsAlongLine(p0, p1);
+    std::set<size_t> faceIds = ug.findCellsAlongLine(p0, p1);
     std::cout << "point " << p0 << " -> " << p1 << "overlaps with " << faceIds.size() << " cells:\n";
     for (const size_t& faceId : faceIds) {
         std::cout << faceId << ' ';
