@@ -17,9 +17,7 @@ set(LIB_FILES
   mntGrid.cpp
   mntPolysegmentIter.cpp
   mntLineTriangleIntersector.cpp
-  mntPolysegmentIter3d.cpp
   mntRegridEdges.cpp
-  mntRegridEdges3d.cpp
   mntCellLocator.cpp
   mntCmdLineArgParser.cpp
   mnt_celllocator_capi_mod.f90

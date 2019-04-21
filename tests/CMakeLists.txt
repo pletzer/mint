@@ -76,12 +76,6 @@ target_link_libraries(testPolysegmentIter
                       ${VTK_LIBRARIES}
 )
 
-add_executable(testPolysegmentIter3d testPolysegmentIter3d.cxx)
-target_link_libraries(testPolysegmentIter3d
-                      mint
-                      ${VTK_LIBRARIES}
-)
-
 add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
@@ -186,7 +180,6 @@ add_test(NAME lineGridIntersector COMMAND testLineGridIntersector)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
-add_test(NAME polysegmentIter3d COMMAND testPolysegmentIter3d)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME cellLocatorF COMMAND testCellLocatorF)
