@@ -61,9 +61,14 @@ public:
     @param vEnd one beyond last address */
   Vector(const T* vBeg, const T* vEnd);
 
+  /** Constructor: create vector from C array (C++11).
+    
+    @param array C array */
+  Vector(std::initializer_list<T> array);
+
   /** Copy constructor: elements are copied into a new vector. 
    @param otherVec vector to be copied */
-  Vector(const Vector<T> & otherVec);
+  Vector(const Vector<T>& otherVec);
 
   /** Assignment operator: set all elements to "f". 
    @param f scalar

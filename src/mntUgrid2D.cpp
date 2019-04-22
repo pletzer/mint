@@ -51,7 +51,8 @@ Ugrid2D::getEdgePoints(size_t edgeId) const {
 bool 
 Ugrid2D::containsPoint(size_t faceId, const Vector<double>& point, double tol) const {
 
-    bool res = false;
+    tol = std::abs(tol);
+    bool res = true;
     double circ = 0;
     std::vector< Vector<double> > vertices = getFacePointsRegularized(faceId);
     for (size_t i0 = 0; i0 < 4; ++i0) {
@@ -63,20 +64,11 @@ Ugrid2D::containsPoint(size_t faceId, const Vector<double>& point, double tol) c
         double d1[] = {point[0] - vertices[i1][0], point[1] - vertices[i1][1]};
 
         double cross = d0[0]*d1[1] - d0[1]*d1[0];
-        double dot = d0[0]*d1[0] + d0[1]*d1[1];
 
-        if (std::abs(cross) < tol && std::abs(dot) < tol) {
-            // point is on a node, ill defined angle
-            res = true;
+        if (cross < -tol) {
+            // negative area
+            res = false;
         }
-
-        circ += atan2(cross, dot);
-    }
-
-    // total angle should be very close to 2*pi if the point is inside
-    if (!res && circ/(2.0 * M_PI) > 0.5) {
-        // normal case
-        res = true;
     }
 
     return res;

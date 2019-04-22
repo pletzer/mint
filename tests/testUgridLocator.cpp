@@ -3,6 +3,78 @@
 #include <cmath>
 #undef NDEBUG // turn on asserts
 
+void testPointInside() {
+
+    std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
+
+    Ugrid2D ug;
+
+    int ier = ug.load(file, "physics");
+    assert(ier == 0);
+
+    /* 
+    faceId 37 nodes
+    180 -0 0 
+    180 22.5 0 
+    157.5 20.94102047224 0 
+    157.5 -0 0 
+    */
+
+    const double tol = 1.e-10;
+    const size_t faceId = 37;
+    size_t nSegs = 10;
+    Vector<double> pBeg{180., 0., 0.};
+    Vector<double> pEnd{157.5, 20.94102047224, 0.};
+    Vector<double> du = pEnd - pBeg;
+    du /= (double) nSegs;
+    for (size_t i = 0; i < nSegs + 1; ++i) {
+        Vector<double> p = pBeg + (double) i * du;
+        std::vector< Vector<double> > nodes = ug.getFacePointsRegularized(faceId);
+        std::cerr << "checking if point " << p << " is inside of cell " << faceId << '\n';
+        for (size_t j = 0; j < nodes.size(); ++j) {
+            std::cout << nodes[j] << '\n';
+        }
+        assert(ug.containsPoint(faceId, p, tol));
+    }
+
+}
+
+void testPointOutside() {
+
+    std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
+
+    Ugrid2D ug;
+
+    int ier = ug.load(file, "physics");
+    assert(ier == 0);
+
+    /* 
+    faceId 37 nodes
+    180 -0 0 
+    180 22.5 0 
+    157.5 20.94102047224 0 
+    157.5 -0 0 
+    */
+
+    const double tol = 1.e-10;
+    const size_t faceId = 37;
+    size_t nSegs = 10;
+    Vector<double> pBeg{190., 0., 0.};
+    Vector<double> pEnd{180.00001, 0., 0.};
+    Vector<double> du = pEnd - pBeg;
+    du /= (double) nSegs;
+    for (size_t i = 0; i < nSegs + 1; ++i) {
+        Vector<double> p = pBeg + (double) i * du;
+        std::vector< Vector<double> > nodes = ug.getFacePointsRegularized(faceId);
+        std::cerr << "checking if point " << p << " is outside of cell " << faceId << '\n';
+        for (size_t j = 0; j < nodes.size(); ++j) {
+            std::cout << nodes[j] << '\n';
+        }
+        assert(!ug.containsPoint(faceId, p, tol));
+    }
+
+}
+
 
 void testPoint(const Vector<double>& p) {
 
@@ -28,6 +100,7 @@ void testPoint(const Vector<double>& p) {
         for (const Vector<double>& node : nodes) {
             std::cout << node << '\n';
         }
+        assert(ug.containsPoint(faceId, p, 1.e-8));
     }
     else {
         std::cout << "point " << p << " was not found\n";
@@ -88,12 +161,13 @@ void testLine(const Vector<double>& p0, const Vector<double>& p1) {
         }
     }
 
-
-
 }
 
 
 int main() {
+
+    testPointInside();
+    testPointOutside();
 
     Vector<double> p0(3, 0.0);
 
@@ -113,7 +187,6 @@ int main() {
     p0[0] =   0.; p0[1] = -67.;
     p1[0] = 360.; p1[1] =  67.;
     testLine(p0, p1);
-
 
     return 0;
 }   
