@@ -15,35 +15,35 @@ add_executable(testUgridLocator testUgridLocator.cxx)
 target_link_libraries(testUgridLocator
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testNetcdf testNetcdf.cxx)
 target_link_libraries(testNetcdf
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testUgrid2D testUgrid2D.cxx)
 target_link_libraries(testUgrid2D
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testSimpleRegridEdges testSimpleRegridEdges.cxx)
 target_link_libraries(testSimpleRegridEdges
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testRegridEdgesFromUgrid testRegridEdgesFromUgrid.cxx)
 target_link_libraries(testRegridEdgesFromUgrid
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testPolylineParser testPolylineParser.cxx)
@@ -92,14 +92,14 @@ add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCellLocator testCellLocator.cxx)
 target_link_libraries(testCellLocator
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testPrintAddressF testPrintAddressF.f90)
@@ -107,7 +107,7 @@ set_target_properties(testPrintAddressF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testPrintAddressF
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCellLocatorF testCellLocatorF.f90)
@@ -115,7 +115,7 @@ set_target_properties(testCellLocatorF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCellLocatorF
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCellLocatorFromFileF testCellLocatorFromFileF.f90)
@@ -123,7 +123,7 @@ set_target_properties(testCellLocatorFromFileF PROPERTIES LINKER_LANGUAGE Fortra
 target_link_libraries(testCellLocatorFromFileF
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testC2fString testC2fString.f90)
@@ -157,7 +157,7 @@ set_target_properties(testRegridEdgesF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testRegridEdgesF
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)

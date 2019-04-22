@@ -33,6 +33,18 @@ message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
 message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
 
 #
+# Find curl (needed by HDF5)
+#
+find_package(CURL REQUIRED)
+message(STATUS "CURL libraries: ${CURL_LIBRARIES}")
+
+#
+# Find HDF5 (needed by NetCDF)
+#
+find_package(HDF5 COMPONENTS C HL REQUIRED)
+message(STATUS "HDF5 libraries: ${HDF5_LIBRARIES}")
+message(STATUS "HDF5 hl libraries: ${HDF5_HL_LIBRARIES}")
+#
 # Find the netcdf library and its dependencies by keying off from the nc-config
 # command. 
 #
@@ -83,11 +95,14 @@ include_directories(
   ${NETCDF_INCLUDE_DIR}
 )
 
+message(STATUS "NetCDF include dir: ${NETCDF_INCLUDE_DIR}")
+message(STATUS "NetCDF libraries: ${NETCDF_LIBRARIES}")
 
 enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(tools)
+
 
 
