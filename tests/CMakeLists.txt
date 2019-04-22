@@ -58,12 +58,6 @@ target_link_libraries(testLineGridIntersector
                     ${VTK_LIBRARIES}
 )
 
-add_executable(testFindCellsAlongLine testFindCellsAlongLine.cxx)
-target_link_libraries(testFindCellsAlongLine
-                    mint
-                    ${VTK_LIBRARIES}
-)
-
 add_executable(testLineLineIntersector testLineLineIntersector.cxx)
 target_link_libraries(testLineLineIntersector
                     mint
@@ -78,12 +72,6 @@ target_link_libraries(testLineTriangleIntersector
 
 add_executable(testPolysegmentIter testPolysegmentIter.cxx)
 target_link_libraries(testPolysegmentIter
-                      mint
-                      ${VTK_LIBRARIES}
-)
-
-add_executable(testPolysegmentIter3d testPolysegmentIter3d.cxx)
-target_link_libraries(testPolysegmentIter3d
                       mint
                       ${VTK_LIBRARIES}
 )
@@ -189,11 +177,9 @@ add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineGridIntersector COMMAND testLineGridIntersector)
-add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
-add_test(NAME polysegmentIter3d COMMAND testPolysegmentIter3d)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME cellLocatorF COMMAND testCellLocatorF)

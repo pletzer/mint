@@ -8,7 +8,6 @@ set(LIB_FILES
   mntQuadEdgeIter.cpp
   mntPolylineParser.cpp
   mntLineGridIntersector.cpp
-  mvtkCellLocator.cpp
   CmdLineArgParser.cpp
   GrExprParser.cpp
   GrExprAdaptor.cpp
@@ -18,9 +17,7 @@ set(LIB_FILES
   mntGrid.cpp
   mntPolysegmentIter.cpp
   mntLineTriangleIntersector.cpp
-  mntPolysegmentIter3d.cpp
   mntRegridEdges.cpp
-  mntRegridEdges3d.cpp
   mntCellLocator.cpp
   mntCmdLineArgParser.cpp
   mnt_celllocator_capi_mod.f90
@@ -32,7 +29,6 @@ set(HEADER_FILES
   mntUgrid2D.h
   mntQuadEdgeIter.h
   mntPolylineParser.h
-  mvtkCellLocator.h
   mntLineGridIntersector.h
   CmdLineArgParser.h
   GrExprParser.h
