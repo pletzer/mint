@@ -1,5 +1,6 @@
 #include <mntUgrid2D.h>
 #include <iostream>
+#include <cmath>
 #undef NDEBUG // turn on asserts
 
 
@@ -33,6 +34,20 @@ void testPoint(const Vector<double>& p) {
     }
     assert(found);
 
+    // find the parametric coordinates
+    ug.setCellPoints(faceId);
+    Vector<double> pcoords(3);
+    found = ug.getParamCoords(p, &pcoords[0]);
+    assert(found);
+
+    // check that the pcoords are correct
+    Vector<double> p2(3);
+    ug.interpolate(pcoords, &p2[0]);
+
+    Vector<double> dp = p2 - p;
+    double error = std::sqrt(dp[0]*dp[0] + dp[1]*dp[1] + dp[2]*dp[2]);
+    std::cerr << "dist^2 error = " << error << '\n';
+    assert(error < 1.e-8);
 }
 
 void testLine(const Vector<double>& p0, const Vector<double>& p1) {

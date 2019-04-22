@@ -5,7 +5,9 @@
 #include <map>
 #include <string>
 #include <limits>
-#include <vtkCell.h>
+#include <vtkPoints.h>
+#include <vtkQuad.h>
+#include <vtkUnstructuredGrid.h>
 #ifndef MNT_UGRID_2D
 #define MNT_UGRID_2D
 
@@ -20,12 +22,20 @@ public:
  * Constructor
  */
 Ugrid2D() {
+
+    this->cellPoints = vtkPoints::New();
+    this->cellPoints->SetDataTypeToDouble();
+    this->cellPoints->SetNumberOfPoints(4); // 2d quad
+
+    this->cell = vtkQuad::New();
 }
 
 /**
  * Destructor
  */
 ~Ugrid2D() {
+    this->cell->Delete();
+    this->cellPoints->Delete();
 }
 
 
@@ -38,7 +48,7 @@ size_t getNumberOfFaces() const {
 }
 
 /**
- * Get the number of edges
+ * Get the number of unique edges
  * @return number
  */
 size_t getNumberOfEdges() const {
@@ -174,7 +184,28 @@ bool findCell(const Vector<double>& point, double tol, size_t* cellId) const;
  * @return array of cell Ids
  */
 std::set<size_t> findCellsAlongLine(const Vector<double>& point0,
-                                       const Vector<double>& point1) const;
+                                    const Vector<double>& point1) const;
+/**
+ * Set the cell nodes
+ * @param cellId cell Id
+ * @note use this prior to getting the parametric coordinates or interpolating 
+ */
+void setCellPoints(size_t cellId);
+
+/**
+ * Get the parametric coordinates of a point in a face/cell
+ * @param point point
+ * @param pcoords parametric coordinates (output)
+ * @return true if the point is in the cell, false otherwise
+ */
+bool getParamCoords(const Vector<double>& point, double pcoords[]);
+
+/**
+ * Interpolate a point in cell
+ * @param pcoords parametric coordinates
+ * @param point point (output)
+ */
+void interpolate(const Vector<double>& pcoords, double point[]);
 
 /**
  * Dump the grid to a Vtk file
@@ -210,6 +241,10 @@ private:
 
     // maps a bucket to a list of faces
     std::map<int, std::vector<size_t> > bucket2Faces;
+
+    // for interpolation
+    vtkPoints* cellPoints;
+    vtkQuad* cell;
 
     int readConnectivityData(int ncid, int meshid, 
 		                     const std::string& role,
