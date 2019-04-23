@@ -508,11 +508,11 @@ Ugrid2D::interpolate(const Vector<double>& pcoords, double point[]) {
     this->cell->EvaluateLocation(subId, (double*) &pcoords[0], point, weights);
 }
 
-std::map< size_t, std::pair<double, double> >
+std::vector< std::pair<size_t, std::vector<double> > >
 Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd) {
 
     // store result
-    std::map<size_t, std::pair<double, double> > res;
+    std::vector< std::pair<size_t, std::vector<double> > > res;
 
     // linear parameter on entry and exit of the cell
     std::pair<double, double> lamdas;
@@ -527,13 +527,14 @@ Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<doub
 
         if (lambdas.size() >= 2) {
             // found entry/exit points so add
-            res.insert( 
-                std::pair<size_t, std::pair<double, double> >(
-                     cellId, std::pair<double, double>(lambdas[0], lambdas[lambdas.size() - 1])
-                                                             )
-                      );
+            res.push_back( 
+                std::pair<size_t, std::vector<double> >(
+                     cellId, std::vector<double>{lambdas[0], lambdas[lambdas.size() - 1]}
+                                                       )
+                         );
         }
     }
+
     return res;
 }
 

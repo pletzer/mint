@@ -211,10 +211,10 @@ void interpolate(const Vector<double>& pcoords, double point[]);
  * Find the intersections of the grid with a line
  * @param pBeg start point of the line
  * @param pEnd end point of the line
- * @return map faceId -> [lambda0, lambda1] where lambda{0,1} are the 
+ * @return array of [faceId, (lambda0, lambda1)] elements where lambda{0,1} are the 
  *         start/end linear parameters of the line
  */
-std::map< size_t, std::pair<double, double> >
+std::vector< std::pair<size_t, std::vector<double> > >
 findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd);
 
 /**

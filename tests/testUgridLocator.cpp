@@ -15,15 +15,16 @@ void testLineGridIntersections(const Vector<double>& pBeg,
 
     ug.buildLocator(10);
 
-    std::map< size_t, std::pair<double, double> > lambdas = ug.findIntersectionsWithLine(pBeg, pEnd);
+    std::vector< std::pair<size_t, std::vector<double> > > 
+                      cIdlambdas = ug.findIntersectionsWithLine(pBeg, pEnd);
 
     // check that all the lambda intervals add to one
     double totLambda = 0;
     printf("  cell      lambdaBeg       lambdaEnd\n");
-    for (const std::pair< size_t, std::pair<double, double> >& kv : lambdas) {
+    for (const std::pair< size_t, std::vector<double> >& kv : cIdlambdas) {
         size_t cellId = kv.first;
-        double lambdaBeg = kv.second.first;
-        double lambdaEnd = kv.second.second;
+        double lambdaBeg = kv.second[0];
+        double lambdaEnd = kv.second[1];
         printf("%6ld     %10.6lf      %10.6lf\n", cellId, lambdaBeg, lambdaEnd);
         totLambda += lambdaEnd - lambdaBeg;
     }
