@@ -197,6 +197,10 @@ int main() {
     Vector<double> p0(3, 0.0);
     Vector<double> p1(3, 0.0);
 
+    p0[0] =   0.; p0[1] = -67.;
+    p1[0] = 360.; p1[1] =  67.;
+    testLineGridIntersections(p0, p1);
+
     p0[0] =   0.; p0[1] = 0.;
     p1[0] = 360.; p1[1] = 0.;
     testLineGridIntersections(p0, p1);    
@@ -205,10 +209,6 @@ int main() {
     testPoint(p0);
     p1[0] =  10.; p1[1] = -50.;
     testPoint(p1);
-    testLineGridIntersections(p0, p1);
-
-    p0[0] =   0.; p0[1] = -67.;
-    p1[0] = 360.; p1[1] =  67.;
     testLineGridIntersections(p0, p1);
 
     testPointInside();

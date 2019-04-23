@@ -13,6 +13,14 @@
 #define LAT_INDEX 1
 #define ELV_INDEX 2
 
+struct LambdaBegFunctor {
+    // compare two elements of the array
+    bool operator()(const std::pair<size_t, std::vector<double> >& x, 
+                    const std::pair<size_t, std::vector<double> >& y) {
+        return (x.second[0] < y.second[0]);
+    }
+};
+
 
 std::vector< Vector<double> > 
 Ugrid2D::getFacePoints(size_t faceId) const {
@@ -533,6 +541,25 @@ Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<doub
                                                        )
                          );
         }
+    }
+
+    // sort by starting lambda
+    std::sort(res.begin(), res.end(), LambdaBegFunctor());
+
+    // to avoid double counting, shift lambda entry to be always >= to 
+    // the preceding lambda exit and ake sure lambda exit >= lambda entry
+    // to avoid double counting
+    for (size_t i = 1; i < res.size(); ++i) {
+
+        double thisLambdaBeg = res[i].second[0];
+        double thisLambdaEnd = res[i].second[1];
+        double precedingLambdaEnd = res[i - 1].second[1];
+
+        thisLambdaBeg = std::max(thisLambdaBeg, precedingLambdaEnd);
+        thisLambdaEnd = std::max(thisLambdaBeg, thisLambdaEnd);
+
+        res[i].second[0] = thisLambdaBeg;
+        res[i].second[1] = thisLambdaEnd;
     }
 
     return res;
