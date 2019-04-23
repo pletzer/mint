@@ -203,13 +203,21 @@ void testLine(const Vector<double>& p0, const Vector<double>& p1) {
 
 int main() {
 
+    // because of the coarse cubed-sphere dicretization some paths may 
+    // fall out of the domain even when longitude is in [0, 360] and 
+    // latitude is in [-90, 90]. At some places 67 deg is the max latitude.
+
     Vector<double> p0(3, 0.0);
     Vector<double> p1(3, 0.0);
+
+    p0[0] = 360.; p0[1] =  67.;
+    p1[0] =   0.; p1[1] = -67.;
+    // this is currently failing!!!
+    //testLineGridIntersections(p0, p1);
 
     p0[0] =  90.; p0[1] = -90.;
     p1[0] =  90.; p1[1] = -90.;
     testLineGridIntersections(p0, p1);    
-
 
     p0[0] =  90.; p0[1] = -90.;
     p1[0] = 270.; p1[1] =  90.;
