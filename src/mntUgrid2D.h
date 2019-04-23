@@ -208,6 +208,16 @@ bool getParamCoords(const Vector<double>& point, double pcoords[]);
 void interpolate(const Vector<double>& pcoords, double point[]);
 
 /**
+ * Find the intersections of the grid with a line
+ * @param pBeg start point of the line
+ * @param pEnd end point of the line
+ * @return map faceId -> [lambda0, lambda1] where lambda{0,1} are the 
+ *         start/end linear parameters of the line
+ */
+std::map< size_t, std::pair<double, double> >
+findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd);
+
+/**
  * Dump the grid to a Vtk file
  * @param filename file name
  */
@@ -269,6 +279,19 @@ private:
         *m = bucketId / this->numBucketsX;
         *n = bucketId % this->numBucketsX;
     }
+
+    /**
+     * Collect the intersection points between line and cell
+     * @param cellId cell Id
+     * @param pBeg start point of the line
+     * @param pEnd end point of the line
+     * @return array of line parameter coordinates in increasing order
+     * @note expect either 0 (no intersection) or 2 values (intersection) to be returned.
+     *       start/end points qualify as intersection if they fall into the cell
+     */
+	std::vector<double> collectIntersectionPoints(size_t cellId, 
+                                                  const Vector<double>& pBeg,
+                                                  const Vector<double>& pEnd);
 
 };
 

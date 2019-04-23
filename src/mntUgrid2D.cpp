@@ -1,4 +1,6 @@
 #include <mntUgrid2D.h>
+#include <mntLineLineIntersector.h>
+#include <mntQuadEdgeIter.h>
 #include <netcdf.h>
 #include <iostream>
 #include <set>
@@ -504,6 +506,109 @@ Ugrid2D::interpolate(const Vector<double>& pcoords, double point[]) {
     int subId = 0;
     double weights[8]; // not used
     this->cell->EvaluateLocation(subId, (double*) &pcoords[0], point, weights);
+}
+
+std::map< size_t, std::pair<double, double> >
+Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd) {
+
+    // store result
+    std::map<size_t, std::pair<double, double> > res;
+
+    // linear parameter on entry and exit
+    std::pair<double, double> lamdas;
+
+    // collect the cells intersected by the line
+    std::set<size_t> cells = this->findCellsAlongLine(pBeg, pEnd);
+
+    // iterate over the intersected cells
+    for (size_t cellId : cells) {
+
+        std::vector<double> lambdas = this->collectIntersectionPoints(cellId, pBeg, pEnd);
+
+        if (lambdas.size() >= 2) {
+            // found entry/exit points so add
+            res.insert( 
+                std::pair<size_t, std::pair<double, double> >(
+                     cellId, std::pair<double, double>(lambdas[0], lambdas[lambdas.size() - 1])
+                                                             )
+                      );
+        }
+    }
+    return res;
+}
+
+std::vector<double>
+Ugrid2D::collectIntersectionPoints(size_t cellId, 
+                                   const Vector<double>& pBeg,
+                                   const Vector<double>& pEnd) {
+
+    std::vector<double> lambdas;
+    // expect two values
+    lambdas.reserve(2);
+
+    const double eps = 10 * std::numeric_limits<double>::epsilon();
+    const double eps100 = 100*eps;
+
+    // cell nodes with 360 deg added/subtracted
+    std::vector< Vector<double> > nodes = this->getFacePointsRegularized(cellId);
+
+    // computes the intersection point of two lines
+    LineLineIntersector intersector;
+
+    // is the starting point inside the cell?
+    if (this->containsPoint(cellId, pBeg, eps)) {
+        lambdas.push_back(0.);
+    }
+
+    // iterate over the cell's edges
+    QuadEdgeIter edgeIt;
+    for (int edgeIndex = 0; edgeIndex < edgeIt.getNumberOfEdges(); ++edgeIndex) {
+
+        int j0, j1;
+        edgeIt.getCellPointIds(edgeIndex, &j0, &j1);
+
+        // compute the intersection point
+        intersector.setPoints(&pBeg[0], &pEnd[0], &nodes[j0][0], &nodes[j1][0]);
+
+        if (! intersector.hasSolution(eps)) {
+            // no solution, skip
+            continue;
+        }
+
+        // we have a solution but it could be degenerate
+        if (std::abs(intersector.getDet()) > eps) {
+            // normal intersection, 1 solution
+            std::vector<double> sol = intersector.getSolution();
+            double lambRay = sol[0];
+            double lambEdg = sol[1];
+
+            // is it valid? Intersection must be within (p0, p1) and (q0, q1)
+            if (lambRay >= (0. - eps100) && lambRay <= (1. + eps100)  && 
+                lambEdg >= (0. - eps100) && lambEdg <= (1. + eps100)) {
+                // add to list
+                lambdas.push_back(lambRay);
+            }
+        }
+        else {
+            // det is almost zero
+            // looks like the two lines (p0, p1) and (q0, q1) are overlapping
+            // add the starting/ending points
+            const std::pair<double, double>& sol = intersector.getBegEndParamCoords();
+            // add start/end linear param coord along line
+            lambdas.push_back(sol.first);
+            lambdas.push_back(sol.second);
+        }
+    }
+
+    // is the end point inside the cell?
+    if (this->containsPoint(cellId, pEnd, eps)) {
+        lambdas.push_back(1.);
+    }
+
+    // order the lambdas
+    std::sort(lambdas.begin(), lambdas.end());
+
+    return lambdas;
 }
 
 

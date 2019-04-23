@@ -3,6 +3,34 @@
 #include <cmath>
 #undef NDEBUG // turn on asserts
 
+void testLineGridIntersections(const Vector<double>& pBeg,
+                               const Vector<double>& pEnd) {
+
+    std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
+
+    Ugrid2D ug;
+
+    int ier = ug.load(file, "physics");
+    assert(ier == 0);
+
+    ug.buildLocator(10);
+
+    std::map< size_t, std::pair<double, double> > lambdas = ug.findIntersectionsWithLine(pBeg, pEnd);
+
+    // check that all the lambda intervals add to one
+    double totLambda = 0;
+    printf("  cell      lambdaBeg       lambdaEnd\n");
+    for (const std::pair< size_t, std::pair<double, double> >& kv : lambdas) {
+        size_t cellId = kv.first;
+        double lambdaBeg = kv.second.first;
+        double lambdaEnd = kv.second.second;
+        printf("%6ld     %10.6lf      %10.6lf\n", cellId, lambdaBeg, lambdaEnd);
+        totLambda += lambdaEnd - lambdaBeg;
+    }
+    std::cout << "total integrated lambda: " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.) < 1.e-10);
+}
+
 void testPointInside() {
 
     std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
@@ -120,7 +148,7 @@ void testPoint(const Vector<double>& p) {
     Vector<double> dp = p2 - p;
     double error = std::sqrt(dp[0]*dp[0] + dp[1]*dp[1] + dp[2]*dp[2]);
     std::cerr << "dist^2 error = " << error << '\n';
-    assert(error < 1.e-8);
+    assert(error < 1.e-6);
 }
 
 void testLine(const Vector<double>& p0, const Vector<double>& p1) {
@@ -160,16 +188,26 @@ void testLine(const Vector<double>& p0, const Vector<double>& p1) {
             }
         }
     }
-
 }
 
 
 int main() {
 
+    Vector<double> p0(3, 0.0);
+    Vector<double> p1(3, 0.0);
+
+    p0[0] =   0.; p0[1] = -67.;
+    testPoint(p0);
+    p1[0] =  10.; p1[1] = -50.;
+    testPoint(p1);
+    testLineGridIntersections(p0, p1);
+
+    p0[0] =   0.; p0[1] = -67.;
+    p1[0] = 360.; p1[1] =  67.;
+    testLineGridIntersections(p0, p1);
+
     testPointInside();
     testPointOutside();
-
-    Vector<double> p0(3, 0.0);
 
     p0[0] = 180.; p0[1] = 0.;
     testPoint(p0);
@@ -183,10 +221,10 @@ int main() {
     p0[0] = 0.; p0[1] = 67.;
     testPoint(p0);
 
-    Vector<double> p1(3, 0.0);
     p0[0] =   0.; p0[1] = -67.;
     p1[0] = 360.; p1[1] =  67.;
     testLine(p0, p1);
+
 
     return 0;
 }   
