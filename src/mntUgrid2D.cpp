@@ -454,17 +454,25 @@ Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& 
     // cells. No point in having more sections than the number of buckets
     this->getBucketIndices(this->getBucketId(point0), &begM, &begN);
     this->getBucketIndices(this->getBucketId(point1), &endM, &endN);
-    int dm = endM - begM + 1;
-    int dn = endN - begN + 1;
+
+    int mLo = std::min(begM, endM);
+    int mHi = std::max(begM, endM);
+    int nLo = std::min(begN, endN);
+    int nHi = std::max(begN, endN);
+
+    // dm and dn are positive
+    int dm = mHi - mLo + 1;
+    int dn = nHi - nLo + 1;
+
     // want more segments when the line is 45 deg. Want more segments when 
     // the points are far apart.
     size_t nSections = std::max(1, std::min(dn, dm));
-
     Vector<double> du = point1 - point0;
     du /= (double) nSections;
 
     for (size_t iSection = 0; iSection < nSections; ++iSection) {
 
+        // start/nd points of the segment
         Vector<double> p0 = point0 + (double) iSection * du;
         Vector<double> p1 = p0 + du;
     
@@ -476,9 +484,14 @@ Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& 
         endBucketId = this->getBucketId(p1);
         this->getBucketIndices(endBucketId, &endM, &endN);
 
+        mLo = std::min(begM, endM);
+        mHi = std::max(begM, endM);
+        nLo = std::min(begN, endN);
+        nHi = std::max(begN, endN);
+
         // iterate over the buckets
-        for (int m = begM; m <= endM; ++m) {
-            for (int n = begN; n <= endN; ++n) {
+        for (int m = mLo; m <= mHi; ++m) {
+            for (int n = nLo; n <= nHi; ++n) {
                 bucketId = m * numBucketsX + n;
                 for (const size_t& faceId : this->bucket2Faces.find(bucketId)->second) {
                     res.insert(faceId);
