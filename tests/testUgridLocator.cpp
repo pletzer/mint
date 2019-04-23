@@ -20,6 +20,8 @@ void testLineGridIntersections(const Vector<double>& pBeg,
     std::vector< std::pair<size_t, std::vector<double> > > 
                       cIdlambdas = ug.findIntersectionsWithLine(pBeg, pEnd);
 
+    Vector<double> u = pEnd - pBeg;
+
     // check that all the lambda intervals add to one
     double totLambda = 0;
     printf("  cell      lambdaBeg       lambdaEnd\n");
@@ -29,6 +31,11 @@ void testLineGridIntersections(const Vector<double>& pBeg,
         double lambdaEnd = kv.second[1];
         printf("%6ld     %10.6lf      %10.6lf\n", cellId, lambdaBeg, lambdaEnd);
         totLambda += lambdaEnd - lambdaBeg;
+        // make sure the start and end points are inside the cell
+        Vector<double> p0 = pBeg + lambdaBeg*u;
+        assert(ug.containsPoint(cellId, p0, 1.e-10));
+        Vector<double> p1 = pBeg + lambdaEnd*u;
+        assert(ug.containsPoint(cellId, p1, 1.e-10));    
     }
     std::cout << "total integrated lambda: " << totLambda << '\n';
     assert(std::abs(totLambda - 1.) < 1.e-10);

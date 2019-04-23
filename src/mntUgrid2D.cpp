@@ -547,19 +547,17 @@ Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<doub
     std::sort(res.begin(), res.end(), LambdaBegFunctor());
 
     // to avoid double counting, shift lambda entry to be always >= to 
-    // the preceding lambda exit and ake sure lambda exit >= lambda entry
-    // to avoid double counting
+    // the preceding lambda exit and make sure lambda exit >= lambda entry
     for (size_t i = 1; i < res.size(); ++i) {
 
         double thisLambdaBeg = res[i].second[0];
         double thisLambdaEnd = res[i].second[1];
         double precedingLambdaEnd = res[i - 1].second[1];
 
-        thisLambdaBeg = std::max(thisLambdaBeg, precedingLambdaEnd);
-        thisLambdaEnd = std::max(thisLambdaBeg, thisLambdaEnd);
+        thisLambdaBeg = std::min(thisLambdaEnd, std::max(thisLambdaBeg, precedingLambdaEnd));
 
+        // reset lambda entry
         res[i].second[0] = thisLambdaBeg;
-        res[i].second[1] = thisLambdaEnd;
     }
 
     return res;
