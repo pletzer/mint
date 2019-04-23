@@ -514,7 +514,7 @@ Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<doub
     // store result
     std::map<size_t, std::pair<double, double> > res;
 
-    // linear parameter on entry and exit
+    // linear parameter on entry and exit of the cell
     std::pair<double, double> lamdas;
 
     // collect the cells intersected by the line
