@@ -15,6 +15,8 @@ void testLineGridIntersections(const Vector<double>& pBeg,
 
     ug.buildLocator(10);
 
+    std::cout << "testLineGridIntersections: " << pBeg << " -> " << pEnd << '\n';
+
     std::vector< std::pair<size_t, std::vector<double> > > 
                       cIdlambdas = ug.findIntersectionsWithLine(pBeg, pEnd);
 
@@ -196,6 +198,23 @@ int main() {
 
     Vector<double> p0(3, 0.0);
     Vector<double> p1(3, 0.0);
+
+    p0[0] =  90.; p0[1] = -90.;
+    p1[0] =  90.; p1[1] = -90.;
+    testLineGridIntersections(p0, p1);    
+
+
+    p0[0] =  90.; p0[1] = -90.;
+    p1[0] = 270.; p1[1] =  90.;
+    testLineGridIntersections(p0, p1);    
+
+    p0[0] =  90.; p0[1] = -90.;
+    p1[0] =  90.; p1[1] =  90.;
+    testLineGridIntersections(p0, p1);    
+
+    p0[0] =  12.3; p0[1] = -67.;
+    p1[0] =  12.3; p1[1] =  67.;
+    testLineGridIntersections(p0, p1);    
 
     p0[0] =   0.; p0[1] = -67.;
     p1[0] = 360.; p1[1] =  67.;
