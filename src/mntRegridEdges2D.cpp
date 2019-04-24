@@ -12,7 +12,7 @@
  * @param meshName mesh name (output)
  */
 void getFileAndMeshNames(const char* fort_filename, int n, 
-                        std::string& fileName, std::string meshName) {
+                        std::string& fileName, std::string& meshName) {
 
     std::string fileAndMeshName = std::string(fort_filename, n);
 
@@ -20,7 +20,7 @@ void getFileAndMeshNames(const char* fort_filename, int n,
     fileName = fileAndMeshName.substr(0, column);
 
     if (column != std::string::npos) {
-        meshName = fileAndMeshName.substr(column + 1, std::string::npos);
+        meshName = fileAndMeshName.substr(column + 1);
     }
 }
 
@@ -187,7 +187,7 @@ int mnt_regridedges2d_dumpEdgeField(RegridEdges2D_t** self,
 
 extern "C"
 int mnt_regridedges2d_loadSrcGrid(RegridEdges2D_t** self, 
-		                        const char* fort_filename, int n) {
+		                          const char* fort_filename, int n) {
 
     int ier;
     std::string fileName, meshName;
@@ -206,7 +206,7 @@ int mnt_regridedges2d_loadSrcGrid(RegridEdges2D_t** self,
 
 extern "C"
 int mnt_regridedges2d_loadDstGrid(RegridEdges2D_t** self, 
-		                        const char* fort_filename, int n) {
+		                          const char* fort_filename, int n) {
 
     int ier;
     std::string fileName, meshName;
