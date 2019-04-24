@@ -569,7 +569,7 @@ int mnt_regridedges2d_print(RegridEdges2D_t** self) {
 
     printf("     index  dstEdgeId  srcEdgeId          weight\n");
     for (size_t i = 0; i < numWeights; ++i) {
-        printf("%10ld %10ld %10ld %15.8le\n", i, (*self)->weightDstEdgeIds[i], 
+        printf("%10ld %10ld %10ld %15.5lf\n", i, (*self)->weightDstEdgeIds[i], 
             (*self)->weightSrcEdgeIds[i], (*self)->weights[i]);
     }
 
