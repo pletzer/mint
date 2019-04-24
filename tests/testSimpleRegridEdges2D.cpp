@@ -38,6 +38,19 @@ void test(const std::string& srcGridFileMesh,
 
 int main() {
 
+    /*
+
+    tiny1x1 -> tiny1x1
+
+          2
+    3 ----<-----2
+    |           |
+ 3  ^           V 1
+    |           |
+    0 ---->-----1
+          0
+    */
+
     test("@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics", 
          "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics",
          "weightsTiny1x1_1x1.nc");
