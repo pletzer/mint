@@ -4,6 +4,7 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
+configure_file(testSimpleRegridEdges2D.cpp testSimpleRegridEdges2D.cxx)
 configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
@@ -27,6 +28,13 @@ target_link_libraries(testNetcdf
 
 add_executable(testUgrid2D testUgrid2D.cxx)
 target_link_libraries(testUgrid2D
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testSimpleRegridEdges2D testSimpleRegridEdges2D.cxx)
+target_link_libraries(testSimpleRegridEdges2D
                     mint
                     ${VTK_LIBRARIES}
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
@@ -173,6 +181,7 @@ set_tests_properties(regridEdgesF PROPERTIES
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME ugrid2D COMMAND testUgrid2D)
+add_test(NAME simpleRegridEdges2D COMMAND testSimpleRegridEdges2D)
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)

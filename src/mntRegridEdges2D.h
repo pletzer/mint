@@ -89,6 +89,14 @@ int mnt_regridedges2d_loadDstGrid(RegridEdges2D_t** self,
                                 const char* fort_filename, int n);
 
 /**
+ * Build the regridder
+ * @param numCellsPerBucket average number of cells per bucket
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket);
+
+/**
  * Get number of unique edges in the source grid
  * @param n number (output)
  */
