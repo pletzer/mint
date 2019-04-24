@@ -188,7 +188,7 @@ std::set<size_t> findCellsAlongLine(const Vector<double>& point0,
 /**
  * Set the cell nodes
  * @param cellId cell Id
- * @note use this prior to getting the parametric coordinates or interpolating 
+ * @note use this prior to computing the parametric coordinates or interpolating 
  */
 void setCellPoints(size_t cellId);
 
