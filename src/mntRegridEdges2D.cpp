@@ -299,7 +299,7 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
                     double dstXiLen = dstXi1[d] - dstXi0[d];
 
                     // mid point of src edge in parameter space
-                    double x = 0.5*(srcXi0[d] + srcXi0[d]);
+                    double x = 0.5*(srcXi0[d] + srcXi1[d]);
 
                     // use Lagrange interpolation to evaluate the basis function integral for
                     // any for the 3 possible x values in {0, 0.5, 1}. This formula will make 
@@ -307,12 +307,15 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
                     double xm00 = x;
                     double xm05 = x - 0.5;
                     double xm10 = x - 1.0;
-                    double lag00 = + 2 * xm05 * xm10;
-                    double lag05 = - 4 * xm00 * xm10;
-                    double lag10 = + 2 * xm00 * xm05;
+                    double lag00 = + 2. * xm05 * xm10;
+                    double lag05 = - 4. * xm00 * xm10;
+                    double lag10 = + 2. * xm00 * xm05;
 
-                    // CHEK FOR SIGN!!!
                     weight *= (1.0 - dstXiMid)*lag00 + dstXiLen*lag05 + dstXiMid*lag10;
+
+                    // fix sign when src edge's direction is negative in src cell param coords
+                    // expecting srcXi1[d] - srcXi0[d] to be -1, 0 or 1
+                    weight *= (srcXi1[d] - srcXi0[d] < -0.001? -1.0: 1.0);
                 }
 
                 (*self)->weightDstEdgeIds.push_back((long long) dstEdgeId);
