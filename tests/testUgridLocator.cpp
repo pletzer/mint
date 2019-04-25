@@ -200,8 +200,55 @@ void testLine(const Vector<double>& p0, const Vector<double>& p1) {
     }
 }
 
+void testLineOutsideDomain() {
+
+    std::string file = "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc";
+
+    Ugrid2D ug;
+
+    int ier = ug.load(file, "physics");
+    assert(ier == 0);
+
+    // build the locator
+    ug.buildLocator(1);
+
+    Vector<double> p0{1., 0., 0.};
+    Vector<double> p1{2., 0., 0.};
+    size_t numFaces = ug.getNumberOfFaces();
+
+    std::set<size_t> faceIds = ug.findCellsAlongLine(p0, p1);
+    std::cout << "point " << p0 << " -> " << p1 << "overlaps with " << faceIds.size() << " cells:\n";
+    for (const size_t& faceId : faceIds) {
+        std::cout << faceId << ' ';
+        assert(faceId < numFaces);
+    }
+    std::cout << '\n';
+
+    // check that we found all the cells by dividing the line in 1000 segments, checking that each point 
+    // is inside of the cells we found
+    size_t nSegments = 1000;
+    Vector<double> du = p1 - p0;
+    du /= (double) nSegments;
+    size_t cId;
+    const double tol = 1.e-14;
+    for (size_t iSegment = 0; iSegment < nSegments; ++iSegment) {
+        Vector<double> p = p0 + (double) iSegment * du;
+        bool found = ug.findCell(p, tol, &cId);
+        if (found) {
+            if (faceIds.find(cId) == faceIds.end()) {
+                std::cerr << "ERROR: unable to find point " << p << " belonging to face " << cId 
+                          << " and along line " << p0 << " -> " << p1 << " among the above faces/cells!\n";
+                assert(false);
+            }
+        }
+    }
+}
+
+
 
 int main() {
+
+    testLineOutsideDomain();
 
     Vector<double> p0(3, 0.0);
     Vector<double> p1(3, 0.0);

@@ -21,9 +21,11 @@ void test(const std::string& srcGridFileMesh,
     ier = mnt_regridedges2d_loadDstGrid(&rg, dstGridFileMesh.c_str(), dstGridFileMesh.size());
     assert(ier == 0);
 
+    std::cerr << "building...\n";
     int num_cells_per_bucket = 1;
     ier = mnt_regridedges2d_build(&rg, num_cells_per_bucket);
     assert(ier == 0);
+    std::cerr << "done!\n";
 
     ier = mnt_regridedges2d_print(&rg);
     assert(ier == 0);    
@@ -51,8 +53,27 @@ int main() {
           0
     */
 
+    //test("@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics", 
+    //     "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics",
+    //     "weightsTiny1x1_to_tiny1x1.nc");
+
+    /*
+    tiny1x1 -> tiny1x2
+
+
+          2          6
+    3 ----<-----2 --->-----5
+    |           |          |
+ 3  ^           V 1        ^  5   
+    |           |          |
+    0 ---->-----1---->-----4
+          0          4
+
+    */
+
     test("@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics", 
-         "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics",
-         "weightsTiny1x1_1x1.nc");
+         "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc:physics",
+         "weightsTiny1x1_to_tiny1x2.nc");
+
 
 }

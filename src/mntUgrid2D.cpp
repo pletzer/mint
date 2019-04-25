@@ -26,7 +26,7 @@ std::vector< Vector<double> >
 Ugrid2D::getFacePoints(size_t faceId) const {
 
     const size_t* pointIds = this->getFacePointIds(faceId);
-    std::vector< Vector<double> > res(4);
+    std::vector< Vector<double> > res(4); // 2d 4 points per quad
 
     // iterate over the 4 points
     for (size_t i = 0; i < 4; ++i) {
@@ -445,7 +445,8 @@ Ugrid2D::findCell(const Vector<double>& point, double tol, size_t* faceId) const
 }
 
 std::set<size_t> 
-Ugrid2D::findCellsAlongLine(const Vector<double>& point0, const Vector<double>& point1) const {
+Ugrid2D::findCellsAlongLine(const Vector<double>& point0,
+                            const Vector<double>& point1) const {
 
     std::set<size_t> res;
     int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
@@ -542,7 +543,7 @@ Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<doub
     std::set<size_t> cells = this->findCellsAlongLine(pBeg, pEnd);
 
     // iterate over the intersected cells
-    for (size_t cellId : cells) {
+    for (const size_t& cellId : cells) {
 
         std::vector<double> lambdas = this->collectIntersectionPoints(cellId, pBeg, pEnd);
 
@@ -616,6 +617,7 @@ Ugrid2D::collectIntersectionPoints(size_t cellId,
 
         // we have a solution but it could be degenerate
         if (std::abs(intersector.getDet()) > eps) {
+
             // normal intersection, 1 solution
             std::vector<double> sol = intersector.getSolution();
             double lambRay = sol[0];

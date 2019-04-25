@@ -264,18 +264,40 @@ private:
 
     void fixPeriodicity();
 
+    /**
+     * Get the flat array index of a bucket containing a given point
+     * @param point point
+     * @return index
+     * @note assumes there is thickness in the domain
+     *       will return index ven if the point is outside the domain
+     */
     inline int getBucketId(const Vector<double>& point) const {
+
         // required to make sure std::floor does not return the 
         // next integer below if we're close to an integer
         const double eps = 10 * std::numeric_limits<double>::epsilon();
 
         Vector<double> x = (point - this->xmin) / (this->xmax - this->xmin); // must have some thickness!
-        int m = std::max(0, (int) std::floor( numBucketsX * x[0] + eps));
-        int n = std::min(this->numBucketsX - 1, (int) std::floor( numBucketsX * x[1] + eps));
+
+        // bucket coordinates
+        int m = (int) std::floor( this->numBucketsX * x[0] + eps);
+        int n = (int) std::floor( this->numBucketsX * x[1] + eps);
+
+        // make sure the bucket coordinates fit in the domain
+        m = std::max(0, std::min(this->numBucketsX - 1, m));
+        n = std::max(0, std::min(this->numBucketsX - 1, n));
+
+        // return flat array index
         return m * this->numBucketsX + n;
     }
 
-    inline void getBucketIndices(int bucketId, int* m, int* n) const {
+    /**
+     * Get the bucket index coordinates
+     * @param bucketId flat bucket Id
+     * @param m index (output)
+     * @param n index (output)
+     */
+     inline void getBucketIndices(int bucketId, int* m, int* n) const {
         *m = bucketId / this->numBucketsX;
         *n = bucketId % this->numBucketsX;
     }

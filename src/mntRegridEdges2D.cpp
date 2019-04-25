@@ -280,11 +280,14 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
             // iterate over the edges of the src cell
             const size_t* srcEdgeIds = (*self)->srcGrid.getFaceEdgeIds(srcCellId);
             for (size_t i = 0; i < 4; ++i) { // 2d (4 edges)
+
                 size_t srcEdgeId = srcEdgeIds[i];
+
                 // get the the end points of this src cell edge
                 std::vector< Vector<double> > srcPoints = (*self)->srcGrid.getEdgePointsRegularized(srcEdgeId);
                 const Vector<double>& srcPoint0 = srcPoints[0];
                 const Vector<double>& srcPoint1 = srcPoints[1];
+
                 // compute the src cell parametric coords of the src edge
                 inside = (*self)->srcGrid.getParamCoords(srcPoint0, &srcXi0[0]); // need to check
                 inside = (*self)->srcGrid.getParamCoords(srcPoint1, &srcXi1[0]); // need to check
@@ -322,9 +325,7 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
                 (*self)->weightSrcEdgeIds.push_back((long long) srcEdgeId);
                 (*self)->weights.push_back(weight);
             }
-
         }
-
     }
 
     return 0;
