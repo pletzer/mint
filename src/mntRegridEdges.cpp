@@ -507,6 +507,11 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
         dst_data[i] = 0.0;
     }
 
+    // number of faces sharing the same edge. As a result of the multivaluedness of the longitudes,
+    // each of the edges is treated independently (the longitude values may be different as seen from
+    // the two faces). edgeMultiplicity tracks the number of adjacent faces. 
+    std::vector<int> edgeMultiplicity(numDstEdges, 0);
+
     // add the contributions from each cell overlaps
     for (size_t i = 0; i < (*self)->weights.size(); ++i) {
 
@@ -520,9 +525,14 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
         ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
 
-        // factor 0.5 because each edge is shared between two cells
-        dst_data[dstEdgeId] += 0.5 * srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
+        dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
 
+        // up to 2 faces can own this edge
+        edgeMultiplicity[dstEdgeId] = std::min(2, edgeMultiplicity[dstEdgeId] + 1);
+    }
+
+    for (size_t i = 0; i < numDstEdges; ++i) {
+    	dst_data[i] /= edgeMultiplicity[i];
     }
 
     return 0;
