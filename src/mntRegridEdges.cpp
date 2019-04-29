@@ -9,6 +9,48 @@
 #include <vtkQuad.h>       // for 2d grids
 #include <vtkCell.h>
 
+/**
+ * Compute the interpolation weight between a source cell edge and a destination line segment
+ * @param srcXi0 start point of src edge
+ * @param srcXi1 end point of the src edge
+ * @param dstXi0 start point of target line
+ * @param dstXi1 end point of target line
+ * @return interpolation weight
+ */
+double computeWeight(const double srcXi0[], const double srcXi1[],
+                     const Vector<double>& xia, const Vector<double>& xib) {
+
+    double weight = 1.0;
+
+    Vector<double> dxi = xib - xia;
+    Vector<double> xiMid = 0.5*(xia + xib);
+    
+    for (size_t d = 0; d < 2; ++d) { // 2d 
+
+        double xiM = xiMid[d];
+
+        // mid point of edge in parameter space
+        double x = 0.5*(srcXi0[d] + srcXi1[d]);
+
+        // use Lagrange interpolation to evaluate the basis function integral for
+        // any for the 3 possible x values in {0, 0.5, 1}. This formula will make 
+        // it easier to extend the code to 3d
+        double xm00 = x;
+        double xm05 = x - 0.5;
+        double xm10 = x - 1.0;
+        double lag00 = + 2 * xm05 * xm10;
+        double lag05 = - 4 * xm00 * xm10;
+        double lag10 = + 2 * xm00 * xm05;
+
+        // taking the abs value because the correct the sign for edges that 
+        // run from top to bottom or right to left.
+                        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
+    }
+
+    return weight;
+}
+
+
 extern "C"
 int mnt_regridedges_new(RegridEdges_t** self) {
     
@@ -338,9 +380,6 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 const Vector<double>& xib = polySegIter.getEndCellParamCoord();
                 const double coeff = polySegIter.getCoefficient();
 
-                Vector<double> dxi = xib - xia;
-                Vector<double> xiMid = 0.5*(xia + xib);
-
                 // create pair (dstCellId, srcCellId)
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
                                                                                     srcCellId);
@@ -353,31 +392,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
                     int i0, i1;
                     (*self)->edgeConnectivity.getCellPointIds(srcEdgeIndex, &i0, &i1);
-
-                    // compute the interpolation weight, a product for every dimension
-                    double weight = 1.0;
-                    for (size_t d = 0; d < 2; ++d) { // 2d 
-
-                        double xiM = xiMid[d];
-
-                        // mid point of edge in parameter space
-                        double x = 0.5*(srcCellParamCoords[i0*3 + d] + srcCellParamCoords[i1*3 + d]);
-
-                        // use Lagrange interpolation to evaluate the basis function integral for
-                        // any for the 3 possible x values in {0, 0.5, 1}. This formula will make 
-                        // it easier to extend the code to 3d
-                        double xm00 = x;
-                        double xm05 = x - 0.5;
-                        double xm10 = x - 1.0;
-                        double lag00 = + 2 * xm05 * xm10;
-                        double lag05 = - 4 * xm00 * xm10;
-                        double lag10 = + 2 * xm00 * xm05;
-
-                        // taking the abs value because the correct the sign for edges that 
-                        // run from top to bottom or right to left.
-                        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
-                    }
-
+                    
+                    // compute the interpolation weight
+                    double weight = computeWeight(&srcCellParamCoords[i0*3], 
+                    	                          &srcCellParamCoords[i1*3], xia, xib);
                     // coeff accounts for the duplicity in case where segments are shared between cells
                     weight *= coeff;
 
