@@ -123,31 +123,6 @@ extern "C"
 int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
 
 /**
- * Set the pointer to the source grid points
- * @param nVertsPerCell number of vertices per cell
- * @param ncells number of cells
- * @param verts cell vertices as flat array [x0, y0, z0, x1, y1, z1, ...]
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_setSrcPointsPtr(RegridEdges_t** self, 
-                                    size_t nVertsPerCell, size_t ncells, 
-                                    const double verts[]);
-
-
-/**
- * Set the pointer to the destination grid points
- * @param nVertsPerCell number of vertices per cell
- * @param ncells number of cells
- * @param verts cell vertices as flat array [x0, y0, z0, x1, y1, z1, ...]
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_setDstPointsPtr(RegridEdges_t** self, 
-                                    size_t nVertsPerCell, size_t ncells, 
-                                    const double verts[]);
-
-/**
  * Build the regridder
  * @param numCellsPerBucket average number of cells per bucket
  * @return error code (0 is OK)

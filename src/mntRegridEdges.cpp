@@ -288,22 +288,6 @@ int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) 
 }
 
 extern "C"
-int mnt_regridedges_setSrcPointsPtr(RegridEdges_t** self, size_t nVertsPerCell, size_t ncells, const double verts[]) {
-    mnt_grid_new(&((*self)->srcGridObj));
-    mnt_grid_setPointsPtr(&((*self)->srcGridObj), (int) nVertsPerCell, (vtkIdType) ncells, verts);
-    mnt_grid_get(&((*self)->srcGridObj), &(*self)->srcGrid);
-    return 0;
-}
-
-extern "C"
-int mnt_regridedges_setDstPointsPtr(RegridEdges_t** self, size_t nVertsPerCell, size_t ncells, const double verts[]) {
-    mnt_grid_new(&((*self)->dstGridObj));
-    mnt_grid_setPointsPtr(&((*self)->dstGridObj), (int) nVertsPerCell, (vtkIdType) ncells, verts);
-    mnt_grid_get(&((*self)->dstGridObj), &(*self)->dstGrid);
-    return 0;
-}
-
-extern "C"
 int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
     // checks
