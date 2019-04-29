@@ -137,17 +137,36 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
     ier = mnt_regridedges_applyCellEdge(&rg, &srcData[0], &dstData[0]);
     assert(ier == 0);
 
+    double totalLoopIntegrals = 0.0;
+
     // check
     printf("%s\n dstCellId         edge        interpVal      exact        error               p0               p1\n", testName.c_str());
     double totError = 0;
     for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+        
+        double cellLoopIntegral = 0.0;
+
         for (int ie = 0; ie < 4; ++ie) {
 
-            ier = mnt_grid_getPoints(&rg->dstGridObj, dstCellId, ie, p0, p1);
+            // get the coordinates of the start (p0) and end (p1) points. This may involve
+            // adding/subtracting 360 deg to the longitude of the cell crosses the dateline
+         	int circSign;
+        	ier = mnt_regridedges_getDstEdgePoints(&rg, dstCellId, ie, &circSign, p0, p1);
+
+            // exact line integral
             double exact = streamFunc(p1) - streamFunc(p0);
 
+            // interpolated line integral 
             size_t k = dstCellId*4 + ie;
             double interpVal = dstData[k];
+
+            // orientation for loop integral is counterclockwise
+            // the first two edges are the direction of the contour
+            // integral, the last two are in opposite direction
+            // the value circSign relfects this.
+            cellLoopIntegral += interpVal * circSign;
+
+            // numerical error
             double error = interpVal - exact;
             if (std::abs(error) > 1.e-8) {
                 printf("%10ld           %1d        %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
@@ -155,10 +174,18 @@ void regridCellEdgeFieldTest(const std::string& testName, const std::string& src
             }
             totError += std::abs(error);
         }
+
+        if (std::abs(cellLoopIntegral) > 1.e-8) {
+          printf("%10ld loop integral = %12.5lg\n", dstCellId, cellLoopIntegral);
+        }
+
+        totalLoopIntegrals += std::abs(cellLoopIntegral);
     }
 
     std::cout << testName << ": total interpolation |error|: " << totError << '\n';
+    std::cout << testName << ": sum of |loop integrals|    : " << totalLoopIntegrals << '\n';
     assert(totError < 1.e-8);
+    assert(totalLoopIntegrals  < 1.e-8);
 
     // clean up
     ier = mnt_regridedges_del(&rg);
@@ -257,10 +284,10 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
 
             double error = interpVal - exact;
 
-            if (std::abs(error) > 1.e-6) {
+            //if (std::abs(error) > 1.e-6) {
                 printf("%10ld           %1d         %9lld      %10.6lf   %10.6lf    %12.5lg     %5.1lf,%5.1lf      %5.1lf,%5.1lf\n", 
                     dstCellId, ie, dstEdgeId, interpVal, exact, error, p0[0], p0[1], p1[0], p1[1]);
-            }
+            //}
             totError += std::abs(error);
         }
     }
@@ -283,9 +310,13 @@ int main() {
     //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc:physics", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics");
     //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc:physics");
 
-    regridCellEdgeFieldTest("sameCellField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
-    regridUniqueEdgeIdFieldTest("sameUniqueEdgeIdField", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
-    regridCellEdgeFieldTest("uniqueEdgeIdField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
+    regridCellEdgeFieldTest("cellField_4->4", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
+    regridCellEdgeFieldTest("cellField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
+    regridCellEdgeFieldTest("cellField_16->16", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics");
+
+    regridUniqueEdgeIdFieldTest("uniqueEdgeIdField_4->4", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
+    regridUniqueEdgeIdFieldTest("uniqueEdgeIdField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
+    regridUniqueEdgeIdFieldTest("uniqueEdgeIdField_16->16", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"); 
 
     return 0;
 }   

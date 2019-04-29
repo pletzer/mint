@@ -499,13 +499,9 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
     // number of unique edges on the destination grid
     size_t numDstEdges;
     ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->dstGridObj), &numDstEdges);
-
-    // dst_multiplicity keeps track of the cells that share the same edge
-    std::vector<double> dst_multiplicity(numDstEdges);
     
     // initialize the data to zero
     for (size_t i = 0; i < numDstEdges; ++i) {
-        dst_multiplicity[i] = 0.0;
         dst_data[i] = 0.0;
     }
 
@@ -522,18 +518,9 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
         ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
 
-        // index into the flat array
-        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstCellId;
-        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
+        // factor 0.5 because each edge is shared between two cells
+        dst_data[dstEdgeId] += 0.5 * srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
 
-        dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
-        dst_multiplicity[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i];
-
-    }
-
-    // correct for multiplicity
-    for (size_t i = 0; i < numDstEdges; ++i) {
-       dst_data[i] /= dst_multiplicity[i];
     }
 
     return 0;
@@ -854,6 +841,35 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     }
 
     return 0;
+}
+
+extern "C"
+int mnt_regridedges_getSrcEdgePoints(RegridEdges_t** self, size_t cellId, int ie,
+                                     int* circSign, double p0[], double p1[]) {
+    vtkIdType cId = (vtkIdType) cellId;
+    int ier = mnt_grid_getPoints(&(*self)->srcGridObj, cId, ie, p0, p1);
+    
+    // orientation for loop integral is counterclockwise
+    // the first two edges are the direction of the contour
+    // integral, the last two are in opposite direction
+    *circSign = 1 - 2*(ie / 2); 
+
+    return ier;
+}
+
+extern "C"
+int mnt_regridedges_getDstEdgePoints(RegridEdges_t** self, size_t cellId, int ie,
+                                     int* circSign, double p0[], double p1[]) {
+
+    vtkIdType cId = (vtkIdType) cellId;
+    int ier = mnt_grid_getPoints(&(*self)->dstGridObj, cId, ie, p0, p1);
+    
+    // orientation for loop integral is counterclockwise
+    // the first two edges are the direction of the contour
+    // integral, the last two are in opposite direction
+    *circSign = 1 - 2*(ie / 2); 
+
+    return ier;
 }
 
 extern "C"

@@ -4,30 +4,54 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
+configure_file(testSimpleRegridEdges2D.cpp testSimpleRegridEdges2D.cxx)
+configure_file(testUgridLocator.cpp testUgridLocator.cxx)
+configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 
+add_executable(testUgridLocator testUgridLocator.cxx)
+target_link_libraries(testUgridLocator
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testNetcdf testNetcdf.cxx)
+target_link_libraries(testNetcdf
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testUgrid2D testUgrid2D.cxx)
 target_link_libraries(testUgrid2D
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testSimpleRegridEdges2D testSimpleRegridEdges2D.cxx)
+target_link_libraries(testSimpleRegridEdges2D
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testSimpleRegridEdges testSimpleRegridEdges.cxx)
 target_link_libraries(testSimpleRegridEdges
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testRegridEdgesFromUgrid testRegridEdgesFromUgrid.cxx)
 target_link_libraries(testRegridEdgesFromUgrid
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testPolylineParser testPolylineParser.cxx)
@@ -38,12 +62,6 @@ target_link_libraries(testPolylineParser
 
 add_executable(testLineGridIntersector testLineGridIntersector.cxx)
 target_link_libraries(testLineGridIntersector
-                    mint
-                    ${VTK_LIBRARIES}
-)
-
-add_executable(testFindCellsAlongLine testFindCellsAlongLine.cxx)
-target_link_libraries(testFindCellsAlongLine
                     mint
                     ${VTK_LIBRARIES}
 )
@@ -66,24 +84,18 @@ target_link_libraries(testPolysegmentIter
                       ${VTK_LIBRARIES}
 )
 
-add_executable(testPolysegmentIter3d testPolysegmentIter3d.cxx)
-target_link_libraries(testPolysegmentIter3d
-                      mint
-                      ${VTK_LIBRARIES}
-)
-
 add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCellLocator testCellLocator.cxx)
 target_link_libraries(testCellLocator
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testPrintAddressF testPrintAddressF.f90)
@@ -91,7 +103,7 @@ set_target_properties(testPrintAddressF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testPrintAddressF
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCellLocatorF testCellLocatorF.f90)
@@ -99,7 +111,7 @@ set_target_properties(testCellLocatorF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testCellLocatorF
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCellLocatorFromFileF testCellLocatorFromFileF.f90)
@@ -107,7 +119,7 @@ set_target_properties(testCellLocatorFromFileF PROPERTIES LINKER_LANGUAGE Fortra
 target_link_libraries(testCellLocatorFromFileF
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testC2fString testC2fString.f90)
@@ -141,7 +153,7 @@ set_target_properties(testRegridEdgesF PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testRegridEdgesF
                     mint
                     ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)
@@ -166,16 +178,17 @@ add_test(NAME regridEdgesF
 set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
+add_test(NAME ugridLocator COMMAND testUgridLocator)
+add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME ugrid2D COMMAND testUgrid2D)
+add_test(NAME simpleRegridEdges2D COMMAND testSimpleRegridEdges2D)
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineGridIntersector COMMAND testLineGridIntersector)
-add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
-add_test(NAME polysegmentIter3d COMMAND testPolysegmentIter3d)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME cellLocatorF COMMAND testCellLocatorF)

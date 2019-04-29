@@ -8,7 +8,7 @@
 #define MNT_CELL_LOCATOR
 
 /**
- * A class to compute the regridding weights of an edge-centred field
+ * A class to quickly find a cell in an unstructured grid 
  */
 
 struct CellLocator_t {

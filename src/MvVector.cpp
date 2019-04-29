@@ -30,6 +30,11 @@ Vector<T>::Vector(const T* vBeg, const T* vEnd) : std::vector<T>(vBeg, vEnd)
 }
 
 template<class T>
+Vector<T>::Vector(std::initializer_list<T> array) : std::vector<T>{array}
+{
+}
+
+template<class T>
 Vector<T>::Vector(const Vector<T> &w)
 {
   (*this) = w;
