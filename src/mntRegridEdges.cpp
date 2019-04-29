@@ -11,6 +11,7 @@
 
 extern "C"
 int mnt_regridedges_new(RegridEdges_t** self) {
+    
     *self = new RegridEdges_t();
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
@@ -21,7 +22,6 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->numEdgesPerCell = 4;  // 2d
     (*self)->srcGridObj = NULL;
     (*self)->dstGridObj = NULL;
-
 
     return 0;
 }
