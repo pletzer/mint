@@ -107,22 +107,6 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
                                 const char* fort_filename, int n);
 
 /**
- * Set the source grid
- * @param grid 
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
-
-/**
- * Set the destination grid
- * @param grid 
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid);
-
-/**
  * Build the regridder
  * @param numCellsPerBucket average number of cells per bucket
  * @return error code (0 is OK)
@@ -135,14 +119,14 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket);
  * @param n number of cells
  */
 extern "C"
-int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, int* n);
+int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, size_t* n);
 
 /**
  * Get number of destination grid cells
  * @param n number of cells
  */
 extern "C"
-int mnt_regridedges_getNumDstCells(RegridEdges_t** self, int* n);
+int mnt_regridedges_getNumDstCells(RegridEdges_t** self, size_t* n);
 
 /**
  * Get number of edges per cell

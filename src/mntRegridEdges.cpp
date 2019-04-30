@@ -257,36 +257,6 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     return ier;
 }
 
-
-extern "C"
-int mnt_regridedges_setSrcGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) {
-    // check
-    if (grid->GetNumberOfPoints() != (*self)->numPointsPerCell * grid->GetNumberOfCells()) {
-        std::cerr << "mnt_regridedges_setSrcGrid: ERROR num points != "
-                  << (*self)->numPointsPerCell << " * num cells!\n";
-        return 1;
-    }
-
-    // borrow pointer
-    (*self)->srcGrid = grid;
-
-    return 0;
-}
-
-extern "C"
-int mnt_regridedges_setDstGrid(RegridEdges_t** self, vtkUnstructuredGrid* grid) {
-    // check
-    if (grid->GetNumberOfPoints() != (*self)->numPointsPerCell * grid->GetNumberOfCells()) {
-        std::cerr << "mnt_regridedges_setDstGrid: ERROR num points != "
-                  << (*self)->numPointsPerCell << "* num cells!\n";
-        return 1;
-    }
-
-    // borrow pointer
-    (*self)->dstGrid = grid;
-    return 0;
-}
-
 extern "C"
 int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
@@ -415,13 +385,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 }
 
 extern "C"
-int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, int* n) {
+int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, size_t* n) {
     *n = (*self)->numSrcCells;
     return 0;
 }
 
 extern "C"
-int mnt_regridedges_getNumDstCells(RegridEdges_t** self, int* n) {
+int mnt_regridedges_getNumDstCells(RegridEdges_t** self, size_t* n) {
     *n = (*self)->numDstCells;
     return 0;
 }

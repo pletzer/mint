@@ -13,9 +13,9 @@ int main(int argc, char** argv) {
     int ier;
     CmdLineArgParser args;
     args.setPurpose("Regrid an edge centred field.");
-    args.set("-s", std::string(""), "Source grid file in VTK/UGRID format. For UGRID specify the file name and the mesh name as \"filename:meshname\"");
-    args.set("-v", std::string("edge_integrated_velocity"), "Specify edge staggered field variable name in source VTK/UGRID file");
-    args.set("-d", std::string(""), "Destination grid file in VTK format");
+    args.set("-s", std::string(""), "UGRID source grid file and mesh name, specified as \"filename:meshname\"");
+    args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file");
+    args.set("-d", std::string(""), "UGRID destination grid file name");
     args.set("-w", std::string(""), "Write interpolation weights to file");
     args.set("-o", std::string(""), "Specify output VTK file where regridded edge data is saved");
     args.set("-N", 1024, "Average number of cells per bucket");
@@ -38,110 +38,106 @@ int main(int argc, char** argv) {
             return 2;
         }
 
-        vtkUnstructuredGrid* sg = NULL;
-        vtkUnstructuredGrid* dg = NULL;
+        RegridEdges_t* rg;
+        mnt_regridedges_new(&rg);
 
-        // read/build the src grid
-        Grid_t* srcGrid = NULL;
-        mnt_grid_new(&srcGrid);
-        size_t n = srcFile.size();
-        if (srcFile.find(".vtk", n - 4) != std::string::npos) {
-            mnt_grid_load(&srcGrid, srcFile.c_str());
-        }
-        else {
-            mnt_grid_loadFrom2DUgrid(&srcGrid, srcFile.c_str());
+        // read the source grid
+        ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), srcFile.size());
+        if (ier != 0) {
+            std::cerr << "ERROR: could not read file \"" << srcFile << "\"\n";
+            return 3;
         }
 
-        // read/build the dst grid
-        Grid_t* dstGrid = NULL;
-        mnt_grid_new(&dstGrid);
-        n = dstFile.size();
-        if (dstFile.find(".vtk", n - 4) != std::string::npos) {
-            mnt_grid_load(&dstGrid, dstFile.c_str());
-        }
-        else {
-            mnt_grid_loadFrom2DUgrid(&dstGrid, dstFile.c_str());
+        // read the destination grid
+        ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), dstFile.size());
+        if (ier != 0) {
+            std::cerr << "ERROR: could not read file \"" << dstFile << "\"\n";
+            return 4;
         }
 
-        // get the grid pointers
-        mnt_grid_get(&srcGrid, &sg);
-        mnt_grid_get(&dstGrid, &dg);
-
-        // compute the interpolation weights
-        RegridEdges_t* rge = NULL;
-        mnt_regridedges_new(&rge);
-        ier = mnt_regridedges_setSrcGrid(&rge, sg);
-        if (ier != 0) return 1;
-        ier = mnt_regridedges_setDstGrid(&rge, dg);
-        if (ier != 0) return 2;
-        ier = mnt_regridedges_build(&rge, args.get<int>("-N"));
-        if (ier != 0) return 3;
+        ier = mnt_regridedges_build(&rg, args.get<int>("-N"));
+        if (ier != 0) return 5;
 
         if (weightsFile.size() != 0) {
             std::cout << "INFO saving weights in file " << weightsFile << '\n';
-            ier = mnt_regridedges_dumpWeights(&rge, weightsFile.c_str(), (int) weightsFile.size());
+            ier = mnt_regridedges_dumpWeights(&rg, weightsFile.c_str(), (int) weightsFile.size());
         }
 
         // regrid
+        size_t numSrcEdges, numDstEdges;
+        mnt_regridedges_getNumSrcUniqueEdges(&rg, &numSrcEdges);
+        mnt_regridedges_getNumDstUniqueEdges(&rg, &numDstEdges);
+        std::vector<double> srcEdgeData(numSrcEdges);
+        std::vector<double> dstEdgeData(numDstEdges);
+
         std::string varname = args.get<std::string>("-v");
-        vtkCellData* cellData = sg->GetCellData();
         if (varname.size() > 0) {
-            vtkAbstractArray* aa = cellData->GetAbstractArray(varname.c_str());
 
-            if (aa) {
-                // found the array
-                std::cout << "Found variable '" << varname << "'\n";
+            ier = mnt_regridedges_loadUniqueEdgeField(&rg, srcFile.c_str(), srcFile.size(),
+                                                      varname.c_str(), varname.size(),
+                                                      numSrcEdges, &srcEdgeData[0]);
+            if (ier != 0) {
+                std::cerr << "ERROR: could not load edge centred data \"" << varname << "\" from file \"" << srcFile << "\"\n";
+                return 6;
+            }
 
-                double* srcData = (double*) aa->GetVoidPointer(0);
+            // regrid
+            ier = mnt_regridedges_applyUniqueEdge(&rg, &srcEdgeData[0], &dstEdgeData[0]);
 
+            // compute loop integrals for each cell
+            size_t numDstCells, dstEdgeId;
+            int dstEdgeSign;
+            mnt_regridedges_getNumDstCells(&rg, &numDstCells);
+            int numEdgesPerCell;
+            mnt_regridedges_getNumEdgesPerCell(&rg, &numEdgesPerCell);
+            std::vector<double> loop_integrals(numDstCells);
+            double minAbsLoop = std::numeric_limits<double>::max();
+            double maxAbsLoop = - std::numeric_limits<double>::max();
+            double avgAbsLoop = 0.0;
+            for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+                double loop = 0.0;
+                for (int ie = 0; ie < 4; ++ie) {
 
-                int numDstCells, numEdgesPerCell;
-                mnt_regridedges_getNumDstCells(&rge, &numDstCells);
-                mnt_regridedges_getNumEdgesPerCell(&rge, &numEdgesPerCell);
-                std::vector<double> dstData(numDstCells * numEdgesPerCell);
+                    ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
+                    assert(ier == 0);
 
-                // regrid
-                mnt_regridedges_applyCellEdge(&rge, srcData, &dstData[0]);
+                    loop += dstEdgeSign * dstEdgeData[dstEdgeId];
+                }
 
-                // compute loop integrals for each cell
-                std::vector<double> loop_integrals(numDstCells);
-                double minAbsLoop = std::numeric_limits<double>::max();
-                double maxAbsLoop = - std::numeric_limits<double>::max();
-                double avgAbsLoop = 0.0;
-                for (size_t i = 0; i < numDstCells; ++i) {
-                    size_t k = i*numEdgesPerCell;
-                    double loop = 0.0;
-                    for (size_t j = 0; j < numEdgesPerCell; ++j) {
-                        // integrate in the counterclockwise direction
-                        // last two edges get a negative sign
-                        int sgn = 1 - 2*(j/2);
-                        loop += sgn * dstData[k + j];
+                loop_integrals[dstCellId] = loop;
+                loop = std::abs(loop);
+                minAbsLoop = std::min(loop, minAbsLoop);
+                maxAbsLoop = std::max(loop, maxAbsLoop);
+                avgAbsLoop += loop;
+            }
+            avgAbsLoop /= double(numDstCells);
+            std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
+
+            if (regridFile.size() > 0) {
+
+                // cell by cell data
+                std::vector<double> dstCellByCellData(numDstCells * numEdgesPerCell);
+                for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+                    for (int ie = 0; ie < 4; ++ie) {
+                        ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
+                        size_t k = dstCellId*numEdgesPerCell + ie;
+                        dstCellByCellData[k] = dstEdgeData[dstEdgeId] * dstEdgeSign;
                     }
-                    loop_integrals[i] = loop;
-                    loop = std::abs(loop);
-                    minAbsLoop = std::min(loop, minAbsLoop);
-                    maxAbsLoop = std::max(loop, maxAbsLoop);
-                    avgAbsLoop += loop;
                 }
-                avgAbsLoop /= double(numDstCells);
-                std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
 
-                if (regridFile.size() > 0) {
-                	// attach field to grid so we can save the data in file
-                	mnt_grid_attach(&dstGrid, varname.c_str(), 1, &dstData[0]);
-                	std::string loop_integral_varname = std::string("loop_integrals_of_") + varname;
-                	mnt_grid_attach(&dstGrid, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
+                // attach field to grid so we can save the data in file
+                mnt_grid_attach(&rg->dstGridObj, varname.c_str(), numEdgesPerCell, &dstCellByCellData[0]);
 
-                	std::cout << "Writing " << varname << " to " << regridFile << '\n';
-                	mnt_grid_dump(&dstGrid, regridFile.c_str());
-                }
+                std::string loop_integral_varname = std::string("loop_integrals_of_") + varname;
+                mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
+
+                std::cout << "Writing " << varname << " to " << regridFile << '\n';
+                mnt_grid_dump(&rg->dstGridObj, regridFile.c_str());
             }
         }
 
         // cleanup
-        mnt_grid_del(&dstGrid);
-        mnt_grid_del(&srcGrid);
-        mnt_regridedges_del(&rge);
+        mnt_regridedges_del(&rg);
 
     }
     else if (help) {

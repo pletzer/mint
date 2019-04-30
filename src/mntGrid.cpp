@@ -340,10 +340,9 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
 
 extern "C" 
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
-                       vtkIdType* edgeId, int* signEdge) {
+                       size_t* edgeId, int* signEdge) {
 
     // initialize
-    *edgeId = -1;
     *signEdge = 0;
 
     // fetch the node Ids of this edge
