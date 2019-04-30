@@ -111,14 +111,11 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
     assert(ier == 0);
 
 
-    vtkIdType edgeId;
-    int edgeSign;
     double p0[3];
     double p1[3];
 
     // set the source data
-    size_t numSrcCells, numSrcEdges;
-    vtkIdType srcEdgeId;
+    size_t numSrcCells, numSrcEdges, srcEdgeId;
     int srcEdgeSign;
     ier = mnt_grid_getNumberOfCells(&rg->srcGridObj, &numSrcCells);
     assert(ier == 0);
@@ -140,8 +137,7 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
         }
     }
 
-    size_t numDstCells, numDstEdges;
-    vtkIdType dstEdgeId;
+    size_t numDstCells, numDstEdges, dstEdgeId;
     int dstEdgeSign;
     ier = mnt_grid_getNumberOfCells(&rg->dstGridObj, &numDstCells);
     assert(ier == 0);

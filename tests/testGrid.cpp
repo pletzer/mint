@@ -26,7 +26,7 @@ void testUgrid() {
     std::vector<vtkIdType> cellIds{0, 1, 2, 3, 12, 456, 1535};
 
     vtkIdType nodeIds[2];
-    vtkIdType edgeId;
+    size_t edgeId;
     int signEdge;
     for (auto cellId : cellIds) {
         for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {

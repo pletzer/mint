@@ -490,7 +490,7 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
         int dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
         int srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
 
-        vtkIdType srcEdgeId, dstEdgeId;
+        size_t srcEdgeId, dstEdgeId;
         int srcEdgeSign, dstEdgeSign;
         ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);

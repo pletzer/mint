@@ -96,12 +96,14 @@ int main(int argc, char** argv) {
             double avgAbsLoop = 0.0;
             for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
                 double loop = 0.0;
-                for (int ie = 0; ie < 4; ++ie) {
+                for (int ie = 0; ie < numEdgesPerCell; ++ie) {
 
                     ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
                     assert(ier == 0);
 
-                    loop += dstEdgeSign * dstEdgeData[dstEdgeId];
+                    // +1 for ie = 0, 1; -1 for ier = 2, 3
+                    int sgn = 1 - 2*(ie/2);
+                    loop += sgn * dstEdgeSign * dstEdgeData[dstEdgeId];
                 }
 
                 loop_integrals[dstCellId] = loop;
