@@ -223,12 +223,12 @@ set_tests_properties(regrid_edgesVTK16 PROPERTIES
 
 add_test(NAME regrid_edgesUgrid16To4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics" 
-                 "-v" "edge_integrated_velocity" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc:physics" 
+                 "-v" "line_integrated_velocity" 
                  "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
                  "-o" "regrid_edges_output_Ugrid16To4.vtk")
-#set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
-#                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
+set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 
 add_test(NAME regrid_edges64
