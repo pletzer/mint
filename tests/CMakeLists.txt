@@ -211,15 +211,6 @@ add_test(NAME testPrintAddressF
 add_test(NAME c2fString
          COMMAND testC2fString)
 
-add_test(NAME regrid_edgesVTK16
-         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/um100x60.vtk" 
-                 "-v" "edge_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.vtk"
-                 "-o" "regrid_edges_output.vtk")
-# make sure the max loop integral is very small
-set_tests_properties(regrid_edgesVTK16 PROPERTIES
-                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regrid_edgesUgrid16To4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
@@ -230,14 +221,13 @@ add_test(NAME regrid_edgesUgrid16To4
 set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
-
-add_test(NAME regrid_edges64
+add_test(NAME regrid_edgesUgrid16To16
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/um100x60.vtk" 
-                 "-v" "edge_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_64.vtk"
-                 "-o" "regrid_edges_output.vtk")
-# make sure the max loop integral is very small
-set_tests_properties(regrid_edges64 PROPERTIES
+                 "-s" "${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc:physics" 
+                 "-v" "line_integrated_velocity" 
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics"
+                 "-o" "regrid_edges_output_Ugrid16To4.vtk")
+set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
+
 
