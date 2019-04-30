@@ -28,10 +28,10 @@ void test1() {
 
     size_t numSrcEdges, numDstEdges;
 
-    ier = mnt_regridedges_getNumSrcUniqueEdges(&rg, &numSrcEdges);
+    ier = mnt_regridedges_getNumSrcEdges(&rg, &numSrcEdges);
     assert(ier == 0);
 
-    ier = mnt_regridedges_getNumDstUniqueEdges(&rg, &numDstEdges);
+    ier = mnt_regridedges_getNumDstEdges(&rg, &numDstEdges);
     assert(ier == 0);
 
     int numCellsPerBucket = 8;
@@ -63,18 +63,18 @@ void test1() {
 
     // load the source data from file
     std::string fieldName = "line_integrated_velocity";
-    ier = mnt_regridedges_loadUniqueEdgeField(&rg, srcFile.c_str(), (int) srcFile.size(),
-                                              fieldName.c_str(), (int) fieldName.size(),
-                                              numSrcEdges, &srcData[0]);
+    ier = mnt_regridedges_loadEdgeField(&rg, srcFile.c_str(), (int) srcFile.size(),
+                                        fieldName.c_str(), (int) fieldName.size(),
+                                        numSrcEdges, &srcData[0]);
     assert(ier == 0);
 
-    ier = mnt_regridedges_applyUniqueEdge(&rg, &srcData[0], &dstData[0]);
+    ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
     assert(ier == 0);
 
     std::string resFile = "regridded_line_integrated_velocity.nc";
-    ier = mnt_regridedges_dumpUniqueEdgeField(&rg, resFile.c_str(), (int) resFile.size(),
-                                              fieldName.c_str(), (int) fieldName.size(),
-                                              numDstEdges, &dstData[0]);
+    ier = mnt_regridedges_dumpEdgeField(&rg, resFile.c_str(), (int) resFile.size(),
+                                        fieldName.c_str(), (int) fieldName.size(),
+                                        numDstEdges, &dstData[0]);
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
@@ -82,7 +82,7 @@ void test1() {
 
 }
 
-void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string& srcFile, const std::string& dstFile) {
+void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile, const std::string& dstFile) {
 
     int ier;
     std::string outputFile = testName + "Weights.nc";
@@ -119,7 +119,7 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
     int srcEdgeSign;
     ier = mnt_grid_getNumberOfCells(&rg->srcGridObj, &numSrcCells);
     assert(ier == 0);
-    ier = mnt_grid_getNumberOfUniqueEdges(&rg->srcGridObj, &numSrcEdges);
+    ier = mnt_grid_getNumberOfEdges(&rg->srcGridObj, &numSrcEdges);
     assert(ier == 0);
 
     std::vector<double> srcData(numSrcEdges);
@@ -141,13 +141,13 @@ void regridUniqueEdgeIdFieldTest(const std::string& testName, const std::string&
     int dstEdgeSign;
     ier = mnt_grid_getNumberOfCells(&rg->dstGridObj, &numDstCells);
     assert(ier == 0);
-    ier = mnt_grid_getNumberOfUniqueEdges(&rg->dstGridObj, &numDstEdges);
+    ier = mnt_grid_getNumberOfEdges(&rg->dstGridObj, &numDstEdges);
     assert(ier == 0);
 
     std::vector<double> dstData(numDstEdges);
 
     // regrid
-    ier = mnt_regridedges_applyUniqueEdge(&rg, &srcData[0], &dstData[0]);
+    ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
     assert(ier == 0);
 
     // check
@@ -194,9 +194,9 @@ int main() {
     //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc:physics", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics");
     //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc:physics");
 
-    regridUniqueEdgeIdFieldTest("uniqueEdgeIdField_4->4", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
-    regridUniqueEdgeIdFieldTest("uniqueEdgeIdField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
-    regridUniqueEdgeIdFieldTest("uniqueEdgeIdField_16->16", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"); 
+    regridEdgeFieldTest("edgeField_4->4", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
+    regridEdgeFieldTest("edgeField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
+    regridEdgeFieldTest("edgeField_16->16", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"); 
 
     return 0;
 }   

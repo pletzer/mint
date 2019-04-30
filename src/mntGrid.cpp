@@ -386,7 +386,7 @@ int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells) {
     return 0;
 }
 
-int mnt_grid_getNumberOfUniqueEdges(Grid_t** self, size_t* numEdges) {
+int mnt_grid_getNumberOfEdges(Grid_t** self, size_t* numEdges) {
     
     *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
     return 0;

@@ -88,10 +88,10 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 }
 
 extern "C"
-int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
-                                        const char* fort_filename, int nFilenameLength,
-                                        const char* field_name, int nFieldNameLength,
-                                        size_t ndata, double data[]) {
+int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
+                                  const char* fort_filename, int nFilenameLength,
+                                  const char* field_name, int nFieldNameLength,
+                                  size_t ndata, double data[]) {
 
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
 
@@ -175,10 +175,10 @@ int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_dumpUniqueEdgeField(RegridEdges_t** self,
-                                        const char* fort_filename, int nFilenameLength,
-                                        const char* field_name, int nFieldNameLength,
-                                        size_t ndata, const double data[]) {
+int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
+                                  const char* fort_filename, int nFilenameLength,
+                                  const char* field_name, int nFieldNameLength,
+                                  size_t ndata, const double data[]) {
     
     std::string filename = std::string(fort_filename, nFilenameLength);
     std::string fieldname = std::string(field_name, nFieldNameLength);
@@ -403,22 +403,22 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
 }
 
 extern "C"
-int mnt_regridedges_getNumSrcUniqueEdges(RegridEdges_t** self, size_t* nPtr) {
+int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, size_t* nPtr) {
     if (!(*self)->srcGridObj) {
         std::cerr << "ERROR: source grid was not loaded\n";
         return 1;
     }
-    int ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->srcGridObj), nPtr);
+    int ier = mnt_grid_getNumberOfEdges(&((*self)->srcGridObj), nPtr);
     return ier;
 }
 
 extern "C"
-int mnt_regridedges_getNumDstUniqueEdges(RegridEdges_t** self, size_t* nPtr) {
+int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* nPtr) {
     if (!(*self)->dstGridObj) {
         std::cerr << "ERROR: destination grid was not loaded\n";
         return 1;
     }
-    int ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->dstGridObj), nPtr);
+    int ier = mnt_grid_getNumberOfEdges(&((*self)->dstGridObj), nPtr);
     return ier;
 }
 
@@ -451,8 +451,8 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self, 
-	                                const double src_data[], double dst_data[]) {
+int mnt_regridedges_apply(RegridEdges_t** self, 
+	                      const double src_data[], double dst_data[]) {
 
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
@@ -470,7 +470,7 @@ int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self,
 
     // number of unique edges on the destination grid
     size_t numDstEdges;
-    ier = mnt_grid_getNumberOfUniqueEdges(&((*self)->dstGridObj), &numDstEdges);
+    ier = mnt_grid_getNumberOfEdges(&((*self)->dstGridObj), &numDstEdges);
     
     // initialize the data to zero
     for (size_t i = 0; i < numDstEdges; ++i) {

@@ -65,24 +65,24 @@ int main(int argc, char** argv) {
 
         // regrid
         size_t numSrcEdges, numDstEdges;
-        mnt_regridedges_getNumSrcUniqueEdges(&rg, &numSrcEdges);
-        mnt_regridedges_getNumDstUniqueEdges(&rg, &numDstEdges);
+        mnt_regridedges_getNumSrcEdges(&rg, &numSrcEdges);
+        mnt_regridedges_getNumDstEdges(&rg, &numDstEdges);
         std::vector<double> srcEdgeData(numSrcEdges);
         std::vector<double> dstEdgeData(numDstEdges);
 
         std::string varname = args.get<std::string>("-v");
         if (varname.size() > 0) {
 
-            ier = mnt_regridedges_loadUniqueEdgeField(&rg, srcFile.c_str(), srcFile.size(),
-                                                      varname.c_str(), varname.size(),
-                                                      numSrcEdges, &srcEdgeData[0]);
+            ier = mnt_regridedges_loadEdgeField(&rg, srcFile.c_str(), srcFile.size(),
+                                                varname.c_str(), varname.size(),
+                                                numSrcEdges, &srcEdgeData[0]);
             if (ier != 0) {
                 std::cerr << "ERROR: could not load edge centred data \"" << varname << "\" from file \"" << srcFile << "\"\n";
                 return 6;
             }
 
             // regrid
-            ier = mnt_regridedges_applyUniqueEdge(&rg, &srcEdgeData[0], &dstEdgeData[0]);
+            ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
 
             // compute loop integrals for each cell
             size_t numDstCells, dstEdgeId;

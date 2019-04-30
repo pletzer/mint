@@ -68,10 +68,10 @@ int mnt_regridedges_del(RegridEdges_t** self);
  * @param data array of size number of unique edges (output)
  */
 extern "C"
-int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
-                                        const char* fort_filename, int nFilenameLength,
-                                        const char* field_name, int nFieldNameLength,
-                                        size_t ndata, double data[]);
+int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
+                                  const char* fort_filename, int nFilenameLength,
+                                  const char* field_name, int nFieldNameLength,
+                                  size_t ndata, double data[]);
 
 /** 
  * Dump field from 2D UGRID file
@@ -83,10 +83,10 @@ int mnt_regridedges_loadUniqueEdgeField(RegridEdges_t** self,
  * @param data array of size number of unique edges (input)
  */
 extern "C"
-int mnt_regridedges_dumpUniqueEdgeField(RegridEdges_t** self,
-                                        const char* fort_filename, int nFilenameLength,
-                                        const char* field_name, int nFieldNameLength,
-                                        size_t ndata, const double data[]);
+int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
+                                  const char* fort_filename, int nFilenameLength,
+                                  const char* field_name, int nFieldNameLength,
+                                  size_t ndata, const double data[]);
 
 /** 
  * Load source grid from 2D UGRID file
@@ -140,14 +140,14 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n);
  * @param n number (output)
  */
 extern "C"
-int mnt_regridedges_getNumSrcUniqueEdges(RegridEdges_t** self, size_t* n);
+int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, size_t* n);
 
 /**
  * Get number of unique edges in the destination grid
  * @param n number (output)
  */
 extern "C"
-int mnt_regridedges_getNumDstUniqueEdges(RegridEdges_t** self, size_t* n);
+int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* n);
 
 /**
  * Apply interpolation weights to cell by cell field, each cell having four independent edges
@@ -169,8 +169,8 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
  * @note edges go anticlockwise
  */
 extern "C"
-int mnt_regridedges_applyUniqueEdge(RegridEdges_t** self, 
-                                    const double src_data[], double dst_data[]);
+int mnt_regridedges_apply(RegridEdges_t** self, 
+                          const double src_data[], double dst_data[]);
 
 /**
  * Load the weights from file

@@ -51,7 +51,7 @@ int main() {
     double srcData[] = {1., -2., -1., 2.};
     double dstData[4];
 
-    ier = mnt_regridedges_applyUniqueEdge(&rg, srcData, dstData);
+    ier = mnt_regridedges_apply(&rg, srcData, dstData);
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
