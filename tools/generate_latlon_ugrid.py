@@ -72,18 +72,19 @@ yvar = nc.createVariable("lat", "float64", ("nnodes",))
 yvar.standard_name = "latitude"
 yvar.units = "degrees_north"
 
-edge_integrated_vel = nc.createVariable('edge_integrated_vel', 'float64', ('nedges',))
-edge_integrated_vel.mesh = mesh_name
-edge_integrated_vel.location = 'edge'
+edge_integrated_velocity = nc.createVariable('edge_integrated_velocity', 'float64', ('nedges',))
+edge_integrated_velocity.mesh = mesh_name
+edge_integrated_velocity.location = 'edge'
 
 # set the lats/lons
 lats = numpy.zeros((nnodes,), numpy.float64)
 lons = numpy.zeros((nnodes,), numpy.float64)
+dlat, dlon = 180./float(ny), 360.0/float(nx)
 for j in range(ny + 1):
     for i in range(nx + 1):
         index = i + (nx + 1)*j
-        lons[index] = i * 360.0/float(nx)
-        lats[index] = -90.0 + j * 180./float(ny)
+        lons[index] = 0.0 + i*dlon
+        lats[index] = -90.0 + j*dlat
 xvar[:] = lons
 yvar[:] = lats
 
@@ -134,7 +135,7 @@ for j in range(ny):
         count += 1
 
 edgeNodeConn[...] = en
-edge_integrated_vel[:] = data
+edge_integrated_velocity[:] = data
 
 # face-edge connectivity
 fe = numpy.zeros((nfaces, 4), numpy.int64)
