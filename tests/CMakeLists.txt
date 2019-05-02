@@ -247,11 +247,10 @@ add_test(NAME regrid_edgesUgrid16To16
 set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
-add_test(NAME proj_line1
-         COMMAND "${CMAKE_BINARY_DIR}/tools/proj_line" 
+add_test(NAME line_proj1
+         COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
                  "-i" "${CMAKE_SOURCE_DIR}/data/latlon8x4.vtk"
                  "-N" "1"
                  "-p" "((0., 22.5), (22.5, 20.9410204722438422))")
-set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
-                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
-./tools/line_proj -N 1 -i ../tools/latlon8x4.vtk -p "((0., 22.5,0.), (22.5, 20.9410204722438422,0.))"
+set_tests_properties(line_proj1 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "total flux is")
