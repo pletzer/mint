@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     args.set("-i", std::string(""), "Source grid file in VTK format");
     args.set("-p", std::string("(0., 0.),(6.283185307179586, 0.)"), "Points defining the path.");
     args.set("-v", std::string("edgeData"), "Edge variable name.");
-    args.set("-N", 128, "Average number of cells per bucket.");
+    args.set("-N", 1, "Average number of cells per bucket.");
     args.set("-verbose", false, "Verbose mode.");
 
     bool success = args.parse(argc, argv);
@@ -81,6 +81,10 @@ int main(int argc, char** argv) {
 
         double totFlux = 0.0;
         vtkDataArray* arr = grid->GetCellData()->GetArray(args.get<std::string>("-v").c_str());
+        if (! arr) {
+            std::cerr << "ERROR: could not find edge field \"" << args.get<std::string>("-v") << "\"\n";
+            return 4;
+        }
 
         // iterate over segments
         size_t nsegs = npts - 1;

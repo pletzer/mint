@@ -249,8 +249,9 @@ set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
 
 add_test(NAME line_proj1
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
-                 "-i" "${CMAKE_SOURCE_DIR}/data/latlon8x4.vtk"
+                 "-i" "${CMAKE_SOURCE_DIR}/data/latlon4x2.vtk"
                  "-N" "1"
-                 "-p" "((0., 22.5), (22.5, 20.9410204722438422))")
+                 "-p" "(0., 22.5), (22.5, 20.9410204722438422)"
+                 "-verbose")
 set_tests_properties(line_proj1 PROPERTIES
                      PASS_REGULAR_EXPRESSION "total flux is")

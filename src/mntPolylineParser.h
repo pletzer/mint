@@ -45,8 +45,6 @@ private:
     std::string expr;
     std::vector< Vector<double> > points;
 
-
-
 };
 
 #endif // MNT_POLYLINE_PARSER
