@@ -14,22 +14,19 @@ class UgridReader(ReaderBase):
 
         super(UgridReader, self).__init__()
         
-        # read UGRID file
-        nc = netCDF4.Dataset(filename, 'r')
+        # filname:meshname
+        fname, mname = filename.split(':')
+        nc = netCDF4.Dataset(fname, 'r')
 
-        lats, lons = None, None
-        connectivity = None
-        for varname in nc.variables:
-            var = nc.variables[varname]
-            if hasattr(var, 'cf_role') and var.cf_role == 'face_node_connectivity':
-                connectivity = var[:]
-            elif hasattr(var, 'standard_name'):
-                if var.standard_name == 'longitude' and hasattr(var, 'long_name') and var.long_name.find('node') >= 0:
-                    lons = var[:]
-                    #print('found longitude: {}'.format(varname))
-                elif var.standard_name == 'latitude' and hasattr(var, 'long_name') and var.long_name.find('node') >= 0:
-                    lats = var[:]
-                    #print('found latitude: {}'.format(varname))
+        mesh = nc.variables[mname][:]
+        lonname, latname = nc.variables[mname].node_coordinates.split()
+
+        lons = nc.variables[lonname]
+        lats = nc.variables[latname]
+
+        f2nname = nc.variables[mname].face_node_connectivity
+        connectivity = nc.variables[f2nname][:]
+        connectivity -= nc.variables[f2nname].start_index
 
         ncells = connectivity.shape[0]
 
@@ -120,9 +117,7 @@ def main():
     from numpy import pi, sin, cos, exp
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
-    parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file')
-    parser.add_argument('-p', dest='padding', type=int, default=0, 
-                              help='Specify by how much the grid should be padded on the high lon side')
+    parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file in the form FILENAME:MESHNAME')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
     parser.add_argument('-stream', dest='streamFunc', default='', 
                         help='Stream function as a function of x (longitude) and y (latitude)')

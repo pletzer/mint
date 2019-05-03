@@ -211,13 +211,13 @@ add_test(NAME testPrintAddressF
 add_test(NAME c2fString
          COMMAND testC2fString)
 
-add_test(NAME regrid_edgesLATLON8x4ToCS4
+add_test(NAME regrid_edgesLATLON4x2ToCS4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon8x4.nc:latlon"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon"
                  "-v" "edge_integrated_velocity" 
                  "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
-                 "-o" "regrid_edges_output_LATLON8x4ToCS4.vtk")
-set_tests_properties(regrid_edgesLATLON8x4ToCS4 PROPERTIES
+                 "-o" "regrid_edges_output_LATLON4x2ToCS4.vtk")
+set_tests_properties(regrid_edgesLATLON4x2ToCS4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regrid_edgesLATLON100x50ToCS4
@@ -250,6 +250,7 @@ set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
 add_test(NAME line_proj1
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
                  "-i" "${CMAKE_SOURCE_DIR}/data/latlon4x2.vtk"
+                 "-v" "edge_integrated_velocity"
                  "-N" "1"
                  "-p" "(0., 22.5), (22.5, 20.9410204722438422)"
                  "-verbose")
