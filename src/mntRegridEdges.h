@@ -57,6 +57,25 @@ int mnt_regridedges_new(RegridEdges_t** self);
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self);
 
+/** 
+ * Dump source grid to VTK file
+ * @param fort_filename file name (does not require termination character)
+ * @param nFilenameLength length of filename string (excluding '\0' if present)
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
+                                   const char* fort_filename, int nFilenameLength);
+
+/** 
+ * Dump destination grid to VTK file
+ * @param fort_filename file name (does not require termination character)
+ * @param nFilenameLength length of filename string (excluding '\0' if present)
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
+                                   const char* fort_filename, int nFilenameLength);
 
 /** 
  * Load field from 2D UGRID file
@@ -66,6 +85,7 @@ int mnt_regridedges_del(RegridEdges_t** self);
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
  * @param ndata number of edges and size of data
  * @param data array of size number of unique edges (output)
+ * @return error code (0 is OK)
  */
 extern "C"
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
@@ -74,13 +94,14 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   size_t ndata, double data[]);
 
 /** 
- * Dump field from 2D UGRID file
+ * Dump field to 2D UGRID file
  * @param fort_filename file name (does not require termination character)
  * @param nFilenameLength length of filename string (excluding '\0' if present)
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
  * @param ndata number of edges and size of data
  * @param data array of size number of unique edges (input)
+ * @return error code (0 is OK)
  */
 extern "C"
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
@@ -92,6 +113,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
  * Load source grid from 2D UGRID file
  * @param fort_filename file name (does not require termination character)
  * @param n length of filename string
+ * @return error code (0 is OK)
  */
 extern "C"
 int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
@@ -101,6 +123,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
  * Load destination grid from 2D UGRID file
  * @param fort_filename file name (does not require termination character)
  * @param n length of filename string
+ * @return error code (0 is OK)
  */
 extern "C"
 int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
