@@ -9,6 +9,8 @@
 #include <vtkQuad.h>       // for 2d grids
 #include <vtkCell.h>
 
+//#define MYDEBUG
+
 /**
  * Compute the interpolation weight between a source cell edge and a destination line segment
  * @param srcXi0 start point of src edge
@@ -85,6 +87,22 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     delete *self;
 
     return 0;
+}
+
+extern "C"
+int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
+                                   const char* fort_filename, int nFilenameLength) {
+
+    return mnt_grid_dump( &(*self)->srcGridObj, std::string(fort_filename).c_str() );
+
+}
+
+extern "C"
+int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
+                                   const char* fort_filename, int nFilenameLength) {
+
+    return mnt_grid_dump( &(*self)->dstGridObj, std::string(fort_filename).c_str() );
+
 }
 
 extern "C"
@@ -296,6 +314,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     (*self)->weightSrcCellIds.reserve(n);
     (*self)->weightDstCellIds.reserve(n);
 
+#ifdef MYDEBUG
+    printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId        xia        xib\n");
+#endif
+
     // iterate over the dst grid cells
     for (vtkIdType dstCellId = 0; dstCellId < (*self)->numDstCells; ++dstCellId) {
 
@@ -333,6 +355,14 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 const Vector<double>& xia = polySegIter.getBegCellParamCoord();
                 const Vector<double>& xib = polySegIter.getEndCellParamCoord();
                 const double coeff = polySegIter.getCoefficient();
+
+#ifdef MYDEBUG
+            printf("%12lld %12d %5.3lf,%5.3lf %5.3lf,%5.3lf %12lld %5.3lf,%5.3lf %5.3lf,%5.3lf\n", 
+                    dstCellId, dstEdgeIndex, 
+                    dstEdgePt0[0], dstEdgePt0[1], 
+                    dstEdgePt1[0], dstEdgePt1[1], srcCellId,
+                    xia[0], xia[1], xib[0], xib[1]);
+#endif
 
                 // create pair (dstCellId, srcCellId)
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 

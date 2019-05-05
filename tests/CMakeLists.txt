@@ -212,7 +212,8 @@ add_test(NAME c2fString
          COMMAND testC2fString)
 
 add_test(NAME regrid_edgesLATLON4x2ToCS4
-         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+                 "-N" "1"
                  "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon"
                  "-v" "edge_integrated_velocity" 
                  "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
