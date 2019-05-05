@@ -1,21 +1,38 @@
 import vtk
 import netCDF4
+import argparse
+import re
 
-srcFile = '../data/latlon8x4.nc'
-meshName = 'latlon'
-targetPoints = [(0., 22.5, 0.), (22.5, 20.9410204722438422, 0.)]
+parser = argparse.ArgumentParser(description='Plot grid and line')
+parser.add_argument('-i', dest='grid_file', default='', 
+                    help='Specify the netcdf file containing the grid and the mesh name in the format "FILENAME:MESHNAME"')
+parser.add_argument('-p', dest='points', default='(0.0,0.0),(360.,0.0)', 
+                    help='Specify the points of the line')
 
+
+args = parser.parse_args()
+
+
+srcFile, meshName = args.grid_file.split(':')
+
+# parse the target points
+targetPoints = re.sub('\s+', '', args.points, )
+targetPoints = re.sub(r'^\(', '', targetPoints)
+targetPoints = re.sub(r'\)$', '', targetPoints)
+targetPoints = [ eval(p + ', 0.0') for p in targetPoints.split('),(') ]
+
+#[(0., 22.5, 0.), (22.5, 20.9410204722438422, 0.)]
+
+# read the data
 nc = netCDF4.Dataset(srcFile)
 mesh = nc.variables[meshName]
 f2n = nc.variables[mesh.face_node_connectivity][:]
-f2e = nc.variables[mesh.face_edge_connectivity][:]
-e2n = nc.variables[mesh.edge_node_connectivity][:]
+f2n -= nc.variables[mesh.face_node_connectivity].start_index
 
 lons = nc.variables[mesh.node_coordinates.split()[0]][:]
 lats = nc.variables[mesh.node_coordinates.split()[1]][:]
 
 numPoints = len(lons)
-numEdges = e2n.shape[0]
 numFaces = f2n.shape[0]
 
 # create the face grid
@@ -41,7 +58,7 @@ for i in range(numFaces):
 	gridFaces.InsertNextCell(vtk.VTK_QUAD, ptIds)
 
 writer = vtk.vtkUnstructuredGridWriter()
-writer.SetFileName('latlon8x4.vtk')
+writer.SetFileName(re.sub('\.nc', '.vtk', srcFile))
 writer.SetInputData(gridFaces)
 writer.Update()
 

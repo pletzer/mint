@@ -10,7 +10,7 @@ Generate grid and edge data on uniform grid and save result in UGRID file
 """
 
 parser = argparse.ArgumentParser(description='Generate the output file storing the lat-lon grid and edge data in UGRID format')
-parser.add_argument('-g', dest='grid_file', default='', 
+parser.add_argument('-o', dest='grid_file', default='', 
                     help='Specify the netcdf file containing the grid and the mesh name in the format "FILENAME:MESHNAME"')
 parser.add_argument('-nx', default=1, type=int, 
                     help='Number of longitude cells')
