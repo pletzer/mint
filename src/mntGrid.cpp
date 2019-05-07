@@ -13,6 +13,29 @@
 #define LAT_INDEX 1
 #define ELV_INDEX 2
 
+/**
+ * Fix the longitude by adding/subtracting a period to reduce the edge distances
+ * @param period periodicity length
+ * @param lonBase base/reference longitude
+ * @param lon longitude
+ * @return corrected longitude
+ */
+inline
+double fixLongitude(double period, double lonBase, double lon) {
+    
+    double diffLon = lon - lonBase;
+
+    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - period),
+                                             std::abs(diffLon), 
+                                             std::abs(diffLon + period)};
+
+    std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), diffLonMinusZeroPlus.end());
+    int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
+
+    // fix the longitude
+    return lon + (indexMin - 1)*period;
+}
+
 extern "C" 
 int mnt_grid_new(Grid_t** self) {
 
@@ -171,8 +194,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
         // allocate the vertices and set the values
         (*self)->verts.resize(ncells * numVertsPerCell * 3);
 
-        std::vector<double> diffLonMinusZeroPlus(3);
-
         for (size_t icell = 0; icell < ncells; ++icell) {
 
             // fix longitude when crossing the dateline
@@ -187,18 +208,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
                 double lat = ugrid.getPoint(k)[LAT_INDEX];
 
-                // add/subtract 360.0, whatever it takes to reduce the distance 
-                // between this longitude and the base longitude
-                double diffLon = lon - lonBase;
-                diffLonMinusZeroPlus[0] = std::abs(diffLon - 360.);
-                diffLonMinusZeroPlus[1] = std::abs(diffLon - 0.);
-                diffLonMinusZeroPlus[2] = std::abs(diffLon + 360.);
-                std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), 
-                                                                    diffLonMinusZeroPlus.end());
-                int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
-
-                // fix the longitude
-                lon += (indexMin - 1) * 360.0;
+                lon = fixLongitude(360.0, lonBase, lon);
 
                 if (std::abs(lat) == 90.0) {
                     poleNode  = node;
