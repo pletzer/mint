@@ -46,8 +46,8 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->reader = NULL;
     (*self)->doubleArrays.resize(0);
 
-    (*self)->fixLonAcrossDateline = 1;
-    (*self)->averageLonAtPole = 1;
+    (*self)->fixLonAcrossDateline = true;
+    (*self)->averageLonAtPole = true;
 
     return 0;
 }
@@ -214,7 +214,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
                 double lat = ugrid.getPoint(k)[LAT_INDEX];
 
-                if ((*self)->fixLonAcrossDateline != 0) {
+                if ((*self)->fixLonAcrossDateline) {
                     lon = fixLongitude(360.0, lonBase, lon);
                 }
 
@@ -237,7 +237,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             // this case the longitude is ill-defined. Set the longitude there to the
             // average of the 3 other longitudes.
 
-            if ((*self)->averageLonAtPole != 0 && poleNode >= 0) {
+            if ((*self)->averageLonAtPole && poleNode >= 0) {
                 (*self)->verts[LON_INDEX + poleNode*3 + icell*numVertsPerCell*3] = avgLon;
             }
         }
