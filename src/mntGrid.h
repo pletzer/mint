@@ -32,6 +32,9 @@ struct Grid_t {
     // flat array of size numEdges * 2
     std::vector<size_t> edgeNodeConnectivity;
 
+    int fixLonAcrossDateline;
+    int averageLonAtPole;
+
 };
 
 
