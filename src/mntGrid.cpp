@@ -201,7 +201,9 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
             double lonBase = ugrid.getPoint(kBase)[LON_INDEX]; //lons[kBase];
 
+            double avgLon = 0;
             int poleNode = -1;
+            int count = 0;
             for (int node = 0; node < numVertsPerCell; ++node) {
 
                 size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + node];
@@ -213,25 +215,24 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 if (std::abs(lat) == 90.0) {
                     poleNode  = node;
                 }
+                else {
+                    avgLon += lon;
+                    count++;
+                }
 
                 // even in 2d we have three components
                 (*self)->verts[LON_INDEX + node*3 + icell*numVertsPerCell*3] = lon;
                 (*self)->verts[LAT_INDEX + node*3 + icell*numVertsPerCell*3] = lat;
                 (*self)->verts[ELV_INDEX + node*3 + icell*numVertsPerCell*3] = 0.0;
             }
+            avgLon /= count;
 
             // check if there if one of the cell nodes is at the north/south pole. In 
             // this case the longitude is ill-defined. Set the longitude there to the
             // average of the 3 other longitudes.
 
             if (poleNode >= 0) {
-                double lonPole = 0;
-                for (size_t i = poleNode + 1; i < poleNode + numVertsPerCell; ++i) {
-                    size_t node = i % numVertsPerCell;
-                    lonPole += (*self)->verts[0 + node*3 + icell*numVertsPerCell*3];
-                }
-                lonPole /= (double) (numVertsPerCell - 1);
-                (*self)->verts[LON_INDEX + poleNode*3 + icell*numVertsPerCell*3] = lonPole;
+                (*self)->verts[LON_INDEX + poleNode*3 + icell*numVertsPerCell*3] = avgLon;
             }
         }
     }
