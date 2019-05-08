@@ -57,6 +57,24 @@ int mnt_regridedges_new(RegridEdges_t** self);
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self);
 
+/**
+ * Set source grid flags
+ * @param fixLonAcrossDateline set this to 1 if periodicty length should be added/subtracted to nodes in order to make the cell as compact as possible
+ * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the node cell node's longitudes
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole);
+
+/**
+ * Set destination grid flags
+ * @param fixLonAcrossDateline set this to 1 if periodicty length should be added/subtracted to nodes in order to make the cell as compact as possible
+ * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the node cell node's longitudes
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole);
+
 /** 
  * Dump source grid to VTK file
  * @param fort_filename file name (does not require termination character)

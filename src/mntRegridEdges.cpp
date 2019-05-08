@@ -64,8 +64,9 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->numDstCells = 0;
     (*self)->numPointsPerCell = 4; // 2d
     (*self)->numEdgesPerCell = 4;  // 2d
-    (*self)->srcGridObj = NULL;
-    (*self)->dstGridObj = NULL;
+
+    mnt_grid_new(&((*self)->srcGridObj));
+    mnt_grid_new(&((*self)->dstGridObj));
 
     return 0;
 }
@@ -76,17 +77,27 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     // destroy the cell locator
     (*self)->srcLoc->Delete();
    
-    // destroy the source and destination grids if this instance owns them
-    if ((*self)->srcGridObj) {
-        mnt_grid_del(&((*self)->srcGridObj));
-    }
-    if ((*self)->dstGridObj) {
-        mnt_grid_del(&((*self)->dstGridObj));
-    }
+    // destroy the source and destination grids
+    mnt_grid_del(&((*self)->srcGridObj));
+    mnt_grid_del(&((*self)->dstGridObj));
 
     delete *self;
 
     return 0;
+}
+
+extern "C"
+int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
+
+    return mnt_grid_setFlags( &(*self)->srcGridObj, fixLonAcrossDateline, averageLonAtPole );
+
+}
+
+extern "C"
+int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
+
+    return mnt_grid_setFlags( &(*self)->dstGridObj, fixLonAcrossDateline, averageLonAtPole );
+
 }
 
 extern "C"
@@ -253,9 +264,6 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
-    if (!(*self)->srcGridObj) {
-        mnt_grid_new(&((*self)->srcGridObj));
-    }
     int ier = mnt_grid_loadFrom2DUgrid(&((*self)->srcGridObj), filename.c_str());
     (*self)->srcGrid = (*self)->srcGridObj->grid;
     return ier;
@@ -267,9 +275,6 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
-    if (!(*self)->dstGridObj) {
-        mnt_grid_new(&((*self)->dstGridObj));
-    }
     int ier = mnt_grid_loadFrom2DUgrid(&((*self)->dstGridObj), filename.c_str());
     (*self)->dstGrid = (*self)->dstGridObj->grid;
     return ier;

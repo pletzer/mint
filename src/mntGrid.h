@@ -55,6 +55,16 @@ extern "C"
 int mnt_grid_del(Grid_t** self);
 
 /**
+ * Set grid flags
+ * @param self instance of Grid_t
+ * @param fixLonAcrossDateline set this to 1 if periodicty length should be added/subtracted to nodes in order to make the cell as compact as possible
+ * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the node cell node's longitudes
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole);
+
+/**
  * Set the points array pointer
  * @param self instance of Grid_t
  * @param nVertsPerCell number of vertices per cell

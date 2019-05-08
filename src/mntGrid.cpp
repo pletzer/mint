@@ -73,6 +73,22 @@ int mnt_grid_del(Grid_t** self) {
 }
 
 extern "C"
+int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
+
+    (*self)->fixLonAcrossDateline = true;
+    if (fixLonAcrossDateline == 0) {
+        (*self)->fixLonAcrossDateline = false;
+    }
+
+    (*self)->averageLonAtPole = true;
+    if (averageLonAtPole == 0) {
+        (*self)->averageLonAtPole = false;
+    }
+
+    return 0;
+}
+
+extern "C"
 int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, 
 	                      vtkIdType ncells, const double points[]) {
 

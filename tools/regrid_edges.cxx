@@ -18,6 +18,8 @@ int main(int argc, char** argv) {
     args.set("-d", std::string(""), "UGRID destination grid file name");
     args.set("-w", std::string(""), "Write interpolation weights to file");
     args.set("-o", std::string(""), "Specify output VTK file where regridded edge data is saved");
+    args.set("-S", 1, "Set to zero if you want to disable source grid regularization. This might be required for uniform lon-lat grids");
+    args.set("-D", 1, "Set to zero if you want to disable destination grid regularization. This might be required for uniform lon-lat grids");
     args.set("-N", 1024, "Average number of cells per bucket");
 
     bool success = args.parse(argc, argv);
@@ -40,6 +42,26 @@ int main(int argc, char** argv) {
 
         RegridEdges_t* rg;
         mnt_regridedges_new(&rg);
+
+        // defaults are suitable for cubed-sphere 
+        int fixLonAcrossDateline = 1;
+        int averageLonAtPole = 1;
+        if (args.get<int>("-S") == 0) {
+            fixLonAcrossDateline = 0;
+            averageLonAtPole = 0;
+            std::cout << "info: no regularization applied to source grid\n";
+        }
+        ier = mnt_regridedges_setSrcGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
+
+        // ...destination griod
+        fixLonAcrossDateline = 1;
+        averageLonAtPole = 1;
+        if (args.get<int>("-D") == 0) {
+            fixLonAcrossDateline = 0;
+            averageLonAtPole = 0;
+            std::cout << "info: no regularization applied to destination grid\n";
+        }
+        ier = mnt_regridedges_setDstGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
 
         // read the source grid
         ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), srcFile.size());

@@ -213,6 +213,8 @@ add_test(NAME c2fString
 
 add_test(NAME regrid_edgesLATLON4x2ToCS4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+                 "-S" "0"
+                 "-D" "1"
                  "-N" "1"
                  "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon"
                  "-v" "edge_integrated_velocity" 
@@ -224,6 +226,7 @@ set_tests_properties(regrid_edgesLATLON4x2ToCS4 PROPERTIES
 add_test(NAME regrid_edgesLATLON100x50ToCS4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
                  "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc:latlon"
+                 "-S" "0" 
                  "-v" "edge_integrated_velocity" 
                  "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
                  "-o" "regrid_edges_output_LATLON100x50ToCS4.vtk")
