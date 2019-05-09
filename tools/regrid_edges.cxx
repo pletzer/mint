@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         if (ier != 0) return 5;
 
         if (weightsFile.size() != 0) {
-            std::cout << "INFO saving weights in file " << weightsFile << '\n';
+            std::cout << "info: saving weights in file " << weightsFile << '\n';
             ier = mnt_regridedges_dumpWeights(&rg, weightsFile.c_str(), (int) weightsFile.size());
         }
 
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
                 std::string loop_integral_varname = std::string("loop_integrals_of_") + varname;
                 mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
 
-                std::cout << "Writing " << varname << " to " << regridFile << '\n';
+                std::cout << "info: writing " << varname << " to " << regridFile << '\n';
                 mnt_grid_dump(&rg->dstGridObj, regridFile.c_str());
             }
         }

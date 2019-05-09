@@ -24,18 +24,54 @@ module mnt_regridedges_capi_mod
       integer(c_int)                   :: mnt_regridedges_del
     end function mnt_regridedges_del
 
+    function mnt_regridedges_setSrcGridFlags(obj, fixLonAcrossDateline, averageLonAtPole) &
+                                             bind(C, name='mnt_regridedges_setSrcGridFlags')
+       ! Set source grid flags that control periodicity and regularization
+       ! @param obj instance of mntRegridEdges_t (opaque handle)
+       ! @param fixLonAcrossDateline set this to 1 to ensure that cells that are cut by the dateline don't wrap around
+       ! @param averageLonAtPole set this to 1 to reset the longitude at the pole to match the average longitude of the cell, this
+       !                         reduces the size of the cell in lon-lat space
+       ! @return 0 if successful
+
+        use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        integer(c_int), value                    :: fixLonAcrossDateline
+        integer(c_int), value                    :: averageLonAtPole
+        integer(c_int)                           :: mnt_regridedges_setSrcGridFlags
+    end	function mnt_regridedges_setSrcGridFlags
+
+    function mnt_regridedges_setDstGridFlags(obj, fixLonAcrossDateline, averageLonAtPole) &
+                                             bind(C, name='mnt_regridedges_setDstGridFlags')
+       ! Set destination grid flags that control periodicity and regularization
+       ! @param obj instance of mntRegridEdges_t (opaque handle)
+       ! @param fixLonAcrossDateline set this to 1 to ensure that cells that are cut by the dateline don't wrap around
+       ! @param averageLonAtPole set this to 1 to reset the longitude at the pole to match the average longitude of the cell, this
+       !                         reduces the size of the cell in lon-lat space
+       ! @return 0 if successful
+
+        use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        integer(c_int), value                    :: fixLonAcrossDateline
+        integer(c_int), value                    :: averageLonAtPole
+        integer(c_int)                           :: mnt_regridedges_setDstGridFlags
+    end function mnt_regridedges_setDstGridFlags
+
     function mnt_regridedges_loadEdgeField(obj, filename, nFilenameLength, &
                                            field_name, nFieldNameLength, &
                                            ndata, data) &
                                            bind(C, name='mnt_regridedges_loadEdgeField')
 
        ! Load field from 2D UGRID file
+       ! @param obj instance of mntRegridEdges_t (opaque handle)
        ! @param filename file name (does not require termination character)
        ! @param nFilenameLength length of filename string (excluding '\0' if present)
        ! @param field_name name of the field
        ! @param nFieldNameLength length of field_name string (excluding '\0' if present)
        ! @param ndata number of edges
        ! @param data array of size number of unique edges (output)
+       ! @return 0 if successful
 
         use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
         implicit none
@@ -54,12 +90,14 @@ module mnt_regridedges_capi_mod
                                            ndata, data) &
                                            bind(C, name='mnt_regridedges_dumpEdgeField')
        ! Dump field to 2D UGRID file
+       ! @param obj instance of mntRegridEdges_t (opaque handle)
        ! @param filename file name (does not require termination character)
        ! @param nFilenameLength length of filename string (excluding '\0' if present)
        ! @param field_name name of the field
        ! @param nFieldNameLength length of field_name string (excluding '\0' if present)
        ! @param ndata number of edges
        ! @param data array of size number of unique edges (output)
+       ! @return 0 if successful
 
         use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
         implicit none
@@ -108,7 +146,7 @@ module mnt_regridedges_capi_mod
     function mnt_regridedges_build(obj, num_cells_per_bucket) &
                                    bind(C, name='mnt_regridedges_build')
       ! Build locator object
-      ! @param obj instance of mntregridedges_t (opaque handle)
+      ! @param obj instance of mntRegridEdges_t (opaque handle)
       ! @param num_cells_per_bucket number of cells per bucket
       ! @return 0 if successful
       use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
@@ -143,7 +181,7 @@ module mnt_regridedges_capi_mod
     function mnt_regridedges_loadWeights(obj, filename, n) & 
                                          bind(C, name='mnt_regridedges_loadWeights')
       ! Load interpolation weights from NetCDF file
-      ! @param obj instance of mntregridedges_t (opaque handle)
+      ! @param obj instance of mntRegridEdges_t (opaque handle)
       ! @param filename file name, \0 (char(0)) terminated
       ! @param n length of filename 
       ! @return 0 if successful
@@ -158,7 +196,7 @@ module mnt_regridedges_capi_mod
     function mnt_regridedges_dumpWeights(obj, filename, n) & 
                                          bind(C, name='mnt_regridedges_dumpWeights')
       ! Dump interpolation weights in NetCDF file
-      ! @param obj instance of mntregridedges_t (opaque handle)
+      ! @param obj instance of mntRegridEdges_t (opaque handle)
       ! @param filename file name, \0 (char(0)) terminated
       ! @param n length of filename 
       ! @return 0 if successful
@@ -173,7 +211,7 @@ module mnt_regridedges_capi_mod
     function mnt_regridedges_print(obj) & 
                                   bind(C, name='mnt_regridedges_print')
       ! Print interpolation weights
-      ! @param obj instance of mntregridedges_t (opaque handle)
+      ! @param obj instance of mntRegridEdges_t (opaque handle)
       ! @return 0 if successful
       use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char
       implicit none
@@ -184,7 +222,7 @@ module mnt_regridedges_capi_mod
     function mnt_regridedges_applyCellEdge(obj, src_data, dst_data) &
                                            bind(C, name='mnt_regridedges_applyCellEdge')
       ! Apply weights to cell by cell edge field
-      ! @param obj instance of mntregridedges_t (opaque handle)
+      ! @param obj instance of mntRegridEdges_t (opaque handle)
       ! @param src_data edge field defined cell by cell on the source grid (array of size 4*num_src_cells)
       ! @param dst_data edge field defined cell by cell on the destination grid (array of size 4*num_dst_cells)
       ! @return 0 if successful
@@ -199,7 +237,7 @@ module mnt_regridedges_capi_mod
     function mnt_regridedges_apply(obj, src_data, dst_data) &
                                    bind(C, name='mnt_regridedges_apply')
       ! Apply weights to unique cell Id edge field
-      ! @param obj instance of mntregridedges_t (opaque handle)
+      ! @param obj instance of mntRegridEdges_t (opaque handle)
       ! @param src_data source field defined for each unique edge Id
       ! @param dst_data destination field defined for each for each unique edge Id
       ! @return 0 if successful
