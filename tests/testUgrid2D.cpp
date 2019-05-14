@@ -20,11 +20,23 @@ void test1() {
     assert(numPoints == 98);
 }
 
+void test2() {
+
+  int ier;
+  std::string file = "@CMAKE_SOURCE_DIR@/data/output_UGRID.nc";
+
+  Ugrid2D ugr;
+  ier = ugr.load(file, "Mesh2d");
+  assert(ier == 0);
+  ugr.dumpGridVtk("output.vtk");
+}
+
 
 
 int main() {
 
     test1();
+    test2();
 
     return 0;
 }   
