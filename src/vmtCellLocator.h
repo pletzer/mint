@@ -44,10 +44,10 @@ public:
     }
 
     /** 
-     * Set the number of buckets
-     * @param numBuckets number of buckets
+     * Set average number of cells/faces per bucket
+     * @param avgNumFacesPerBucket number
      */
-    void SetNumberOfCellsPerBuckets(int avgNumFacesPerBucket) {
+    void SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 
         // number of buckets along one dimension (2D)
         vtkIdType numFaces = this->grid->GetNumberOfCells();
@@ -105,6 +105,7 @@ protected:
     vmtCellLocator() {
         this->grid = NULL;
         this->points = NULL;
+        this->numBucketsX = 10;
     }
 
     /**
