@@ -49,8 +49,9 @@ public:
      */
     void SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 
-        // number of buckets along one dimension (2D)
         vtkIdType numFaces = this->grid->GetNumberOfCells();
+
+        // number of buckets along one dimension (2D)
         this->numBucketsX = (int) std::max(1.0, 
                               std::sqrt((double) numFaces / (double) avgNumFacesPerBucket)
                                       );

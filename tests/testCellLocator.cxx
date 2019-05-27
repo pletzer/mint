@@ -35,6 +35,7 @@ void test1Quad(int numCellsPerBucket) {
 
     // create locator
     vmtCellLocator* cloc = vmtCellLocator::New();
+    cloc->SetDataSet(grid);
     cloc->SetNumberOfCellsPerBucket(numCellsPerBucket);
     cloc->BuildLocator();
 
