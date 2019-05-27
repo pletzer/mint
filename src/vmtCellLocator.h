@@ -1,0 +1,227 @@
+#include <vector>
+#include <map>
+#include "MvVector.h"
+#include <vtkUnstructuredGrid.h>
+#include <vtkCellLocator.h>
+#include <vtkGenericCell.h>
+#include <limits>
+
+
+#ifndef VMT_CELL_LOCATOR
+#define VMT_CELL_LOCATOR
+
+/**
+ * A class to quickly find a cell in an unstructured grid  (as a drop-in alternative to vtlCellLocator)
+ */
+
+class vmtCellLocator {
+
+public:
+
+    static vmtCellLocator* New() {
+        return new vmtCellLocator();
+    }
+
+
+    void Delete() {
+        delete this;
+    }
+
+    /**
+     * Set the grid
+     * @param grid vtkUnstructuredGrid object
+     */
+    void SetDataSet(vtkUnstructuredGrid* grid) {
+        this->grid = grid;
+        this->points = grid->GetPoints();
+        double* bounds = grid->GetBounds();
+        this->xmin[0] = bounds[0];
+        this->xmax[0] = bounds[1];
+        this->xmin[1] = bounds[2];
+        this->xmax[1] = bounds[3];
+        this->xmin[2] = bounds[4];
+        this->xmax[2] = bounds[5];
+    }
+
+    /** 
+     * Set the number of buckets
+     * @param numBuckets number of buckets
+     */
+    void SetNumberOfCellsPerBuckets(int avgNumFacesPerBucket) {
+
+        // number of buckets along one dimension (2D)
+        vtkIdType numFaces = this->grid->GetNumberOfCells();
+        this->numBucketsX = (int) std::max(1.0, 
+                              std::sqrt((double) numFaces / (double) avgNumFacesPerBucket)
+                                      );
+
+    }
+
+    /**
+     * Build the locator
+     */
+    void BuildLocator();
+
+    /**
+     * Find cell given a target point
+     * @param point target
+     * @param tol2 tolerance
+     * @param cell pointer to the cell
+     * @param pcoords parametric coodinates of x in the cell (output)
+     * @param weights interpolation weights of the point
+     */
+    vtkIdType FindCell(const double point[3], double tol2, vtkGenericCell *cell, double pcoords[3], double *weights);
+
+    /**
+     * Find all the cells intersected by line
+     * @param p0 start point
+     * @param p1 end point
+     * @param tol2 tolerance
+     * @param cell list of cells
+     */
+    void FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cells);
+
+    /**
+     * Find intersection point
+     * @param p0 start point
+     * @param p1 end point
+     * @param tol2 tolerance
+     * @param t linear parametric coordinate of the intersection point (output)
+     * @param x intersection point
+     * @param pcoords cell parametric coordinates of the intersection point (output)
+     * @param subId sub-cell Id (not used)
+     * @param cellId cell Id 
+     * @param cell pointer to the cell
+     * @return 1 if found, 0 otherwise
+     */
+    int IntersectWithLine(const double p0[3], const double p1[3], double tol, double &t, double x[3], 
+                          double pcoords[3], int &subId, vtkIdType &cellId, vtkGenericCell *cell);
+
+protected:
+
+    /**
+     * Constructor
+     */
+    vmtCellLocator() {
+        this->grid = NULL;
+        this->points = NULL;
+    }
+
+    /**
+     * Destructor
+     */
+    ~vmtCellLocator() {
+    }
+
+
+private:
+
+    vtkUnstructuredGrid* grid;
+
+    vtkPoints* points;
+
+    // domain range
+    double xmin[3];
+    double xmax[3];
+
+    double weights[8];
+
+    // number of buckets in X and Y
+    int numBucketsX;
+
+    // maps a bucket to a list of faces
+    std::map<int, std::vector<vtkIdType> > bucket2Faces;
+
+
+    /**
+     * Check if a point is indide a face
+     * @param faceId face/cell Id
+     * @param point point
+     * @param tol tolerance
+     * @return true if inside, false otherwise
+     */
+    bool containsPoint(vtkIdType faceId, const double point[3], double tol) const;
+
+    /**
+     * Get the flat array index of a bucket containing a given point
+     * @param point point
+     * @return index
+     * @note assumes there is thickness in the domain
+     *       will return index ven if the point is outside the domain
+     */
+    inline int getBucketId(const double point[3]) const {
+
+        // required to make sure std::floor does not return the 
+        // next integer below if we're close to an integer
+        const double eps = 10 * std::numeric_limits<double>::epsilon();
+
+        // normalize
+        double x[3];
+        for (size_t i = 0; i < 2; ++i) {
+            x[i] = (point[i] - this->xmin[i]) / (this->xmax[i] - this->xmin[i]); // must have some thickness!
+        }
+
+        // bucket coordinates
+        int m = (int) std::floor( this->numBucketsX * x[0] + eps);
+        int n = (int) std::floor( this->numBucketsX * x[1] + eps);
+
+        // make sure the bucket coordinates fit in the domain
+        m = std::max(0, std::min(this->numBucketsX - 1, m));
+        n = std::max(0, std::min(this->numBucketsX - 1, n));
+
+        // return flat array index
+        return m * this->numBucketsX + n;
+    }
+
+    /**
+     * Get the bucket index coordinates
+     * @param bucketId flat bucket Id
+     * @param m index (output)
+     * @param n index (output)
+     */
+    inline void getBucketIndices(int bucketId, int* m, int* n) const {
+        *m = bucketId / this->numBucketsX;
+        *n = bucketId % this->numBucketsX;
+    }
+
+    /**
+     * Collect the intersection points between line and cell
+     * @param cellId cell Id
+     * @param pBeg start point of the line
+     * @param pEnd end point of the line
+     * @return array of line parameter coordinates in increasing order
+     * @note expect either 0 (no intersection) or 2 values (intersection) to be returned.
+     *       start/end points qualify as intersection if they fall into the cell
+     */
+    std::vector<double> collectIntersectionPoints(vtkIdType cellId, 
+                                                  const double pBeg[3],
+                                                  const double pEnd[3]);
+
+    /**
+     * Get the nodal points of the face
+     * @param faceId face Id
+     * @return list of points
+     */
+    inline std::vector< Vector<double> > getFacePoints(vtkIdType faceId) const {
+
+        vtkIdType* ptIds;
+        vtkIdType npts;
+        this->grid->GetCellPoints(faceId, npts, ptIds);
+
+        std::vector< Vector<double> > res(npts);
+        for (size_t i = 0; i < npts; ++i) {
+            vtkIdType idx = ptIds[i];
+            double* p = this->points->GetPoint(idx);
+            res[i] = Vector<double>{p[0], p[1], p[2]};
+        }
+
+        return res;
+    }
+
+    std::vector< std::pair<vtkIdType, std::vector<double> > >
+    findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd);
+
+};
+
+
+#endif // VMT_CELL_LOCATOR

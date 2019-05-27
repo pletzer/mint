@@ -4,6 +4,7 @@ include_directories(
 )
 
 set(LIB_FILES
+  vmtCellLocator.cpp
   mntUgrid2D.cpp
   mntQuadEdgeIter.cpp
   mntPolylineParser.cpp
@@ -27,6 +28,7 @@ set(LIB_FILES
 )
 
 set(HEADER_FILES
+  vmtCellLocator.h
   mntUgrid2D.h
   mntQuadEdgeIter.h
   mntPolylineParser.h
