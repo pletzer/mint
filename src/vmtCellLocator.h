@@ -79,9 +79,9 @@ public:
      * @param p0 start point
      * @param p1 end point
      * @param tol2 tolerance
-     * @param cell list of cells
+     * @param cellIds list of cell Ids
      */
-    void FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cells);
+    void FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds);
 
     /**
      * Find intersection point

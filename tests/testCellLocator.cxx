@@ -156,12 +156,23 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     std::vector< std::pair<vtkIdType, std::vector<double> > > cellIdLambdas;
     double totLambda;
 
+    vtkIdList* cellIds = vtkIdList::New();
+    cloc->FindCellsAlongLine(&pBeg[0], &pEnd[0], 1.e-10, cellIds);
+    std::cout << "line " << pBeg << " -> " << pEnd << " intercepts cells:\n";
+    for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
+        std::cout << cellIds->GetId(i) << ' ';
+        if ((i + 1) % 10 == 0) std::cout << '\n';
+    }
+    std::cout << '\n';
+
     // across the domain
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
     for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+        vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        std::cout << "... cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
@@ -175,8 +186,10 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
     for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+        vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        std::cout << "... cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
@@ -190,6 +203,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
     for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+        vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
         totLambda += lamOut - lamIn;

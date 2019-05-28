@@ -96,9 +96,9 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
 
 
 void
-vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cells) {
+vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds) {
 
-	cells->Reset();
+	cellIds->Reset();
 
     int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
 
@@ -149,7 +149,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
             for (int n = nLo; n <= nHi; ++n) {
                 bucketId = m * numBucketsX + n;
                 for (const vtkIdType& faceId : this->bucket2Faces.find(bucketId)->second) {
-                	cells->InsertUniqueId(faceId);
+                    cellIds->InsertUniqueId(faceId);
                 }
             }
         }
