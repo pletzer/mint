@@ -70,6 +70,7 @@ public:
      * @param cell pointer to the cell
      * @param pcoords parametric coodinates of x in the cell (output)
      * @param weights interpolation weights of the point
+     * @return cell Id if found, < 0 otherwise
      */
     vtkIdType FindCell(const double point[3], double tol2, vtkGenericCell *cell, double pcoords[3], double *weights);
 

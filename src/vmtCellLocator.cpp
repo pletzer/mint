@@ -1,4 +1,5 @@
 #include <vmtCellLocator.h>
+#include <vtkQuad.h>
 #include <vtkPoints.h>
 #include <vtkCell.h>
 #include <mntLineLineIntersector.h>
@@ -72,19 +73,20 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
 
 vtkIdType
-vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *cell, double pcoords[3], double *weights) {
+vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notUsed, double pcoords[3], double *weights) {
 
     int bucketId = this->getBucketId(point);
     double closestPoint[3];
     int subId;
     double dist2;
+    const double eps = 10 * std::numeric_limits<double>::epsilon();    
 
     const std::vector<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
 
     for (const vtkIdType& cId : faces) {
         if (this->containsPoint(cId, point, tol)) {
-        	vtkCell* cell = this->grid->GetCell(cId);
-        	cell->EvaluatePosition((double*) point, closestPoint, subId, pcoords, dist2, weights);
+            vtkCell* quad = this->grid->GetCell(cId);
+            int inside = quad->EvaluatePosition((double*) point, closestPoint, subId, pcoords, dist2, weights);
             return cId;
         }
     }
