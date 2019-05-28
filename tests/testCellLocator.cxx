@@ -1,6 +1,7 @@
 #include <vmtCellLocator.h>
 #include <vtkDoubleArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridWriter.h>
 #include <vtkGenericCell.h>
 #include <vtkPoints.h>
 #include <cassert>
@@ -111,7 +112,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
         double x0 = i*dx;
         double x1 = x0 + dx;
         for (int j = 0; j < ny; ++j) {
-            double y0 = j*dy;
+            double y0 = -90.0 + j*dy;
             double y1 = y0 + dy;
             point[0] = x0; point[1] = y0; point[2] = 0.0;
             coords->SetTuple(k*4 + 0, point);
@@ -131,9 +132,10 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
     grid->SetPoints(points);
     grid->Allocate(numCells, 1);
+    const vtkIdType nptsPerCell = 4;
     vtkIdList* ptIds = vtkIdList::New();
-    vtkIdType nptsPerCell = 4;
     ptIds->SetNumberOfIds(nptsPerCell);
+    k = 0;
     for (size_t iCell = 0; iCell < numCells; ++iCell) {
         for (size_t i = 0; i < nptsPerCell; ++i) {
             ptIds->SetId(i, nptsPerCell*k + i);
@@ -143,6 +145,13 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     }
     grid->InsertNextCell(VTK_QUAD, ptIds);
     ptIds->Delete();
+
+    // save the grid to file
+    vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
+    writer->SetFileName("testCellLocator_latlon.vtk");
+    writer->SetInputData(grid);
+    writer->Update();
+    writer->Delete();
 
     // create locator
     vmtCellLocator* cloc = vmtCellLocator::New();
