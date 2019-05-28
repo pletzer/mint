@@ -99,6 +99,25 @@ public:
     int IntersectWithLine(const double p0[3], const double p1[3], double tol, double &t, double x[3], 
                           double pcoords[3], int &subId, vtkIdType &cellId, vtkGenericCell *cell);
 
+
+    /**
+     * Find all intersection points between line and the grid
+     * @param pBeg start point of the line
+     * @param pEnd end point of the line
+     * @return list of (cellId, [lambda0, lambda1]) pairs
+     */
+    std::vector< std::pair<vtkIdType, std::vector<double> > >
+    findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd);
+
+    /**
+     * Check if a point is indide a face
+     * @param faceId face/cell Id
+     * @param point point
+     * @param tol tolerance
+     * @return true if inside, false otherwise
+     */
+    bool containsPoint(vtkIdType faceId, const double point[3], double tol) const;
+
 protected:
 
     /**
@@ -115,7 +134,6 @@ protected:
      */
     ~vmtCellLocator() {
     }
-
 
 private:
 
@@ -135,15 +153,6 @@ private:
     // maps a bucket to a list of faces
     std::map<int, std::vector<vtkIdType> > bucket2Faces;
 
-
-    /**
-     * Check if a point is indide a face
-     * @param faceId face/cell Id
-     * @param point point
-     * @param tol tolerance
-     * @return true if inside, false otherwise
-     */
-    bool containsPoint(vtkIdType faceId, const double point[3], double tol) const;
 
     /**
      * Get the flat array index of a bucket containing a given point
@@ -220,9 +229,6 @@ private:
 
         return res;
     }
-
-    std::vector< std::pair<vtkIdType, std::vector<double> > >
-    findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd);
 
 };
 

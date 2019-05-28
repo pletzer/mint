@@ -22,7 +22,7 @@ void test1Quad(int numCellsPerBucket) {
     point[0] = 0.0; point[1] = 1.0;; point[2] = 0.0;
     coords->InsertNextTuple(point);
 
-	vtkPoints* points = vtkPoints::New();
+    vtkPoints* points = vtkPoints::New();
     points->SetData(coords);
 
     // grid
@@ -92,7 +92,134 @@ void test1Quad(int numCellsPerBucket) {
 
 }
 
-void test1Hex() {
+void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
+
+    // target points
+    double point[3], p0[3], p1[3];
+
+    int numCells = nx * ny;
+    int numPoints = 4 * numCells;
+    double dx = 360. / (double) nx;
+    double dy = 180. / (double) ny;
+
+    vtkDoubleArray* coords = vtkDoubleArray::New();
+    coords->SetNumberOfComponents(3);
+    coords->SetNumberOfTuples(numPoints);
+
+    int k = 0;
+    for (int i = 0; i < nx; ++i) {
+        double x0 = i*dx;
+        double x1 = x0 + dx;
+        for (int j = 0; j < ny; ++j) {
+            double y0 = j*dy;
+            double y1 = y0 + dy;
+            point[0] = x0; point[1] = y0; point[2] = 0.0;
+            coords->SetTuple(k*4 + 0, point);
+            point[0] = x1; point[1] = y0; point[2] = 0.0;
+            coords->SetTuple(k*4 + 1, point);
+            point[0] = x1; point[1] = y1; point[2] = 0.0;
+            coords->SetTuple(k*4 + 2, point);
+            point[0] = x0; point[1] = y1; point[2] = 0.0;
+            coords->SetTuple(k*4 + 3, point);
+            k++;
+        }
+    }
+
+    vtkPoints* points = vtkPoints::New();
+    points->SetData(coords);
+
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+    grid->SetPoints(points);
+    grid->Allocate(numCells, 1);
+    vtkIdList* ptIds = vtkIdList::New();
+    vtkIdType nptsPerCell = 4;
+    ptIds->SetNumberOfIds(nptsPerCell);
+    for (size_t iCell = 0; iCell < numCells; ++iCell) {
+        for (size_t i = 0; i < nptsPerCell; ++i) {
+            ptIds->SetId(i, nptsPerCell*k + i);
+        }
+        grid->InsertNextCell(VTK_QUAD, ptIds);
+        k++;
+    }
+    grid->InsertNextCell(VTK_QUAD, ptIds);
+    ptIds->Delete();
+
+    // create locator
+    vmtCellLocator* cloc = vmtCellLocator::New();
+    cloc->SetDataSet(grid);
+    cloc->SetNumberOfCellsPerBucket(numCellsPerBucket);
+    cloc->BuildLocator();
+
+    // check
+    Vector<double> pBeg{0.0, -90.0, 0.0};
+    Vector<double> pEnd{360.0, 90.0, 0.0};
+    std::vector< std::pair<vtkIdType, std::vector<double> > > cellIdLambdas;
+    double totLambda;
+
+    // across the domain
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
+    // the other way across the domain
+    pBeg[0] = 360.0; pBeg[1] = -90.0;
+    pEnd[0] = 0.0; pEnd[1] = 90.0;    
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
+    // along y edge of domain
+    pBeg[0] = 0.0; pBeg[1] = -90.0;
+    pEnd[0] = 0.0; pEnd[1] = 90.0;
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
+    // along x edge of domain
+    pBeg[0] = 0.0; pBeg[1] = 90.0;
+    pEnd[0] = 360.0; pEnd[1] = 90.0;
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
+    // clean up
+    cloc->Delete();
+    grid->Delete();
+    points->Delete();
+    coords->Delete();
+
 }
 
 
@@ -101,7 +228,7 @@ int main(int argc, char** argv) {
     test1Quad(1);
     test1Quad(10);
     test1Quad(1000);
-    test1Hex();
+    testUniformLatLonGrid(100, 50, 1);
 
     return 0;
 }
