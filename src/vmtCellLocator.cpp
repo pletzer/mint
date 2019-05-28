@@ -4,7 +4,6 @@
 #include <vtkCell.h>
 #include <mntLineLineIntersector.h>
 
-
 struct LambdaBegFunctor {
     // compare two elements of the array
     bool operator()(const std::pair<vtkIdType, std::vector<double> >& x, 
@@ -16,13 +15,13 @@ struct LambdaBegFunctor {
 void 
 vmtCellLocator::BuildLocator() {
 
-
+    std::vector<vtkIdType> empty;
     // attach an empty array of face Ids to each bucket
-    for (int m = 0; m < numBucketsX; ++m) {
-        for (int n = 0; n < numBucketsX; ++n) {
-            int bucketId = m * numBucketsX + n;
+    for (int m = 0; m < this->numBucketsX; ++m) {
+        for (int n = 0; n < this->numBucketsX; ++n) {
+            int bucketId = m * this->numBucketsX + n;
             // create empty bucket
-            this->bucket2Faces.insert( std::pair< int, std::vector<vtkIdType> >(bucketId, std::vector<vtkIdType>()) );
+            this->bucket2Faces.insert( std::pair< int, std::vector<vtkIdType> >(bucketId, empty) );
         }
     }
 
@@ -43,8 +42,6 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
     tol = std::abs(tol);
     bool res = true;
-    double circ = 0;
-
 
     std::vector< Vector<double> > nodes = this->getFacePoints(faceId);
     size_t npts = nodes.size();

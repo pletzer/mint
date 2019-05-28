@@ -96,7 +96,7 @@ void test1Quad(int numCellsPerBucket) {
 void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
 
     // target points
-    double point[3], p0[3], p1[3];
+    double point[3];
 
     int numCells = nx * ny;
     int numPoints = 4 * numCells;

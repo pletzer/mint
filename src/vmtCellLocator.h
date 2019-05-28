@@ -127,6 +127,11 @@ protected:
         this->grid = NULL;
         this->points = NULL;
         this->numBucketsX = 10;
+	double big = std::numeric_limits<double>::max();
+	for (size_t i = 0; i < 3; ++i) {
+	    this->xmin[i] = big;
+	    this->xmax[i] = -big;
+	}
     }
 
     /**
