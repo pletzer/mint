@@ -19,8 +19,28 @@ class vmtCellLocator {
 
 public:
 
+    /**
+     * Constructor
+     */
+    vmtCellLocator() {
+        this->grid = NULL;
+        this->points = NULL;
+        this->numBucketsX = 10;
+        double big = std::numeric_limits<double>::max();
+        for (size_t i = 0; i < 3; ++i) {
+            this->xmin[i] = big;
+            this->xmax[i] = -big;
+        }
+    }
+
     static vmtCellLocator* New() {
         return new vmtCellLocator();
+    }
+
+    /**
+     * Destructor
+     */
+    ~vmtCellLocator() {
     }
 
 
@@ -136,26 +156,6 @@ public:
     }
 
 protected:
-
-    /**
-     * Constructor
-     */
-    vmtCellLocator() {
-        this->grid = NULL;
-        this->points = NULL;
-        this->numBucketsX = 10;
-	double big = std::numeric_limits<double>::max();
-	for (size_t i = 0; i < 3; ++i) {
-	    this->xmin[i] = big;
-	    this->xmax[i] = -big;
-	}
-    }
-
-    /**
-     * Destructor
-     */
-    ~vmtCellLocator() {
-    }
 
 private:
 
