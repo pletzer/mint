@@ -16,7 +16,7 @@ void
 vmtCellLocator::BuildLocator() {
 
     std::set<vtkIdType> empty;
-    // attach an empty array of face Ids to each bucket
+    // attach an empty set of face Ids to each bucket
     for (int m = 0; m < this->numBucketsX; ++m) {
         for (int n = 0; n < this->numBucketsX; ++n) {
             int bucketId = m * this->numBucketsX + n;
