@@ -193,7 +193,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pEnd[0] = 0.0; pEnd[1] = 90.0;    
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdas) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
@@ -210,7 +210,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pEnd[0] = 0.0; pEnd[1] = 90.0;
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdas) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
@@ -226,7 +226,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pEnd[0] = 360.0; pEnd[1] = 90.0;
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdas) {
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
         totLambda += lamOut - lamIn;
