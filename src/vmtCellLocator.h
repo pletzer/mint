@@ -185,7 +185,7 @@ private:
      */
     inline int getBucketId(const double point[3]) const {
 
-        // required to make sure std::floor does not return the 
+        // required to make sure std::floor that does not return the 
         // next integer below if we're close to an integer
         const double eps = 10 * std::numeric_limits<double>::epsilon();
 
@@ -196,8 +196,8 @@ private:
         }
 
         // bucket coordinates
-        int m = (int) std::floor( this->numBucketsX * x[0] + eps);
-        int n = (int) std::floor( this->numBucketsX * x[1] + eps);
+        int m = (int) std::floor(this->numBucketsX * x[0] + eps);
+        int n = (int) std::floor(this->numBucketsX * x[1] + eps);
 
         // make sure the bucket coordinates fit in the domain
         m = std::max(0, std::min(this->numBucketsX - 1, m));

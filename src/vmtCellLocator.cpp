@@ -116,8 +116,8 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
     int dm = mHi - mLo + 1;
     int dn = nHi - nLo + 1;
 
-    // want more segments when the line is 45 deg. Want more segments when 
-    // the points are far apart.
+    // break the line into segments, the number of segments should not affect the result. Only used as a performance 
+    // improvement. Want more segments when the line is 45 deg. Want more segments when the points are far apart. 
     size_t nSections = std::max(1, std::min(dn, dm));
     Vector<double> du = point1 - point0;
     du /= (double) nSections;
@@ -126,7 +126,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 
         // start/end points of the segment
         Vector<double> pBeg = point0 + (double) iSection * du;
-        Vector<double> pEnd = point0 + du;
+        Vector<double> pEnd = pBeg + du;
     
         // get the start bucket
         begBucketId = this->getBucketId(&pBeg[0]);
