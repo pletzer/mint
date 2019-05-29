@@ -183,7 +183,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
         std::cout << "... cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
         totLambda += lamOut - lamIn;
     }
-    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny << ',' <<
                  numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
                 " totLambda = " << totLambda << '\n';
     assert(std::abs(totLambda - 1.0) < 1.e-10);
@@ -200,7 +200,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
         std::cout << "... cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
         totLambda += lamOut - lamIn;
     }
-    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny << ',' <<
                  numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
                 " totLambda = " << totLambda << '\n';
     assert(std::abs(totLambda - 1.0) < 1.e-10);
@@ -216,7 +216,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
         totLambda += lamOut - lamIn;
     }
-    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
                  numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
                 " totLambda = " << totLambda << '\n';
     assert(std::abs(totLambda - 1.0) < 1.e-10);
@@ -231,7 +231,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
         totLambda += lamOut - lamIn;
     }
-    std::cout << "testUniformLatLonGrid(" << nx << ',' << " ny, " << 
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
                  numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
                 " totLambda = " << totLambda << '\n';
     assert(std::abs(totLambda - 1.0) < 1.e-10);
