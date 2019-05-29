@@ -95,7 +95,7 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
 void
 vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds) {
 
-	cellIds->Reset();
+    cellIds->Reset();
 
     int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
 
@@ -161,9 +161,6 @@ vmtCellLocator::findIntersectionsWithLine(const Vector<double>& pBeg, const Vect
     // store result
     std::vector< std::pair<vtkIdType, std::vector<double> > > res;
 
-    // linear parameter on entry and exit of the cell
-    std::pair<double, double> lamdas;
-
     // collect the cells intersected by the line
     vtkIdList* cells = vtkIdList::New();
     const double eps = 10 * std::numeric_limits<double>::epsilon();    
@@ -177,10 +174,14 @@ vmtCellLocator::findIntersectionsWithLine(const Vector<double>& pBeg, const Vect
         std::vector<double> lambdas = this->collectIntersectionPoints(cellId, &pBeg[0], &pEnd[0]);
 
         if (lambdas.size() >= 2) {
+
+            double lambdaIn = lambdas[0];
+            double lambdaOut = lambdas[lambdas.size() - 1];
+
             // found entry/exit points so add
             res.push_back( 
                 std::pair<vtkIdType, std::vector<double> >(
-                     cellId, std::vector<double>{lambdas[0], lambdas[lambdas.size() - 1]}
+                     cellId, std::vector<double>{lambdaIn, lambdaOut}
                                                        )
                          );
         }
