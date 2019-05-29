@@ -250,6 +250,9 @@ int main(int argc, char** argv) {
     test1Quad(1);
     test1Quad(10);
     test1Quad(1000);
+    testUniformLatLonGrid(10, 5, 1);
+    testUniformLatLonGrid(10, 5, 2);
+    testUniformLatLonGrid(10, 5, 5);
     testUniformLatLonGrid(10, 5, 10);
     testUniformLatLonGrid(10, 5, 20);
     testUniformLatLonGrid(10, 5, 50);
