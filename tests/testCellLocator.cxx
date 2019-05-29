@@ -135,13 +135,11 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     const vtkIdType nptsPerCell = 4;
     vtkIdList* ptIds = vtkIdList::New();
     ptIds->SetNumberOfIds(nptsPerCell);
-    k = 0;
     for (size_t iCell = 0; iCell < numCells; ++iCell) {
         for (size_t i = 0; i < nptsPerCell; ++i) {
-            ptIds->SetId(i, nptsPerCell*k + i);
+            ptIds->SetId(i, nptsPerCell*iCell + i);
         }
         grid->InsertNextCell(VTK_QUAD, ptIds);
-        k++;
     }
     grid->InsertNextCell(VTK_QUAD, ptIds);
     ptIds->Delete();
@@ -159,6 +157,8 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     cloc->SetNumberOfCellsPerBucket(numCellsPerBucket);
     cloc->BuildLocator();
 
+    cloc->printBuckets();
+    
     // check
     Vector<double> pBeg{0.0, -90.0, 0.0};
     Vector<double> pEnd{360.0, 90.0, 0.0};
@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
     test1Quad(1);
     test1Quad(10);
     test1Quad(1000);
-    testUniformLatLonGrid(100, 50, 1);
+    testUniformLatLonGrid(36, 18, 1);
 
     return 0;
 }

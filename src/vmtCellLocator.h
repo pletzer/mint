@@ -118,6 +118,22 @@ public:
      */
     bool containsPoint(vtkIdType faceId, const double point[3], double tol) const;
 
+    /**
+     * Print the bucket to face indices map
+     */
+    void printBuckets() const {
+        for (const auto& b2f : this->bucket2Faces) {
+            int bucketId = b2f.first;
+            int m, n;
+            this->getBucketIndices(bucketId, &m, &n);
+            std::cout << "bucket " << bucketId << " (" << m << ',' << ") contains faces ";
+            for (const auto& faceId : b2f.second) {
+	        std::cout << faceId << ' ';
+            }
+            std::cout << '\n';
+        }
+    }
+
 protected:
 
     /**
