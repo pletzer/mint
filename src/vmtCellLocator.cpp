@@ -15,13 +15,13 @@ struct LambdaBegFunctor {
 void 
 vmtCellLocator::BuildLocator() {
 
-    std::vector<vtkIdType> empty;
+    std::set<vtkIdType> empty;
     // attach an empty array of face Ids to each bucket
     for (int m = 0; m < this->numBucketsX; ++m) {
         for (int n = 0; n < this->numBucketsX; ++n) {
             int bucketId = m * this->numBucketsX + n;
             // create empty bucket
-            this->bucket2Faces.insert( std::pair< int, std::vector<vtkIdType> >(bucketId, empty) );
+            this->bucket2Faces.insert( std::pair< int, std::set<vtkIdType> >(bucketId, empty) );
         }
     }
 
@@ -31,7 +31,7 @@ vmtCellLocator::BuildLocator() {
         std::vector< Vector<double> > nodes = getFacePoints(faceId);
         for (const Vector<double>& p : nodes) {
             int bucketId = this->getBucketId(&p[0]);
-            this->bucket2Faces[bucketId].push_back(faceId);
+            this->bucket2Faces[bucketId].insert(faceId);
         }
     }
 
@@ -78,7 +78,7 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
     double dist2;
     const double eps = 10 * std::numeric_limits<double>::epsilon();    
 
-    const std::vector<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
+    const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
 
     for (const vtkIdType& cId : faces) {
         if (this->containsPoint(cId, point, tol)) {

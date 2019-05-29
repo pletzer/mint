@@ -1,5 +1,6 @@
 #include <vector>
 #include <map>
+#include <set>
 #include "MvVector.h"
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
@@ -172,7 +173,7 @@ private:
     int numBucketsX;
 
     // maps a bucket to a list of faces
-    std::map<int, std::vector<vtkIdType> > bucket2Faces;
+    std::map<int, std::set<vtkIdType> > bucket2Faces;
 
 
     /**
