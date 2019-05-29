@@ -100,7 +100,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
     int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
 
     Vector<double> point0{p0[0], p0[1], p0[2]};
-    Vector<double> point1{p0[0], p1[1], p1[2]};
+    Vector<double> point1{p1[0], p1[1], p1[2]};
 
     // choose the number of sections heuristically. Too few and we'll end up adding too many
     // cells. No point in having more sections than the number of buckets
@@ -160,9 +160,6 @@ vmtCellLocator::findIntersectionsWithLine(const Vector<double>& pBeg, const Vect
 
     // store result
     std::vector< std::pair<vtkIdType, std::vector<double> > > res;
-
-    // linear parameter on entry and exit of the cell
-    std::pair<double, double> lamdas;
 
     // collect the cells intersected by the line
     vtkIdList* cells = vtkIdList::New();
