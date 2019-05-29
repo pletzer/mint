@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
     test1Quad(1);
     test1Quad(10);
     test1Quad(1000);
-    testUniformLatLonGrid(36, 18, 1);
+    testUniformLatLonGrid(10, 5, 1);
 
     return 0;
 }

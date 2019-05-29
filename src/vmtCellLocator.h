@@ -127,7 +127,7 @@ public:
             int bucketId = b2f.first;
             int m, n;
             this->getBucketIndices(bucketId, &m, &n);
-            std::cout << "bucket " << bucketId << " (" << m << ',' << ") contains faces ";
+            std::cout << "bucket " << bucketId << " (" << m << ',' << n << ") contains faces ";
             for (const auto& faceId : b2f.second) {
 	        std::cout << faceId << ' ';
             }
