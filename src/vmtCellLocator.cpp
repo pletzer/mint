@@ -76,7 +76,6 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
     double closestPoint[3];
     int subId;
     double dist2;
-    const double eps = 10 * std::numeric_limits<double>::epsilon();    
 
     const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
 
