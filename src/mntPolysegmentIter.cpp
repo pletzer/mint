@@ -1,5 +1,4 @@
 #include <mntPolysegmentIter.h>
-#include <mntQuadEdgeIter.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <MvVector.h>
@@ -313,11 +312,19 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
 
         // iterate over the quads' edges
-        QuadEdgeIter edgeIt;
-        for (int edgeId = 0; edgeId < edgeIt.getNumberOfEdges(); ++edgeId) {
+        const int numQuadNodes = 4;
+        for (int edgeId = 0; edgeId < numQuadNodes; ++edgeId) {
 
-            int j0, j1;
-            edgeIt.getCellPointIds(edgeId, &j0, &j1);
+        	int j0 = edgeId;
+            int j1 = (j0 + 1) % numQuadNodes;
+
+            // swap direction for the last two edges
+            // (edges always point in the positive direction)
+            if (j0 >= 2) {
+            	int tmp = j0;
+            	j0 = j1;
+            	j1 = tmp;
+            }
 
             this->grid->GetPoint(ptIds->GetId(j0), &v0[0]);
             this->grid->GetPoint(ptIds->GetId(j1), &v1[0]);
