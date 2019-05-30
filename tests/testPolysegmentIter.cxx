@@ -5,7 +5,7 @@
 #include <cmath>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPoints.h>
-#include <vtkCellLocator.h>
+#include <vmtCellLocator.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <iostream>
@@ -34,7 +34,7 @@ void test1Cell() {
     grid->InsertNextCell(VTK_QUAD, ptIds);
     
 
-    vtkCellLocator* loc = vtkCellLocator::New();
+    vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -88,7 +88,7 @@ void test1CellLineOutside() {
     grid->InsertNextCell(VTK_QUAD, ptIds);
     
 
-    vtkCellLocator* loc = vtkCellLocator::New();
+    vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -153,7 +153,7 @@ void test2Cells() {
        grid->InsertNextCell(VTK_QUAD, ptIds);
     }
     
-    vtkCellLocator* loc = vtkCellLocator::New();
+    vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -217,7 +217,7 @@ void test2CellsEdge() {
        grid->InsertNextCell(VTK_QUAD, ptIds);
     }
     
-    vtkCellLocator* loc = vtkCellLocator::New();
+    vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 

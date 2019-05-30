@@ -4,7 +4,7 @@
 #include <mntPolysegmentIter.h>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkCellLocator.h>
+#include <vmtCellLocator.h>
 #include <vtkCellData.h>
 #include <string>
 #include <iostream>
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
         std::cout << "no of cells " << grid->GetNumberOfCells() << " no of points " << grid->GetNumberOfPoints() << '\n';
 
         // build locator
-        vtkCellLocator* loc = vtkCellLocator::New();
+        vmtCellLocator* loc = vmtCellLocator::New();
         loc->SetDataSet(grid);
         loc->SetNumberOfCellsPerBucket(args.get<int>("-N"));
         loc->BuildLocator();

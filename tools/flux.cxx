@@ -4,7 +4,7 @@
 #include <mntPolysegmentIter.h>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkCellLocator.h>
+#include <vmtCellLocator.h>
 #include <vtkCellData.h>
 #include <string>
 #include <iostream>
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
         double* srcData = (double*) aa->GetVoidPointer(0);
 
         // build locator
-        vtkCellLocator* loc = vtkCellLocator::New();
+        vmtCellLocator* loc = vmtCellLocator::New();
         loc->SetDataSet(grid);
         loc->BuildLocator();
 

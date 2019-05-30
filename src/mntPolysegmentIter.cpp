@@ -16,7 +16,7 @@ struct TCmpFunctor {
 };
 
 
-PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
+PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator, 
                                  const double p0[], const double p1[]) {
 
     // small tolerances 

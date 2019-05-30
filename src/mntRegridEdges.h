@@ -2,7 +2,7 @@
 #include <map>
 #include <string>
 #include <vtkUnstructuredGrid.h>
-#include <vtkCellLocator.h>
+#include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
 
@@ -20,7 +20,7 @@ struct RegridEdges_t {
     vtkUnstructuredGrid* dstGrid;
 
     // cell locator (octree-based) for fast cell search
-    vtkCellLocator* srcLoc;
+    vmtCellLocator* srcLoc;
 
     // interpolation weights and corresponding src/dst grid cell
     // indices and edges indices

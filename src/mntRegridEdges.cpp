@@ -59,7 +59,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     *self = new RegridEdges_t();
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
-    (*self)->srcLoc = vtkCellLocator::New();
+    (*self)->srcLoc = vmtCellLocator::New();
     (*self)->numSrcCells = 0;
     (*self)->numDstCells = 0;
     (*self)->numPointsPerCell = 4; // 2d

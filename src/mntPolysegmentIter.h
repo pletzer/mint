@@ -1,7 +1,7 @@
 #include "MvVector.h"
 #include <mntLineLineIntersector.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkCellLocator.h>
+#include <vmtCellLocator.h>
 #include <map>
 #include <algorithm>
 
@@ -19,7 +19,7 @@ public:
      * @param p0 start point
      * @param p1 end point
      */
-    PolysegmentIter(vtkUnstructuredGrid* grid, vtkCellLocator* locator, 
+    PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator, 
                     const double p0[], const double p1[]);
 
     /**
@@ -142,7 +142,7 @@ private:
 
     vtkUnstructuredGrid* grid;
 
-    vtkCellLocator* locator;
+    vmtCellLocator* locator;
 
     double eps;
     double eps100;
