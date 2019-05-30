@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     args.set("-o", std::string(""), "Specify output VTK file where regridded edge data is saved");
     args.set("-S", 1, "Set to zero if you want to disable source grid regularization. This might be required for uniform lon-lat grids");
     args.set("-D", 1, "Set to zero if you want to disable destination grid regularization. This might be required for uniform lon-lat grids");
-    args.set("-N", 1024, "Average number of cells per bucket");
+    args.set("-N", 10, "Average number of cells per bucket");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");

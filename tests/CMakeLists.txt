@@ -216,6 +216,7 @@ set_tests_properties(regrid_edgesLATLON100x50ToCS4 PROPERTIES
 
 add_test(NAME regrid_edgesLATLON100x50ToCS16
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
+                 "-N" "20"
                  "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc:latlon"
                  "-S" "0" 
                  "-v" "edge_integrated_velocity" 
