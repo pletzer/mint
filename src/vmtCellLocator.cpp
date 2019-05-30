@@ -30,6 +30,8 @@ vmtCellLocator::BuildLocator() {
     for (vtkIdType faceId = 0; faceId < numFaces; ++faceId) {
         std::vector< Vector<double> > nodes = getFacePoints(faceId);
         for (const Vector<double>& p : nodes) {
+            // assumes that the buckets are always bigger than the faces, or alternatively
+            // that no corners are fully inside a face
             int bucketId = this->getBucketId(&p[0]);
             this->bucket2Faces[bucketId].insert(faceId);
         }
