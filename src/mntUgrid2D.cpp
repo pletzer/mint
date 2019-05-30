@@ -1,6 +1,5 @@
 #include <mntUgrid2D.h>
 #include <mntLineLineIntersector.h>
-#include <mntQuadEdgeIter.h>
 #include <netcdf.h>
 #include <iostream>
 #include <set>
@@ -601,11 +600,18 @@ Ugrid2D::collectIntersectionPoints(size_t cellId,
     }
 
     // iterate over the cell's edges
-    QuadEdgeIter edgeIt;
-    for (int edgeIndex = 0; edgeIndex < edgeIt.getNumberOfEdges(); ++edgeIndex) {
+    const int numQuadNodes = 4;
+    for (int edgeIndex = 0; edgeIndex < numQuadNodes; ++edgeIndex) {
 
-        int j0, j1;
-        edgeIt.getCellPointIds(edgeIndex, &j0, &j1);
+        int j0 = edgeIndex;
+        int j1 = (j0 + 1) % numQuadNodes;
+
+        // swap the edges for edges 2 and 3
+        if (edgeIndex >= 2) {
+            int tmp = j0;
+            j0 = j1;
+            j1 = tmp;
+        }
 
         // compute the intersection point
         intersector.setPoints(&pBeg[0], &pEnd[0], &nodes[j0][0], &nodes[j1][0]);
