@@ -62,6 +62,8 @@ public:
         this->xmax[1] = bounds[3];
         this->xmin[2] = bounds[4];
         this->xmax[2] = bounds[5];
+        // want the buckets to be larger than the cells
+        this->numBucketsX = std::max(1, int(0.1 * std::sqrt(grid->GetNumberOfCells())));
     }
 
     /** 
