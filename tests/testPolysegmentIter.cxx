@@ -9,6 +9,7 @@
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <iostream>
+#include <MvVector.h>
 
 void test1Cell() {
     // a one cell grid, built from scratch
@@ -38,9 +39,23 @@ void test1Cell() {
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
-    const double p0[] = {0.2, 0.3, 0.};
-    const double p1[] = {0.4, 0.5, 0.};
-    PolysegmentIter psi(grid, loc, p0, p1);
+    const Vector<double> p0{0.2, 0.3, 0.};
+    const Vector<double> p1{0.4, 0.5, 0.};
+
+    std::vector< std::pair<vtkIdType, std::vector<double> > > 
+        intersects = loc->findIntersectionsWithLine(p0, p1);
+    double totLam = 0;
+    for (const auto& cLams : intersects) {
+        vtkIdType cellId = cLams.first;
+        double lambdaIn = cLams.second[0];
+        double lambdaOut = cLams.second.back();
+        totLam += lambdaOut - lambdaIn;
+        std::cout << "... intersection point: lambda = " << lambdaIn << " -> " << lambdaOut << '\n';
+    }
+    std::cout << "total lambda = " << totLam << '\n';
+    assert(std::abs(totLam - 1.0) < 1.e-10);
+
+    PolysegmentIter psi(grid, loc, &p0[0], &p1[0]);
     size_t numSegs = psi.getNumberOfSegments();
     psi.reset();
     for (size_t i = 0; i < numSegs; ++i) {
@@ -56,6 +71,7 @@ void test1Cell() {
                                    << '\n';
         psi.next();
     }
+    std::cout << "num segments = " << numSegs << " integrated param coord = " << psi.getIntegratedParamCoord() << '\n';
     assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
 
     ptIds->Delete();
