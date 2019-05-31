@@ -13,6 +13,9 @@
 #define LAT_INDEX 1
 #define ELV_INDEX 2
 
+#define LON_MIN 0.0
+#define LON_MAX 360.0
+
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge distances
  * @param period periodicity length
@@ -219,14 +222,14 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             // fix longitude when crossing the dateline
             // use the first longitude as the base
             size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
-            double lonBase = ugrid.getPoint(kBase)[LON_INDEX]; //lons[kBase];
+            double lonBase = ugrid.getPoint(kBase)[LON_INDEX];
 
             double avgLon = 0;
-            int poleNode = -1;
+            int poleNodeIdx = -1;
             int count = 0;
-            for (int node = 0; node < numVertsPerCell; ++node) {
+            for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
 
-                size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + node];
+                size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
                 double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
                 double lat = ugrid.getPoint(k)[LAT_INDEX];
 
@@ -235,7 +238,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 }
 
                 if (std::abs(lat) == 90.0) {
-                    poleNode  = node;
+                    poleNodeIdx  = nodeIdx;
                 }
                 else {
                     avgLon += lon;
@@ -243,18 +246,32 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 }
 
                 // even in 2d we have three components
-                (*self)->verts[LON_INDEX + node*3 + icell*numVertsPerCell*3] = lon;
-                (*self)->verts[LAT_INDEX + node*3 + icell*numVertsPerCell*3] = lat;
-                (*self)->verts[ELV_INDEX + node*3 + icell*numVertsPerCell*3] = 0.0;
+                (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lon;
+                (*self)->verts[LAT_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lat;
+                (*self)->verts[ELV_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = 0.0;
             }
             avgLon /= count;
+
+            // make sure the cell is within the LON_MIN to LON_MAX range
+            double offsetLon = 0.0;
+            if ((*self)->fixLonAcrossDateline) {
+                if (avgLon > LON_MAX) {
+                    offsetLon = -360.0;
+                }
+                else if (avgLon < LON_MIN) {
+                    offsetLon = 360.0;
+                }
+                for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+                    (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] += offsetLon;
+                }
+            }
 
             // check if there if one of the cell nodes is at the north/south pole. In 
             // this case the longitude is ill-defined. Set the longitude there to the
             // average of the 3 other longitudes.
 
-            if ((*self)->averageLonAtPole && poleNode >= 0) {
-                (*self)->verts[LON_INDEX + poleNode*3 + icell*numVertsPerCell*3] = avgLon;
+            if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
+                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
             }
         }
     }
