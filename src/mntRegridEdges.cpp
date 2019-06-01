@@ -319,6 +319,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     (*self)->weightSrcCellIds.reserve(n);
     (*self)->weightDstCellIds.reserve(n);
 
+    double* srcGridBounds = (*self)->srcGrid->GetBounds();
+    double srcLonMin = srcGridBounds[mnt_grid_getLonIndex()];
+    
+
 #ifdef MYDEBUG
     printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId        xia        xib\n");
 #endif
@@ -342,6 +346,17 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
               
             dstPoints->GetPoint(dstCell->GetPointId(id0), dstEdgePt0);
             dstPoints->GetPoint(dstCell->GetPointId(id1), dstEdgePt1);
+
+            // regularize by adding/removing 360 degrees
+            double lonMid = 0.5*(dstEdgePt0[0] + dstEdgePt1[0]);
+            if (lonMid < srcLonMin) {
+                dstEdgePt0[0] += 360.0;
+                dstEdgePt1[0] += 360.0;
+            }
+            else if (lonMid > srcLonMin + 360.) {
+                dstEdgePt0[0] -= 360.0;
+                dstEdgePt1[0] -= 360.0;                
+            }
 
             // break the edge into sub-edges
             PolysegmentIter polySegIter = PolysegmentIter((*self)->srcGrid, 

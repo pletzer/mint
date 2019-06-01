@@ -8,6 +8,10 @@
 #ifndef MNT_GRID
 #define MNT_GRID
 
+#define LON_INDEX 0
+#define LAT_INDEX 1
+#define ELV_INDEX 2
+
 struct Grid_t {
 
     // vertex raw data
@@ -53,6 +57,21 @@ int mnt_grid_new(Grid_t** self);
  */
 extern "C"
 int mnt_grid_del(Grid_t** self);
+
+extern "C"
+inline int mnt_grid_getLonIndex() {
+    return LON_INDEX;
+}
+
+extern "C"
+inline int mnt_grid_getLatIndex() {
+    return LAT_INDEX;
+}
+
+extern "C"
+inline int mnt_grid_getElvIndex() {
+    return ELV_INDEX;
+}
 
 /**
  * Set grid flags

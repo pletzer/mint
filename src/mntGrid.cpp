@@ -9,10 +9,6 @@
 #include <algorithm>
 #include "mntUgrid2D.h"
 
-#define LON_INDEX 0
-#define LAT_INDEX 1
-#define ELV_INDEX 2
-
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge distances
  * @param period periodicity length
