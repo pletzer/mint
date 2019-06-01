@@ -13,9 +13,6 @@
 #define LAT_INDEX 1
 #define ELV_INDEX 2
 
-#define LON_MIN 0.0
-#define LON_MAX 360.0
-
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge distances
  * @param period periodicity length
@@ -196,6 +193,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
         return 1;
     }
 
+    double xmin[3], xmax[3];
+    ugrid.getRange(xmin, xmax);
+    double lonMin = xmin[0];
+
     // copy 
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
     (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
@@ -259,13 +260,14 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
                 (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
             }
-            // make sure the cell is within the LON_MIN to LON_MAX range
+
+            // make sure the cell is within the lonMin to lonMin + 360.0 range
             double offsetLon = 0.0;
             if ((*self)->fixLonAcrossDateline) {
-                if (avgLon > LON_MAX) {
+                if (avgLon > lonMin + 360.) {
                     offsetLon = -360.0;
                 }
-                else if (avgLon < LON_MIN) {
+                else if (avgLon < lonMin) {
                     offsetLon = 360.0;
                 }
                 for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
