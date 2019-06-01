@@ -252,6 +252,13 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             }
             avgLon /= count;
 
+            // check if there if one of the cell nodes is at the north/south pole. In 
+            // this case the longitude is ill-defined. Set the longitude there to the
+            // average of the 3 other longitudes.
+
+            if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
+                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
+            }
             // make sure the cell is within the LON_MIN to LON_MAX range
             double offsetLon = 0.0;
             if ((*self)->fixLonAcrossDateline) {
@@ -264,14 +271,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
                     (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] += offsetLon;
                 }
-            }
-
-            // check if there if one of the cell nodes is at the north/south pole. In 
-            // this case the longitude is ill-defined. Set the longitude there to the
-            // average of the 3 other longitudes.
-
-            if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
-                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
             }
         }
     }
