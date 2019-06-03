@@ -14,7 +14,6 @@ cell = vtk.vtkGenericCell()
 xsis = numpy.zeros((3,), numpy.float64)
 etas = numpy.zeros((3,), numpy.float64)
 weights = numpy.zeros((8,), numpy.float64)
-yp = numpy.zeros((3,), numpy.float64)
 
 parser = argparse.ArgumentParser(description='Convert cell-by-cell edge field into an edge field')
 parser.add_argument('-i', dest='inputFile', default='res.vtk', help='Specify path to VTK, cell-by-cell input file')
@@ -29,17 +28,26 @@ args = parser.parse_args()
 
 
 def tendency(t, point, loc, grid):
-
-    print('*** point = {}'.format(point))
+    """
+    Compute the ODE tendency
+    @param t time (not used)
+    @param point point
+    @param loc cell locator
+    @param grid unstructed grid instance
+    @return  velocity at the point
+    """
 
     pts = grid.GetPoints()
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
 
+    # TO DO 
+    # apply periodicity on longitudes
+
     # find the cell and the param coords xis
     cellId = loc.FindCell(point, TOL, cell, xsis, weights)
     if cellId < 0:
-        print('ERROR: out of domain integration')
-        return numpy.zeros((2,), numpy.float64)
+        print('ERROR: out of domain integration, point = {}'.format(point[:2]))
+        return numpy.zeros((3,), numpy.float64)
 
     # complement to xi
     etas[:] = 1.0 - xsis
@@ -57,8 +65,9 @@ def tendency(t, point, loc, grid):
     # Jacobian (cell area in lon-lat coords)
     jac = dPd0[0]*dPd1[1] - dPd0[1]*dPd1[0]
 
-    edgeVals = numpy.array([data.GetTuple(cellId, i) for i in range(4)])
+    edgeVals = numpy.array(data.GetTuple(cellId))
 
+    yp = numpy.zeros((3,), numpy.float64)
     yp[0] = ( + (edgeVals[0]*etas[1] + edgeVals[2]*xsis[1])*dPd1[1] 
               - (edgeVals[3]*etas[0] + edgeVals[1]*xsis[0])*dPd0[1] )/jac
     yp[1] = ( - (edgeVals[0]*etas[1] + edgeVals[2]*xsis[1])*dPd1[0] 
@@ -81,7 +90,6 @@ loc.BuildLocator()
 
 
 p0 = numpy.array(list(eval(args.initialPosition)) + [0.0])
-print(p0)
 timeSteps = numpy.linspace(0.0, args.finalTime, args.numSteps + 1)
 sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(loc, ugrid))
 
