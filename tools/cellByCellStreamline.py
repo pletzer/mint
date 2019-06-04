@@ -9,15 +9,15 @@ Convert an edge field defined cell by cell to an edge field defined on a collect
 
 LON_INDEX, LAT_INDEX = 0, 1
 EPS = 1.234e-12
-TOL = 1.e-10
-cell = vtk.vtkGenericCell()
+TOL = 1.e-3 # 1.e-10
+subId = vtk.mutable(-1)
 xsis = numpy.zeros((3,), numpy.float64)
 etas = numpy.zeros((3,), numpy.float64)
 weights = numpy.zeros((8,), numpy.float64)
 
 parser = argparse.ArgumentParser(description='Convert cell-by-cell edge field into an edge field')
 parser.add_argument('-i', dest='inputFile', default='res.vtk', help='Specify path to VTK, cell-by-cell input file')
-parser.add_argument('-o', dest='outputFile', default='edges.vtk', help='Specify name of VTK output file')
+parser.add_argument('-o', dest='outputFile', default='trajectory.vtk', help='Specify name of VTK output file')
 parser.add_argument('-v', dest='edgeFieldName', default='edge_integrated_velocity', help='Specify name of edge integrated variable')
 parser.add_argument('-0', dest='initialPosition', default='180.0, 0.0', help='Specify initial condition "lon,lat"')
 parser.add_argument('-tf', dest='finalTime', default=100.0, type=float, help='Specify final time')
@@ -25,9 +25,42 @@ parser.add_argument('-nt', dest='numSteps', default=100, type=int, help='Specify
 
 args = parser.parse_args()
 
+def saveTrajectory(sol, outputFile):
+    """
+    Save the trajectory to VTK file
+    @param sol output of odeint
+    @param filename
+    """
+    # create an unstructured grid
+    tarr = vtk.vtkDoubleArray()
+    npts, ndims = sol.shape
+    tarr.SetNumberOfComponents(ndims)
+    tarr.SetNumberOfTuples(npts)
+    tarr.SetVoidArray(sol, npts*3, 1)
+    tpts = vtk.vtkPoints()
+    tpts.SetData(tarr)
+
+    tgrid = vtk.vtkUnstructuredGrid()
+    tgrid.SetPoints(tpts)
+    nsegs = npts - 1
+    tgrid.Allocate(nsegs, 1)
+    ptIds = vtk.vtkIdList()
+    ptIds.SetNumberOfIds(2)
+    for i in range(nsegs):
+        ptIds.SetId(0, i)
+        ptIds.SetId(1, i + 1)
+        tgrid.InsertNextCell(vtk.VTK_LINE, ptIds)
+
+    # save
+    writer = vtk.vtkUnstructuredGridWriter()
+    writer.SetFileName(outputFile)
+    writer.SetInputData(tgrid)
+    writer.Update()
 
 
-def tendency(t, point, loc, grid):
+
+
+def tendency(t, point, cellId, loc, grid):
     """
     Compute the ODE tendency
     @param t time (not used)
@@ -39,12 +72,14 @@ def tendency(t, point, loc, grid):
 
     pts = grid.GetPoints()
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
+    cell = vtk.vtkGenericCell()
 
     # TO DO 
     # apply periodicity on longitudes
 
     # find the cell and the param coords xis
     cellId = loc.FindCell(point, TOL, cell, xsis, weights)
+    #cellId = grid.FindCell(point, cell, cellId, TOL, subId, xsis, weights)
     if cellId < 0:
         print('ERROR: out of domain integration, point = {}'.format(point[:2]))
         return numpy.zeros((3,), numpy.float64)
@@ -88,9 +123,11 @@ loc = vtk.vtkCellLocator()
 loc.SetDataSet(ugrid)
 loc.BuildLocator()
 
-
 p0 = numpy.array(list(eval(args.initialPosition)) + [0.0])
 timeSteps = numpy.linspace(0.0, args.finalTime, args.numSteps + 1)
-sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(loc, ugrid))
+cellId = 0
+sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(cellId, loc, ugrid))
 
-print(sol)
+# save the trajectory
+print('saving the trajectory in {}'.format(args.outputFile))
+saveTrajectory(sol, args.outputFile)
