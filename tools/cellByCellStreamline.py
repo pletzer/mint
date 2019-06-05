@@ -9,7 +9,7 @@ Convert an edge field defined cell by cell to an edge field defined on a collect
 
 LON_INDEX, LAT_INDEX = 0, 1
 EPS = 1.234e-12
-TOL = 1.e-3 # 1.e-10
+TOL = 1.e-36 # 1.e-10
 subId = vtk.mutable(-1)
 xsis = numpy.zeros((3,), numpy.float64)
 etas = numpy.zeros((3,), numpy.float64)
@@ -23,8 +23,6 @@ parser.add_argument('-v', dest='edgeFieldName', default='edge_integrated_velocit
 parser.add_argument('-0', dest='initialPosition', default='180.0, 0.0', help='Specify initial condition "lon,lat"')
 parser.add_argument('-tf', dest='finalTime', default=100.0, type=float, help='Specify final time')
 parser.add_argument('-nt', dest='numSteps', default=100, type=int, help='Specify number of time steps')
-parser.add_argument('-s', dest='streamFunction', default='sin(2*pi*x/360.)*cos(pi*y/180.)', 
-                          help='Specify stream function (this option overrides -v)')
 
 args = parser.parse_args()
 
@@ -122,35 +120,6 @@ ugrid = reader.GetOutput()
 
 npts = ugrid.GetNumberOfPoints()
 ncells = ugrid.GetNumberOfCells()
-
-# add edge velocity
-edgeVel = vtk.vtkDoubleArray()
-edgeVel.SetNumberOfComponents(4)
-edgeVel.SetNumberOfTuples(ncells)
-ptIds = vtk.vtkIdList()
-ptIds.SetNumberOfIds(4)
-for icell in range(ncells):
-    ugrid.GetCellPoints(icell, ptIds)
-    ip0, ip1, ip2, ip3 = ptIds.GetId(0), ptIds.GetId(1), ptIds.GetId(2), ptIds.GetId(3)
-    p0, p1, p2, p3 = ugrid.GetPoint(p0), ugrid.GetPoint(p1), ugrid.GetPoint(p2), ugrid.GetPoint(p3)
-
-    x, y = p0[:2]
-    s0 = eval(args.streamFunction)
-    x, y = p1[:2]
-    s1 = eval(args.streamFunction)
-    x, y = p2[:2]
-    s2 = eval(args.streamFunction)
-    x, y = p3[:2]
-    s3 = eval(args.streamFunction)
-
-    edgeVals = [s1 - s0, s2 - s1, s2 - s3, s3 - s0]
-    edgeVel.SetTuple(icell, edgeVals)
-
-
-stream = vtk.vtkDoubleArray()
-stream
-stream.
-
 
 
 # create a locator
