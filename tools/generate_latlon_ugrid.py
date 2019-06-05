@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 # check
 if not args.grid_file:
-    print("ERROR: must specify grid file (-g)")
+    print("ERROR: must specify grid file (-o)")
     sys.exit(1)
 try:
     grid_file, mesh_name = args.grid_file.split(':')

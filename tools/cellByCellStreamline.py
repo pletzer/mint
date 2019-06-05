@@ -14,6 +14,7 @@ subId = vtk.mutable(-1)
 xsis = numpy.zeros((3,), numpy.float64)
 etas = numpy.zeros((3,), numpy.float64)
 weights = numpy.zeros((8,), numpy.float64)
+cell = vtk.vtkGenericCell()
 
 parser = argparse.ArgumentParser(description='Convert cell-by-cell edge field into an edge field')
 parser.add_argument('-i', dest='inputFile', default='res.vtk', help='Specify path to VTK, cell-by-cell input file')
@@ -22,6 +23,8 @@ parser.add_argument('-v', dest='edgeFieldName', default='edge_integrated_velocit
 parser.add_argument('-0', dest='initialPosition', default='180.0, 0.0', help='Specify initial condition "lon,lat"')
 parser.add_argument('-tf', dest='finalTime', default=100.0, type=float, help='Specify final time')
 parser.add_argument('-nt', dest='numSteps', default=100, type=int, help='Specify number of time steps')
+parser.add_argument('-s', dest='streamFunction', default='sin(2*pi*x/360.)*cos(pi*y/180.)', 
+                          help='Specify stream function (this option overrides -v)')
 
 args = parser.parse_args()
 
@@ -72,7 +75,6 @@ def tendency(t, point, cellId, loc, grid):
 
     pts = grid.GetPoints()
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
-    cell = vtk.vtkGenericCell()
 
     # TO DO 
     # apply periodicity on longitudes
@@ -117,6 +119,39 @@ reader.Update()
 
 # get the unstructured grid
 ugrid = reader.GetOutput()
+
+npts = ugrid.GetNumberOfPoints()
+ncells = ugrid.GetNumberOfCells()
+
+# add edge velocity
+edgeVel = vtk.vtkDoubleArray()
+edgeVel.SetNumberOfComponents(4)
+edgeVel.SetNumberOfTuples(ncells)
+ptIds = vtk.vtkIdList()
+ptIds.SetNumberOfIds(4)
+for icell in range(ncells):
+    ugrid.GetCellPoints(icell, ptIds)
+    ip0, ip1, ip2, ip3 = ptIds.GetId(0), ptIds.GetId(1), ptIds.GetId(2), ptIds.GetId(3)
+    p0, p1, p2, p3 = ugrid.GetPoint(p0), ugrid.GetPoint(p1), ugrid.GetPoint(p2), ugrid.GetPoint(p3)
+
+    x, y = p0[:2]
+    s0 = eval(args.streamFunction)
+    x, y = p1[:2]
+    s1 = eval(args.streamFunction)
+    x, y = p2[:2]
+    s2 = eval(args.streamFunction)
+    x, y = p3[:2]
+    s3 = eval(args.streamFunction)
+
+    edgeVals = [s1 - s0, s2 - s1, s2 - s3, s3 - s0]
+    edgeVel.SetTuple(icell, edgeVals)
+
+
+stream = vtk.vtkDoubleArray()
+stream
+stream.
+
+
 
 # create a locator
 loc = vtk.vtkCellLocator()
