@@ -59,8 +59,6 @@ def saveTrajectory(sol, outputFile):
     writer.Update()
 
 
-
-
 def tendency(t, point, cellId, loc, grid):
     """
     Compute the ODE tendency
@@ -75,11 +73,10 @@ def tendency(t, point, cellId, loc, grid):
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
 
     # TO DO 
-    # apply periodicity on longitudes
+    # apply periodicity on longitudes when leaving domain
 
     # find the cell and the param coords xis
     cellId = loc.FindCell(point, TOL, cell, xsis, weights)
-    #cellId = grid.FindCell(point, cell, cellId, TOL, subId, xsis, weights)
     if cellId < 0:
         print('ERROR: out of domain integration, point = {}'.format(point[:2]))
         return numpy.zeros((3,), numpy.float64)
@@ -120,7 +117,6 @@ ugrid = reader.GetOutput()
 
 npts = ugrid.GetNumberOfPoints()
 ncells = ugrid.GetNumberOfCells()
-
 
 # create a locator
 loc = vtk.vtkCellLocator()
