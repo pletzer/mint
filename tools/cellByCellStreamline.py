@@ -86,13 +86,15 @@ def tendency(t, point, cellId, loc, grid):
 
     # get the corner points of the cell
     ptIds = cell.GetPointIds()
-    corner = []
+    corners = []
     for i in range(ptIds.GetNumberOfIds()):
         p = pts.GetPoint(ptIds.GetId(i))
-        corner.append( numpy.array([p[0], p[1]]) )
+        corners.append( numpy.array([p[0], p[1]]) )
 
-    dPd0 = (corner[1] - corner[0])*etas[1] + (corner[2] - corner[3])*xsis[1]
-    dPd1 = (corner[3] - corner[0])*etas[0] + (corner[2] - corner[1])*xsis[0]
+    # d position / d xi^0
+    dPd0 = (corners[1] - corners[0])*etas[1] + (corners[2] - corners[3])*xsis[1]
+    # d position / d xi^1
+    dPd1 = (corners[3] - corners[0])*etas[0] + (corners[2] - corners[1])*xsis[0]
 
     # Jacobian (cell area in lon-lat coords)
     jac = dPd0[0]*dPd1[1] - dPd0[1]*dPd1[0]
@@ -100,10 +102,10 @@ def tendency(t, point, cellId, loc, grid):
     edgeVals = numpy.array(data.GetTuple(cellId))
 
     yp = numpy.zeros((3,), numpy.float64)
-    yp[0] = ( + (edgeVals[0]*etas[1] + edgeVals[2]*xsis[1])*dPd1[1] 
-              - (edgeVals[3]*etas[0] + edgeVals[1]*xsis[0])*dPd0[1] )/jac
-    yp[1] = ( - (edgeVals[0]*etas[1] + edgeVals[2]*xsis[1])*dPd1[0] 
+    yp[0] = ( - (edgeVals[0]*etas[1] + edgeVals[2]*xsis[1])*dPd1[0] 
               + (edgeVals[3]*etas[0] + edgeVals[1]*xsis[0])*dPd0[0] )/jac
+    yp[1] = ( - (edgeVals[0]*etas[1] + edgeVals[2]*xsis[1])*dPd1[1] 
+              + (edgeVals[3]*etas[0] + edgeVals[1]*xsis[0])*dPd0[1] )/jac
 
     return yp
 
