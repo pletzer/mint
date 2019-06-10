@@ -110,8 +110,15 @@ def tendency(t, point, cellId, loc, grid):
     pts = grid.GetPoints()
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
 
-    # TO DO 
     # apply periodicity on longitudes when leaving domain
+    if point[0] < 0.:
+        point[0] += 360.
+    elif point[0] > 360.:
+        point[0] -= 360.
+
+    # lat cannot exceed 90 deg
+    point[1] = min(90., point[1])
+    point[1] = max(-90., point[1])
 
     # find the cell and the param coords xis
     cellId = loc.FindCell(point, TOL, cell, xsis, weights)
