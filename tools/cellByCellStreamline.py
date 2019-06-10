@@ -4,6 +4,7 @@ import argparse
 from scipy.integrate import odeint
 import random
 import functools
+import sys
 
 """
 Convert an edge field defined cell by cell to an edge field defined on a collection of line cells
@@ -111,19 +112,12 @@ def tendency(t, point, loc, grid):
 
     pts = grid.GetPoints()
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
-    if data is None:
-        print('ERROR: no field called {}'.format(args.edgeFieldName))
-        return numpy.zeros((3,), numpy.float64)
 
     # apply periodicity on longitudes when leaving domain
-    if point[0] < 0.:
-        point[0] += 360.
-    elif point[0] > 360.:
-        point[0] -= 360.
+    point[0] = point[0] % 360.
 
     # lat cannot exceed 90 deg
-    point[1] = min(90., point[1])
-    point[1] = max(-90., point[1])
+    point[1] = max(-90., min(90., point[1]))
 
     # find the cell and the param coords xis
     cellId = loc.FindCell(point, TOL, cell, xsis, weights)
@@ -164,8 +158,15 @@ reader = vtk.vtkUnstructuredGridReader()
 reader.SetFileName(args.inputFile)
 reader.Update()
 
+
 # get the unstructured grid
 ugrid = reader.GetOutput()
+
+data = ugrid.GetCellData().GetAbstractArray(args.edgeFieldName)
+if data is None:
+    print('ERROR: no field called {}'.format(args.edgeFieldName))
+    sys.exit(1)
+
 
 npts = ugrid.GetNumberOfPoints()
 ncells = ugrid.GetNumberOfCells()
