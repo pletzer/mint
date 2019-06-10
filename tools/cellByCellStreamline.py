@@ -97,7 +97,7 @@ def saveTrajectory(sols, outputFile):
     writer.Update()
 
 
-def tendency(t, point, cellId, loc, grid):
+def tendency(t, point, loc, grid):
     """
     Compute the ODE tendency
     @param t time (not used)
@@ -171,12 +171,11 @@ loc.SetDataSet(ugrid)
 loc.BuildLocator()
 
 timeSteps = numpy.linspace(0.0, args.finalTime, args.numSteps + 1)
-cellId = 0
 
 sols = []
 for isol in range(args.ns):
     p0 = numpy.array([0. + 360.*random.random(), -90. + 180.*random.random(), 0.0])
-    sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(cellId, loc, ugrid))
+    sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(loc, ugrid))
     sols.append(sol)
 
 # save the trajectory
