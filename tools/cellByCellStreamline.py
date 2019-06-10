@@ -76,6 +76,8 @@ def saveTrajectory(sols, outputFile):
         # store points
         for i in range(ns):
             pvals[i + offset1, :] = sols[iContour][i]
+            pvals[i + offset1, 0] = max(0., min(360., pvals[i + offset1, 0]))
+            pvals[i + offset1, 1] = max(-90., min(90., pvals[i + offset1, 1]))
         offset1 += ns
 
         # create new cells/segments
@@ -109,6 +111,9 @@ def tendency(t, point, loc, grid):
 
     pts = grid.GetPoints()
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
+    if data is None:
+        print('ERROR: no field called {}'.format(args.edgeFieldName))
+        return numpy.zeros((3,), numpy.float64)
 
     # apply periodicity on longitudes when leaving domain
     if point[0] < 0.:
