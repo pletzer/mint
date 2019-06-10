@@ -2,6 +2,8 @@ import vtk
 import numpy
 import argparse
 from scipy.integrate import odeint
+import random
+import functools
 
 """
 Convert an edge field defined cell by cell to an edge field defined on a collection of line cells
@@ -20,37 +22,73 @@ parser = argparse.ArgumentParser(description='Convert cell-by-cell edge field in
 parser.add_argument('-i', dest='inputFile', default='res.vtk', help='Specify path to VTK, cell-by-cell input file')
 parser.add_argument('-o', dest='outputFile', default='trajectory.vtk', help='Specify name of VTK output file')
 parser.add_argument('-v', dest='edgeFieldName', default='edge_integrated_velocity', help='Specify name of edge integrated variable')
-parser.add_argument('-0', dest='initialPosition', default='180.0, 0.0', help='Specify initial condition "lon,lat"')
 parser.add_argument('-tf', dest='finalTime', default=100.0, type=float, help='Specify final time')
 parser.add_argument('-nt', dest='numSteps', default=100, type=int, help='Specify number of time steps')
+parser.add_argument('-ns', default=10, type=int, 
+                    help='Number of random seed points')
+
 
 args = parser.parse_args()
 
-def saveTrajectory(sol, outputFile):
+def saveTrajectory(sols, outputFile):
     """
     Save the trajectory to VTK file
-    @param sol output of odeint
+    @param sols list of return values of odeint
     @param filename
     """
-    # create an unstructured grid
+
+    # number of contours
+    nContours = len(sols)
+
+    # number of points for each contour
+    nptsContour = [sol.shape[0] for sol in sols]
+
+    # total number of points
+    npts = functools.reduce(lambda x, y: x + y, nptsContour)
+
+    # total number of segments
+    nSegs = functools.reduce(lambda x, y: x + y, [nps - 1 for nps in nptsContour])
+
+    # number of space dimensions
+    ndims = 3
+
+    pvals = numpy.zeros((npts, 3), numpy.float64)
     tarr = vtk.vtkDoubleArray()
-    npts, ndims = sol.shape
+    tpts = vtk.vtkPoints()
+    tgrid = vtk.vtkUnstructuredGrid()
+
     tarr.SetNumberOfComponents(ndims)
     tarr.SetNumberOfTuples(npts)
-    tarr.SetVoidArray(sol, npts*3, 1)
-    tpts = vtk.vtkPoints()
-    tpts.SetData(tarr)
+    tpts.SetNumberOfPoints(npts)
 
-    tgrid = vtk.vtkUnstructuredGrid()
-    tgrid.SetPoints(tpts)
-    nsegs = npts - 1
-    tgrid.Allocate(nsegs, 1)
     ptIds = vtk.vtkIdList()
     ptIds.SetNumberOfIds(2)
-    for i in range(nsegs):
-        ptIds.SetId(0, i)
-        ptIds.SetId(1, i + 1)
-        tgrid.InsertNextCell(vtk.VTK_LINE, ptIds)
+
+    tgrid.Allocate(nSegs, 1)
+
+    # create the points and the unstructured grid that goes with it
+    offset1 = 0
+    offset2 = 0
+    for iContour in range(nContours):
+
+        ns = nptsContour[iContour]
+
+        # store points
+        for i in range(ns):
+            pvals[i + offset1, :] = sols[iContour][i]
+        offset1 += ns
+
+        # create new cells/segments
+        for i in range(ns - 1):
+            ptIds.SetId(0, i + offset2)
+            ptIds.SetId(1, i + 1 + offset2)
+            tgrid.InsertNextCell(vtk.VTK_LINE, ptIds)
+        offset2 += ns
+
+    # connect
+    tpts.SetData(tarr)
+    tgrid.SetPoints(tpts)
+    tarr.SetVoidArray(pvals, npts*3, 1)
 
     # save
     writer = vtk.vtkUnstructuredGridWriter()
@@ -125,11 +163,15 @@ loc = vtk.vtkCellLocator()
 loc.SetDataSet(ugrid)
 loc.BuildLocator()
 
-p0 = numpy.array(list(eval(args.initialPosition)) + [0.0])
 timeSteps = numpy.linspace(0.0, args.finalTime, args.numSteps + 1)
 cellId = 0
-sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(cellId, loc, ugrid))
+
+sols = []
+for isol in range(args.ns):
+    p0 = numpy.array([0. + 360.*random.random(), -90. + 180.*random.random(), 0.0])
+    sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(cellId, loc, ugrid))
+    sols.append(sol)
 
 # save the trajectory
 print('saving the trajectory in {}'.format(args.outputFile))
-saveTrajectory(sol, args.outputFile)
+saveTrajectory(sols, args.outputFile)
