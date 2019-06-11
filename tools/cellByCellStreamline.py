@@ -10,6 +10,8 @@ import sys
 Convert an edge field defined cell by cell to an edge field defined on a collection of line cells
 """
 
+random.seed(123)
+
 LON_INDEX, LAT_INDEX = 0, 1
 EPS = 1.234e-12
 TOL = 1.e-36 # 1.e-10
@@ -179,10 +181,21 @@ loc.BuildLocator()
 timeSteps = numpy.linspace(0.0, args.finalTime, args.numSteps + 1)
 
 sols = []
+zrs = numpy.zeros((3,), numpy.float64)
 for isol in range(args.ns):
     p0 = numpy.array([0. + 360.*random.random(), -90. + 180.*random.random(), 0.0])
     sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(loc, ugrid))
+
+    # filter out all the 0, 0 positions which can arise when the trajectory 
+    # leaves the domain
+    msk = [functools.reduce(lambda x,y : x and y, s == zrs) for s in sol]
+    if True in msk:
+        iBad = msk.index(True)
+        sol = sol[:iBad, :]
+
     sols.append(sol)
+
+
 
 # save the trajectory
 print('saving the trajectory in {}'.format(args.outputFile))
