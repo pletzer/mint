@@ -35,7 +35,7 @@ message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
 #
 # Find curl (needed by HDF5)
 #
-find_package(CURL REQUIRED)
+find_package(CURL) 
 message(STATUS "CURL libraries: ${CURL_LIBRARIES}")
 
 #
