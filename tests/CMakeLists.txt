@@ -157,7 +157,12 @@ set_tests_properties(regridEdgesF PROPERTIES
 
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
-add_test(NAME ugrid2D COMMAND testUgrid2D)
+add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
+                        "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
+                        "-vtk" "cs_4.vtk")
+add_test(NAME ugrid2D_2 COMMAND testUgrid2D 
+                        "-s" "${CMAKE_SOURCE_DIR}/data/output_UGRID.nc:Mesh2d"
+                        "-vtk" "output_UGRID.vtk")
 add_test(NAME simpleRegridEdges2D COMMAND testSimpleRegridEdges2D)
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
