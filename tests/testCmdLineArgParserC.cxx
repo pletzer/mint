@@ -5,24 +5,24 @@
 
 int main(int argc, char** argv) {
 
-    CmdLineArgParser* self;
+    CmdLineArgParser* parser;
     int ier;
 
     // create 
 
-    ier = mnt_cmdlineargparser_new(&self);
+    ier = mnt_cmdlineargparser_new(&parser);
     assert(ier == 0);
 
     // set the command line options
 
-    ier = mnt_cmdlineargparser_setint(&self, "-i", 123, "some integer");
+    ier = mnt_cmdlineargparser_setint(&parser, "-i", 123, "some integer");
     assert(ier == 0);
-    ier = mnt_cmdlineargparser_setdouble(&self, "-d", 1.23, "some double");
+    ier = mnt_cmdlineargparser_setdouble(&parser, "-d", 1.23, "some double");
     assert(ier == 0);
-    ier = mnt_cmdlineargparser_setstring(&self, "-s", "hello", "some string");
+    ier = mnt_cmdlineargparser_setstring(&parser, "-s", "hello", "some string");
     assert(ier == 0);
 
-    // parse the command line. Note: we need too pass a string array where
+    // parse the command line. Note: we need to pass a string array where
     // each element is a character array without the termination character
 
     const int string_len = 32; // max argument length
@@ -33,21 +33,21 @@ int main(int argc, char** argv) {
 
     // parse 
 
-    ier = mnt_cmdlineargparser_parse(&self, argc, string_len, args);
+    ier = mnt_cmdlineargparser_parse(&parser, argc, string_len, args);
     assert(ier == 0);
 
     // get the command argument values
 
     int ival;
-    ier = mnt_cmdlineargparser_getint(&self, "-i", &ival);
+    ier = mnt_cmdlineargparser_getint(&parser, "-i", &ival);
     assert(ier == 0);
 
     double dval;
-    ier = mnt_cmdlineargparser_getdouble(&self, "-d", &dval);
+    ier = mnt_cmdlineargparser_getdouble(&parser, "-d", &dval);
     assert(ier == 0);
 
     char sval[128];
-    ier = mnt_cmdlineargparser_getstring(&self, "-s", 128, sval);
+    ier = mnt_cmdlineargparser_getstring(&parser, "-s", 128, sval);
     assert(ier == 0);
 
     // print results
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 
     // clean up 
 
-    ier = mnt_cmdlineargparser_del(&self);
+    ier = mnt_cmdlineargparser_del(&parser);
     assert(ier == 0);
 
     delete[] args;
