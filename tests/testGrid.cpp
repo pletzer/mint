@@ -22,6 +22,7 @@ void testUgrid() {
     size_t numCells;
     ier = mnt_grid_getNumberOfCells(&grd, &numCells);
     assert(ier == 0);
+    std::cout << numCells << " cells\n";
 
     std::vector<vtkIdType> cellIds{0, 1, 2, 3, 12, 456, 1535};
 
