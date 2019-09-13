@@ -508,7 +508,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
     if (!(*self)->srcGridObj ||
         (*self)->srcGridObj->faceNodeConnectivity.size() == 0 || 
-        //(*self)->srcGridObj->faceEdgeConnectivity.size() == 0 ||
+        (*self)->srcGridObj->faceEdgeConnectivity.size() == 0 ||
         (*self)->srcGridObj->edgeNodeConnectivity.size() == 0) {
         std::cerr << "ERROR: looks like the src grid connectivity is not set.\n";
         std::cerr << "Typically this would occur if you did not read the grid\n";
