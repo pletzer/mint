@@ -196,7 +196,6 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
 
     // copy 
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
-    //(*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
     (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
     // reference
     const std::vector<double>& points = ugrid.getPoints();
@@ -208,29 +207,35 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     size_t numEdgesPerCell = 4;
     size_t numVertsPerEdge = 2;
 
-    // compute the face to edge connectivity from the edge-node and face-node connectivity
-    std::map< std::array<size_t, 2>, size_t > node2Edge;
-    for (size_t iedge = 0; iedge < nedges; ++iedge) {
-        // start node
-        size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
-        // end node
-        size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
-        // create two entries n0 -> n1 and n1 -> n0
-        std::pair< std::array<size_t, 2>, size_t > ne1({n0, n1}, iedge);
-        std::pair< std::array<size_t, 2>, size_t > ne2({n1, n0}, iedge);
-        node2Edge.insert(ne1);
-        node2Edge.insert(ne2);
-    }
-    (*self)->faceEdgeConnectivity.resize(ncells * 4);
-    for (size_t icell = 0; icell < ncells; ++icell) {
-        for (size_t i0 = 0; i0 < 4; ++i0) {
-            size_t i1 = (i0 + 1) % 4;
-            // start and end node indices
-            size_t n0 = (*self)->faceNodeConnectivity[icell*4 + i0];
-            size_t n1 = (*self)->faceNodeConnectivity[icell*4 + i1];
-            size_t edgeId = node2Edge[std::array<size_t, 2>{n0, n1}];
-            // set the edge Id for these two nodes
-            (*self)->faceEdgeConnectivity[icell*4 + i0] = edgeId;
+    // get the face to edge connectivity from the file
+    (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
+
+    if ((*self)->faceEdgeConnectivity.size() == 0) {
+    
+        // compute the face to edge connectivity from the edge-node and face-node connectivity
+        std::map< std::array<size_t, 2>, size_t > node2Edge;
+        for (size_t iedge = 0; iedge < nedges; ++iedge) {
+            // start node
+            size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
+            // end node
+            size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
+            // create two entries n0 -> n1 and n1 -> n0
+            std::pair< std::array<size_t, 2>, size_t > ne1({n0, n1}, iedge);
+            std::pair< std::array<size_t, 2>, size_t > ne2({n1, n0}, iedge);
+            node2Edge.insert(ne1);
+            node2Edge.insert(ne2);
+        }
+        (*self)->faceEdgeConnectivity.resize(ncells * 4);
+        for (size_t icell = 0; icell < ncells; ++icell) {
+            for (size_t i0 = 0; i0 < 4; ++i0) {
+                size_t i1 = (i0 + 1) % 4;
+                // start and end node indices
+                size_t n0 = (*self)->faceNodeConnectivity[icell*4 + i0];
+                size_t n1 = (*self)->faceNodeConnectivity[icell*4 + i1];
+                size_t edgeId = node2Edge[std::array<size_t, 2>{n0, n1}];
+                // set the edge Id for these two nodes
+                (*self)->faceEdgeConnectivity[icell*4 + i0] = edgeId;
+            }
         }
     }
 
