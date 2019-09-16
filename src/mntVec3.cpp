@@ -1,12 +1,8 @@
-/**
- * $Id: MvVector.cpp 548 2013-10-23 16:11:22Z pletzer $
- */
-
 #include <complex>
-#include "MvVector3.h"
+#include "mntVec3.h"
 
 /****************************************************************************/
-// Definition of the Vector Class
+// Definition of the 3-dimensional vector Class
 /****************************************************************************/
 
 template<class T>
