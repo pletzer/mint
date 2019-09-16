@@ -13,6 +13,13 @@ configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 
+add_executable(testVec3 testVec3.cxx)
+target_link_libraries(testVec3
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testUgridLocator testUgridLocator.cxx)
 target_link_libraries(testUgridLocator
                     mint
@@ -155,6 +162,7 @@ add_test(NAME regridEdgesF
 set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
+add_test(NAME Vec3 COMMAND testVec3)
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME ugrid2D COMMAND testUgrid2D)
