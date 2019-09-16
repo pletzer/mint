@@ -41,11 +41,6 @@ public:
     @param e value of each element */
   Vector3(T e);
 
-  /** Constructor: create vector from C array (C++11).
-    
-    @param array C array */
-  Vector3(std::initializer_list<T> array);
-
   /** Copy constructor: elements are copied into a new vector. 
    @param otherVec vector to be copied */
   Vector3(const Vector3<T>& otherVec);

@@ -15,13 +15,12 @@ Vector3<T>::Vector3()
 }
 
 template<class T>
-Vector3<T>::Vector3(T e) : std::array<T, 3>(e)
+Vector3<T>::Vector3(T e)
 {
-}
-
-template<class T>
-Vector3<T>::Vector3(std::initializer_list<T> array) : std::array<T, 3>{array}
-{
+  for (size_t i = 0; i < this->size(); ++i)
+  {
+    (*this)[i] = e;
+  }
 }
 
 template<class T>
