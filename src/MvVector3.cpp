@@ -29,56 +29,12 @@ Vector3<T>::Vector3(const Vector3<T> &w)
   (*this) = w;
 }
 
-template<class T>
-void Vector3<T>::space(T xmin, T xmax)
-{
-  for (size_t i = 0; i < this->size(); ++i) {
-    (*this)[i] = xmin + 
-      (xmax-xmin)*static_cast<T>(i)/static_cast<T>(this->size()-1);
-  }
-}
-
 template<class T> 
 void Vector3<T>::random(void) 
 {
   std::transform(this->begin(), this->end(), this->begin(), Random<T>());
 }
 
-template<class T>
-void Vector3<T>::range(T imin) 
-{
-  for (size_t i = this->size(); i--;){
-    (*this)[i] = imin + static_cast<T>(i);
-  }
-}
-
-template<class T>
-size_t Vector3<T>::bra(T elem)
-{
-  return static_cast<size_t>(
-                 std::upper_bound(this->begin() + 1, 
-                          this->end(), 
-                          elem) - 
-                 this->begin() - 1);
-}
-
-// upper_bound does not work for complex
-template<>
-size_t Vector3< std::complex<double> >::bra(std::complex<double> elem)
-{
-  size_t i = 0;
-  while (std::abs(this->operator[](i)) < std::abs(elem)) {
-    i++;
-  }
-  return i;
-}
-
-template<class T>
-size_t Vector3<T>::ket(T elem){
-  size_t n = this->size();
-  size_t i = this->bra(elem) + 1;
-  return ( (i<n)? i : n-1 );
-}
 
 template<class T>
 Vector3<T> &Vector3<T>::operator=(T f) 
@@ -160,17 +116,7 @@ Vector3<T> &Vector3<T>::operator/=(const Vector3<T> &w)
 }
 
 
-template<class T>
-Vector3<T> Vector3<T>::operator()(const Vector3<size_t> &I) const
-{
-  Vector3<T> y;
-
-  for (size_t i = I.size(); i--;)
-    y[i] = (*this)[ I[i] ];
-  return y;
-}
-
-// Definition of extra functions supporting the Vector class
+// Definition of extra functions supporting the Vector3 class
 
 // find max element
 
@@ -404,14 +350,6 @@ Vec3_cmplx conjug(const Vec3_cmplx &v) {
   return b;
 }
 
-Vec3 realabs(const Vec3_cmplx &v) 
-{
-  Vec3 b;
-  for (size_t i = 0; i < v.size(); ++i)
-    b[i] = std::abs(v[i]);
-  return b;
-}
-
 template<class T>
 Vector3<T> pow(const Vector3<T> &v, T exp) 
 { 
@@ -426,26 +364,6 @@ Vector3<T> pow(const Vector3<T> &v, int exp)
   // we've got to find a more efficient way to do this...
   return pow(v, static_cast<T>(exp));
 }  
-
-// grid generator
-    
-template<class T>
-Vector3<T> space(T xmin, T xmax, size_t n)
-{
-  Vector3<T> a;
-  for (size_t i = n; i--;)
-    a[i] = xmin + (xmax - xmin)*T(i)/T(n - 1);
-  return a;
-}
-    
-template<class T>
-Vector3<T> range(T imin, size_t n) 
-{
-  Vector3<T> a;
-  for (size_t i = n; i--;)
-    a[i] = imin + static_cast<T>(i);
-  return a;
-}
 
 // max of 2 vectors
 
@@ -506,23 +424,6 @@ T sum(const Vector3<T> &v)
   return std::accumulate(v.begin(), v.end(), static_cast<T>(0));
 }
 
-
-// class methods to fill up elements of an existing Vector
-
-template<class T>
-void space(Vector3<T> &v, T xmin, T xmax) 
-{
-  size_t n = v.size();
-  for (size_t i = n; i--;)
-    v[i] = xmin + (xmax - xmin)*T(i)/T(n - 1);
-}
-    
-template<class T>
-void range(Vector3<T> &v, T imin) 
-{
-  for (size_t i = v.size(); i--;)
-    v[i] = T(i) + imin;
-}
 
 // return index of min(v)
 
@@ -586,7 +487,6 @@ std::ostream& operator<<(std::ostream& s, const Vector3<T>& v)
 
 // double
 template class Vector3<double>;
-template Vector3<double> space(double, double, size_t);
 template double max(const Vector3<double>&);
 template Vector3<double> max(const Vector3<double>&, double);
 template Vector3<double> max(double, const Vector3<double>&);
@@ -626,8 +526,6 @@ template Vector3<double> operator/(double, const Vector3<double>&);
 
 // size_t
 template class Vector3<size_t>;
-template Vector3<size_t> range(size_t, size_t);
-template Vector3<size_t> space(size_t, size_t, size_t);
 template size_t max(const Vector3<size_t>&);
 template Vector3<size_t> max(const Vector3<size_t>&, size_t);
 template Vector3<size_t> max(size_t, const Vector3<size_t>&);
@@ -652,7 +550,6 @@ template Vector3<size_t> operator*(const Vector3<size_t>&, const Vector3<size_t>
 
 // int
 template class Vector3<int>;
-template Vector3<int> space(int, int, size_t);
 template int max(const Vector3<int>&);
 template Vector3<int> max(const Vector3<int>&, int);
 template Vector3<int> max(int, const Vector3<int>&);
@@ -677,7 +574,6 @@ template Vector3<int> operator*(const Vector3<int>&, const Vector3<int>&);
 
 
 template class Vector3< std::complex<double> >;
-template Vector3< std::complex<double> > space( std::complex<double> ,  std::complex<double> , size_t);
 template std::complex<double>  dot(const Vector3< std::complex<double> >&, const Vector3< std::complex<double> >&);
 template std::complex<double>  sum(const Vector3< std::complex<double> >&);
 template Vector3< std::complex<double> > pow(const Vector3< std::complex<double> >&,  std::complex<double> );

@@ -94,53 +94,10 @@ public:
   @return vector  */
   Vector3<T> &operator/=(const Vector3<T> &w);
 
-  /** Uniform grid generation. Elements are set so as to 
-      span uniformly from xmin to xmax, in increasing order.
-      @param xmin minimum value
-      @param xmax maximum value
-  */
-  void space(T xmin, T xmax);
-
-  /** Uniform grid generation with unit increment. Similar to space except that
-      the increment is one. For instance x.range(0) has elements 0, 1, ... (up
-      to size x.size()-1).
-      @see space
-  */
-  void range(T imin=0);
-
   /** Fill the vector with random numbers between 0 and 1 (two subsequent calls 
       to random will generate different elements).
   */
   void random(void);
-
-  /** Return the index of the element closest to the left of/at position of elem. 
-      This assumes that the sequence is monotonically increasing. The 
-      min/max return values are 0 and size()-1, respectively.
-   @param elem reference abscissa
-   @see ket
-  */
-  size_t bra(T elem);
-
-  /** Return the indices of the elements that are closest to the left of elem. 
-      This assumes that the sequence is monotonically increasing. 
-   @param elem reference abscissa
-  */
-  Vector3<size_t> bra(const Vector3<T> &elem);
-
-  
-  /** Return the index of the element closest to the right of elem. 
-      This assumes that the sequence is monotonically increasing. The
-      min/max return values are 0 and size()-1, respectively.      
-   @param elem reference abscissa
-   @see bra
-  */
-  size_t ket(T elem);
-
-  /** Return the indices of the elements that are closest to the right of elem. 
-      This assumes that the sequence is monotonically increasing. 
-   @param elem reference abscissa
-  */
-  Vector3<size_t> ket(const Vector3<T> &elem);
 
   /** Sum of all elements 
    @return sum
@@ -165,7 +122,6 @@ public:
 #ifndef NO_ASSERT
     assert(i < this->size());
 #endif
-
     return (*this)[i];
   }
 
@@ -177,11 +133,9 @@ public:
 #ifndef NO_ASSERT
     assert(i < this->size());
 #endif
-    
     return (*this)[i];
   }
 
-  Vector3<T> operator()(const Vector3<size_t> &I) const;
 };
 
 typedef Vector3<double> Vec3;
@@ -389,12 +343,6 @@ Vec3 imag(const Vec3_cmplx &v);
 Vec3_cmplx conjug(const Vec3_cmplx &v);
 
 
-/** Apply function "abs" to each element.
-    @param v a vector
-    @return real vector 
-*/
-Vec3 realabs(const Vec3_cmplx& v);
-
 /** Apply function "pow" to each element.
     @param v a vector
     @param exp the exponent
@@ -410,25 +358,6 @@ Vector3<T> pow(const Vector3<T> &v, T exp);
  */
 template<class T>
 Vector3<T> pow(const Vector3<T> &v, int exp);
-
-/** Uniform grid generation. Create a vector of size n whose elements uniformly span 
-    from xmin to xmax. 
-    @param xmin 
-    @param xmax
-    @param n
- */
-template<class T>
-Vector3<T> space(T xmin, T xmax, size_t n=2);
-
-/** Uniform grid generation with integer increment. Create vector of size nsize whose
-    elements are imin, imin+1, ... imin+size()-1.
-    @see space
-    @param imin
-    @param nsize
-    @return vector = [imin, imin+1, ... imin+nsize-1]
- */
-template<class T>
-Vector3<T> range(T imin, size_t nsize=2);
 
 /** Return the maximum value of v. 
     @param v vector 
