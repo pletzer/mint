@@ -39,6 +39,13 @@ void testVec3() {
     Vec3 w2 = v1 - v2;
     Vec3 w3 = 1.0 - v1;
     Vec3 w4 = exp(log(sin(v1 * v2 + 2.3) + 1.01));
+
+    Mat3x3 m(0);
+    m(0, 0) = 1; m(1, 1) = -2.; m(2, 2) = 3.;
+    Vec3 x = dot(v1, m);
+    Vec3 y = dot(m, v1);
+    Mat3x3 m3 = dot(m, m);
+    Mat3x3 m4 = transpose(m);
 }
 
 void testVec4() {
