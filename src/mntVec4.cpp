@@ -324,22 +324,22 @@ Vector4< std::complex<double> > abs(const Vector4< std::complex<double> >& v)
   return b;
 }
 
-Vec2 real(const Vec2_cmplx &v) {
-  Vec2 b;
+Vec4 real(const Vec4_cmplx &v) {
+  Vec4 b;
   for (size_t i = 0; i < v.size(); ++i)
     b[i] = std::real(v[i]);
   return b;
 }
 
-Vec2 imag(const Vec2_cmplx &v) {
-  Vec2 b;
+Vec4 imag(const Vec4_cmplx &v) {
+  Vec4 b;
   for (size_t i = 0; i < v.size(); ++i)
     b[i] = std::imag(v[i]);
   return b;
 }
 
-Vec2_cmplx conjug(const Vec2_cmplx &v) {
-  Vec2_cmplx b;
+Vec4_cmplx conjug(const Vec4_cmplx &v) {
+  Vec4_cmplx b;
   for (size_t i = 0; i < v.size(); ++i) {
     b[i] = std::complex<double>(std::real(v[i]), -std::imag(v[i]));
   }
@@ -443,27 +443,27 @@ size_t index_max(Vector4<T> &v)
   return static_cast<size_t>(i - beg);
 }
 
-void setReal(Vec2_cmplx &v, const Vec2& rV) {
+void setReal(Vec4_cmplx &v, const Vec4& rV) {
   for (size_t i = 0; i < rV.size(); ++i) {
     v[i] = std::complex<double>(rV[i], v[i].imag());
   }
 }
 
-void setImag(Vec2_cmplx &v, const Vec2& iV) {
+void setImag(Vec4_cmplx &v, const Vec4& iV) {
   for (size_t i = 0; i < iV.size(); ++i) {
     v[i] = std::complex<double>(v[i].real(), iV[i]);
   }
 }
 
-void setRealImag(Vec2_cmplx &v, const Vec2& rV, const Vec2& iV) {
+void setRealImag(Vec4_cmplx &v, const Vec4& rV, const Vec4& iV) {
   size_t n = rV.size() >= iV.size()? rV.size(): iV.size();
   for (size_t i = 0; i < n; ++i) {
     v[i] = std::complex<double>(rV[i], iV[i]);
   }
 }
 
-Vec2_cmplx cmplx(const Vec2& rV, const Vec2& iV) {
-  Vec2_cmplx res;
+Vec4_cmplx cmplx(const Vec4& rV, const Vec4& iV) {
+  Vec4_cmplx res;
   setRealImag(res, rV, iV);
   return res;
 }

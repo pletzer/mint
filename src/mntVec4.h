@@ -328,19 +328,19 @@ Vector4<T> abs(const Vector4<T> &v);
     @param v a vector
     @return real part of the vector
 */
-Vec2 real(const Vec2_cmplx &v);
+Vec4 real(const Vec4_cmplx &v);
 
 /** Get the imaginary part of a complex vector 
     @param v a vector
     @return imaginary part of the vector
 */
-Vec2 imag(const Vec2_cmplx &v);
+Vec4 imag(const Vec4_cmplx &v);
 
 /** Get the conjugate of a complex vector 
     @param v a vector
     @return conjugate of the vector
 */
-Vec2_cmplx conjug(const Vec2_cmplx &v);
+Vec4_cmplx conjug(const Vec4_cmplx &v);
 
 
 /** Apply function "pow" to each element.
@@ -441,27 +441,27 @@ std::ostream& operator<<(std::ostream& s, const Vector4<T>& v);
  * @param v complex vector to be modified
  * @param rV real part of the vector
  */
-void setReal(Vec2_cmplx &v, const Vec2& rV);
+void setReal(Vec4_cmplx &v, const Vec4& rV);
 
 /** Set the imaginary part of a complex vector
  * @param v complex vector to be modified
  * @param iV imaginary part of the vector
  */
-void setImag(Vec2_cmplx &v, const Vec2& iV);
+void setImag(Vec4_cmplx &v, const Vec4& iV);
 
 /** Set the real and the imaginary parts of a complex vector
  * @param v complex vector to be modified
  * @param rV real part of the vector
  * @param iV imaginary part of the vector
  */
-void setRealImag(Vec2_cmplx &v, const Vec2& rV, const Vec2& iV);
+void setRealImag(Vec4_cmplx &v, const Vec4& rV, const Vec4& iV);
 
 /** Create complex vector out of two real vectors
  * @param rV real part of the vector
  * @param iV imaginary part of the vector
  * @return complex vector
  */
-Vec2_cmplx cmplx(const Vec2& rV, const Vec2& iV);
+Vec4_cmplx cmplx(const Vec4& rV, const Vec4& iV);
 
 
 //@}
