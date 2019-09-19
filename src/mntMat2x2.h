@@ -11,13 +11,14 @@
 #include "mntVec2.h"
 #include "mntVec4.h"
 
+#define MAT2X2_NDIMS 2
 
 /** 2x2 matrix class.
   
   Matrices are column majored, ie
   elements in a column are adjacent in memory.  This
   implementation can be used with Lapack and is compatible with the
-  Fortran array layout, but not with the "C/C++" array layout.
+  Fortran array layout.
   
   */
 
@@ -45,10 +46,10 @@ public:
    */
   inline T& operator()(size_t i, size_t j) {
 #ifndef NO_ASSERT
-    assert(i < 2);
-    assert(j < 2);
+    assert(i < MAT2X2_NDIMS);
+    assert(j < MAT2X2_NDIMS);
 #endif 
-    return (*this)[j*2 + i];
+    return (*this)[j*MAT2X2_NDIMS + i];
   }
 
   /** Indexing operator. 
@@ -58,11 +59,11 @@ public:
    */
   inline const T& operator()(size_t i, size_t j) const {
 #ifndef NO_ASSERT
-    assert(i < 2);
-    assert(j < 2);
+    assert(i < MAT2X2_NDIMS);
+    assert(j < MAT2X2_NDIMS);
 #endif 
     // column major
-    return (*this)[j*2 + i];
+    return (*this)[j*MAT2X2_NDIMS + i];
   }
 
 };                                                              

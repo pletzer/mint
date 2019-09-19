@@ -44,6 +44,7 @@ Matrix3x3<T> transpose(const Matrix3x3<T> &a) {
             res(j, i) = a(i, j);
         }
     }
+    return res;
 }
 
 // double
