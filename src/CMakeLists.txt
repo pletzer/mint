@@ -13,8 +13,9 @@ set(LIB_FILES
   GrExprParser.cpp
   GrExprAdaptor.cpp
   MvVector.cpp
-  mntVec3.cpp
+  mntVec2.cpp mntVec3.cpp mntVec9.cpp
   MvMat_double.cpp
+  mntMat3x3.cpp mntMat2x2.cpp
   mntLatLon.cpp
   mntGrid.cpp
   mntPolysegmentIter.cpp
@@ -43,8 +44,9 @@ set(HEADER_FILES
   mntRegridEdges.h
   mntRegridEdges2D.h
   mntCmdLineArgParser.h
+  mntMat3x3.h mntMat2x2.h
   MvFunctors.h MvMatrix.h MvVector.h
-  mntVec3.h
+  mntVec2.h mntVec3.h mntVec9.h
 )
 
 add_library(mint ${LIB_FILES})

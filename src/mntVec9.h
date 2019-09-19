@@ -1,6 +1,6 @@
 
-#ifndef MNT_VEC3
-#define MNT_VEC3  
+#ifndef MNT_VEC9
+#define MNT_VEC9 
 
 // C headers
 #include <cmath>
@@ -25,7 +25,7 @@
  The class to represent vectors.  Elements are adjacent in memory. */
 
 template<class T>
-class Vector3 : public std::array<T, 3> {  
+class Vector9 : public std::array<T, 9> {  
                        
 public:
 
@@ -34,65 +34,65 @@ public:
   /*:::::::::::::::*/
 
   /** Constructor with no arguments */
-  Vector3(); 
+  Vector9(); 
   
   /** Constructor: create vector of "n" elements "e".
     
     @param e value of each element */
-  Vector3(T e);
+  Vector9(T e);
 
   /** Copy constructor: elements are copied into a new vector. 
    @param otherVec vector to be copied */
-  Vector3(const Vector3<T>& otherVec);
+  Vector9(const Vector9<T>& otherVec);
 
   /** Assignment operator: set all elements to "f". 
    @param f scalar
    @return vector instance */
-  Vector3<T> &operator=(T f);
+  Vector9<T> &operator=(T f);
 
   /** Add the value "f" to every element of the vector. 
    @param f scalar 
    @return vector */
-  Vector3<T> &operator+=(T f);
+  Vector9<T> &operator+=(T f);
 
   /** Subtract the value "f" to every element of the
       vector. 
   @param f scalar 
   @return vector */
-  Vector3<T> &operator-=(T f);
+  Vector9<T> &operator-=(T f);
 
   /** Multiply every element by the value "f". 
   @param f scalar
   @return vector */
-  Vector3<T> &operator*=(T f);
+  Vector9<T> &operator*=(T f);
 
   /** Divide every element by the value "f". 
   @param f scalar
   @return vector */
-  Vector3<T> &operator/=(T f);
+  Vector9<T> &operator/=(T f);
 
   /** Vector addition. 
    @param w vector
    @return vector = original vector incremented by w */
-  Vector3<T> &operator+=(const Vector3<T> &w);
+  Vector9<T> &operator+=(const Vector9<T> &w);
 
   /** Vector subtraction. 
    @param w vector
    @return vector = original vector decremented by w  */
-  Vector3<T> &operator-=(const Vector3<T> &w);
+  Vector9<T> &operator-=(const Vector9<T> &w);
 
   /** Elementwise multiplication. Multiply every vector element (of the vector
     on the left of "*=") by its counterpart in the "b" vector.
   @param w vector
   @return vector */
-  Vector3<T> &operator*=(const Vector3<T> &w);
+  Vector9<T> &operator*=(const Vector9<T> &w);
 
   /** Elementwise division. 
     Divide every vector element (of the vector on
     the left of "*=") by its counterpart in the "b" vector.
   @param w vector
   @return vector  */
-  Vector3<T> &operator/=(const Vector3<T> &w);
+  Vector9<T> &operator/=(const Vector9<T> &w);
 
   /** Fill the vector with random numbers between 0 and 1 (two subsequent calls 
       to random will generate different elements).
@@ -138,9 +138,9 @@ public:
 
 };
 
-typedef Vector3<double> Vec3;
-typedef Vector3<size_t> Vec3_int;
-typedef Vector3< std::complex<double> > Vec3_cmplx;
+typedef Vector9<double> Vec9;
+typedef Vector9<size_t> Vec9_int;
+typedef Vector9< std::complex<double> > Vec9_cmplx;
 
 /**@name Vector Functions
   These are global functions operating on or generating vectors.  */
@@ -153,7 +153,7 @@ typedef Vector3< std::complex<double> > Vec3_cmplx;
  @return vector = v + w 
 */
 template<class T>
-Vector3<T> operator+(const Vector3<T> &v, const Vector3<T> &w);
+Vector9<T> operator+(const Vector9<T> &v, const Vector9<T> &w);
 
 /** Subtraction. 
  @param v a vector
@@ -161,7 +161,7 @@ Vector3<T> operator+(const Vector3<T> &v, const Vector3<T> &w);
  @return vector = v - w 
 */
 template<class T>
-Vector3<T> operator-(const Vector3<T> &v, const Vector3<T> &w);
+Vector9<T> operator-(const Vector9<T> &v, const Vector9<T> &w);
 
 /** Elementwise multiplication. Not to be confused with the dot-product "dot".
  @see dot
@@ -170,14 +170,14 @@ Vector3<T> operator-(const Vector3<T> &v, const Vector3<T> &w);
  @return vector = v*w (!= dot(v, w))
 */
 template<class T>
-Vector3<T> operator*(const Vector3<T> &v, const Vector3<T> &w);
+Vector9<T> operator*(const Vector9<T> &v, const Vector9<T> &w);
 
 /** Elementwise division. 
  @param v a vector
  @param w another vector
  @return vector = v/w */
 template<class T>
-Vector3<T> operator/(const Vector3<T> &v, const Vector3<T> &w);
+Vector9<T> operator/(const Vector9<T> &v, const Vector9<T> &w);
 
 /** (Left) addition with a scalar. This is equivalent to creating a vector filled 
     with "f" and adding "a" to it.
@@ -186,7 +186,7 @@ Vector3<T> operator/(const Vector3<T> &v, const Vector3<T> &w);
     @return vector = f + a
 */
 template<class T>
-Vector3<T> operator+(T f, const Vector3<T> &a);
+Vector9<T> operator+(T f, const Vector9<T> &a);
 
 /** (Right) addition with a scalar. This is equivalent to creating a vector filled 
     with "f" and adding "a" to it.
@@ -195,7 +195,7 @@ Vector3<T> operator+(T f, const Vector3<T> &a);
     @return vector = a + f
 */
 template<class T>
-Vector3<T> operator+(const Vector3<T> &a, T f);
+Vector9<T> operator+(const Vector9<T> &a, T f);
 
 /** Subtraction from a scalar. This is equivalent to creating a vector filled with
     "f" and subtracting "w" from it.
@@ -204,7 +204,7 @@ Vector3<T> operator+(const Vector3<T> &a, T f);
     @return vector = f-w
 */
 template<class T>
-Vector3<T> operator-(T f, const Vector3<T> &w);
+Vector9<T> operator-(T f, const Vector9<T> &w);
 
 /** Subtraction of a scalar. 
     @param w a vector
@@ -212,14 +212,14 @@ Vector3<T> operator-(T f, const Vector3<T> &w);
     @return vector = w-f
 */
 template<class T>
-Vector3<T> operator-(const Vector3<T> &w, T f);
+Vector9<T> operator-(const Vector9<T> &w, T f);
 
 /** Negative. 
     @param v a vector
     @return vector = -w
 */
 template<class T>
-Vector3<T> operator-(const Vector3<T> &v);
+Vector9<T> operator-(const Vector9<T> &v);
 
 /** (Left) multiplication of a vector by the scalar "f". 
  @param f s scalar
@@ -227,7 +227,7 @@ Vector3<T> operator-(const Vector3<T> &v);
  @return vector = f*a
 */
 template<class T>
-Vector3<T> operator*(T f, const Vector3<T> &a);
+Vector9<T> operator*(T f, const Vector9<T> &a);
 
 /** (Right) multiplication of a vector by the scalar "f". 
  @param a a vector
@@ -235,7 +235,7 @@ Vector3<T> operator*(T f, const Vector3<T> &a);
  @return vector = f*a
 */
 template<class T>
-Vector3<T> operator*(const Vector3<T> &a, T f);
+Vector9<T> operator*(const Vector9<T> &a, T f);
 
 /** Elementwise division. 
     @param f a scalar
@@ -243,7 +243,7 @@ Vector3<T> operator*(const Vector3<T> &a, T f);
     @return vector whose elements are f / element of "a"
 */
 template<class T>
-Vector3<T> operator/(T f, const Vector3<T> &a);
+Vector9<T> operator/(T f, const Vector9<T> &a);
 
 /** Scalar product. This is equivalent to sum(v*w). Not to be confused with the
  elementwise product v*w. 
@@ -252,95 +252,95 @@ Vector3<T> operator/(T f, const Vector3<T> &a);
 @return vector = v.w
 */
 template<class T>
-T dot(const Vector3<T> &v, const Vector3<T> &w);
+T dot(const Vector9<T> &v, const Vector9<T> &w);
 
 /** Apply function "sin" to each element. 
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> sin(const Vector3<T> &v);
+Vector9<T> sin(const Vector9<T> &v);
 
 /** Apply function "cos" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> cos(const Vector3<T> &v);
+Vector9<T> cos(const Vector9<T> &v);
 
 /** Apply function "tan" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> tan(const Vector3<T> &v);
+Vector9<T> tan(const Vector9<T> &v);
 
 /** Apply function "asin" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> asin(const Vector3<T> &v);
+Vector9<T> asin(const Vector9<T> &v);
 
 /** Apply function "acos" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> acos(const Vector3<T> &v);
+Vector9<T> acos(const Vector9<T> &v);
 
 /** Apply function "atan" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> atan(const Vector3<T> &v);
+Vector9<T> atan(const Vector9<T> &v);
 
 /** Apply function "exp" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> exp(const Vector3<T> &v);
+Vector9<T> exp(const Vector9<T> &v);
 
 /** Apply function "log" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> log(const Vector3<T> &v);
+Vector9<T> log(const Vector9<T> &v);
 
 /** Apply function "sqrt" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> sqrt(const Vector3<T> &v);
+Vector9<T> sqrt(const Vector9<T> &v);
 
 /** Apply function "abs" to each element.
     @param v a vector
     @return vector 
    */
 template<class T>
-Vector3<T> abs(const Vector3<T> &v);
+Vector9<T> abs(const Vector9<T> &v);
 
 /** Get the real part of a complex vector 
     @param v a vector
     @return real part of the vector
 */
-Vec3 real(const Vec3_cmplx &v);
+Vec9 real(const Vec9_cmplx &v);
 
 /** Get the imaginary part of a complex vector 
     @param v a vector
     @return imaginary part of the vector
 */
-Vec3 imag(const Vec3_cmplx &v);
+Vec9 imag(const Vec9_cmplx &v);
 
 /** Get the conjugate of a complex vector 
     @param v a vector
     @return conjugate of the vector
 */
-Vec3_cmplx conjug(const Vec3_cmplx &v);
+Vec9_cmplx conjug(const Vec9_cmplx &v);
 
 
 /** Apply function "pow" to each element.
@@ -349,7 +349,7 @@ Vec3_cmplx conjug(const Vec3_cmplx &v);
     @return vector 
  */
 template<class T>
-Vector3<T> pow(const Vector3<T> &v, T exp);
+Vector9<T> pow(const Vector9<T> &v, T exp);
 
 /** Apply function "pow" to each element.
     @param v a vector
@@ -357,14 +357,14 @@ Vector3<T> pow(const Vector3<T> &v, T exp);
     @return vector 
  */
 template<class T>
-Vector3<T> pow(const Vector3<T> &v, int exp);
+Vector9<T> pow(const Vector9<T> &v, int exp);
 
 /** Return the maximum value of v. 
     @param v vector 
     @return scalar = max(v)
  */
 template<class T>
-T max(const Vector3<T> &v);
+T max(const Vector9<T> &v);
 
 /** Take the maxium of two vectors.
     @param v a vector
@@ -372,7 +372,7 @@ T max(const Vector3<T> &v);
     @return vector with elements $v_i > w_i ? v_i: w_i$.
  */
 template<class T>
-Vector3<T> max(const Vector3<T> &v, const Vector3<T> &w);
+Vector9<T> max(const Vector9<T> &v, const Vector9<T> &w);
 
 /** Take the maximum of a vector and a scalar.
     @param v a vector
@@ -380,7 +380,7 @@ Vector3<T> max(const Vector3<T> &v, const Vector3<T> &w);
     @return vector with elements $v_i > f ? v_i: f$.
  */
 template<class T>
-Vector3<T> max(const Vector3<T> &v, T f);
+Vector9<T> max(const Vector9<T> &v, T f);
 
 /** Take the maximum of a vector and a scalar.
     @param f a scalar    
@@ -388,14 +388,14 @@ Vector3<T> max(const Vector3<T> &v, T f);
     @return vector with elements $v_i > f ? v_i: f$.
  */
 template<class T>
-Vector3<T> max(T f, const Vector3<T> &v);
+Vector9<T> max(T f, const Vector9<T> &v);
 
 /** Return the minimum element of v.
     @param v vector 
     @return scalar = min(v)
   */
 template<class T>
-T min(const Vector3<T> &v);
+T min(const Vector9<T> &v);
 
 /** Take the minimum of two vectors.
     @param v a vector
@@ -403,7 +403,7 @@ T min(const Vector3<T> &v);
     @return vector with elements $v_i < w_i ? v_i: w_i$.
  */
 template<class T>
-Vector3<T> min(const Vector3<T> &v, const Vector3<T> &w);
+Vector9<T> min(const Vector9<T> &v, const Vector9<T> &w);
 
 /** Take the minimum of a vector and a scalar.
     @param v a vector
@@ -411,7 +411,7 @@ Vector3<T> min(const Vector3<T> &v, const Vector3<T> &w);
     @return vector with elements $v_i < f ? v_i: f$.
  */
 template<class T>
-Vector3<T> min(const Vector3<T> &v, T f);
+Vector9<T> min(const Vector9<T> &v, T f);
 
 /** Take the minimum of a vector and a scalar.
     @param f a scalar    
@@ -419,7 +419,7 @@ Vector3<T> min(const Vector3<T> &v, T f);
     @return vector with elements $v_i < f ? v_i: f$.
  */
 template<class T>
-Vector3<T> min(T f, const Vector3<T> &v);
+Vector9<T> min(T f, const Vector9<T> &v);
 
 /** Sum all elements. 
     @see dot
@@ -427,7 +427,7 @@ Vector3<T> min(T f, const Vector3<T> &v);
     @return scalar = contraction of v.
  */
 template<class T>
-T sum(const Vector3<T> &v);
+T sum(const Vector9<T> &v);
 
 /** Print out. 
  *
@@ -435,36 +435,36 @@ T sum(const Vector3<T> &v);
  * @param v Vector
  */
 template <class T>
-std::ostream& operator<<(std::ostream& s, const Vector3<T>& v);
+std::ostream& operator<<(std::ostream& s, const Vector9<T>& v);
 
 /** Set the real part of a complex vector
  * @param v complex vector to be modified
  * @param rV real part of the vector
  */
-void setReal(Vec3_cmplx &v, const Vec3& rV);
+void setReal(Vec9_cmplx &v, const Vec9& rV);
 
 /** Set the imaginary part of a complex vector
  * @param v complex vector to be modified
  * @param iV imaginary part of the vector
  */
-void setImag(Vec3_cmplx &v, const Vec3& iV);
+void setImag(Vec9_cmplx &v, const Vec9& iV);
 
 /** Set the real and the imaginary parts of a complex vector
  * @param v complex vector to be modified
  * @param rV real part of the vector
  * @param iV imaginary part of the vector
  */
-void setRealImag(Vec3_cmplx &v, const Vec3& rV, const Vec3& iV);
+void setRealImag(Vec9_cmplx &v, const Vec9& rV, const Vec9& iV);
 
 /** Create complex vector out of two real vectors
  * @param rV real part of the vector
  * @param iV imaginary part of the vector
  * @return complex vector
  */
-Vec3_cmplx cmplx(const Vec3& rV, const Vec3& iV);
+Vec9_cmplx cmplx(const Vec9& rV, const Vec9& iV);
 
 
 //@}
 
 
-#endif /* MNT_VEC3 */
+#endif /* MNT_VEC9 */
