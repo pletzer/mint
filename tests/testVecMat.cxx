@@ -1,9 +1,15 @@
+#undef NDEBUG // turn on asserts
+#include <cassert>
+#include <cmath>
+
 #include <mntVec2.h>
 #include <mntVec3.h>
 #include <mntVec4.h>
 #include <mntVec9.h>
 #include <mntMat2x2.h>
 #include <mntMat3x3.h>
+
+const double EPS = 1.e-10;
 
 void testVec2() {
     Vec2 v1;
@@ -12,18 +18,40 @@ void testVec2() {
     Vec2 v2;
     v2[0] = 1;
     v2[1] = 2;
+
+    // test vector operations
     Vec2 w1 = v1 + v2;
     Vec2 w2 = v1 - v2;
     Vec2 w3 = 1.0 - v1;
     Vec2 w4 = exp(log(sin(v1 * v2 + 2.3) + 1.01));
-    double d = dot(v1, v2);
+    for (size_t i = 0; i < w1.size(); ++i) {
+        assert(fabs(w1[i] - (v1[i] + v2[i])) < EPS);
+        assert(fabs(w2[i] - (v1[i] - v2[i])) < EPS);
+        assert(fabs(w3[i] - (1.0 - v1[i])) < EPS);
+    }
 
+    // test dot product of vectors
+    double d = dot(v1, v2);
+    assert(fabs(d - (v1[0]*v2[0] + v1[1]*v2[1])) < EPS);
+
+    // test matrix dot operations
     Mat2x2 m(0);
-    m(0, 0) = 1; m(1, 1) = 1;
+    m(0, 0) = -1; m(0, 1) = 1;
+    m(1, 0) = 2; m(1, 1) = 3;
     Vec2 x = dot(v1, m);
     Vec2 y = dot(m, v1);
     Mat2x2 m3 = dot(m, m);
+    assert(fabs(x[0] - (v1[0]*m(0, 0) + v1[1]*m(1, 0))) < EPS);
+    assert(fabs(x[1] - (v1[0]*m(0, 1) + v1[1]*m(1, 1))) < EPS);
+    assert(fabs(y[0] - (m(0, 0)*v1[0] + m(0, 1)*v1[1])) < EPS);
+    assert(fabs(y[1] - (m(1, 0)*v1[0] + m(1, 1)*v1[1])) < EPS);
+
+    // test transpose
     Mat2x2 m4 = transpose(m);
+    assert(fabs(m4(0, 0) - m(0, 0)) < EPS);
+    assert(fabs(m4(0, 1) - m(1, 0)) < EPS);
+    assert(fabs(m4(1, 0) - m(0, 1)) < EPS);
+    assert(fabs(m4(1, 1) - m(1, 1)) < EPS);
 }
 
 void testVec3() {
