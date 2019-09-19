@@ -40,7 +40,10 @@ public:
   /** Create matrix. Elelemnts are set.
     @param e value of each element
     */
-  Matrix2x2(const T& e);
+  Matrix2x2(const T& e) {
+    for (size_t i = 0; i < 2*2; ++i)
+      v_[i] = e;
+  }
 
   /** Negation operator (elementwise).  */
   Matrix2x2<T> operator-() {

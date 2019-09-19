@@ -2,6 +2,8 @@
 #include <mntVec3.h>
 #include <mntVec4.h>
 #include <mntVec9.h>
+#include <mntMat2x2.h>
+#include <mntMat3x3.h>
 
 void testVec2() {
     Vec2 v1;
@@ -14,6 +16,12 @@ void testVec2() {
     Vec2 w2 = v1 - v2;
     Vec2 w3 = 1.0 - v1;
     Vec2 w4 = exp(log(sin(v1 * v2 + 2.3) + 1.01));
+
+    Mat2x2 m(0);
+    m(0, 0) = 1; m(1, 1) = 1;
+    //Vec2 x = dot(v1, m);
+    //Vec2 y = dot(m, v1);
+    //Mat2x2 m2 = dot(m, m);
 }
 
 void testVec3() {

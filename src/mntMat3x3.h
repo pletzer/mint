@@ -40,7 +40,10 @@ public:
   /** Create matrix. Elelemnts are set.
     @param e value of each element
     */
-  Matrix3x3(const T& e);
+  Matrix3x3(const T& e) {
+    for (size_t i = 0; i < 3*3; ++i)
+      v_[i] = e;
+  }
 
   /** Negation operator (elementwise).  */
   Matrix3x3<T> operator-() {
