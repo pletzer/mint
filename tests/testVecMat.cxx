@@ -16,6 +16,7 @@ void testVec2() {
     Vec2 w2 = v1 - v2;
     Vec2 w3 = 1.0 - v1;
     Vec2 w4 = exp(log(sin(v1 * v2 + 2.3) + 1.01));
+    double d = dot(v1, v2);
 
     Mat2x2 m(0);
     m(0, 0) = 1; m(1, 1) = 1;
