@@ -49,4 +49,9 @@ Matrix2x2<T> transpose(const Matrix2x2<T> &a) {
 // double
 template class Matrix2x2<double>;
 template Vector2<double> dot(const Matrix2x2<double>&, const Vector2<double>&);
+template Vector2<double> dot(const Vector2<double>&, const Matrix2x2<double>&);
+template Matrix2x2<double> dot(const Matrix2x2<double>&, const Matrix2x2<double>&);
+template Matrix2x2<double> transpose(const Matrix2x2<double>&);
+
+
 

@@ -20,9 +20,10 @@ void testVec2() {
 
     Mat2x2 m(0);
     m(0, 0) = 1; m(1, 1) = 1;
-    //Vec2 x = dot(v1, m);
-    //Vec2 y = dot(m, v1);
-    //Mat2x2 m2 = dot(m, m);
+    Vec2 x = dot(v1, m);
+    Vec2 y = dot(m, v1);
+    Mat2x2 m3 = dot(m, m);
+    Mat2x2 m4 = transpose(m);
 }
 
 void testVec3() {
