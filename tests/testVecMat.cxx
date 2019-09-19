@@ -68,12 +68,32 @@ void testVec3() {
     Vec3 w3 = 1.0 - v1;
     Vec3 w4 = exp(log(sin(v1 * v2 + 2.3) + 1.01));
 
+    // test matrix dot operations
     Mat3x3 m(0);
-    m(0, 0) = 1; m(1, 1) = -2.; m(2, 2) = 3.;
+    m(0, 0) = -1; m(0, 1) = 2; m(0, 2) = 3.;
+    m(1, 0) = -4; m(1, 1) = 5; m(1, 2) = 6.;
+    m(2, 0) = -7; m(2, 1) = 8; m(2, 2) = 9.;
     Vec3 x = dot(v1, m);
     Vec3 y = dot(m, v1);
     Mat3x3 m3 = dot(m, m);
+    assert(fabs(x[0] - (v1[0]*m(0, 0) + v1[1]*m(1, 0) + v1[2]*m(2, 0))) < EPS);
+    assert(fabs(x[1] - (v1[0]*m(0, 1) + v1[1]*m(1, 1) + v1[2]*m(2, 1))) < EPS);
+    assert(fabs(x[2] - (v1[0]*m(0, 2) + v1[1]*m(1, 2) + v1[2]*m(2, 2))) < EPS);
+    assert(fabs(y[0] - (m(0, 0)*v1[0] + m(0, 1)*v1[1] + m(0, 2)*v1[2])) < EPS);
+    assert(fabs(y[1] - (m(1, 0)*v1[0] + m(1, 1)*v1[1] + m(1, 2)*v1[2])) < EPS);
+    assert(fabs(y[2] - (m(2, 0)*v1[0] + m(2, 1)*v1[1] + m(2, 2)*v1[2])) < EPS);
+
+    // test transpose
     Mat3x3 m4 = transpose(m);
+    assert(fabs(m4(0, 0) - m(0, 0)) < EPS);
+    assert(fabs(m4(0, 1) - m(1, 0)) < EPS);
+    assert(fabs(m4(0, 2) - m(2, 0)) < EPS);
+    assert(fabs(m4(1, 0) - m(0, 1)) < EPS);
+    assert(fabs(m4(1, 1) - m(1, 1)) < EPS);
+    assert(fabs(m4(1, 2) - m(2, 1)) < EPS);
+    assert(fabs(m4(2, 0) - m(0, 2)) < EPS);
+    assert(fabs(m4(2, 1) - m(1, 2)) < EPS);
+    assert(fabs(m4(2, 2) - m(2, 2)) < EPS);
 }
 
 void testVec4() {
