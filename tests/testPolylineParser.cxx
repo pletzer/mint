@@ -6,7 +6,7 @@
 void test2d() {
     PolylineParser pp(2);
     pp.parse("(1,2), (-1.2, 3.45), (-1.2e-3, 3.45e19)");
-    const std::vector< Vector<double> >& points = pp.getPoints();
+    const std::vector< Vec3 >& points = pp.getPoints();
     pp.print();
     assert(points.size() == 3);
 }
@@ -14,7 +14,7 @@ void test2d() {
 void test3d() {
     PolylineParser pp(3);
     pp.parse("(1,2,3), (-1.2, 3.45, +6.79), (-1.2e-3, 3.45e19, -689.e-12)");
-    const std::vector< Vector<double> >& points = pp.getPoints();
+    const std::vector< Vec3 >& points = pp.getPoints();
     pp.print();
     assert(points.size() == 3);
 }
@@ -22,7 +22,7 @@ void test3d() {
 void testTooManyNumbers() {
     PolylineParser pp(2);
     pp.parse("(1,2,3), (-1.2, 3.45, +6.79), (-1.2e-3, 3.45e19, -689.e-12)");
-    const std::vector< Vector<double> >& points = pp.getPoints();
+    const std::vector< Vec3 >& points = pp.getPoints();
     pp.print();
     assert(points.size() == 3);    
 }
@@ -30,7 +30,7 @@ void testTooManyNumbers() {
 void testTooFewNumbers() {
     PolylineParser pp(3);
     pp.parse("(1,2), (-1.2, 3.45), (-1.2e-3, 3.45e19)");
-    const std::vector< Vector<double> >& points = pp.getPoints();
+    const std::vector< Vec3 >& points = pp.getPoints();
     pp.print();
     assert(points.size() == 3);
 }

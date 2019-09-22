@@ -1,4 +1,5 @@
 #include <MvVector.h>
+#include <mntVec3.h>
 #include <mntPolylineParser.h>
 #include <mntGrid.h>
 #include <mntPolysegmentIter.h>
@@ -33,7 +34,7 @@ int main(int argc, char** argv) {
         std::string srcFile = args.get<std::string>("-i");
         PolylineParser pp(2);
         pp.parse(args.get<std::string>("-p"));
-        const std::vector< Vector<double> >& points = pp.getPoints();
+        const std::vector< Vec3 >& points = pp.getPoints();
         size_t npts = points.size();
         std::cout << "Path:\n";
         for (size_t i = 0; i< npts; ++i) {
