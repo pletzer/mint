@@ -20,6 +20,15 @@ Vector3<T>::Vector3(T e)
 }
 
 template<class T>
+Vector3<T>::Vector3(T* ptr)
+{
+  for (size_t i = 0; i < this->size(); ++i)
+  {
+    (*this)[i] = *(ptr + i);
+  }
+}
+
+template<class T>
 Vector3<T>::Vector3(const Vector3<T> &w)
 {
   (*this) = w;

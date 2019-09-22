@@ -2,7 +2,7 @@
 
 template<class T> 
 Matrix3x3<T> dot(const Matrix3x3<T> &a, const Matrix3x3<T> &b) {
-    Matrix3x3<T> res(0);
+    Matrix3x3<T> res(  static_cast<T>(0) );
     for (size_t j = 0; j < MAT3X3_NDIMS; ++j) {
         for (size_t i = 0; i < MAT3X3_NDIMS; ++i) {
             for (size_t k = 0; k < MAT3X3_NDIMS; ++k) {
@@ -16,7 +16,7 @@ Matrix3x3<T> dot(const Matrix3x3<T> &a, const Matrix3x3<T> &b) {
 
 template<class T> 
 Vector3<T> dot(const Matrix3x3<T> &a, const Vector3<T> &b) {
-    Vector3<T> res(0);
+    Vector3<T> res( static_cast<T>(0) );
     for (size_t i = 0; i < MAT3X3_NDIMS; ++i) {
         for (size_t j = 0; j < MAT3X3_NDIMS; ++j) {
             res[i] += a(i, j) * b[j];
@@ -27,7 +27,7 @@ Vector3<T> dot(const Matrix3x3<T> &a, const Vector3<T> &b) {
 
 template<class T> 
 Vector3<T> dot(const Vector3<T> &b, const Matrix3x3<T> &a) {
-    Vector3<T> res(0);
+    Vector3<T> res( static_cast<T>(0) );
     for (size_t j = 0; j < MAT3X3_NDIMS; ++j) {
         for (size_t i = 0; i < MAT3X3_NDIMS; ++i) {
             res[j] += b[i] * a(i, j);

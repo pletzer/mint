@@ -36,10 +36,14 @@ public:
   /** Constructor with no arguments */
   Vector2(); 
   
-  /** Constructor: create vector of "n" elements "e".
-    
+  /** Constructor: create vector of "e"'s.
     @param e value of each element */
   Vector2(T e);
+
+
+  /** Constructor: create vector from C pointer.
+    @param ptr poointer */
+  Vector2(T* ptr);
 
   /** Copy constructor: elements are copied into a new vector. 
    @param otherVec vector to be copied */

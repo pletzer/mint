@@ -20,6 +20,15 @@ Vector4<T>::Vector4(T e)
 }
 
 template<class T>
+Vector4<T>::Vector4(T* ptr)
+{
+  for (size_t i = 0; i < this->size(); ++i)
+  {
+    (*this)[i] = *(ptr + i);
+  }
+}
+
+template<class T>
 Vector4<T>::Vector4(const Vector4<T> &w)
 {
   (*this) = w;

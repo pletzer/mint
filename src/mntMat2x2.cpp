@@ -2,7 +2,7 @@
 
 template<class T> 
 Matrix2x2<T> dot(const Matrix2x2<T> &a, const Matrix2x2<T> &b) {
-    Matrix2x2<T> res(0);
+    Matrix2x2<T> res( static_cast<T>(0) );
     for (size_t j = 0; j < MAT2X2_NDIMS; ++j) {
         for (size_t i = 0; i < MAT2X2_NDIMS; ++i) {
             for (size_t k = 0; k < MAT2X2_NDIMS; ++k) {
@@ -16,7 +16,7 @@ Matrix2x2<T> dot(const Matrix2x2<T> &a, const Matrix2x2<T> &b) {
 
 template<class T> 
 Vector2<T> dot(const Matrix2x2<T> &a, const Vector2<T> &b) {
-    Vector2<T> res(0);
+    Vector2<T> res( static_cast<T>(0) );
     for (size_t i = 0; i < MAT2X2_NDIMS; ++i) {
         for (size_t j = 0; j < MAT2X2_NDIMS; ++j) {
             res[i] += a(i, j) * b[j];
@@ -27,7 +27,7 @@ Vector2<T> dot(const Matrix2x2<T> &a, const Vector2<T> &b) {
 
 template<class T> 
 Vector2<T> dot(const Vector2<T> &b, const Matrix2x2<T> &a) {
-    Vector2<T> res(0);
+    Vector2<T> res( static_cast<T>(0) );
     for (size_t j = 0; j < MAT2X2_NDIMS; ++j) {
         for (size_t i = 0; i < MAT2X2_NDIMS; ++i) {
             res[j] += b[i] * a(i, j);

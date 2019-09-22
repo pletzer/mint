@@ -20,6 +20,15 @@ Vector9<T>::Vector9(T e)
 }
 
 template<class T>
+Vector9<T>::Vector9(T* ptr)
+{
+  for (size_t i = 0; i < this->size(); ++i)
+  {
+    (*this)[i] = *(ptr + i);
+  }
+}
+
+template<class T>
 Vector9<T>::Vector9(const Vector9<T> &w)
 {
   (*this) = w;

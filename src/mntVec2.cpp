@@ -20,6 +20,15 @@ Vector2<T>::Vector2(T e)
 }
 
 template<class T>
+Vector2<T>::Vector2(T* ptr)
+{
+  for (size_t i = 0; i < this->size(); ++i)
+  {
+    (*this)[i] = *(ptr + i);
+  }
+}
+
+template<class T>
 Vector2<T>::Vector2(const Vector2<T> &w)
 {
   (*this) = w;
