@@ -1,5 +1,5 @@
-#ifndef MNT_MAT3x3
-#define MNT_MAT3x3
+#ifndef MNT_MAT2x3
+#define MNT_MAT2x3
 
 #ifndef NO_ASSERT
 #include <cassert>
@@ -7,33 +7,37 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include <vector>
+#include "mntMat2x2.h"
+#include "mntMat3x2.h"
+#include "mntMat3x3.h"
+#include "mntVec2.h"
 #include "mntVec3.h"
-#include "mntVec9.h"
+#include "mntVec6.h"
 
-#define MAT3X3_NDIMS 3
+#define I_MAT2X3_NDIMS 2
+#define J_MAT2X3_NDIMS 3
 
-
-/** 3x3 matrix class.
+/** 2x3 matrix class.
   
   Matrices are column majored, ie
   elements in a column are adjacent in memory.  This
   implementation can be used with Lapack and is compatible with the
   Fortran array layout.
+  
   */
 
 template <class T>
-class Matrix3x3 : public Vector9<T> {
+class Matrix2x3 : public Vector6<T> {
   
 public:
 
   /** Constructor with no arguments. */
-  Matrix3x3() {};                           
+  Matrix2x3() {};                           
   
   /** Create matrix. Elements are set.
     @param e value of each element
     */
-  Matrix3x3(const T& e) {
+  Matrix2x3(const T& e) {
     for (size_t i = 0; i < this->size(); ++i) {
       (*this)[i] = e;
     }
@@ -46,10 +50,10 @@ public:
    */
   inline T& operator()(size_t i, size_t j) {
 #ifndef NO_ASSERT
-    assert(i < MAT3X3_NDIMS);
-    assert(j < MAT3X3_NDIMS);
+    assert(i < I_MAT2X3_NDIMS);
+    assert(j < J_MAT2X3_NDIMS);
 #endif 
-    return (*this)[j*MAT3X3_NDIMS + i];
+    return (*this)[j*I_MAT2X3_NDIMS + i];
   }
 
   /** Indexing operator. 
@@ -59,17 +63,16 @@ public:
    */
   inline const T& operator()(size_t i, size_t j) const {
 #ifndef NO_ASSERT
-    assert(i < MAT3X3_NDIMS);
-    assert(j < MAT3X3_NDIMS);
+    assert(i < I_MAT2X3_NDIMS);
+    assert(j < J_MAT2X3_NDIMS);
 #endif 
     // column major
-    return (*this)[j*MAT3X3_NDIMS + i];
+    return (*this)[j*I_MAT2X3_NDIMS + i];
   }
 
 };                                                              
 
-typedef Matrix3x3<double> Mat3x3;
+typedef Matrix2x3<double> Mat2x3;
 
-
-#endif /* MNT_MAT3x3 */
+#endif /* MNT_MAT2x3 */
 

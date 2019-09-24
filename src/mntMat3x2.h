@@ -1,5 +1,5 @@
-#ifndef MNT_MAT3x3
-#define MNT_MAT3x3
+#ifndef MNT_MAT3x2
+#define MNT_MAT3x2
 
 #ifndef NO_ASSERT
 #include <cassert>
@@ -7,33 +7,32 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include <vector>
-#include "mntVec3.h"
-#include "mntVec9.h"
+#include "mntVec6.h"
 
-#define MAT3X3_NDIMS 3
+#define I_MAT3X2_NDIMS 3
+#define J_MAT3X2_NDIMS 2
 
-
-/** 3x3 matrix class.
+/** 3x2 matrix class.
   
   Matrices are column majored, ie
   elements in a column are adjacent in memory.  This
   implementation can be used with Lapack and is compatible with the
   Fortran array layout.
+  
   */
 
 template <class T>
-class Matrix3x3 : public Vector9<T> {
+class Matrix3x2 : public Vector6<T> {
   
 public:
 
   /** Constructor with no arguments. */
-  Matrix3x3() {};                           
+  Matrix3x2() {};                           
   
   /** Create matrix. Elements are set.
     @param e value of each element
     */
-  Matrix3x3(const T& e) {
+  Matrix3x2(const T& e) {
     for (size_t i = 0; i < this->size(); ++i) {
       (*this)[i] = e;
     }
@@ -46,10 +45,10 @@ public:
    */
   inline T& operator()(size_t i, size_t j) {
 #ifndef NO_ASSERT
-    assert(i < MAT3X3_NDIMS);
-    assert(j < MAT3X3_NDIMS);
+    assert(i < I_MAT3X2_NDIMS);
+    assert(j < J_MAT3X2_NDIMS);
 #endif 
-    return (*this)[j*MAT3X3_NDIMS + i];
+    return (*this)[j*I_MAT3X2_NDIMS + i];
   }
 
   /** Indexing operator. 
@@ -59,17 +58,16 @@ public:
    */
   inline const T& operator()(size_t i, size_t j) const {
 #ifndef NO_ASSERT
-    assert(i < MAT3X3_NDIMS);
-    assert(j < MAT3X3_NDIMS);
+    assert(i < I_MAT3X2_NDIMS);
+    assert(j < J_MAT3X2_NDIMS);
 #endif 
     // column major
-    return (*this)[j*MAT3X3_NDIMS + i];
+    return (*this)[j*I_MAT3X2_NDIMS + i];
   }
 
 };                                                              
 
-typedef Matrix3x3<double> Mat3x3;
+typedef Matrix3x2<double> Mat3x2;
 
-
-#endif /* MNT_MAT3x3 */
+#endif /* MNT_MAT3x2 */
 

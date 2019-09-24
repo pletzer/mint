@@ -1,8 +1,9 @@
 #include <mntPolysegmentIter.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
-#include <MvVector.h>
 #include <limits>
+#include <map>
+#include <vector>
 
 struct TCmpFunctor {
     TCmpFunctor(const std::vector<double>& ts) {
@@ -15,7 +16,8 @@ struct TCmpFunctor {
 };
 
 
-PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator, 
+PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
+                                 vmtCellLocator* locator, 
                                  const double p0[], const double p1[]) {
 
     // small tolerances 
@@ -38,7 +40,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* loca
     std::map< vtkIdType, std::vector<size_t> > c2Inds;
     for (size_t i = 0; i < this->cellIds.size(); ++i) {
         vtkIdType cId = this->cellIds[i];
-        std:map< vtkIdType, std::vector<size_t> >::iterator it = c2Inds.find(cId);
+        auto it = c2Inds.find(cId);
         if (it != c2Inds.end()) {
             // push_back into existing list value
             it->second.push_back(i);
@@ -342,7 +344,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
             if (std::abs(intersector.getDet()) > this->eps) {
                 // normal intersection, 1 solution
-                std::vector<double> sol = intersector.getSolution();
+                Vec2 sol = intersector.getSolution();
                 double lambRay = sol[0];
                 double lambEdg = sol[1];
 

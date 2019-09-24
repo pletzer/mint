@@ -8,6 +8,7 @@
 #include <mntVec9.h>
 #include <mntMat2x2.h>
 #include <mntMat3x3.h>
+#include <mntDots.h>
 
 const double EPS = 1.e-10;
 

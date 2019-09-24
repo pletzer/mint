@@ -8,13 +8,13 @@
 
 void testGetParamLocation1() {
 
-    Vector<double> q0(3); q0[0] = 0.; q0[1] = 0.; q0[2] = 0.;
-    Vector<double> q1(3); q1[0] = 1.; q1[1] = 0.; q1[2] = 0.;
-    Vector<double> q2(3); q2[0] = 0.; q2[1] = 1.; q2[2] = 0.;
+    Vec3 q0(3); q0[0] = 0.; q0[1] = 0.; q0[2] = 0.;
+    Vec3 q1(3); q1[0] = 1.; q1[1] = 0.; q1[2] = 0.;
+    Vec3 q2(3); q2[0] = 0.; q2[1] = 1.; q2[2] = 0.;
 
-    Vector<double> p(3); p[0] = 0.; p[1] = 0.1; p[2] = 0.;
+    Vec3 p(3); p[0] = 0.; p[1] = 0.1; p[2] = 0.;
 
-    Vector<double> xi = getTriangleParamLocation(q0, q1, q2, p);
+    Vec2 xi = getTriangleParamLocation(q0, q1, q2, p);
     std::cerr << "testGetParamLocation1: xi = " << xi[0] << ',' << xi[1] << '\n';
     assert(std::abs(xi[0] - 0.) < TOL);
     assert(std::abs(xi[1] - 0.1) < TOL);
@@ -22,13 +22,13 @@ void testGetParamLocation1() {
 
 void testGetParamLocation2() {
 
-    Vector<double> q0(3); q0[0] = 0.; q0[1] = -90.; q0[2] = -90.;
-    Vector<double> q1(3); q1[0] = 0.; q1[1] = -90.; q1[2] = 0.;
-    Vector<double> q2(3); q2[0] = 0.; q2[1] = -45.; q2[2] = -90.;
+    Vec3 q0(3); q0[0] = 0.; q0[1] = -90.; q0[2] = -90.;
+    Vec3 q1(3); q1[0] = 0.; q1[1] = -90.; q1[2] = 0.;
+    Vec3 q2(3); q2[0] = 0.; q2[1] = -45.; q2[2] = -90.;
 
-    Vector<double> p(3); p[0] = 0.; p[1] = -45.; p[2] = -90.;
+    Vec3 p(3); p[0] = 0.; p[1] = -45.; p[2] = -90.;
 
-    Vector<double> xi = getTriangleParamLocation(q0, q1, q2, p);
+    Vec2 xi = getTriangleParamLocation(q0, q1, q2, p);
     std::cerr << "testGetParamLocation2: xi = " << xi[0] << ',' << xi[1] << '\n';
     assert(std::abs(xi[0] - 0.) < TOL);
     assert(std::abs(xi[1] - 1.) < TOL);
@@ -36,13 +36,13 @@ void testGetParamLocation2() {
 
 void testGetParamLocation3() {
 
-    Vector<double> q0(3); q0[0] = 0.; q0[1] = -90.; q0[2] = -90.;
-    Vector<double> q1(3); q1[0] = 0.; q1[1] = -90.; q1[2] = 0.;
-    Vector<double> q2(3); q2[0] = 0.; q2[1] = -45.; q2[2] = -90.;
+    Vec3 q0(3); q0[0] = 0.; q0[1] = -90.; q0[2] = -90.;
+    Vec3 q1(3); q1[0] = 0.; q1[1] = -90.; q1[2] = 0.;
+    Vec3 q2(3); q2[0] = 0.; q2[1] = -45.; q2[2] = -90.;
 
-    Vector<double> p(3); p[0] = 0.; p[1] = -90.; p[2] = -180.;
+    Vec3 p(3); p[0] = 0.; p[1] = -90.; p[2] = -180.;
 
-    Vector<double> xi = getTriangleParamLocation(q0, q1, q2, p);
+    Vec2 xi = getTriangleParamLocation(q0, q1, q2, p);
     std::cerr << "testGetParamLocation3: xi = " << xi[0] << ',' << xi[1] << '\n';
     assert(std::abs(xi[0] - (-1.)) < TOL);
     assert(std::abs(xi[1] - 0.) < TOL);
@@ -55,7 +55,7 @@ void testGeneral(const double pa[], const double pb[],
     lti.setPoints(pa, pb, q0, q1, q2);
     std::cerr << "testGeneral: det = " << lti.getDet() << '\n';
     assert(lti.hasSolution(TOL));
-    Vector<double> sol = lti.getSolution();
+    Vec3 sol = lti.getSolution();
     assert(std::abs(sol[0] - expectedLambda) < TOL);
     assert(std::abs(sol[1] - expectedXi[0]) < TOL);
     assert(std::abs(sol[2] - expectedXi[1]) < TOL);
@@ -77,10 +77,10 @@ void testNormal() {
     double det = lti.getDet();
     assert(std::abs(det - (-1.)) < TOL);
     assert(lti.hasSolution(TOL));
-    Vector<double> sol = lti.getSolution();
+    Vec3 sol = lti.getSolution();
     double lam = sol[0];
     assert(std::abs(lam - 1.0) < TOL);
-    std::vector<double> xi = std::vector<double>(&sol[1], &sol[3]);
+    Vec2 xi = Vec2(&sol[1]);
     assert(std::abs(xi[0] - 0.) < TOL);
     assert(std::abs(xi[1] - 0.) < TOL);
 }

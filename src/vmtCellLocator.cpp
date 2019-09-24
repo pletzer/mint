@@ -254,7 +254,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
         if (std::abs(intersector.getDet()) > eps) {
 
             // normal intersection, 1 solution
-            std::vector<double> sol = intersector.getSolution();
+            Vec2 sol = intersector.getSolution();
             double lambRay = sol[0];
             double lambEdg = sol[1];
 

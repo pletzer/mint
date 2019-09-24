@@ -70,39 +70,5 @@ public:
 
 typedef Matrix2x2<double> Mat2x2;
 
-/** Matrix-matrix multiplication. Not to be confused with a*b, the elementwise
- multiplication. 
-  @see operator*
-  @param a a matrix
-  @param b another matrix of shape b.size(0)=a.size(1)
-  @return matrix = a.b
-*/
-template<class T> 
-Matrix2x2<T> dot(const Matrix2x2<T> &a, const Matrix2x2<T> &b);
-
-/** Matrix-vector multiplication. 
-  @param a a matrix
-  @param b a vector of length b.size()=a.size(1) 
-  @return vector = a.b
-*/
-template<class T> 
-Vector2<T> dot(const Matrix2x2<T> &a, const Vector2<T> &b);
-
-/** Vector-matrix multiplication. 
-  @param b a vector
-  @param a a matrix of shape a.size(0) = b.size()
-  @return vector = $b^T.a$
-*/
-template<class T> 
-Vector2<T> dot(const Vector2<T> &b, const Matrix2x2<T> &a);
-
-/** Transpose matrix
-  @param a - input matrix
-  @return matrix
-*/
-template<class T>
-Matrix2x2<T> transpose(const Matrix2x2<T> &a);
-
-
 #endif /* MNT_MAT2x2 */
 

@@ -1,8 +1,10 @@
-#include <MvMatrix.h>
-#include <MvVector.h>
-
 #ifndef MNT_LINE_LINE_INTERSECTOR
 #define MNT_LINE_LINE_INTERSECTOR
+
+#include "mntMat2x2.h"
+#include "mntVec2.h"
+#include "mntDots.h"
+
 
 struct LineLineIntersector {
 
@@ -10,14 +12,6 @@ struct LineLineIntersector {
      * Constructor
      */
     LineLineIntersector() {
-        this->mat.newsize(2, 2);
-        this->invMatTimesDet.newsize(2, 2);
-        this->invMatTimesDetDotRhs.alloc(2);
-        this->rhs.alloc(2);
-        this->p0.alloc(2);
-        this->p1.alloc(2);
-        this->q0.alloc(2);
-        this->q1.alloc(2);
     }
 
     /**
@@ -72,7 +66,7 @@ struct LineLineIntersector {
      * Compute the begin/end parametric coordinates
     */
     void computeBegEndParamCoords() {
-        const Vector<double> dp = this->p1 - this->p0;
+        const Vec2 dp = this->p1 - this->p0;
         double dp2 = dot(dp, dp);
         // lambda @ q0
         double lm0 = dot(this->q0 - this->p0, dp)/dp2;
@@ -95,10 +89,10 @@ struct LineLineIntersector {
      * Get the begin/end points of overlap
      * @return pair of points
      */
-    const std::pair< Vector<double>, Vector<double> > getBegEndPoints() const {
-        Vector<double> dp = this->p1 - this->p0;
-        std::pair< Vector<double>, Vector<double> > p(this->p0 + this->lamBeg*dp, 
-                                                      this->p0 + this->lamEnd*dp);
+    const std::pair< Vec2, Vec2 > getBegEndPoints() const {
+        Vec2 dp = this->p1 - this->p0;
+        std::pair< Vec2, Vec2 > p(this->p0 + this->lamBeg*dp, 
+                                  this->p0 + this->lamEnd*dp);
         return p;
     }
 
@@ -139,22 +133,22 @@ struct LineLineIntersector {
      * Get the solution
      * @return solution
      */
-    const Vector<double> getSolution() {
-        Vector<double> res = this->solTimesDet;
+    const Vec2 getSolution() {
+        Vec2 res = this->solTimesDet;
         res /= this->det;
         return res; 
     }
 
-    ColMat<double> mat;
-    ColMat<double> invMatTimesDet;
+    Mat2x2 mat;
+    Mat2x2 invMatTimesDet;
 
-    Vector<double> invMatTimesDetDotRhs;
-    Vector<double> rhs;
-    Vector<double> solTimesDet;
-    Vector<double> p0;
-    Vector<double> p1;
-    Vector<double> q0;
-    Vector<double> q1;
+    Vec2 invMatTimesDetDotRhs;
+    Vec2 rhs;
+    Vec2 solTimesDet;
+    Vec2 p0;
+    Vec2 p1;
+    Vec2 q0;
+    Vec2 q1;
 
     double lamBeg;
     double lamEnd;

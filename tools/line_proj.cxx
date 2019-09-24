@@ -1,4 +1,3 @@
-#include <MvVector.h>
 #include <mntVec3.h>
 #include <mntPolylineParser.h>
 #include <mntGrid.h>

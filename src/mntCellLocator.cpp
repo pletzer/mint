@@ -80,7 +80,7 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
     // four vertices spanning a tetrahedron
     double p0[3], pa[3], pb[3], pc[3];
 
-    // vectors from the base vertex to another 3 verts
+    // vectors from the base vertex to other 3 verts
     double a[3], b[3], c[3];
 
     size_t numElems = 4; // number of tets

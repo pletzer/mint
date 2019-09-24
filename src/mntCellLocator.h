@@ -1,4 +1,3 @@
-#include <vector>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
