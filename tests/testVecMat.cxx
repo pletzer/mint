@@ -2,13 +2,8 @@
 #include <cassert>
 #include <cmath>
 
-#include <mntVec2.h>
-#include <mntVec3.h>
-#include <mntVec4.h>
-#include <mntVec9.h>
-#include <mntMat2x2.h>
-#include <mntMat3x3.h>
-#include <mntDots.h>
+#include <mntVecN.h>
+#include <mntMatMxN.h>
 
 const double EPS = 1.e-10;
 

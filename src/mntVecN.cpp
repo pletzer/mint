@@ -508,18 +508,70 @@ template VecN<4, double> abs(const VecN<4, double>&);
 template VecN<6, double> abs(const VecN<6, double>&);
 template VecN<9, double> abs(const VecN<9, double>&);
 
-/*
-template Vector6<double> pow(const Vector6<double>&, double);
-template Vector6<double> pow(const Vector6<double>&, int);
-template Vector6<double> sqrt(const Vector6<double>&);
-template Vector6<double> exp(const Vector6<double>&);
-template Vector6<double> log(const Vector6<double>&);
-template Vector6<double> sin(const Vector6<double>&);
-template Vector6<double> cos(const Vector6<double>&);
-template Vector6<double> tan(const Vector6<double>&);
-template Vector6<double> asin(const Vector6<double>&);
-template Vector6<double> acos(const Vector6<double>&);
-template Vector6<double> atan(const Vector6<double>&);
-*/
+template VecN<2, double> pow(const VecN<2, double>&, double);
+template VecN<3, double> pow(const VecN<3, double>&, double);
+template VecN<4, double> pow(const VecN<4, double>&, double);
+template VecN<6, double> pow(const VecN<6, double>&, double);
+template VecN<9, double> pow(const VecN<9, double>&, double);
+
+template VecN<2, double> pow(const VecN<2, double>&, int);
+template VecN<3, double> pow(const VecN<3, double>&, int);
+template VecN<4, double> pow(const VecN<4, double>&, int);
+template VecN<6, double> pow(const VecN<6, double>&, int);
+template VecN<9, double> pow(const VecN<9, double>&, int);
+
+template VecN<2, double> exp(const VecN<2, double>&);
+template VecN<3, double> exp(const VecN<3, double>&);
+template VecN<4, double> exp(const VecN<4, double>&);
+template VecN<6, double> exp(const VecN<6, double>&);
+template VecN<9, double> exp(const VecN<9, double>&);
+
+template VecN<2, double> log(const VecN<2, double>&);
+template VecN<3, double> log(const VecN<3, double>&);
+template VecN<4, double> log(const VecN<4, double>&);
+template VecN<6, double> log(const VecN<6, double>&);
+template VecN<9, double> log(const VecN<9, double>&);
+
+template VecN<2, double> sqrt(const VecN<2, double>&);
+template VecN<3, double> sqrt(const VecN<3, double>&);
+template VecN<4, double> sqrt(const VecN<4, double>&);
+template VecN<6, double> sqrt(const VecN<6, double>&);
+template VecN<9, double> sqrt(const VecN<9, double>&);
+
+template VecN<2, double> sin(const VecN<2, double>&);
+template VecN<3, double> sin(const VecN<3, double>&);
+template VecN<4, double> sin(const VecN<4, double>&);
+template VecN<6, double> sin(const VecN<6, double>&);
+template VecN<9, double> sin(const VecN<9, double>&);
+
+template VecN<2, double> cos(const VecN<2, double>&);
+template VecN<3, double> cos(const VecN<3, double>&);
+template VecN<4, double> cos(const VecN<4, double>&);
+template VecN<6, double> cos(const VecN<6, double>&);
+template VecN<9, double> cos(const VecN<9, double>&);
+
+template VecN<2, double> tan(const VecN<2, double>&);
+template VecN<3, double> tan(const VecN<3, double>&);
+template VecN<4, double> tan(const VecN<4, double>&);
+template VecN<6, double> tan(const VecN<6, double>&);
+template VecN<9, double> tan(const VecN<9, double>&);
+
+template VecN<2, double> asin(const VecN<2, double>&);
+template VecN<3, double> asin(const VecN<3, double>&);
+template VecN<4, double> asin(const VecN<4, double>&);
+template VecN<6, double> asin(const VecN<6, double>&);
+template VecN<9, double> asin(const VecN<9, double>&);
+
+template VecN<2, double> acos(const VecN<2, double>&);
+template VecN<3, double> acos(const VecN<3, double>&);
+template VecN<4, double> acos(const VecN<4, double>&);
+template VecN<6, double> acos(const VecN<6, double>&);
+template VecN<9, double> acos(const VecN<9, double>&);
+
+template VecN<2, double> atan(const VecN<2, double>&);
+template VecN<3, double> atan(const VecN<3, double>&);
+template VecN<4, double> atan(const VecN<4, double>&);
+template VecN<6, double> atan(const VecN<6, double>&);
+template VecN<9, double> atan(const VecN<9, double>&);
 
 
