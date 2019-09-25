@@ -436,6 +436,13 @@ template class VecN<4, double>;
 template class VecN<6, double>;
 template class VecN<9, double>;
 
+template VecN<2, double> operator-(double, const VecN<2, double>&);
+template VecN<3, double> operator-(double, const VecN<3, double>&);
+template VecN<4, double> operator-(double, const VecN<4, double>&);
+template VecN<6, double> operator-(double, const VecN<6, double>&);
+template VecN<9, double> operator-(double, const VecN<9, double>&);
+
+
 template double max(const VecN<2, double>&);
 template double max(const VecN<3, double>&);
 template double max(const VecN<4, double>&);
@@ -495,6 +502,12 @@ template VecN<3, double> operator*(double, const VecN<3, double>&);
 template VecN<4, double> operator*(double, const VecN<4, double>&);
 template VecN<6, double> operator*(double, const VecN<6, double>&);
 template VecN<9, double> operator*(double, const VecN<9, double>&);
+
+template VecN<2, double> operator*(const VecN<2, double>&, const VecN<2, double>&);
+template VecN<3, double> operator*(const VecN<3, double>&, const VecN<3, double>&);
+template VecN<4, double> operator*(const VecN<4, double>&, const VecN<4, double>&);
+template VecN<6, double> operator*(const VecN<6, double>&, const VecN<6, double>&);
+template VecN<9, double> operator*(const VecN<9, double>&, const VecN<9, double>&);
 
 template VecN<2, double> operator/(const VecN<2, double>&, double);
 template VecN<3, double> operator/(const VecN<3, double>&, double);
