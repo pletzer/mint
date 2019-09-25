@@ -1,7 +1,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include "MvVector.h"
+#include <mntVecN.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
@@ -130,7 +130,7 @@ public:
      * @return list of (cellId, [lambda0, lambda1]) pairs
      */
     std::vector< std::pair<vtkIdType, std::vector<double> > >
-    findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd);
+    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**
      * Check if a point is indide a face
@@ -238,17 +238,17 @@ private:
      * @param faceId face Id
      * @return list of points
      */
-    inline std::vector< Vector<double> > getFacePoints(vtkIdType faceId) const {
+    inline std::vector<Vec3> getFacePoints(vtkIdType faceId) const {
 
         vtkIdType* ptIds;
         vtkIdType npts;
         this->grid->GetCellPoints(faceId, npts, ptIds);
 
-        std::vector< Vector<double> > res(npts);
+        std::vector<Vec3> res(npts);
         for (size_t i = 0; i < npts; ++i) {
             vtkIdType idx = ptIds[i];
             double* p = this->points->GetPoint(idx);
-            res[i] = Vector<double>{p[0], p[1], p[2]};
+            res[i] = Vec3(p);
         }
 
         return res;

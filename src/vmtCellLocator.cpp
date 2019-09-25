@@ -28,8 +28,8 @@ vmtCellLocator::BuildLocator() {
     // assign each face to one or more buckets depending on where the face's nodes fall
     vtkIdType numFaces = this->grid->GetNumberOfCells();
     for (vtkIdType faceId = 0; faceId < numFaces; ++faceId) {
-        std::vector< Vector<double> > nodes = getFacePoints(faceId);
-        for (const Vector<double>& p : nodes) {
+        std::vector<Vec3> nodes = getFacePoints(faceId);
+        for (const Vec3& p : nodes) {
             // assumes that the buckets are always bigger than the faces, or alternatively
             // that no corners are fully inside a face
             int bucketId = this->getBucketId(&p[0]);
@@ -45,7 +45,7 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
     tol = std::abs(tol);
     bool res = true;
 
-    std::vector< Vector<double> > nodes = this->getFacePoints(faceId);
+    std::vector<Vec3> nodes = this->getFacePoints(faceId);
     size_t npts = nodes.size();
 
     for (size_t i0 = 0; i0 < npts; ++i0) {
@@ -100,8 +100,8 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 
     int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
 
-    Vector<double> point0{p0[0], p0[1], p0[2]};
-    Vector<double> point1{p1[0], p1[1], p1[2]};
+    Vec3 point0(p0);
+    Vec3 point1(p1);
 
     // choose the number of sections heuristically. Too few and we'll end up adding too many
     // cells. No point in having more sections than the number of buckets
@@ -120,14 +120,14 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
     // break the line into segments, the number of segments should not affect the result. Only used as a performance 
     // improvement. Want more segments when the line is 45 deg. Want more segments when the points are far apart. 
     size_t nSections = std::max(1, std::min(dn, dm));
-    Vector<double> du = point1 - point0;
+    Vec3 du = point1 - point0;
     du /= (double) nSections;
 
     for (size_t iSection = 0; iSection < nSections; ++iSection) {
 
         // start/end points of the segment
-        Vector<double> pBeg = point0 + (double) iSection * du;
-        Vector<double> pEnd = pBeg + du;
+        Vec3 pBeg = point0 + (double) iSection * du;
+        Vec3 pEnd = pBeg + du;
     
         // get the start bucket
         begBucketId = this->getBucketId(&pBeg[0]);
@@ -157,7 +157,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 
 
 std::vector< std::pair<vtkIdType, std::vector<double> > >
-vmtCellLocator::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd) {
+vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     // store result
     std::vector< std::pair<vtkIdType, std::vector<double> > > res;
@@ -222,7 +222,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
     const double eps100 = 100*eps;
 
 
-    std::vector< Vector<double> > nodes = this->getFacePoints(cellId);
+    std::vector<Vec3> nodes = this->getFacePoints(cellId);
     size_t npts = nodes.size();
 
     // computes the intersection point of two lines

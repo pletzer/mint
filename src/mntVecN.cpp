@@ -16,7 +16,7 @@ VecN<N, T>::VecN(T e)
 }
 
 template<size_t N, class T>
-VecN<N, T>::VecN(T* ptr)
+VecN<N, T>::VecN(const T* ptr)
 {
   for (size_t i = 0; i < this->size(); ++i)
   {

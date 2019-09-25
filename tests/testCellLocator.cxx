@@ -159,8 +159,10 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     cloc->printBuckets();
     
     // check
-    Vector<double> pBeg{0.0, -90.0, 0.0};
-    Vector<double> pEnd{360.0, 90.0, 0.0};
+    double pBegPtr[] = {0.0, -90.0, 0.0};
+    double pEndPtr[] = {360.0, 90.0, 0.0};
+    Vec3 pBeg(pBegPtr);
+    Vec3 pEnd(pEndPtr);
     std::vector< std::pair<vtkIdType, std::vector<double> > > cellIdLambdas;
     double totLambda;
 

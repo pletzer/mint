@@ -9,7 +9,6 @@
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <iostream>
-#include <MvVector.h>
 
 void test1Cell() {
     // a one cell grid, built from scratch
@@ -39,8 +38,10 @@ void test1Cell() {
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
-    const Vector<double> p0{0.2, 0.3, 0.};
-    const Vector<double> p1{0.4, 0.5, 0.};
+    const double p0Ptr[] = {0.2, 0.3, 0.};
+    const double p1Ptr[] = {0.4, 0.5, 0.};
+    const Vec3 p0(p0Ptr);
+    const Vec3 p1(p1Ptr);
 
     std::vector< std::pair<vtkIdType, std::vector<double> > > 
         intersects = loc->findIntersectionsWithLine(p0, p1);
