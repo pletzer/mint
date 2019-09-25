@@ -1,6 +1,6 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
-#include <MvVector.h>
+#include <mntVecN.h>
 #include <vector>
 
 #ifndef MNT_LINE_GRID_INTERSECTOR
@@ -36,19 +36,19 @@ public:
      * Get the current cell parametric coordinates at the beginning of segment
      * @return 2d array
      */
-    std::vector< Vector<double> > getIntersectionPoints() const;
+    std::vector<Vec3> getIntersectionPoints() const;
 
     /**
      * Get direction of line
      * @return vector
      */
-    const Vector<double>& getDirection() const;
+    const Vec3& getDirection() const;
 
     /**
      * Get start point
      * @return vector
      */
-    const Vector<double>& getStartPoint() const;
+    const Vec3& getStartPoint() const;
 
 
 private:
@@ -57,10 +57,10 @@ private:
     vtkCellLocator* locator;
 
     // start point
-    Vector<double> pA;
+    Vec3 pA;
 
     // direction of the line (ie pb - pa)
-    Vector<double> direction;
+    Vec3 direction;
 
     // parametric line coordinates of the intersections
     std::vector<double> tValues;

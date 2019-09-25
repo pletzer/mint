@@ -17,9 +17,7 @@ LineGridIntersector::~LineGridIntersector() {
 void 
 LineGridIntersector::setLine(const double pa[], const double pb[]) {
 
-    this->pA.resize(3);
-    this->direction.resize(3);
-    Vector<double> pBeg(3), pEnd(3), xPoint(3), pB(3);
+    Vec3 pBeg, pEnd, xPoint, pB;
     double lengthSqr = 0.0;
     for (size_t i = 0; i < 3; ++i) {
         this->direction[i] = pb[i] - pa[i];
@@ -98,12 +96,12 @@ LineGridIntersector::getIntersectionLineParamCoords() const {
     return this->tValues;
 }
 
-std::vector< Vector<double> > 
+std::vector<Vec3> 
 LineGridIntersector::getIntersectionPoints() const {
-    std::vector< Vector<double> > res;
+    std::vector<Vec3> res;
     res.reserve(this->tValues.size());
     for (size_t i = 0; i < this->tValues.size(); ++i) {
-        Vector<double> xPoint = this->direction;
+        Vec3 xPoint = this->direction;
         xPoint *= this->tValues[i];
         xPoint += this->pA;
         res.push_back(xPoint);
@@ -111,12 +109,12 @@ LineGridIntersector::getIntersectionPoints() const {
     return res;
 }
 
-const Vector<double>& 
+const Vec3& 
 LineGridIntersector::getDirection() const {
     return this->direction;
 }
 
-const Vector<double>& 
+const Vec3& 
 LineGridIntersector::getStartPoint() const {
     return this->pA;
 }
