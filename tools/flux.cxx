@@ -114,8 +114,8 @@ int main(int argc, char** argv) {
 
                 double ta = polyseg.getBegLineParamCoord();
                 double tb = polyseg.getEndLineParamCoord();
-                const std::vector<double>& xia = polyseg.getBegCellParamCoord();
-                const std::vector<double>& xib = polyseg.getEndCellParamCoord();
+                const Vec3& xia = polyseg.getBegCellParamCoord();
+                const Vec3& xib = polyseg.getEndCellParamCoord();
                 double coeff = polyseg.getCoefficient();
 
                 std::vector<double> dxi({xib[0] - xia[0], xib[1] - xia[1]});

@@ -111,8 +111,8 @@ int main(int argc, char** argv) {
                 vtkIdType cellId = polyseg.getCellId();
                 double ta = polyseg.getBegLineParamCoord();
                 double tb = polyseg.getEndLineParamCoord();
-                const std::vector<double>& xia = polyseg.getBegCellParamCoord();
-                const std::vector<double>& xib = polyseg.getEndCellParamCoord();
+                const Vec3& xia = polyseg.getBegCellParamCoord();
+                const Vec3& xib = polyseg.getEndCellParamCoord();
                 double coeff = polyseg.getCoefficient();
 
                 if (args.get<bool>("-verbose")) {

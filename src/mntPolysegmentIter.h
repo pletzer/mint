@@ -1,4 +1,4 @@
-#include "MvVector.h"
+#include <mntVecN.h>
 #include <mntLineLineIntersector.h>
 #include <vtkUnstructuredGrid.h>
 #include <vmtCellLocator.h>
@@ -59,14 +59,14 @@ public:
      * Get the current cell parametric coordinates at the beginning of segment
      * @return 2d array
      */
-    const Vector<double>& getBegCellParamCoord() const;
+    const Vec3& getBegCellParamCoord() const;
 
 
     /**
      * Get the current cell parametric coordinates at the end of segment
      * @return 2d array
      */
-    const Vector<double>& getEndCellParamCoord() const;
+    const Vec3& getEndCellParamCoord() const;
 
 
     /**
@@ -106,7 +106,7 @@ private:
                                      const double pEnd[],
                                      std::vector<vtkIdType>& cIds,
                                      std::vector<double>& lambRays,
-                                     std::vector< std::vector<double> >& points);
+                                     std::vector<Vec2>& points);
 
     /**
      * Collect and store all the line-grid intersection points
@@ -121,7 +121,7 @@ private:
     std::vector<vtkIdType> cellIds;
     
     // 2d cell parametric coordinates for each intersection point
-    std::vector< Vector<double> > xis;
+    std::vector<Vec3> xis;
 
     // 1d line parametric coordinates for each intersection point
     std::vector<double> ts;
@@ -134,8 +134,8 @@ private:
     std::vector<double> segTbs;
 
     // start/end cell parametric coordinates
-    std::vector< Vector<double> > segXias;
-    std::vector< Vector<double> > segXibs;
+    std::vector<Vec3> segXias;
+    std::vector<Vec3> segXibs;
 
     // duplicity coefficient
     std::vector<double> segCoeffs;

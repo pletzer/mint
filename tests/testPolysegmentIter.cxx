@@ -61,8 +61,8 @@ void test1Cell() {
     psi.reset();
     for (size_t i = 0; i < numSegs; ++i) {
         vtkIdType cellId = psi.getCellId();
-        const std::vector<double>& xia = psi.getBegCellParamCoord();
-        const std::vector<double>& xib = psi.getEndCellParamCoord();
+        const Vec3& xia = psi.getBegCellParamCoord();
+        const Vec3& xib = psi.getEndCellParamCoord();
         double ta = psi.getBegLineParamCoord();
         double tb = psi.getEndLineParamCoord();
         double coeff = psi.getCoefficient();
@@ -116,8 +116,8 @@ void test1CellLineOutside() {
     psi.reset();
     for (size_t i = 0; i < numSegs; ++i) {
         vtkIdType cellId = psi.getCellId();
-        const std::vector<double>& xia = psi.getBegCellParamCoord();
-        const std::vector<double>& xib = psi.getEndCellParamCoord();
+        const Vec3& xia = psi.getBegCellParamCoord();
+        const Vec3& xib = psi.getEndCellParamCoord();
         double ta = psi.getBegLineParamCoord();
         double tb = psi.getEndLineParamCoord();
         double coeff = psi.getCoefficient();
@@ -181,8 +181,8 @@ void test2Cells() {
     psi.reset();
     for (size_t i = 0; i < numSegs; ++i) {
         vtkIdType cellId = psi.getCellId();
-        const std::vector<double>& xia = psi.getBegCellParamCoord();
-        const std::vector<double>& xib = psi.getEndCellParamCoord();
+        const Vec3& xia = psi.getBegCellParamCoord();
+        const Vec3& xib = psi.getEndCellParamCoord();
         double ta = psi.getBegLineParamCoord();
         double tb = psi.getEndLineParamCoord();
         double coeff = psi.getCoefficient();
@@ -245,8 +245,8 @@ void test2CellsEdge() {
     psi.reset();
     for (size_t i = 0; i < numSegs; ++i) {
         vtkIdType cellId = psi.getCellId();
-        const std::vector<double>& xia = psi.getBegCellParamCoord();
-        const std::vector<double>& xib = psi.getEndCellParamCoord();
+        const Vec3& xia = psi.getBegCellParamCoord();
+        const Vec3& xib = psi.getEndCellParamCoord();
         double ta = psi.getBegLineParamCoord();
         double tb = psi.getEndLineParamCoord();
         double coeff = psi.getCoefficient();

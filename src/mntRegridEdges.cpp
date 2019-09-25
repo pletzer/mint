@@ -20,12 +20,12 @@
  * @return interpolation weight
  */
 double computeWeight(const double srcXi0[], const double srcXi1[],
-                     const Vector<double>& xia, const Vector<double>& xib) {
+                     const Vec3& xia, const Vec3& xib) {
 
     double weight = 1.0;
 
-    Vector<double> dxi = xib - xia;
-    Vector<double> xiMid = 0.5*(xia + xib);
+    Vec3 dxi = xib - xia;
+    Vec3 xiMid = 0.5*(xia + xib);
     
     for (size_t d = 0; d < 2; ++d) { // 2d 
 
@@ -303,8 +303,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     vtkIdList* srcCellIds = vtkIdList::New();
     double dstEdgePt0[] = {0., 0., 0.};
     double dstEdgePt1[] = {0., 0., 0.};
-    Vector<double> pcoords0(3);
-    Vector<double> pcoords1(3);
+    Vec3 pcoords0;
+    Vec3 pcoords1;
 
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
 
@@ -372,8 +372,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
             for (size_t iseg = 0; iseg < numSegs; ++iseg) {
 
                 const vtkIdType srcCellId = polySegIter.getCellId();
-                const Vector<double>& xia = polySegIter.getBegCellParamCoord();
-                const Vector<double>& xib = polySegIter.getEndCellParamCoord();
+                const Vec3& xia = polySegIter.getBegCellParamCoord();
+                const Vec3& xib = polySegIter.getEndCellParamCoord();
                 const double coeff = polySegIter.getCoefficient();
 
 #ifdef MYDEBUG

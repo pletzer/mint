@@ -99,8 +99,8 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
             size_t ib = inds[i1];
             double ta = this->ts[ia];
             double tb = this->ts[ib];
-            const Vector<double>& xia = this->xis[ia];
-            const Vector<double>& xib = this->xis[ib];
+            const Vec3& xia = this->xis[ia];
+            const Vec3& xib = this->xis[ib];
 
             // add the cell index, start linear param coord, etc.
             this->segCellIds.push_back(cId);
@@ -129,8 +129,8 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     std::vector<vtkIdType> sCellIds = this->segCellIds;
     std::vector<double> sTas = this->segTas;
     std::vector<double> sTbs = this->segTbs;
-    std::vector< Vector<double> > sXias = this->segXias;
-    std::vector< Vector<double> > sXibs = this->segXibs;
+    std::vector<Vec3> sXias = this->segXias;
+    std::vector<Vec3> sXibs = this->segXibs;
 
     // no need to sort this->segCoeffs since all the values are one
     for (size_t j = 0; j < n; ++j) {
@@ -191,13 +191,13 @@ PolysegmentIter::getCellId() const {
     return this->segCellIds[this->index];
 }
 
-const Vector<double>& 
+const Vec3& 
 PolysegmentIter::getBegCellParamCoord() const {
     return this->segXias[this->index];
 }        
 
 
-const Vector<double>& 
+const Vec3& 
 PolysegmentIter::getEndCellParamCoord() const {
     return this->segXibs[this->index];
 }
@@ -237,8 +237,8 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     std::vector<vtkIdType> sCellIds = this->segCellIds;
     std::vector<double> sTas = this->segTas;
     std::vector<double> sTbs = this->segTbs;
-    std::vector< Vector<double> > sXias = this->segXias;
-    std::vector< Vector<double> > sXibs = this->segXibs;
+    std::vector<Vec3> sXias = this->segXias;
+    std::vector<Vec3> sXibs = this->segXibs;
     std::vector<double> sCoeffs = this->segCoeffs;
     this->segCellIds.resize(0);
     this->segTas.resize(0);
@@ -282,13 +282,13 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                                              const double pEnd[],
                                              std::vector<vtkIdType>& cIds,
                                              std::vector<double>& lambRays,
-                                             std::vector< std::vector<double> >& points) {
+                                             std::vector<Vec2>& points) {
     LineLineIntersector intersector;
     vtkIdList* cellIds = vtkIdList::New();
     vtkIdList* ptIds = vtkIdList::New();
 
-    std::vector<double> v0(3);
-    std::vector<double> v1(3);
+    Vec3 v0;
+    Vec3 v1;
 
     // vector from start to finish
     double dp[] = {pEnd[0] - pBeg[0], pEnd[1] - pBeg[1], pEnd[2] - pBeg[2]};
@@ -358,7 +358,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                     // add to list
                     cIds.push_back(cId);
                     lambRays.push_back(lambRay);
-                    points.push_back(std::vector<double>(p, p + 2)); // copies
+                    points.push_back(Vec2(p)); // copies
                 }
             }
             else {
@@ -376,11 +376,11 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 // add to lists both points
                 cIds.push_back(cId);
                 lambRays.push_back(lama);
-                points.push_back(std::vector<double>(pa, pa + 2));
+                points.push_back(Vec2(pa));
 
                 cIds.push_back(cId);
                 lambRays.push_back(lamb); // same Id as before
-                points.push_back(std::vector<double>(pb, pb + 2));
+                points.push_back(Vec2(pb));
 
             }
 
@@ -403,7 +403,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     vtkGenericCell* cell = vtkGenericCell::New();
     vtkIdList* cellIds = vtkIdList::New();
 
-    Vector<double> xi(3);
+    Vec3 xi;
     double closestPoint[] = {0., 0., 0.};
     double weights[8];
 
@@ -430,7 +430,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
     std::vector<vtkIdType> cIds;
     std::vector<double> lambRays;
-    std::vector< std::vector<double> > points;
+    std::vector<Vec2> points;
     this->__collectIntersectionPoints(pBeg, pEnd, cIds, lambRays, points);
 
     // find the cell Id of the neighbouring cells
