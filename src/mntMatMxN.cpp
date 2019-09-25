@@ -64,6 +64,7 @@ template VecN<2, double> dot(const VecN<3, double> &a, const MatMxN<3, 2, double
 template VecN<3, double> dot(const VecN<3, double> &a, const MatMxN<3, 3, double> &b);
 
 template MatMxN<2, 2, double> dot(const MatMxN<2, 2, double> &a, const MatMxN<2, 2, double> &b);
+template MatMxN<2, 2, double> dot(const MatMxN<2, 3, double> &a, const MatMxN<3, 2, double> &b);
 template MatMxN<2, 3, double> dot(const MatMxN<2, 2, double> &a, const MatMxN<2, 3, double> &b);
 template MatMxN<2, 3, double> dot(const MatMxN<2, 3, double> &a, const MatMxN<3, 3, double> &b);
 template MatMxN<3, 3, double> dot(const MatMxN<3, 3, double> &a, const MatMxN<3, 3, double> &b);

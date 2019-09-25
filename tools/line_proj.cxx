@@ -1,4 +1,4 @@
-#include <mntVec3.h>
+#include <mntVecN.h>
 #include <mntPolylineParser.h>
 #include <mntGrid.h>
 #include <mntPolysegmentIter.h>
