@@ -5,8 +5,7 @@
 #include <mntMat2x3.h>
 #include <mntMat3x2.h>
 #include <mntMat3x3.h>
-#include <mntVec2.h>
-#include <mntVec3.h>
+#include <mntVecN.h>
 
 /**
  * Function that compute the dot product and the transpose

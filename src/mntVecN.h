@@ -1,13 +1,12 @@
 
-#ifndef MNT_VEC2
-#define MNT_VEC2
+#ifndef MNT_VECN
+#define MNT_VECN 
 
 // C headers
 #include <cmath>
 #include <cstdlib>
 #include <cstring> // size_t
 #include <ctime>
-#include <complex>
 #ifndef NO_ASSERT
 #include <cassert>
 #endif
@@ -20,12 +19,10 @@
 
 #include "MvFunctors.h"
 
-/** The vector class
+/** Vector type allocated on the stack */
 
- The class to represent vectors.  Elements are adjacent in memory. */
-
-template<class T>
-class Vector2 : public std::array<T, 2> {  
+template<size_t N, class T>
+class VecN : public std::array<T, N> {  
                        
 public:
 
@@ -34,69 +31,68 @@ public:
   /*:::::::::::::::*/
 
   /** Constructor with no arguments */
-  Vector2(); 
+  VecN(); 
   
   /** Constructor: create vector of "e"'s.
     @param e value of each element */
-  Vector2(T e);
-
+  VecN(T e);
 
   /** Constructor: create vector from C pointer.
     @param ptr poointer */
-  Vector2(T* ptr);
+  VecN(T* ptr);
 
   /** Copy constructor: elements are copied into a new vector. 
    @param otherVec vector to be copied */
-  Vector2(const Vector2<T>& otherVec);
+  VecN(const VecN<N, T>& otherVec);
 
   /** Assignment operator: set all elements to "f". 
    @param f scalar
    @return vector instance */
-  Vector2<T> &operator=(T f);
+  VecN<N, T> &operator=(T f);
 
   /** Add the value "f" to every element of the vector. 
    @param f scalar 
    @return vector */
-  Vector2<T> &operator+=(T f);
+  VecN<N, T> &operator+=(T f);
 
   /** Subtract the value "f" to every element of the
       vector. 
   @param f scalar 
   @return vector */
-  Vector2<T> &operator-=(T f);
+  VecN<N, T> &operator-=(T f);
 
   /** Multiply every element by the value "f". 
   @param f scalar
   @return vector */
-  Vector2<T> &operator*=(T f);
+  VecN<N, T> &operator*=(T f);
 
   /** Divide every element by the value "f". 
   @param f scalar
   @return vector */
-  Vector2<T> &operator/=(T f);
+  VecN<N, T> &operator/=(T f);
 
   /** Vector addition. 
    @param w vector
    @return vector = original vector incremented by w */
-  Vector2<T> &operator+=(const Vector2<T> &w);
+  VecN<N, T> &operator+=(const VecN<N, T> &w);
 
   /** Vector subtraction. 
    @param w vector
    @return vector = original vector decremented by w  */
-  Vector2<T> &operator-=(const Vector2<T> &w);
+  VecN<N, T> &operator-=(const VecN<N, T> &w);
 
   /** Elementwise multiplication. Multiply every vector element (of the vector
     on the left of "*=") by its counterpart in the "b" vector.
   @param w vector
   @return vector */
-  Vector2<T> &operator*=(const Vector2<T> &w);
+  VecN<N, T> &operator*=(const VecN<N, T> &w);
 
   /** Elementwise division. 
     Divide every vector element (of the vector on
     the left of "*=") by its counterpart in the "b" vector.
   @param w vector
   @return vector  */
-  Vector2<T> &operator/=(const Vector2<T> &w);
+  VecN<N, T> &operator/=(const VecN<N, T> &w);
 
   /** Fill the vector with random numbers between 0 and 1 (two subsequent calls 
       to random will generate different elements).
@@ -142,10 +138,6 @@ public:
 
 };
 
-typedef Vector2<double> Vec2;
-typedef Vector2<size_t> Vec2_int;
-typedef Vector2< std::complex<double> > Vec2_cmplx;
-
 /**@name Vector Functions
   These are global functions operating on or generating vectors.  */
 
@@ -156,16 +148,16 @@ typedef Vector2< std::complex<double> > Vec2_cmplx;
  @param w another vector
  @return vector = v + w 
 */
-template<class T>
-Vector2<T> operator+(const Vector2<T> &v, const Vector2<T> &w);
+template<size_t N, class T>
+VecN<N, T> operator+(const VecN<N, T> &v, const VecN<N, T> &w);
 
 /** Subtraction. 
  @param v a vector
  @param w another vector
  @return vector = v - w 
 */
-template<class T>
-Vector2<T> operator-(const Vector2<T> &v, const Vector2<T> &w);
+template<size_t N, class T>
+VecN<N, T> operator-(const VecN<N, T> &v, const VecN<N, T> &w);
 
 /** Elementwise multiplication. Not to be confused with the dot-product "dot".
  @see dot
@@ -173,15 +165,15 @@ Vector2<T> operator-(const Vector2<T> &v, const Vector2<T> &w);
  @param w another vector
  @return vector = v*w (!= dot(v, w))
 */
-template<class T>
-Vector2<T> operator*(const Vector2<T> &v, const Vector2<T> &w);
+template<size_t N, class T>
+VecN<N, T> operator*(const VecN<N, T> &v, const VecN<N, T> &w);
 
 /** Elementwise division. 
  @param v a vector
  @param w another vector
  @return vector = v/w */
-template<class T>
-Vector2<T> operator/(const Vector2<T> &v, const Vector2<T> &w);
+template<size_t N, class T>
+VecN<N, T> operator/(const VecN<N, T> &v, const VecN<N, T> &w);
 
 /** (Left) addition with a scalar. This is equivalent to creating a vector filled 
     with "f" and adding "a" to it.
@@ -189,8 +181,8 @@ Vector2<T> operator/(const Vector2<T> &v, const Vector2<T> &w);
     @param a a vector
     @return vector = f + a
 */
-template<class T>
-Vector2<T> operator+(T f, const Vector2<T> &a);
+template<size_t N, class T>
+VecN<N, T> operator+(T f, const VecN<N, T> &a);
 
 /** (Right) addition with a scalar. This is equivalent to creating a vector filled 
     with "f" and adding "a" to it.
@@ -198,8 +190,8 @@ Vector2<T> operator+(T f, const Vector2<T> &a);
     @param f a scalar
     @return vector = a + f
 */
-template<class T>
-Vector2<T> operator+(const Vector2<T> &a, T f);
+template<size_t N, class T>
+VecN<N, T> operator+(const VecN<N, T> &a, T f);
 
 /** Subtraction from a scalar. This is equivalent to creating a vector filled with
     "f" and subtracting "w" from it.
@@ -207,47 +199,47 @@ Vector2<T> operator+(const Vector2<T> &a, T f);
     @param w a vector
     @return vector = f-w
 */
-template<class T>
-Vector2<T> operator-(T f, const Vector2<T> &w);
+template<size_t N, class T>
+VecN<N, T> operator-(T f, const VecN<N, T> &w);
 
 /** Subtraction of a scalar. 
     @param w a vector
     @param f a scalar
     @return vector = w-f
 */
-template<class T>
-Vector2<T> operator-(const Vector2<T> &w, T f);
+template<size_t N, class T>
+VecN<N, T> operator-(const VecN<N, T> &w, T f);
 
 /** Negative. 
     @param v a vector
     @return vector = -w
 */
-template<class T>
-Vector2<T> operator-(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> operator-(const VecN<N, T> &v);
 
 /** (Left) multiplication of a vector by the scalar "f". 
  @param f s scalar
  @param a a vector
  @return vector = f*a
 */
-template<class T>
-Vector2<T> operator*(T f, const Vector2<T> &a);
+template<size_t N, class T>
+VecN<N, T> operator*(T f, const VecN<N, T> &a);
 
 /** (Right) multiplication of a vector by the scalar "f". 
  @param a a vector
  @param f s scalar
  @return vector = f*a
 */
-template<class T>
-Vector2<T> operator*(const Vector2<T> &a, T f);
+template<size_t N, class T>
+VecN<N, T> operator*(const VecN<N, T> &a, T f);
 
 /** Elementwise division. 
     @param f a scalar
     @param a a vector
     @return vector whose elements are f / element of "a"
 */
-template<class T>
-Vector2<T> operator/(T f, const Vector2<T> &a);
+template<size_t N, class T>
+VecN<N, T> operator/(T f, const VecN<N, T> &a);
 
 /** Scalar product. This is equivalent to sum(v*w). Not to be confused with the
  elementwise product v*w. 
@@ -255,220 +247,180 @@ Vector2<T> operator/(T f, const Vector2<T> &a);
 @param w another vector
 @return vector = v.w
 */
-template<class T>
-T dot(const Vector2<T> &v, const Vector2<T> &w);
+template<size_t N, class T>
+T dot(const VecN<N, T> &v, const VecN<N, T> &w);
 
 /** Apply function "sin" to each element. 
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> sin(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> sin(const VecN<N, T> &v);
 
 /** Apply function "cos" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> cos(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> cos(const VecN<N, T> &v);
 
 /** Apply function "tan" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> tan(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> tan(const VecN<N, T> &v);
 
 /** Apply function "asin" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> asin(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> asin(const VecN<N, T> &v);
 
 /** Apply function "acos" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> acos(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> acos(const VecN<N, T> &v);
 
 /** Apply function "atan" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> atan(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> atan(const VecN<N, T> &v);
 
 /** Apply function "exp" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> exp(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> exp(const VecN<N, T> &v);
 
 /** Apply function "log" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> log(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> log(const VecN<N, T> &v);
 
 /** Apply function "sqrt" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> sqrt(const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> sqrt(const VecN<N, T> &v);
 
 /** Apply function "abs" to each element.
     @param v a vector
     @return vector 
    */
-template<class T>
-Vector2<T> abs(const Vector2<T> &v);
-
-/** Get the real part of a complex vector 
-    @param v a vector
-    @return real part of the vector
-*/
-Vec2 real(const Vec2_cmplx &v);
-
-/** Get the imaginary part of a complex vector 
-    @param v a vector
-    @return imaginary part of the vector
-*/
-Vec2 imag(const Vec2_cmplx &v);
-
-/** Get the conjugate of a complex vector 
-    @param v a vector
-    @return conjugate of the vector
-*/
-Vec2_cmplx conjug(const Vec2_cmplx &v);
-
+template<size_t N, class T>
+VecN<N, T> abs(const VecN<N, T> &v);
 
 /** Apply function "pow" to each element.
     @param v a vector
     @param exp the exponent
     @return vector 
  */
-template<class T>
-Vector2<T> pow(const Vector2<T> &v, T exp);
+template<size_t N, class T>
+VecN<N, T> pow(const VecN<N, T> &v, T exp);
 
 /** Apply function "pow" to each element.
     @param v a vector
     @param exp the exponent
     @return vector 
  */
-template<class T>
-Vector2<T> pow(const Vector2<T> &v, int exp);
+template<size_t N, class T>
+VecN<N, T> pow(const VecN<N, T> &v, int exp);
 
 /** Return the maximum value of v. 
     @param v vector 
     @return scalar = max(v)
  */
-template<class T>
-T max(const Vector2<T> &v);
+template<size_t N, class T>
+T max(const VecN<N, T> &v);
 
 /** Take the maxium of two vectors.
     @param v a vector
     @param w another vector
     @return vector with elements $v_i > w_i ? v_i: w_i$.
  */
-template<class T>
-Vector2<T> max(const Vector2<T> &v, const Vector2<T> &w);
+template<size_t N, class T>
+VecN<N, T> max(const VecN<N, T> &v, const VecN<N, T> &w);
 
 /** Take the maximum of a vector and a scalar.
     @param v a vector
     @param f a scalar    
     @return vector with elements $v_i > f ? v_i: f$.
  */
-template<class T>
-Vector2<T> max(const Vector2<T> &v, T f);
+template<size_t N, class T>
+VecN<N, T> max(const VecN<N, T> &v, T f);
 
 /** Take the maximum of a vector and a scalar.
     @param f a scalar    
     @param v a vector
     @return vector with elements $v_i > f ? v_i: f$.
  */
-template<class T>
-Vector2<T> max(T f, const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> max(T f, const VecN<N, T> &v);
 
 /** Return the minimum element of v.
     @param v vector 
     @return scalar = min(v)
   */
-template<class T>
-T min(const Vector2<T> &v);
+template<size_t N, class T>
+T min(const VecN<N, T> &v);
 
 /** Take the minimum of two vectors.
     @param v a vector
     @param w another vector
     @return vector with elements $v_i < w_i ? v_i: w_i$.
  */
-template<class T>
-Vector2<T> min(const Vector2<T> &v, const Vector2<T> &w);
+template<size_t N, class T>
+VecN<N, T> min(const VecN<N, T> &v, const VecN<N, T> &w);
 
 /** Take the minimum of a vector and a scalar.
     @param v a vector
     @param f a scalar    
     @return vector with elements $v_i < f ? v_i: f$.
  */
-template<class T>
-Vector2<T> min(const Vector2<T> &v, T f);
+template<size_t N, class T>
+VecN<N, T> min(const VecN<N, T> &v, T f);
 
 /** Take the minimum of a vector and a scalar.
     @param f a scalar    
     @param v a vector
     @return vector with elements $v_i < f ? v_i: f$.
  */
-template<class T>
-Vector2<T> min(T f, const Vector2<T> &v);
+template<size_t N, class T>
+VecN<N, T> min(T f, const VecN<N, T> &v);
 
 /** Sum all elements. 
     @see dot
     @param v a vector
     @return scalar = contraction of v.
  */
-template<class T>
-T sum(const Vector2<T> &v);
+template<size_t N, class T>
+T sum(const VecN<N, T> &v);
 
 /** Print out. 
  *
  * @param s stream
  * @param v Vector
  */
-template <class T>
-std::ostream& operator<<(std::ostream& s, const Vector2<T>& v);
+template <size_t N, class T>
+std::ostream& operator<<(std::ostream& s, const VecN<N, T>& v);
 
-/** Set the real part of a complex vector
- * @param v complex vector to be modified
- * @param rV real part of the vector
- */
-void setReal(Vec2_cmplx &v, const Vec2& rV);
-
-/** Set the imaginary part of a complex vector
- * @param v complex vector to be modified
- * @param iV imaginary part of the vector
- */
-void setImag(Vec2_cmplx &v, const Vec2& iV);
-
-/** Set the real and the imaginary parts of a complex vector
- * @param v complex vector to be modified
- * @param rV real part of the vector
- * @param iV imaginary part of the vector
- */
-void setRealImag(Vec2_cmplx &v, const Vec2& rV, const Vec2& iV);
-
-/** Create complex vector out of two real vectors
- * @param rV real part of the vector
- * @param iV imaginary part of the vector
- * @return complex vector
- */
-Vec2_cmplx cmplx(const Vec2& rV, const Vec2& iV);
-
+typedef VecN<2, double> Vec2;
+typedef VecN<3, double> Vec3;
+typedef VecN<4, double> Vec4;
+typedef VecN<6, double> Vec6;
+typedef VecN<9, double> Vec9;
 
 //@}
 
 
-#endif /* MNT_VEC2 */
+#endif /* MNT_VECN */

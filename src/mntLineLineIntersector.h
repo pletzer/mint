@@ -1,10 +1,8 @@
 #ifndef MNT_LINE_LINE_INTERSECTOR
 #define MNT_LINE_LINE_INTERSECTOR
 
-#include "mntMat2x2.h"
-#include "mntVec2.h"
-#include "mntDots.h"
-
+#include "mntMatMxN.h"
+#include "mntVecN.h"
 
 struct LineLineIntersector {
 

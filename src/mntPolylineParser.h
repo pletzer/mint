@@ -1,6 +1,6 @@
 #include <vector>
 #include <string>
-#include <mntVec3.h>
+#include <mntVecN.h>
 
 #ifndef MNT_POLYLINE_PARSER
 #define MNT_POLYLINE_PARSER

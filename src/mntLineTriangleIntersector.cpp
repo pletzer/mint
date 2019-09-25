@@ -1,9 +1,7 @@
-#include "mntLineTriangleIntersector.h"
-#include "mntMat3x2.h"
-#include "mntMat2x3.h"
-#include "mntVec2.h"
-#include "mntVec3.h"
-#include "mntDots.h"
+#include <mntLineTriangleIntersector.h>
+#include <mntMatMxN.h>
+#include <mntVecN.h>
+#include <vector>
 
 Vec2
 getTriangleParamLocation(const Vec3& q0, 

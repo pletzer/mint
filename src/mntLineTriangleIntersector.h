@@ -1,5 +1,5 @@
-#include <mntMat3x3.h>
-#include <mntVec3.h>
+#include <mntMatMxN.h>
+#include <mntVecN.h>
 #include <mntLineLineIntersector.h>
 #include <iostream>
 #include <limits>
