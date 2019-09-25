@@ -218,7 +218,7 @@ template<size_t N, class T>
 VecN<N, T> operator/(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> c(v);
-  return c/=f;
+  return c /= f;
 }
 
 template<size_t N, class T>
@@ -235,7 +235,7 @@ template<size_t N, class T>
 VecN<N, T> operator/(const VecN<N, T> &v, const VecN<N, T> &w) 
 {
   VecN<N, T> c(v);
-  return c/=w;
+  return c /= w;
 }
 
 // Math functions
@@ -514,6 +514,12 @@ template VecN<3, double> operator/(const VecN<3, double>&, double);
 template VecN<4, double> operator/(const VecN<4, double>&, double);
 template VecN<6, double> operator/(const VecN<6, double>&, double);
 template VecN<9, double> operator/(const VecN<9, double>&, double);
+
+template VecN<2, double> operator/(const VecN<2, double>&, const VecN<2, double>&);
+template VecN<3, double> operator/(const VecN<3, double>&, const VecN<3, double>&);
+template VecN<4, double> operator/(const VecN<4, double>&, const VecN<4, double>&);
+template VecN<6, double> operator/(const VecN<6, double>&, const VecN<6, double>&);
+template VecN<9, double> operator/(const VecN<9, double>&, const VecN<9, double>&);
 
 template VecN<2, double> abs(const VecN<2, double>&);
 template VecN<3, double> abs(const VecN<3, double>&);

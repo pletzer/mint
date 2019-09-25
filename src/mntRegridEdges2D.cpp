@@ -241,10 +241,10 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
     (*self)->weights.resize(0);
     // MAY WANT TO RESERVE SPACE
 
-    Vector<double>  dstXi0(3, 0.0);
-    Vector<double>  dstXi1(3, 0.0);
-    Vector<double>  srcXi0(3, 0.0);
-    Vector<double>  srcXi1(3, 0.0);
+    Vec3 dstXi0(0.0);
+    Vec3 dstXi1(0.0);
+    Vec3 srcXi0(0.0);
+    Vec3 srcXi1(0.0);
 
     // build the source grid locator
     (*self)->srcGrid.buildLocator(numCellsPerBucket);
@@ -253,8 +253,8 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
     for (size_t dstEdgeId = 0; dstEdgeId < (*self)->numDstEdges; ++dstEdgeId) {
 
         // get the start end points of the dst egde
-        std::vector< Vector<double> > dstEdgePoints = (*self)->dstGrid.getEdgePointsRegularized(dstEdgeId);
-        Vector<double> u = dstEdgePoints[1] - dstEdgePoints[0];
+        std::vector<Vec3> dstEdgePoints = (*self)->dstGrid.getEdgePointsRegularized(dstEdgeId);
+        Vec3 u = dstEdgePoints[1] - dstEdgePoints[0];
 
         // find all the intersections between the dst edge and the source grid
         std::vector< std::pair<size_t, std::vector<double> > > intersections = 
@@ -269,8 +269,8 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
 
             double lambda0 = srcCellIdLambdas.second[0];
             double lambda1 = srcCellIdLambdas.second[1];
-            Vector<double> dstPoint0 = dstEdgePoints[0] + lambda0*u;
-            Vector<double> dstPoint1 = dstEdgePoints[0] + lambda1*u;
+            Vec3 dstPoint0 = dstEdgePoints[0] + lambda0*u;
+            Vec3 dstPoint1 = dstEdgePoints[0] + lambda1*u;
 
             // compute the src cell parametric coords of the dst edge segment
             bool inside;
@@ -284,9 +284,9 @@ int mnt_regridedges2d_build(RegridEdges2D_t** self, int numCellsPerBucket) {
                 size_t srcEdgeId = srcEdgeIds[i];
 
                 // get the the end points of this src cell edge
-                std::vector< Vector<double> > srcPoints = (*self)->srcGrid.getEdgePointsRegularized(srcEdgeId);
-                const Vector<double>& srcPoint0 = srcPoints[0];
-                const Vector<double>& srcPoint1 = srcPoints[1];
+                std::vector<Vec3> srcPoints = (*self)->srcGrid.getEdgePointsRegularized(srcEdgeId);
+                const Vec3& srcPoint0 = srcPoints[0];
+                const Vec3& srcPoint1 = srcPoints[1];
 
                 // compute the src cell parametric coords of the src edge
                 inside = (*self)->srcGrid.getParamCoords(srcPoint0, &srcXi0[0]); // need to check

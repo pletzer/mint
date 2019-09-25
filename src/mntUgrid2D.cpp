@@ -21,26 +21,26 @@ struct LambdaBegFunctor {
 };
 
 
-std::vector< Vector<double> > 
+std::vector<Vec3> 
 Ugrid2D::getFacePoints(size_t faceId) const {
 
     const size_t* pointIds = this->getFacePointIds(faceId);
-    std::vector< Vector<double> > res(4); // 2d 4 points per quad
+    std::vector<Vec3> res(4); // 2d 4 points per quad
 
     // iterate over the 4 points
     for (size_t i = 0; i < 4; ++i) {
         const double* p = this->getPoint(pointIds[i]);
-        res[i] = Vector<double>(p, p + NUM_SPACE_DIMS);
+        res[i] = Vec3(p);
     }
 
     return res;
 }
 
 
-std::vector< Vector<double> > 
+std::vector<Vec3> 
 Ugrid2D::getEdgePoints(size_t edgeId) const {
 
-    std::vector< Vector<double> > res;
+    std::vector<Vec3> res;
 
     // itereate over the 2 points spanning the edge
     for (size_t i = 0; i < 2; ++i) {
@@ -52,18 +52,18 @@ Ugrid2D::getEdgePoints(size_t edgeId) const {
         const double* p = this->getPoint(pointId);
 
         // add
-        res.push_back( Vector<double>(p, p + NUM_SPACE_DIMS) );
+        res.push_back(Vec3(p));
     }
     return res;
 }
 
 bool 
-Ugrid2D::containsPoint(size_t faceId, const Vector<double>& point, double tol) const {
+Ugrid2D::containsPoint(size_t faceId, const Vec3& point, double tol) const {
 
     tol = std::abs(tol);
     bool res = true;
     double circ = 0;
-    std::vector< Vector<double> > vertices = getFacePointsRegularized(faceId);
+    std::vector<Vec3> vertices = getFacePointsRegularized(faceId);
     for (size_t i0 = 0; i0 < 4; ++i0) {
 
         size_t i1 = (i0 + 1) % 4;
@@ -157,11 +157,11 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
 
     // compute min/max values after regularizing the coords across the faces
     // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
-    this->xmin.resize(NUM_SPACE_DIMS, +std::numeric_limits<double>::max());
-    this->xmax.resize(NUM_SPACE_DIMS, -std::numeric_limits<double>::max());
+    this->xmin = +std::numeric_limits<double>::max();
+    this->xmax = -std::numeric_limits<double>::max();
     for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
-        std::vector< Vector<double> > nodes = this->getFacePointsRegularized(faceId);
-        for (const Vector<double>& p : nodes) {
+        std::vector<Vec3> nodes = this->getFacePointsRegularized(faceId);
+        for (const Vec3& p : nodes) {
             for (size_t j = 0; j < this->xmin.size(); ++j) {
                 this->xmin[j] = (p[j] < this->xmin[j]? p[j]: this->xmin[j]);
                 this->xmax[j] = (p[j] > this->xmax[j]? p[j]: this->xmax[j]);
@@ -324,10 +324,10 @@ Ugrid2D::readPoints(int ncid, int meshid) {
     return 0;
 }
 
-std::vector< Vector<double> > 
+std::vector<Vec3> 
 Ugrid2D::getFacePointsRegularized(size_t faceId) const {
 
-    std::vector< Vector<double> > res = this->getFacePoints(faceId);
+    std::vector<Vec3> res = this->getFacePoints(faceId);
 
     // regularize
     for (size_t i = 1; i < res.size(); ++i) {
@@ -370,16 +370,16 @@ Ugrid2D::getFacePointsRegularized(size_t faceId) const {
 }
 
 
-std::vector< Vector<double> > 
+std::vector<Vec3> 
 Ugrid2D::getEdgePointsRegularized(size_t edgeId) const {
 
     const size_t* ptIds = this->getEdgePointIds(edgeId);
     const double* p0 = this->getPoint(ptIds[0]);
     const double* p1 = this->getPoint(ptIds[1]);
 
-    std::vector< Vector<double> > res(2);
-    res[0].assign(p0, p0 + NUM_SPACE_DIMS);
-    res[1].assign(p1, p1 + NUM_SPACE_DIMS);
+    std::vector<Vec3> res(2);
+    res[0] = Vec3(p0);
+    res[1] = Vec3(p1);
 
     // fix the longitude to minimize the edge length
     double dLon = p1[LON_INDEX] - p0[LON_INDEX];
@@ -420,8 +420,8 @@ Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
 
     // assign each face to one or more buckets depending on where the face's nodes fall
     for (size_t faceId = 0; faceId < this->getNumberOfFaces(); ++faceId) {
-        std::vector< Vector<double> > nodes = getFacePointsRegularized(faceId);
-        for (const Vector<double>& p : nodes) {
+        std::vector<Vec3> nodes = getFacePointsRegularized(faceId);
+        for (const Vec3& p : nodes) {
             int bucketId = this->getBucketId(p);
             this->bucket2Faces[bucketId].push_back(faceId);
         }
@@ -430,7 +430,7 @@ Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
 }
 
 bool
-Ugrid2D::findCell(const Vector<double>& point, double tol, size_t* faceId) const {
+Ugrid2D::findCell(const Vec3& point, double tol, size_t* faceId) const {
 
     int bucketId = this->getBucketId(point);
     const std::vector<size_t>& faces = this->bucket2Faces.find(bucketId)->second;
@@ -444,8 +444,8 @@ Ugrid2D::findCell(const Vector<double>& point, double tol, size_t* faceId) const
 }
 
 std::set<size_t> 
-Ugrid2D::findCellsAlongLine(const Vector<double>& point0,
-                            const Vector<double>& point1) const {
+Ugrid2D::findCellsAlongLine(const Vec3& point0,
+                            const Vec3& point1) const {
 
     std::set<size_t> res;
     int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
@@ -467,14 +467,14 @@ Ugrid2D::findCellsAlongLine(const Vector<double>& point0,
     // want more segments when the line is 45 deg. Want more segments when 
     // the points are far apart.
     size_t nSections = std::max(1, std::min(dn, dm));
-    Vector<double> du = point1 - point0;
+    Vec3 du = point1 - point0;
     du /= (double) nSections;
 
     for (size_t iSection = 0; iSection < nSections; ++iSection) {
 
         // start/nd points of the segment
-        Vector<double> p0 = point0 + (double) iSection * du;
-        Vector<double> p1 = p0 + du;
+        Vec3 p0 = point0 + (double) iSection * du;
+        Vec3 p1 = p0 + du;
     
         // get the start bucket
         begBucketId = this->getBucketId(p0);
@@ -505,7 +505,7 @@ Ugrid2D::findCellsAlongLine(const Vector<double>& point0,
 
 void
 Ugrid2D::setCellPoints(size_t cellId) {
-    std::vector< Vector<double> > nodes = this->getFacePointsRegularized(cellId);
+    std::vector<Vec3> nodes = this->getFacePointsRegularized(cellId);
     for (size_t i = 0; i < nodes.size(); ++i) {
         this->cellPoints->SetPoint(i, &nodes[i][0]);
     }
@@ -513,7 +513,7 @@ Ugrid2D::setCellPoints(size_t cellId) {
 }
 
 bool
-Ugrid2D::getParamCoords(const Vector<double>& point, double pcoords[]) {
+Ugrid2D::getParamCoords(const Vec3& point, double pcoords[]) {
     double closestPoint[3];
     int subId;
     double dist2;
@@ -523,14 +523,14 @@ Ugrid2D::getParamCoords(const Vector<double>& point, double pcoords[]) {
 }
 
 void 
-Ugrid2D::interpolate(const Vector<double>& pcoords, double point[]) {
+Ugrid2D::interpolate(const Vec3& pcoords, double point[]) {
     int subId = 0;
     double weights[8]; // not used
     this->cell->EvaluateLocation(subId, (double*) &pcoords[0], point, weights);
 }
 
 std::vector< std::pair<size_t, std::vector<double> > >
-Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd) {
+Ugrid2D::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     // store result
     std::vector< std::pair<size_t, std::vector<double> > > res;
@@ -578,8 +578,8 @@ Ugrid2D::findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<doub
 
 std::vector<double>
 Ugrid2D::collectIntersectionPoints(size_t cellId, 
-                                   const Vector<double>& pBeg,
-                                   const Vector<double>& pEnd) {
+                                   const Vec3& pBeg,
+                                   const Vec3& pEnd) {
 
     std::vector<double> lambdas;
     // expect two values
@@ -589,7 +589,7 @@ Ugrid2D::collectIntersectionPoints(size_t cellId,
     const double eps100 = 100*eps;
 
     // cell nodes with 360 deg added/subtracted
-    std::vector< Vector<double> > nodes = this->getFacePointsRegularized(cellId);
+    std::vector<Vec3> nodes = this->getFacePointsRegularized(cellId);
 
     // computes the intersection point of two lines
     LineLineIntersector intersector;
@@ -666,8 +666,8 @@ Ugrid2D::dumpGridVtk(const std::string& filename) {
     f << "# vtk DataFile Version 4.2\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n";
     f << "POINTS " << 4 * this->numFaces << " double\n";
     for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
-        const std::vector< Vector<double> > nodes = this->getFacePointsRegularized(faceId);
-        for (const Vector<double>& node : nodes) {
+        const std::vector<Vec3> nodes = this->getFacePointsRegularized(faceId);
+        for (const Vec3& node : nodes) {
             f << node << ' ';
         }
         f << '\n';
