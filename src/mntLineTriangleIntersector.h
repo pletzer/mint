@@ -1,5 +1,5 @@
-#include <MvMatrix.h>
-#include <MvVector.h>
+#include <mntMatMxN.h>
+#include <mntVecN.h>
 #include <mntLineLineIntersector.h>
 #include <iostream>
 #include <limits>
@@ -20,11 +20,12 @@
  * 
  * @note assumes p to be in the plane of (q0, q1, q2)
  */
-Vector<double>
-getTriangleParamLocation(const Vector<double>& q0, 
-                         const Vector<double>& q1, 
-                         const Vector<double>& q2, 
-                         const Vector<double>& p);
+Vec2
+getTriangleParamLocation(const Vec3& q0, 
+                         const Vec3& q1, 
+                         const Vec3& q2, 
+                         const Vec3& p);
+
 
 struct LineTriangleIntersector {
 
@@ -72,7 +73,7 @@ struct LineTriangleIntersector {
      * Get the begin/end points of overlap
      * @return pair of points
      */
-    const std::pair< Vector<double>, Vector<double> > getBegEndPoints() const;
+    const std::pair< Vec3, Vec3 > getBegEndPoints() const;
 
     /**
      * Get the begin/end parametric coordinates of overlap
@@ -93,20 +94,20 @@ struct LineTriangleIntersector {
      * Get the solution
      * @return solution
      */
-    const Vector<double> getSolution();
+    const Vec3 getSolution();
 
 
-    ColMat<double> mat;
-    ColMat<double> invMatTimesDet;
+    Mat3x3 mat;
+    Mat3x3 invMatTimesDet;
 
-    Vector<double> invMatTimesDetDotRhs;
-    Vector<double> rhs;
-    Vector<double> solTimesDet;
-    Vector<double> p0;
-    Vector<double> p1;
-    Vector<double> q0;
-    Vector<double> q1;
-    Vector<double> q2;
+    Vec3 invMatTimesDetDotRhs;
+    Vec3 rhs;
+    Vec3 solTimesDet;
+    Vec3 p0;
+    Vec3 p1;
+    Vec3 q0;
+    Vec3 q1;
+    Vec3 q2;
 
     double lamBeg;
     double lamEnd;

@@ -1,4 +1,4 @@
-#include <MvVector.h>
+#include <mntVecN.h>
 #include <mntPolylineParser.h>
 #include <mntGrid.h>
 #include <mntPolysegmentIter.h>
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
         std::string srcFile = args.get<std::string>("-i");
         PolylineParser pp(2);
         pp.parse(args.get<std::string>("-p"));
-        const std::vector< Vector<double> >& points = pp.getPoints();
+        const std::vector< Vec3 >& points = pp.getPoints();
         size_t npts = points.size();
         std::cout << "Path:\n";
         for (size_t i = 0; i< npts; ++i) {
@@ -111,8 +111,8 @@ int main(int argc, char** argv) {
                 vtkIdType cellId = polyseg.getCellId();
                 double ta = polyseg.getBegLineParamCoord();
                 double tb = polyseg.getEndLineParamCoord();
-                const std::vector<double>& xia = polyseg.getBegCellParamCoord();
-                const std::vector<double>& xib = polyseg.getEndCellParamCoord();
+                const Vec3& xia = polyseg.getBegCellParamCoord();
+                const Vec3& xib = polyseg.getEndCellParamCoord();
                 double coeff = polyseg.getCoefficient();
 
                 if (args.get<bool>("-verbose")) {

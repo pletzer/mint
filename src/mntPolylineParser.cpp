@@ -2,9 +2,9 @@
 #include <cstdlib>
 #include <iostream>
 
-Vector<double> 
+Vec3
 PolylineParser::parsePosition(const std::string& posStr) const {
-    Vector<double> res(this->ndims, 0);
+    Vec3 res(0.0);
     size_t posBeg, posEnd;
     posBeg = 0;
     for (size_t i = 0; i < this->ndims; ++i) {
@@ -47,7 +47,7 @@ void
 PolylineParser::print() const {
     std::cout << "Points:\n";
     for (size_t i = 0; i < this->points.size(); ++i) {
-        const Vector<double>& point = this->points[i];
+        const Vec3& point = this->points[i];
         for (size_t j = 0; j < this->ndims; ++j) {
             std::cout << point[j] << ',';
         }

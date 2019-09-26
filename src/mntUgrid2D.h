@@ -1,13 +1,14 @@
 #include <vector>
 #include <set>
 #include <algorithm>
-#include "MvVector.h"
 #include <map>
 #include <string>
 #include <limits>
 #include <vtkPoints.h>
 #include <vtkQuad.h>
 #include <vtkUnstructuredGrid.h>
+#include <mntVecN.h>
+
 #ifndef MNT_UGRID_2D
 #define MNT_UGRID_2D
 
@@ -116,14 +117,14 @@ const std::vector<double>& getPoints() const {
  * @param edgeId edge Id
  * @return the two points with 360 added/substracted to minimize the edge length
  */
-std::vector< Vector<double> > getEdgePointsRegularized(size_t edgeId) const;
+std::vector<Vec3> getEdgePointsRegularized(size_t edgeId) const;
 
 /**
  * Get the regularized points of the face
  * @param faceId face Id
  * @return the four points with 360 added/substracted to make the cell have a positive area
  */
-std::vector< Vector<double> > getFacePointsRegularized(size_t faceId) const;
+std::vector<Vec3> getFacePointsRegularized(size_t faceId) const;
 
 /**
  * Is point inside face?
@@ -132,7 +133,7 @@ std::vector< Vector<double> > getFacePointsRegularized(size_t faceId) const;
  * @param tol tolerance
  * @return true/false
  */
-bool containsPoint(size_t faceId, const Vector<double>& point, double tol) const;
+bool containsPoint(size_t faceId, const Vec3& point, double tol) const;
 
 /**
  * Get min/max range of the domain
@@ -154,13 +155,13 @@ int load(const std::string& filename, const std::string& meshname);
  * Get the face vertex coordinates
  * @return array of points
  */
-std::vector< Vector<double> > getFacePoints(size_t faceId) const;
+std::vector<Vec3> getFacePoints(size_t faceId) const;
 
 /**
  * Get the edge vertex coordinates
  * @return array of points
  */
-std::vector< Vector<double> > getEdgePoints(size_t edgeId) const;
+std::vector<Vec3> getEdgePoints(size_t edgeId) const;
 
 /**
  * Build 2d locator
@@ -175,7 +176,7 @@ void buildLocator(int avgNumFacesPerBucket);
  * @param cellId cellId (output)
  * @return true if a cell was found, false otherwise
  */
-bool findCell(const Vector<double>& point, double tol, size_t* cellId) const;
+bool findCell(const Vec3& point, double tol, size_t* cellId) const;
 
 /**
  * Find all the cells that are intesected by a line
@@ -183,8 +184,8 @@ bool findCell(const Vector<double>& point, double tol, size_t* cellId) const;
  * @param point1 end point of the line
  * @return array of cell Ids
  */
-std::set<size_t> findCellsAlongLine(const Vector<double>& point0,
-                                    const Vector<double>& point1) const;
+std::set<size_t> findCellsAlongLine(const Vec3& point0,
+                                    const Vec3& point1) const;
 /**
  * Set the cell nodes
  * @param cellId cell Id
@@ -198,14 +199,14 @@ void setCellPoints(size_t cellId);
  * @param pcoords parametric coordinates (output)
  * @return true if the point is in the cell, false otherwise
  */
-bool getParamCoords(const Vector<double>& point, double pcoords[]);
+bool getParamCoords(const Vec3& point, double pcoords[]);
 
 /**
  * Interpolate a point in cell
  * @param pcoords parametric coordinates
  * @param point point (output)
  */
-void interpolate(const Vector<double>& pcoords, double point[]);
+void interpolate(const Vec3& pcoords, double point[]);
 
 /**
  * Find the intersections of the grid with a line
@@ -215,7 +216,7 @@ void interpolate(const Vector<double>& pcoords, double point[]);
  *         start/end linear parameters of the line
  */
 std::vector< std::pair<size_t, std::vector<double> > >
-findIntersectionsWithLine(const Vector<double>& pBeg, const Vector<double>& pEnd);
+findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
 /**
  * Dump the grid to a Vtk file
@@ -230,8 +231,8 @@ private:
     std::vector<double> points;
 
     // domain min/max
-    Vector<double> xmin;
-    Vector<double> xmax;
+    Vec3 xmin;
+    Vec3 xmax;
 
     size_t numPoints;
     size_t numEdges;
@@ -271,13 +272,13 @@ private:
      * @note assumes there is thickness in the domain
      *       will return index ven if the point is outside the domain
      */
-    inline int getBucketId(const Vector<double>& point) const {
+    inline int getBucketId(const Vec3& point) const {
 
         // required to make sure std::floor does not return the 
         // next integer below if we're close to an integer
         const double eps = 10 * std::numeric_limits<double>::epsilon();
 
-        Vector<double> x = (point - this->xmin) / (this->xmax - this->xmin); // must have some thickness!
+        Vec3 x = (point - this->xmin) / (this->xmax - this->xmin); // must have some thickness!
 
         // bucket coordinates
         int m = (int) std::floor( this->numBucketsX * x[0] + eps);
@@ -312,8 +313,8 @@ private:
      *       start/end points qualify as intersection if they fall into the cell
      */
 	std::vector<double> collectIntersectionPoints(size_t cellId, 
-                                                  const Vector<double>& pBeg,
-                                                  const Vector<double>& pEnd);
+                                                  const Vec3& pBeg,
+                                                  const Vec3& pEnd);
 
 };
 

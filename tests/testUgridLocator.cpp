@@ -3,8 +3,8 @@
 #include <cmath>
 #undef NDEBUG // turn on asserts
 
-void testLineGridIntersections(const Vector<double>& pBeg,
-                               const Vector<double>& pEnd) {
+void testLineGridIntersections(const Vec3& pBeg,
+                               const Vec3& pEnd) {
 
     std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
 
@@ -20,7 +20,7 @@ void testLineGridIntersections(const Vector<double>& pBeg,
     std::vector< std::pair<size_t, std::vector<double> > > 
                       cIdlambdas = ug.findIntersectionsWithLine(pBeg, pEnd);
 
-    Vector<double> u = pEnd - pBeg;
+    Vec3 u = pEnd - pBeg;
 
     // check that all the lambda intervals add to one
     double totLambda = 0;
@@ -32,9 +32,9 @@ void testLineGridIntersections(const Vector<double>& pBeg,
         printf("%6ld     %10.6lf      %10.6lf\n", cellId, lambdaBeg, lambdaEnd);
         totLambda += lambdaEnd - lambdaBeg;
         // make sure the start and end points are inside the cell
-        Vector<double> p0 = pBeg + lambdaBeg*u;
+        Vec3 p0 = pBeg + lambdaBeg*u;
         assert(ug.containsPoint(cellId, p0, 1.e-10));
-        Vector<double> p1 = pBeg + lambdaEnd*u;
+        Vec3 p1 = pBeg + lambdaEnd*u;
         assert(ug.containsPoint(cellId, p1, 1.e-10));    
     }
     std::cout << "total integrated lambda: " << totLambda << '\n';
@@ -61,13 +61,15 @@ void testPointInside() {
     const double tol = 1.e-10;
     const size_t faceId = 37;
     size_t nSegs = 10;
-    Vector<double> pBeg{180., 0., 0.};
-    Vector<double> pEnd{157.5, 20.94102047224, 0.};
-    Vector<double> du = pEnd - pBeg;
+    const double pBegPtr[] = {180., 0., 0.};
+    const double pEndPtr[] = {157.5, 20.94102047224, 0.};
+    Vec3 pBeg(pBegPtr);
+    Vec3 pEnd(pEndPtr);
+    Vec3 du = pEnd - pBeg;
     du /= (double) nSegs;
     for (size_t i = 0; i < nSegs + 1; ++i) {
-        Vector<double> p = pBeg + (double) i * du;
-        std::vector< Vector<double> > nodes = ug.getFacePointsRegularized(faceId);
+        Vec3 p = pBeg + (double) i * du;
+        std::vector<Vec3> nodes = ug.getFacePointsRegularized(faceId);
         std::cerr << "checking if point " << p << " is inside of cell " << faceId << '\n';
         for (size_t j = 0; j < nodes.size(); ++j) {
             std::cout << nodes[j] << '\n';
@@ -97,13 +99,15 @@ void testPointOutside() {
     const double tol = 1.e-10;
     const size_t faceId = 37;
     size_t nSegs = 10;
-    Vector<double> pBeg{190., 0., 0.};
-    Vector<double> pEnd{180.00001, 0., 0.};
-    Vector<double> du = pEnd - pBeg;
+    const double pBegPtr[] = {190., 0., 0.};
+    const double pEndPtr[] = {180.00001, 0., 0.};
+    Vec3 pBeg(pBegPtr);
+    Vec3 pEnd(pEndPtr);
+    Vec3 du = pEnd - pBeg;
     du /= (double) nSegs;
     for (size_t i = 0; i < nSegs + 1; ++i) {
-        Vector<double> p = pBeg + (double) i * du;
-        std::vector< Vector<double> > nodes = ug.getFacePointsRegularized(faceId);
+        Vec3 p = pBeg + (double) i * du;
+        std::vector<Vec3> nodes = ug.getFacePointsRegularized(faceId);
         std::cerr << "checking if point " << p << " is outside of cell " << faceId << '\n';
         for (size_t j = 0; j < nodes.size(); ++j) {
             std::cout << nodes[j] << '\n';
@@ -114,7 +118,7 @@ void testPointOutside() {
 }
 
 
-void testPoint(const Vector<double>& p) {
+void testPoint(const Vec3& p) {
 
     std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
 
@@ -133,9 +137,9 @@ void testPoint(const Vector<double>& p) {
     size_t faceId;
     bool found = ug.findCell(p, tol, &faceId);
     if (found) {
-        std::vector< Vector<double> > nodes = ug.getFacePointsRegularized(faceId);
+        std::vector<Vec3> nodes = ug.getFacePointsRegularized(faceId);
         std::cout << "OK: point " << p << " is inside face " << faceId << " which has nodes:\n";
-        for (const Vector<double>& node : nodes) {
+        for (const Vec3& node : nodes) {
             std::cout << node << '\n';
         }
         assert(ug.containsPoint(faceId, p, 1.e-8));
@@ -147,21 +151,21 @@ void testPoint(const Vector<double>& p) {
 
     // find the parametric coordinates
     ug.setCellPoints(faceId);
-    Vector<double> pcoords(3);
+    Vec3 pcoords;
     found = ug.getParamCoords(p, &pcoords[0]);
     assert(found);
 
     // check that the pcoords are correct
-    Vector<double> p2(3);
+    Vec3 p2;
     ug.interpolate(pcoords, &p2[0]);
 
-    Vector<double> dp = p2 - p;
+    Vec3 dp = p2 - p;
     double error = std::sqrt(dp[0]*dp[0] + dp[1]*dp[1] + dp[2]*dp[2]);
     std::cerr << "dist^2 error = " << error << '\n';
     assert(error < 1.e-6);
 }
 
-void testLine(const Vector<double>& p0, const Vector<double>& p1) {
+void testLine(const Vec3& p0, const Vec3& p1) {
 
     std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
 
@@ -183,12 +187,12 @@ void testLine(const Vector<double>& p0, const Vector<double>& p1) {
     // check that we found all the cells by dividing the line in 1000 segments, checking that each point 
     // is inside of the cells we found
     size_t nSegments = 1000;
-    Vector<double> du = p1 - p0;
+    Vec3 du = p1 - p0;
     du /= (double) nSegments;
     size_t cId;
     const double tol = 1.e-14;
     for (size_t iSegment = 0; iSegment < nSegments; ++iSegment) {
-        Vector<double> p = p0 + (double) iSegment * du;
+        Vec3 p = p0 + (double) iSegment * du;
         bool found = ug.findCell(p, tol, &cId);
         if (found) {
             if (faceIds.find(cId) == faceIds.end()) {
@@ -212,8 +216,10 @@ void testLineOutsideDomain() {
     // build the locator
     ug.buildLocator(1);
 
-    Vector<double> p0{1., 0., 0.};
-    Vector<double> p1{2., 0., 0.};
+    const double p0Ptr[] = {1., 0., 0.};
+    const double p1Ptr[] = {2., 0., 0.};
+    Vec3 p0(p0Ptr);
+    Vec3 p1(p1Ptr);
     size_t numFaces = ug.getNumberOfFaces();
 
     std::set<size_t> faceIds = ug.findCellsAlongLine(p0, p1);
@@ -227,12 +233,12 @@ void testLineOutsideDomain() {
     // check that we found all the cells by dividing the line in 1000 segments, checking that each point 
     // is inside of the cells we found
     size_t nSegments = 1000;
-    Vector<double> du = p1 - p0;
+    Vec3 du = p1 - p0;
     du /= (double) nSegments;
     size_t cId;
     const double tol = 1.e-14;
     for (size_t iSegment = 0; iSegment < nSegments; ++iSegment) {
-        Vector<double> p = p0 + (double) iSegment * du;
+        Vec3 p = p0 + (double) iSegment * du;
         bool found = ug.findCell(p, tol, &cId);
         if (found) {
             if (faceIds.find(cId) == faceIds.end()) {
@@ -250,8 +256,8 @@ int main() {
 
     testLineOutsideDomain();
 
-    Vector<double> p0(3, 0.0);
-    Vector<double> p1(3, 0.0);
+    Vec3 p0(0.0);
+    Vec3 p1(0.0);
 
     p0[0] =   0.; p0[1] = -67.;
     p1[0] = 360.; p1[1] =  67.;

@@ -1,39 +1,37 @@
-#include "mntLineTriangleIntersector.h"
+#include <mntLineTriangleIntersector.h>
+#include <mntMatMxN.h>
+#include <mntVecN.h>
+#include <vector>
 
-Vector<double>
-getTriangleParamLocation(const Vector<double>& q0, 
-                         const Vector<double>& q1, 
-                         const Vector<double>& q2, 
-                         const Vector<double>& p) {
-    // 3x2 matrix
-    ColMat<double> mat(3, 2);
-    Vector<double> rhs(3);
+Vec2
+getTriangleParamLocation(const Vec3& q0, 
+                         const Vec3& q1, 
+                         const Vec3& q2, 
+                         const Vec3& p) {
+
+    Mat3x2 mat;
+    Vec3 rhs;
     for (size_t i = 0; i < 3; ++i) {
         mat(i, 0) = q1[i] - q0[i];
         mat(i, 1) = q2[i] - q0[i];
         rhs[i] = p[i] - q0[i];
     }
-    ColMat<double> matT = transpose(mat);
-    ColMat<double> a = dot(matT, mat);
+    Mat2x3 matT = transpose(mat);
+
+    Mat2x2 a = dot(matT, mat);
+
     double det = a(0, 0)*a(1, 1) - a(0, 1)*a(1, 0);
-    ColMat<double> aInv(2, 2);
+    Mat2x2 aInv;
     aInv(0, 0) = a(1, 1)/det;
     aInv(0, 1) = -a(0, 1)/det;
     aInv(1, 0) = -a(1, 0)/det;
     aInv(1, 1) = a(0, 0)/det;
-    return dot(aInv, matT, rhs);
+
+    return dot(aInv, dot(matT, rhs));
 }
 
+
 LineTriangleIntersector::LineTriangleIntersector() {
-    this->mat.newsize(3, 3);
-    this->invMatTimesDet.newsize(3, 3);
-    this->invMatTimesDetDotRhs.alloc(3);
-    this->rhs.alloc(3);
-    this->p0.alloc(3);
-    this->p1.alloc(3);
-    this->q0.alloc(3);
-    this->q1.alloc(3);
-    this->q2.alloc(3);
     this->lamBeg = BAD;
     this->lamEnd = BAD;
 }
@@ -108,8 +106,8 @@ LineTriangleIntersector::computeBegEndParamCoords() {
 
     // endpoints of the line in the parametric space of the triangle
     // are computed using a pseudo-inverse
-    Vector<double> pxi0 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p0);
-    Vector<double> pxi1 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p1);
+    Vec2 pxi0 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p0);
+    Vec2 pxi1 = getTriangleParamLocation(this->q0, this->q1, this->q2, this->p1);
 
     const double tol = 1.e-10;
 
@@ -129,7 +127,7 @@ LineTriangleIntersector::computeBegEndParamCoords() {
     llB.setPoints(&pxi0[0], &pxi1[0], qxi1, qxi2);
     llC.setPoints(&pxi0[0], &pxi1[0], qxi2, qxi0);
 
-    Vector<double> sol;
+    Vec2 sol;
 
     if (llA.hasSolution(tol)) {
         sol = llA.getSolution();
@@ -164,11 +162,11 @@ LineTriangleIntersector::computeBegEndParamCoords() {
 }
 
 
-const std::pair< Vector<double>, Vector<double> > 
+const std::pair< Vec3, Vec3 > 
 LineTriangleIntersector::getBegEndPoints() const {
-    Vector<double> dp = this->p1 - this->p0;
-    std::pair< Vector<double>, Vector<double> > p(this->p0 + this->lamBeg*dp,
-                                                  this->p0 + this->lamEnd*dp);
+    Vec3 dp = this->p1 - this->p0;
+    std::pair< Vec3, Vec3 > p(this->p0 + this->lamBeg*dp,
+                              this->p0 + this->lamEnd*dp);
     return p;
 }
 
@@ -198,9 +196,9 @@ LineTriangleIntersector::hasSolution(double tol) {
 }
 
 
-const Vector<double> 
+const Vec3
 LineTriangleIntersector::getSolution() {
-    Vector<double> res = this->solTimesDet;
+    Vec3 res = this->solTimesDet;
     res /= this->det;
     return res;
 }
