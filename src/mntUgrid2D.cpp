@@ -124,12 +124,14 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
 
     ier = this->readConnectivityData(ncid, meshid, 
                 "face_edge_connectivity", this->face2Edges);
+    /* no longer an error
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: variable \"" << meshname
         << "\" does not have attribute \"face_edge_connectivity\"\n";
         nc_close(ncid);
         return 4;
     }
+    */
 
     ier = this->readConnectivityData(ncid, meshid, 
                 "edge_node_connectivity", this->edge2Points);
