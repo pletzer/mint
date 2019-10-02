@@ -210,6 +210,4 @@ extern "C"
 int mnt_grid_getNumberOfEdges(Grid_t** self, size_t* numEdges);
 
 
-
-
 #endif // MNT_GRID
