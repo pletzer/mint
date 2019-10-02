@@ -165,7 +165,7 @@ int mnt_grid_print(Grid_t** self);
  */
 extern "C"
 int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex, 
-	                   double point0[], double point1[]);
+                       double point0[], double point1[]);
 
 /**
  * Get the node Ids of a cellId, edge index pair
