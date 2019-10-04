@@ -12,6 +12,8 @@ parser.add_argument('-n', dest='fieldName', default='edge_integrated_velocity',
                     help='Specify the name of the edge field')
 parser.add_argument('-g', dest='grid_file', default='', 
                     help='Specify the netcdf file containing the grid geometry/topology')
+parser.add_argument('-N', dest='grid_var', default='', 
+                    help='Specify the grid variable name in the netcdf file')
 parser.add_argument('-d', dest='data_file', default='', 
                     help='Specify the netcdf file containing the edge integrated velocity data')
 args = parser.parse_args()
@@ -24,20 +26,28 @@ if len(args.data_file) == 0:
     print('ERROR: must provide data file (-d)')
     sys.exit(2)
 
+if len(args.grid_var) == 0:
+    print('ERROR: must provide a grid variable name (-N)')
+    sys.exit(3)
+
 nc = netCDF4.Dataset(args.grid_file, 'r')
 
+# get the vertex coordinate names
+xname, yname = nc[args.grid_var].node_coordinates.split(' ')
+edgeNodeConnName = nc[args.grid_var].edge_node_connectivity
+
 # read the coordinates
-x = nc.variables['physics_node_x'][:]
-y = nc.variables['physics_node_y'][:]
+x = nc.variables[xname][:]
+y = nc.variables[yname][:]
 
 # read the edge-node connectivity
-edgeNodeConnectivity = nc.variables['physics_edge_nodes'][:]
+edgeNodeConnectivity = nc.variables[edgeNodeConnName][:]
 
 # subtract base index
-start_index = getattr(nc.variables['physics_edge_nodes'], 'start_index', 0)
+start_index = getattr(nc.variables[edgeNodeConnName], 'start_index', 0)
 edgeNodeConnectivity -= start_index
 
-numEdgesDimName = nc.variables['physics_edge_nodes'].dimensions[0]
+numEdgesDimName = nc.variables[edgeNodeConnName].dimensions[0]
 
 nc.close()
 
