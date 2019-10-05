@@ -39,6 +39,15 @@ if len(args.grid_var) == 0:
     sys.exit(4)
 
 
+def copyAttributes(fromNcVar, toNcVar):
+    """
+    Copy the attributes from fromNcVar to toNcVar
+    """
+    for attrName in fromNcVar.ncattrs():
+        attrVal = getattr(fromNcVar, attrName)
+        setattr(toNcVar, attrName, attrVal)
+
+
 ncGrid = netCDF4.Dataset(args.grid_file, 'r')
 
 # get the vertex coordinate names
@@ -85,10 +94,20 @@ gridVarUp.node_coordinates = '{} {}'.format(xNameUp, yNameUp)
 
 faceNodeUp = ncUp.createVariable(gridVarUp.face_node_connectivity, 'i4', 
                                (numFacesDimName, fourDimName))
+copyAttributes(ncGrid[ncGrid[args.grid_var].face_node_connectivity], faceNodeUp)
+faceNodeUp[:] = ncGrid[ncGrid[args.grid_var].face_node_connectivity][:]
+
 faceEdgeUp = ncUp.createVariable(gridVarUp.face_edge_connectivity, 'i4',
                                (numFacesDimName, fourDimName))
-EdgeNodeUp = ncUp.createVariable(gridVarUp.edge_node_connectivity, 'i4',
+copyAttributes(ncGrid[ncGrid[args.grid_var].face_edge_connectivity], faceEdgeUp)
+faceEdgeUp[:] = ncGrid[ncGrid[args.grid_var].face_edge_connectivity][:]
+
+
+edgeNodeUp = ncUp.createVariable(gridVarUp.edge_node_connectivity, 'i4',
                                (numEdgesDimName, twoDimName))
+copyAttributes(ncGrid[ncGrid[args.grid_var].edge_node_connectivity], edgeNodeUp)
+edgeNodeUp[:] = ncGrid[ncGrid[args.grid_var].edge_node_connectivity][:]
+
 
 velocity = ncUp.createVariable('velocity', 'f8', (numPointsDimName, twoDimName))
 velocity.location = 'node'
@@ -117,7 +136,11 @@ yUpstream = xyUpstream[1, numPoints:]
 
 # save the new coordinates
 xVarUp = ncUp.createVariable(xNameUp, 'f8', (numPointsDimName,))
+copyAttributes(ncGrid[xName], xVarUp)
+
 yVarUp = ncUp.createVariable(yNameUp, 'f8', (numPointsDimName,))
+copyAttributes(ncGrid[yName], yVarUp)
+
 # write
 xVarUp[:] = xUpstream
 yVarUp[:] = yUpstream
