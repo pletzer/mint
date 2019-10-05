@@ -7,7 +7,7 @@ import functools
 import sys
 
 """
-Convert an edge field defined cell by cell to an edge field defined on a collection of line cells
+Compute streamline trajectories
 """
 
 random.seed(123)
