@@ -126,12 +126,18 @@ def main():
                         help='u vector component function of x (longitude) and y (latitude)')
     parser.add_argument('-v', dest='vFunc', default='', 
                         help='v vector component function of x (longitude) and y (latitude)')
+    parser.add_argument('-p', dest='print', action='store_true', 
+                        help='Print point coordinates cell be cell')
+
 
 
    
     args = parser.parse_args()
 
     reader = UgridReader(filename=args.input)
+
+    if args.print:
+        reader.printCellPoints()
 
     # compute the edge velocity if user provides the stream function
     x, y = reader.getLonLat()

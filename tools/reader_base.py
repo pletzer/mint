@@ -43,6 +43,25 @@ class ReaderBase(object):
         """
         return self.vtk['pointArray'][:, :2]
 
+
+    def printCellPoints(self):
+        """
+        Print cells points
+        """
+        grd = self.vtk['grid']
+        pts = self.vtk['points']
+        ncells = grd.GetNumberOfCells()
+        ptIds = vtk.vtkIdList()
+        for icell in range(ncells):
+            msg = 'cell {:10d} points '.format(icell)
+            grd.GetCellPoints(icell, ptIds)
+            npts = ptIds.GetNumberOfIds()
+            for i in range(npts):
+                ptId = ptIds.GetId(i)
+                x, y, _ = pts.GetPoint(ptId)
+                msg += '({:7.2f}, {:7.2f}) '.format(x, y)
+            print(msg)
+
         
     def loadFromVtkFile(self, filename):
         """
