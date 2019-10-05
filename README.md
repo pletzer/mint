@@ -60,7 +60,7 @@ cd ../tools
 
  2. Convert the destination grid to VTK file format
  ```
- python ugrid_reader.py -i ../data/cs_16.nc -V cs_16.vtk
+ python ugrid_reader.py -i ../data/cs_16.nc:physics -V cs_16.vtk
  ```
 
  3. Read the source grid, generate edge data and save the result as a VTK file
