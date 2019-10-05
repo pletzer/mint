@@ -56,10 +56,15 @@ class ReaderBase(object):
             msg = 'cell {:10d} points '.format(icell)
             grd.GetCellPoints(icell, ptIds)
             npts = ptIds.GetNumberOfIds()
+            xs, ys = [], []
             for i in range(npts):
                 ptId = ptIds.GetId(i)
                 x, y, _ = pts.GetPoint(ptId)
+                xs.append(x)
+                ys.append(y)
                 msg += '({:7.2f}, {:7.2f}) '.format(x, y)
+            area013, area231 = self.getQuadTriangleAreas(xs, ys)
+            msg += ' triangle areas {:10.2g} {:10.2g}'.format(area013, area231)
             print(msg)
 
         
@@ -202,4 +207,17 @@ class ReaderBase(object):
         self.cellData.SetVoidArray(self.cellArray, numCells*1, 1)
         self.vtk['grid'].GetCellData().AddArray(self.cellData)
 
+
+    def getQuadTriangleAreas(self, lons, lats):
+        """
+        Compute the two triangle cell areas of a quad
+        @param lons longitudes
+        @param lats latitudes
+        @return two areas
+        """
+        lon00, lon10, lon11, lon01 = lons
+        lat00, lat10, lat11, lat01 = lats
+        area013 = 0.5*( (lon10 - lon00)*(lat01 - lat00) - (lat10 - lat00)*(lon01 - lon00) )
+        area231 = 0.5*( (lon01 - lon11)*(lat10 - lat11) - (lat01 - lat11)*(lon10 - lon11) )
+        return area013, area231
 

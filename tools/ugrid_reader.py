@@ -55,7 +55,7 @@ class UgridReader(ReaderBase):
         quarterPeriodicity = self.PERIODICITY_LENGTH/4.
         for icell in range(ncells):
 
-            i00, i10, i11, i01 = connectivity[icell, :] - 1 # zero based indexing
+            i00, i10, i11, i01 = connectivity[icell, :]
 
             lon00, lat00 = lons[i00], lats[i00]
             lon10, lat10 = lons[i10], lats[i10]
