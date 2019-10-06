@@ -264,4 +264,15 @@ add_test(NAME line_proj1
                  "-p" "(0., 22.5), (22.5, 20.9410204722438422)"
                  "-verbose")
 set_tests_properties(line_proj1 PROPERTIES
-                     PASS_REGULAR_EXPRESSION "total flux is")
+                     FAIL_REGULAR_EXPRESSION "Warning: total integrated length for segment")
+
+add_test(NAME line_proj_outside
+         COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
+                 "-i" "${CMAKE_SOURCE_DIR}/data/latlon4x2.vtk"
+                 "-v" "edge_integrated_velocity"
+                 "-N" "1"
+                 "-p" "(-1., 22.5), (-22.5, 20.9410204722438422)"
+                 "-verbose")
+set_tests_properties(line_proj_outside PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "Warning: total integrated length for segment")
+
