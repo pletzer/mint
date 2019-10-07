@@ -481,3 +481,35 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
 }
 
+void  
+PolysegmentIter::makePeriodic(Vec3& vBeg, Vec3& vEnd) {
+
+    // fix start/end points if they fall outside the domain and the domain is periodic
+    if (this->xPeriodicity > 0.) {
+        double xmin = this->grid->GetBounds()[0];
+        double xmax = this->grid->GetBounds()[1];
+        if (vBeg[0] < xmin) {
+            std::cerr << "Warning: adding periodicity length " << this->xPeriodicity << 
+                         " to start point " << vBeg << "\n";
+            vBeg[0] += this->xPeriodicity;
+        }
+        else if (vBeg[0] > xmax) {
+            std::cerr << "Warning: subtracting periodicity length " << this->xPeriodicity << 
+                         " from start point " << vBeg << "\n";
+            vBeg[0] -= this->xPeriodicity;
+        }
+
+        if (vEnd[0] < xmin) {
+            std::cerr << "Warning: adding periodicity length " << this->xPeriodicity << 
+                         " to end point " << vEnd << "\n";
+            vEnd[0] += this->xPeriodicity;
+                std::cerr << "Now end point is " << vEnd << '\n';
+        }
+        else if (vEnd[0] > xmax) {
+            std::cerr << "Warning: subtracting periodicity length " << this->xPeriodicity << 
+                         " from end point " << vEnd << "\n";
+            vEnd[0] -= this->xPeriodicity;
+        }
+    }
+}
+
