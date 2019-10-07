@@ -21,9 +21,10 @@ int main(int argc, char** argv) {
     CmdLineArgParser args;
     args.setPurpose("Project a line segment.");
     args.set("-i", std::string(""), "Source grid file in VTK format");
-    args.set("-p", std::string("(0., 0.),(6.283185307179586, 0.)"), "Points defining the path.");
+    args.set("-p", std::string("(0., 0.),(360., 0.)"), "Points defining the path.");
     args.set("-v", std::string("edgeData"), "Edge variable name.");
     args.set("-N", 1, "Average number of cells per bucket.");
+    args.set("-P", 0.0, "Periodicity length of x (0 if not periodic)");
     args.set("-verbose", false, "Verbose mode.");
 
     bool success = args.parse(argc, argv);
@@ -101,7 +102,7 @@ int main(int argc, char** argv) {
             }
             std::cout << ")\n";
 
-            PolysegmentIter polyseg(grid, loc, &points[iseg0][0], &points[iseg1][0]);
+            PolysegmentIter polyseg(grid, loc, &points[iseg0][0], &points[iseg1][0], args.get<double>("-P"));
 
             double fluxFromSegment = 0;
             size_t numSegs = polyseg.getNumberOfSegments();

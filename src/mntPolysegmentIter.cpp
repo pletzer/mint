@@ -18,22 +18,29 @@ struct TCmpFunctor {
 
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
                                  vmtCellLocator* locator, 
-                                 const double p0[], const double p1[]) {
+                                 const double p0In[], const double p1In[],
+                                 double periodicityLength) {
 
     // small tolerances 
     this->eps = 10 * std::numeric_limits<double>::epsilon();
     this->eps100 = 100. * this->eps;
     this->tol = 1.e-3; // to determine if a point is inside a cell
 
+    this->xPeriodicity = periodicityLength;
+
     // set the grid and the grid locator
     this->grid = grid;
     this->locator = locator;
+
+    Vec3 p0(p0In);
+    Vec3 p1(p1In);
+    this->makePeriodic(p0, p1);
 
     // cellIds, xis and ts are output
     this->cellIds.resize(0); // cell of each intersection point
     this->xis.resize(0);     // cell parametric coords for each intersection point
     this->ts.resize(0);      // linear param coord for each intersction point
-    this->__collectLineGridSegments(p0, p1);
+    this->__collectLineGridSegments(&p0[0], &p1[0]);
 
     // gather the intersection points attached to a cell: cellId -> [indx0, indx1, ...] 
     // indx is index in the cellIds, xis and ts arrays
@@ -225,6 +232,7 @@ PolysegmentIter::getNumberOfSegments() const {
     return this->numSegs;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // private methods
 
@@ -289,13 +297,15 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
     Vec3 v0;
     Vec3 v1;
+    Vec3 vBeg(pBeg);
+    Vec3 vEnd(pEnd);
 
     // vector from start to finish
-    double dp[] = {pEnd[0] - pBeg[0], pEnd[1] - pBeg[1], pEnd[2] - pBeg[2]};
+    Vec3 dp = vEnd - vBeg;
 
     // find all the cells intersected by the line
-    this->locator->FindCellsAlongLine((double*) &pBeg[0], 
-                                      (double*) &pEnd[0], 
+    this->locator->FindCellsAlongLine((double*) &vBeg[0], 
+                                      (double*) &vEnd[0], 
                                       this->tol, cellIds);
 
     //
@@ -332,7 +342,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
             this->grid->GetPoint(ptIds->GetId(j1), &v1[0]);
 
             // look for an intersection
-            intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0]);
+            intersector.setPoints(&vBeg[0], &vEnd[0], &v0[0], &v1[0]);
 
             if (! intersector.hasSolution(this->eps)) {
                 // skip if no solution. FindCellsAlongLine may be too generous with
@@ -353,7 +363,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                     lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100)) {
 
                     // compute the intersection point
-                    double p[] = {pBeg[0] + lambRay*dp[0], pBeg[1] + lambRay*dp[1]};
+                    double p[] = {vBeg[0] + lambRay*dp[0], vBeg[1] + lambRay*dp[1]};
 
                     // add to list
                     cIds.push_back(cId);
@@ -364,14 +374,14 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
             else {
                 // det is almost zero
                 // looks like the two lines (p0, p1) and (q0, q1) are overlapping
-                // add the starting/ending points
+                // add the start/end points
                 const std::pair<double, double> sol = intersector.getBegEndParamCoords();
                 // linear param coord along line
                 double lama = sol.first;
                 double lamb = sol.second;
                 // compute the points
-                double pa[] = {pBeg[0] + lama*dp[0], pBeg[1] + lama*dp[1]};
-                double pb[] = {pBeg[0] + lamb*dp[0], pBeg[1] + lamb*dp[1]};
+                double pa[] = {vBeg[0] + lama*dp[0], vBeg[1] + lama*dp[1]};
+                double pb[] = {vBeg[0] + lamb*dp[0], vBeg[1] + lamb*dp[1]};
 
                 // add to lists both points
                 cIds.push_back(cId);
