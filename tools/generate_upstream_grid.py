@@ -34,14 +34,14 @@ if args.output_file == args.grid_file:
 
 # file_name:grid_name
 try:
-	grid_file, grid_var = args.grid_file.split(':')
+    grid_file, grid_var = args.grid_file.split(':')
 except:
-	print('ERROR: could not extract grid name, specify -g FILE_NAME:GRID_NAME')
-	sys.exit(4)
 
 
 def copyAttributes(fromNcVar, toNcVar):
-    """
+    """ print('ERROR: could not extract grid name, specify -g FILE_NAME:GRID_NAME')
+    sys.exit(4)
+
     Copy the attributes from fromNcVar to toNcVar
     """
     for attrName in fromNcVar.ncattrs():

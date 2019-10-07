@@ -11,9 +11,7 @@ parser.add_argument('-s', dest='streamFunction', default='sin(x*pi/180.)*cos(y*p
 parser.add_argument('-n', dest='fieldName', default='edge_integrated_velocity',
                     help='Specify the name of the edge field')
 parser.add_argument('-g', dest='grid_file', default='', 
-                    help='Specify the netcdf file containing the grid geometry/topology')
-parser.add_argument('-N', dest='grid_var', default='', 
-                    help='Specify the grid variable name in the netcdf file')
+                    help='The netcdf file containing the grid geometry/topology and the name of the grid FILE_NAME:GRID_NAME')
 parser.add_argument('-d', dest='data_file', default='', 
                     help='Specify the netcdf file containing the edge integrated velocity data')
 args = parser.parse_args()
@@ -26,15 +24,18 @@ if len(args.data_file) == 0:
     print('ERROR: must provide data file (-d)')
     sys.exit(2)
 
-if len(args.grid_var) == 0:
-    print('ERROR: must provide a grid variable name (-N)')
+try:
+    grid_file, grid_var = args.grid_file.split(':')
+except:
+    print('ERROR: could not extract grid name, specify -g FILE_NAME:GRID_NAME')
     sys.exit(3)
 
-nc = netCDF4.Dataset(args.grid_file, 'r')
+
+nc = netCDF4.Dataset(grid_file, 'r')
 
 # get the vertex coordinate names
-xname, yname = nc[args.grid_var].node_coordinates.split(' ')
-edgeNodeConnName = nc[args.grid_var].edge_node_connectivity
+xname, yname = nc[grid_var].node_coordinates.split(' ')
+edgeNodeConnName = nc[grid_var].edge_node_connectivity
 
 # read the coordinates
 x = nc.variables[xname][:]
@@ -62,9 +63,9 @@ i0, i1 = edgeNodeConnectivity[:, 0], edgeNodeConnectivity[:, 1]
 integratedVelocity = streamValues[i1] - streamValues[i0]
 
 # write the velocity to disk
-if args.data_file == args.grid_file:
+if args.data_file == grid_file:
     # append to grid file
-    print('NOTE: edge field will be appended to grid file {}'.format(args.grid_file))
+    print('NOTE: edge field will be appended to grid file {}'.format(grid_file))
     nc = netCDF4.Dataset(args.data_file, 'r+')
 else:
     # new file
