@@ -409,9 +409,7 @@ void
 PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[]) {
 
     // things we need to define
-    vtkIdList* ptIds = vtkIdList::New();
     vtkGenericCell* cell = vtkGenericCell::New();
-    vtkIdList* cellIds = vtkIdList::New();
 
     Vec3 xi;
     double closestPoint[] = {0., 0., 0.};
@@ -475,9 +473,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
     }
 
     // clean up
-    ptIds->Delete();
     cell->Delete();
-    cellIds->Delete();
 
 }
 
