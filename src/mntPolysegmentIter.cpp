@@ -290,7 +290,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                                              const double pEnd[],
                                              std::vector<vtkIdType>& cIds,
                                              std::vector<double>& lambRays,
-                                             std::vector<Vec2>& points) {
+                                             std::vector<Vec3>& points) {
     LineLineIntersector intersector;
     vtkIdList* cellIds = vtkIdList::New();
     vtkIdList* ptIds = vtkIdList::New();
@@ -363,12 +363,12 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                     lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100)) {
 
                     // compute the intersection point
-                    double p[] = {vBeg[0] + lambRay*dp[0], vBeg[1] + lambRay*dp[1]};
+                    double p[] = {vBeg[0] + lambRay*dp[0], vBeg[1] + lambRay*dp[1], 0.0};
 
                     // add to list
                     cIds.push_back(cId);
                     lambRays.push_back(lambRay);
-                    points.push_back(Vec2(p)); // copies
+                    points.push_back(Vec3(p)); // copies
                 }
             }
             else {
@@ -380,17 +380,17 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 double lama = sol.first;
                 double lamb = sol.second;
                 // compute the points
-                double pa[] = {vBeg[0] + lama*dp[0], vBeg[1] + lama*dp[1]};
-                double pb[] = {vBeg[0] + lamb*dp[0], vBeg[1] + lamb*dp[1]};
+                double pa[] = {vBeg[0] + lama*dp[0], vBeg[1] + lama*dp[1], 0.0};
+                double pb[] = {vBeg[0] + lamb*dp[0], vBeg[1] + lamb*dp[1], 0.0};
 
                 // add to lists both points
                 cIds.push_back(cId);
                 lambRays.push_back(lama);
-                points.push_back(Vec2(pa));
+                points.push_back(Vec3(pa));
 
                 cIds.push_back(cId);
                 lambRays.push_back(lamb); // same Id as before
-                points.push_back(Vec2(pb));
+                points.push_back(Vec3(pb));
 
             }
 
@@ -438,7 +438,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
     std::vector<vtkIdType> cIds;
     std::vector<double> lambRays;
-    std::vector<Vec2> points;
+    std::vector<Vec3> points;
     this->__collectIntersectionPoints(pBeg, pEnd, cIds, lambRays, points);
 
     // find the cell Id of the neighbouring cells
@@ -447,10 +447,8 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
         vtkIdType cId = cIds[i];
         double lambRay = lambRays[i];
-	      // need to copy because points are 2-tuples and VTK always works with 3-tuples
-        point.assign(&points[i][0], &points[i][2]);
 
-        int found = this->grid->GetCell(cId)->EvaluatePosition((double*) &point[0], closestPoint, 
+        int found = this->grid->GetCell(cId)->EvaluatePosition((double*) &points[i][0], closestPoint, 
                                                                subId, &xi[0], dist, weights);
         if (found) {
             this->cellIds.push_back(cId);

@@ -114,7 +114,7 @@ private:
                                      const double pEnd[],
                                      std::vector<vtkIdType>& cIds,
                                      std::vector<double>& lambRays,
-                                     std::vector<Vec2>& points);
+                                     std::vector<Vec3>& points);
 
     /**
      * Collect and store all the line-grid intersection points
