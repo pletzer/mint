@@ -364,12 +364,12 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                     lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100)) {
 
                     // compute the intersection point
-                    double p[] = {vBeg[0] + lambRay*dp[0], vBeg[1] + lambRay*dp[1], 0.0};
+                    Vec3 p = vBeg + lambRay*dp;
 
                     // add to list
                     cIds.push_back(cId);
                     lambRays.push_back(lambRay);
-                    points.push_back(Vec3(p)); // copies
+                    points.push_back(p); // copies
                 }
             }
             else {
@@ -377,21 +377,23 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 // looks like the two lines (p0, p1) and (q0, q1) are overlapping
                 // add the start/end points
                 const std::pair<double, double> sol = intersector.getBegEndParamCoords();
+
                 // linear param coord along line
                 double lama = sol.first;
                 double lamb = sol.second;
+
                 // compute the points
-                double pa[] = {vBeg[0] + lama*dp[0], vBeg[1] + lama*dp[1], 0.0};
-                double pb[] = {vBeg[0] + lamb*dp[0], vBeg[1] + lamb*dp[1], 0.0};
+                Vec3 pa = vBeg + lama*dp;
+                Vec3 pb = vBeg + lamb*dp;
 
                 // add to lists both points
                 cIds.push_back(cId);
                 lambRays.push_back(lama);
-                points.push_back(Vec3(pa));
+                points.push_back(pa);
 
                 cIds.push_back(cId);
                 lambRays.push_back(lamb); // same Id as before
-                points.push_back(Vec3(pb));
+                points.push_back(pb);
 
             }
 
