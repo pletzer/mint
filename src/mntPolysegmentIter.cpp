@@ -34,7 +34,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
 
     Vec3 p0(p0In);
     Vec3 p1(p1In);
-    this->makePeriodic(p0, p1);
+    this->__makePeriodic(p0, p1);
 
     // cellIds, xis and ts are output
     this->cellIds.resize(0); // cell of each intersection point
@@ -482,7 +482,7 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 }
 
 void  
-PolysegmentIter::makePeriodic(Vec3& vBeg, Vec3& vEnd) {
+PolysegmentIter::__makePeriodic(Vec3& vBeg, Vec3& vEnd) {
 
     // fix start/end points if they fall outside the domain and the domain is periodic
     if (this->xPeriodicity > 0.) {
