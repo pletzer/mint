@@ -97,7 +97,7 @@ private:
      * Add/remove periodicity length to fit in domain
      * @param v point (in/out)
      */
-    void  __makePeriodic(Vec3& vBeg, Vec3& vEnd);
+    void  __makePeriodic(Vec3& v);
 
 
     void __assignCoefficientsToSegments();

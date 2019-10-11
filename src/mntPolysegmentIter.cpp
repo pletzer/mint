@@ -33,8 +33,9 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->locator = locator;
 
     Vec3 p0(p0In);
+    this->__makePeriodic(p0);
     Vec3 p1(p1In);
-    this->__makePeriodic(p0, p1);
+    this->__makePeriodic(p1);
 
     // cellIds, xis and ts are output
     this->cellIds.resize(0); // cell of each intersection point
@@ -476,34 +477,23 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 }
 
 void  
-PolysegmentIter::__makePeriodic(Vec3& vBeg, Vec3& vEnd) {
+PolysegmentIter::__makePeriodic(Vec3& v) {
 
     // fix start/end points if they fall outside the domain and the domain is periodic
     if (this->xPeriodicity > 0.) {
         double xmin = this->grid->GetBounds()[0];
         double xmax = this->grid->GetBounds()[1];
-        if (vBeg[0] < xmin) {
+        if (v[0] < xmin) {
             std::cerr << "Warning: adding periodicity length " << this->xPeriodicity << 
-                         " to start point " << vBeg << "\n";
-            vBeg[0] += this->xPeriodicity;
+                         " to point " << v << "\n";
+            v[0] += this->xPeriodicity;
         }
-        else if (vBeg[0] > xmax) {
+        else if (v[0] > xmax) {
             std::cerr << "Warning: subtracting periodicity length " << this->xPeriodicity << 
-                         " from start point " << vBeg << "\n";
-            vBeg[0] -= this->xPeriodicity;
-        }
-
-        if (vEnd[0] < xmin) {
-            std::cerr << "Warning: adding periodicity length " << this->xPeriodicity << 
-                         " to end point " << vEnd << "\n";
-            vEnd[0] += this->xPeriodicity;
-                std::cerr << "Now end point is " << vEnd << '\n';
-        }
-        else if (vEnd[0] > xmax) {
-            std::cerr << "Warning: subtracting periodicity length " << this->xPeriodicity << 
-                         " from end point " << vEnd << "\n";
-            vEnd[0] -= this->xPeriodicity;
+                         " from point " << v << "\n";
+            v[0] -= this->xPeriodicity;
         }
     }
+
 }
 
