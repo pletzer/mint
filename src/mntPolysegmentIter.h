@@ -110,19 +110,19 @@ private:
      * @param lambRay line paramatric coordinates (output)
      * @param points intersection points (output)
      */
-    void __collectIntersectionPoints(const double pBeg[], 
-                                     const double pEnd[],
+    void __collectIntersectionPoints(const Vec3& pBeg, 
+                                     const Vec3& pEnd,
                                      std::vector<vtkIdType>& cIds,
                                      std::vector<double>& lambRays,
                                      std::vector<Vec3>& points);
 
     /**
      * Collect and store all the line-grid intersection points
-     * @param p0 starting point of the line
-     * @param p1 end point of the line 
+     * @param pBeg starting point of the line
+     * @param pEnd end point of the line 
      */
-    void __collectLineGridSegments(const double p0[],
-                                   const double p1[]);
+    void __collectLineGridSegments(const Vec3& pBeg,
+                                   const Vec3& pEnd);
 
 
     // cell Ids for each intersection point

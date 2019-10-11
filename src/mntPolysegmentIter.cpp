@@ -287,8 +287,8 @@ PolysegmentIter::__assignCoefficientsToSegments() {
 }
 
 void
-PolysegmentIter::__collectIntersectionPoints(const double pBeg[], 
-                                             const double pEnd[],
+PolysegmentIter::__collectIntersectionPoints(const Vec3& pBeg, 
+                                             const Vec3& pEnd,
                                              std::vector<vtkIdType>& cIds,
                                              std::vector<double>& lambRays,
                                              std::vector<Vec3>& points) {
@@ -298,15 +298,13 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
     Vec3 v0;
     Vec3 v1;
-    Vec3 vBeg(pBeg);
-    Vec3 vEnd(pEnd);
 
     // vector from start to finish
-    Vec3 dp = vEnd - vBeg;
+    Vec3 dp = pEnd - pBeg;
 
     // find all the cells intersected by the line
-    this->locator->FindCellsAlongLine((double*) &vBeg[0], 
-                                      (double*) &vEnd[0], 
+    this->locator->FindCellsAlongLine((double*) &pBeg[0], 
+                                      (double*) &pEnd[0], 
                                       this->tol, cellIds);
 
     //
@@ -343,7 +341,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
             this->grid->GetPoint(ptIds->GetId(j1), &v1[0]);
 
             // look for an intersection
-            intersector.setPoints(&vBeg[0], &vEnd[0], &v0[0], &v1[0]);
+            intersector.setPoints(&pBeg[0], &pEnd[0], &v0[0], &v1[0]);
 
             if (! intersector.hasSolution(this->eps)) {
                 // skip if no solution. FindCellsAlongLine may be too generous with
@@ -364,7 +362,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                     lambEdg >= (0. - this->eps100) && lambEdg <= (1. + this->eps100)) {
 
                     // compute the intersection point
-                    Vec3 p = vBeg + lambRay*dp;
+                    Vec3 p = pBeg + lambRay*dp;
 
                     // add to list
                     cIds.push_back(cId);
@@ -383,8 +381,8 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
                 double lamb = sol.second;
 
                 // compute the points
-                Vec3 pa = vBeg + lama*dp;
-                Vec3 pb = vBeg + lamb*dp;
+                Vec3 pa = pBeg + lama*dp;
+                Vec3 pb = pBeg + lamb*dp;
 
                 // add to lists both points
                 cIds.push_back(cId);
@@ -409,7 +407,7 @@ PolysegmentIter::__collectIntersectionPoints(const double pBeg[],
 
 
 void 
-PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[]) {
+PolysegmentIter::__collectLineGridSegments(const Vec3& pBeg, const Vec3& pEnd) {
 
     // things we need to define
     vtkGenericCell* cell = vtkGenericCell::New();
@@ -420,14 +418,9 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
 
     int subId;
     double dist;
-    std::vector<double> point(3, 0.0);
-    
-    // VTK wants 3d positions
-    double pBeg[] = {p0[0], p0[1], 0.};
-    double pEnd[] = {p1[0], p1[1], 0.};
 
     // add starting point
-    vtkIdType cId = this->locator->FindCell(pBeg, this->eps, cell, &xi[0], weights);
+    vtkIdType cId = this->locator->FindCell(&pBeg[0], this->eps, cell, &xi[0], weights);
     if (cId >= 0) {
         // success
         this->cellIds.push_back(cId);
@@ -459,13 +452,13 @@ PolysegmentIter::__collectLineGridSegments(const double p0[], const double p1[])
             this->ts.push_back(lambRay);
         }
         else {
-            std::cerr << "Warning: param coord search failed for point " << point[0] << ", " << point[1] 
-                                                                         << " in cell " << cId << '\n';
+            std::cerr << "Warning: param coord search failed for point " << points[i]
+                                                    << " in cell " << cId << '\n';
         }
     }
  
     // add end point 
-    cId = this->locator->FindCell(pEnd, this->eps, cell, &xi[0], weights);
+    cId = this->locator->FindCell(&pEnd[0], this->eps, cell, &xi[0], weights);
     if (cId >= 0) {
         // success
         this->cellIds.push_back(cId);
