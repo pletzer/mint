@@ -299,3 +299,13 @@ add_test(NAME line_proj_outside
 set_tests_properties(line_proj_outside PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total integrated length for segment")
 
+add_test(NAME flux_line_2pts
+         COMMAND "${CMAKE_BINARY_DIR}/tools/flux" 
+                 "-i" "${CMAKE_SOURCE_DIR}/data/cs_64.vtk"
+                 "-v" "edge_integrated_velocity"
+                 "-nline" "2"
+                 "-xline" "0.0 + 360.*t"
+                 "-yline" "-88. + 176.*t")
+set_tests_properties(flux_line_2pts PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "Warning: total t")
+
