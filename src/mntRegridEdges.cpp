@@ -324,7 +324,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     
 
 #ifdef MYDEBUG
-    printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId        xia        xib\n");
+    printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId            xia          xib\n");
 #endif
 
     // iterate over the dst grid cells
@@ -377,7 +377,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 const double coeff = polySegIter.getCoefficient();
 
 #ifdef MYDEBUG
-            printf("%12lld %12d %5.3lf,%5.3lf %5.3lf,%5.3lf %12lld %5.3lf,%5.3lf %5.3lf,%5.3lf\n", 
+            printf("%12lld %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf\n", 
                     dstCellId, dstEdgeIndex, 
                     dstEdgePt0[0], dstEdgePt0[1], 
                     dstEdgePt1[0], dstEdgePt1[1], srcCellId,
@@ -918,7 +918,7 @@ int mnt_regridedges_print(RegridEdges_t** self) {
     std::cout << "Number of weights: " << numWeights << '\n';
     printf("                 dst_cell  dst_face_edge     src_cell  src_face_edge       weight\n");
     for (size_t i = 0; i < numWeights; ++i) {
-    printf("%10ld       %8lld         %1d         %8lld         %1d   %15.5lg\n", 
+    printf("%10ld       %8lld         %1d          %8lld         %1d   %15.5lg\n", 
                i, 
                (*self)->weightDstCellIds[i], (*self)->weightDstFaceEdgeIds[i], 
                (*self)->weightSrcCellIds[i], (*self)->weightSrcFaceEdgeIds[i],
