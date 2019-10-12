@@ -41,6 +41,16 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->cellIds.resize(0); // cell of each intersection point
     this->xis.resize(0);     // cell parametric coords for each intersection point
     this->ts.resize(0);      // linear param coord for each intersction point
+
+    // arrays of cell Ids, start/end t values, start/end xi param coords, and 
+    // duplicity coefficients for each subsegment
+    this->segCellIds.resize(0);
+    this->segTas.resize(0);
+    this->segTbs.resize(0);
+    this->segXias.resize(0);
+    this->segXibs.resize(0);
+    this->segCoeffs.resize(0);
+
     this->__collectLineGridSegments(&p0[0], &p1[0]);
 
     // gather the intersection points attached to a cell: cellId -> [indx0, indx1, ...] 
@@ -64,15 +74,6 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     //
     // build the subsegments
     //
-
-    // arrays of cell Ids, start/end t values, start/end xi param coords, and 
-    // duplicity coefficients for each subsegment
-    this->segCellIds.resize(0);
-    this->segTas.resize(0);
-    this->segTbs.resize(0);
-    this->segXias.resize(0);
-    this->segXibs.resize(0);
-    this->segCoeffs.resize(0);
 
     // iterate over all the cells for which we have intersection points
     for (std::map< vtkIdType, std::vector<size_t> >::const_iterator it = c2Inds.begin();
