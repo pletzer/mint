@@ -102,16 +102,6 @@ private:
 
     void __assignCoefficientsToSegments();
 
-
-    // cell Ids for each intersection point
-    std::vector<vtkIdType> cellIds;
-    
-    // 2d cell parametric coordinates for each intersection point
-    std::vector<Vec3> xis;
-
-    // 1d line parametric coordinates for each intersection point
-    std::vector<double> ts;
-
     // grid cell Ids for each segment
     std::vector<vtkIdType> segCellIds;
 
