@@ -37,10 +37,9 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     Vec3 p1(p1In);
     this->__makePeriodic(p1);
 
-    // cellIds, xis and ts are output
-    this->cellIds.resize(0); // cell of each intersection point
-    this->xis.resize(0);     // cell parametric coords for each intersection point
-    this->ts.resize(0);      // linear param coord for each intersction point
+    Vec3 dp = p1 - p0;
+
+    std::vector< std::pair<vtkIdType, Vec2> > cellIdLambdas = this->locator->findIntersectionsWithLine(p0, p1);
 
     // arrays of cell Ids, start/end t values, start/end xi param coords, and 
     // duplicity coefficients for each subsegment
@@ -51,105 +50,35 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->segXibs.resize(0);
     this->segCoeffs.resize(0);
 
-    this->__collectLineGridSegments(&p0[0], &p1[0]);
+    double closestPoint[3];
+    int subId;
+    Vec3 xia, xib;
+    double dist2;
+    double weights[8];
+    for (auto& cIdLam : cellIdLambdas) {
 
-    // gather the intersection points attached to a cell: cellId -> [indx0, indx1, ...] 
-    // indx is index in the cellIds, xis and ts arrays
-    std::map< vtkIdType, std::vector<size_t> > c2Inds;
-    for (size_t i = 0; i < this->cellIds.size(); ++i) {
-        vtkIdType cId = this->cellIds[i];
-        auto it = c2Inds.find(cId);
-        if (it != c2Inds.end()) {
-            // push_back into existing list value
-            it->second.push_back(i);
-        }
-        else {
-            // create new list value entry
-            std::vector<size_t> index(1, i);
-            std::pair< vtkIdType, std::vector<size_t> > p(cId, index);
-            c2Inds.insert(p);
-        }
+        vtkIdType cId = cIdLam.first;
+
+        double ta = cIdLam.second[0];
+        double tb = cIdLam.second[1];
+
+        Vec3 pa = p0 + dp*ta;
+        Vec3 pb = p0 + dp*tb;
+
+        // compute the cell parametric coords
+        vtkCell* cell = this->grid->GetCell(cId);
+        int ina = cell->EvaluatePosition(&pa[0], closestPoint, subId, &xia[0], dist2, weights);
+        int inb = cell->EvaluatePosition(&pb[0], closestPoint, subId, &xib[0], dist2, weights);
+
+        // fill in
+        this->segCellIds.push_back(cId);
+        this->segTas.push_back(ta);
+        this->segTbs.push_back(tb);
+        this->segXias.push_back(xia);
+        this->segXibs.push_back(xib);
+        this->segCoeffs.push_back(1.0);
     }
 
-    //
-    // build the subsegments
-    //
-
-    // iterate over all the cells for which we have intersection points
-    for (std::map< vtkIdType, std::vector<size_t> >::const_iterator it = c2Inds.begin();
-        it != c2Inds.end(); ++it) {
-
-        // cell Id
-        vtkIdType cId = it->first;
-
-        // index array into this->ts, this->cellIds and this->xis
-        const std::vector<size_t>& inds = it->second;
-
-        // compute the corresponding linear param coord t's
-        size_t n = inds.size();
-        std::vector<size_t> iVals(n);
-        std::vector<double> tVals(n);
-        for (size_t i = 0; i < n; ++i) {
-            iVals[i] = i;
-            tVals[i] = this->ts[ inds[i] ];
-        }
-
-        // sort the indices inds by t values
-        std::sort(iVals.begin(), iVals.end(), TCmpFunctor(tVals));
-
-        // create subsegments. Each subsegment has start and end points. Both
-        // the start/end points are in the same cell.
-        for (int j = 0; j < (int) n - 1; ++j) {
-            // indices into the inds lists
-            size_t i0 = iVals[j    ];
-            size_t i1 = iVals[j + 1];
-            // indices into this->ts, this->xis... 
-            size_t ia = inds[i0];
-            size_t ib = inds[i1];
-            double ta = this->ts[ia];
-            double tb = this->ts[ib];
-            const Vec3& xia = this->xis[ia];
-            const Vec3& xib = this->xis[ib];
-
-            // add the cell index, start linear param coord, etc.
-            this->segCellIds.push_back(cId);
-            this->segTas.push_back(ta);
-            this->segTbs.push_back(tb);
-            this->segXias.push_back(xia);
-            this->segXibs.push_back(xib);
-            // will deal with duplicity later
-            this->segCoeffs.push_back(1.0);
-        }
-    }
-
-    // sort all the segments by start linear param coord t values
-
-    size_t n = this->segCellIds.size();
-    std::vector<size_t> iVals(n);
-    std::vector<double> tVals(n);
-    for (size_t i = 0; i < n; ++i) {
-        iVals[i] = i;
-        tVals[i] = this->segTas[i];
-    }
-
-    std::sort(iVals.begin(), iVals.end(), TCmpFunctor(tVals));
-
-    // copy
-    std::vector<vtkIdType> sCellIds = this->segCellIds;
-    std::vector<double> sTas = this->segTas;
-    std::vector<double> sTbs = this->segTbs;
-    std::vector<Vec3> sXias = this->segXias;
-    std::vector<Vec3> sXibs = this->segXibs;
-
-    // no need to sort this->segCoeffs since all the values are one
-    for (size_t j = 0; j < n; ++j) {
-        size_t i = iVals[j];
-        this->segCellIds[j] = sCellIds[i];
-        this->segTas[j] = sTas[i];
-        this->segTbs[j] = sTbs[i];
-        this->segXias[j] = sXias[i];
-        this->segXibs[j] = sXibs[i];
-    }
 
     // assign coefficients that account for duplicity, ie segments 
     // that are shared between two cells. Output is this->segCoeffs
