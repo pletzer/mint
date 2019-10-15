@@ -116,14 +116,6 @@ private:
                                      std::vector<double>& lambRays,
                                      std::vector<Vec3>& points);
 
-    /**
-     * Collect and store all the line-grid intersection points
-     * @param pBeg starting point of the line
-     * @param pEnd end point of the line 
-     */
-    void __collectLineGridSegments(const Vec3& pBeg,
-                                   const Vec3& pEnd);
-
 
     // cell Ids for each intersection point
     std::vector<vtkIdType> cellIds;
