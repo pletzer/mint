@@ -102,20 +102,6 @@ private:
 
     void __assignCoefficientsToSegments();
 
-    /**
-     * Collect all the intersection points
-     * @param pBeg starting point
-     * @param pEnd end point
-     * @param cIds cell Ids (output)
-     * @param lambRay line paramatric coordinates (output)
-     * @param points intersection points (output)
-     */
-    void __collectIntersectionPoints(const Vec3& pBeg, 
-                                     const Vec3& pEnd,
-                                     std::vector<vtkIdType>& cIds,
-                                     std::vector<double>& lambRays,
-                                     std::vector<Vec3>& points);
-
 
     // cell Ids for each intersection point
     std::vector<vtkIdType> cellIds;
