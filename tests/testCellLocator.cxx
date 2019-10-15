@@ -163,7 +163,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     double pEndPtr[] = {360.0, 90.0, 0.0};
     Vec3 pBeg(pBegPtr);
     Vec3 pEnd(pEndPtr);
-    std::vector< std::pair<vtkIdType, std::vector<double> > > cellIdLambdas;
+    std::vector< std::pair<vtkIdType, Vec2> > cellIdLambdas;
     double totLambda;
 
     vtkIdList* cellIds = vtkIdList::New();
@@ -178,7 +178,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // across the domain
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (std::pair< vtkIdType, std::vector<double> >& cIdLam : cellIdLambdas) {
+    for (auto& cIdLam : cellIdLambdas) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];

@@ -43,7 +43,7 @@ void test1Cell() {
     const Vec3 p0(p0Ptr);
     const Vec3 p1(p1Ptr);
 
-    std::vector< std::pair<vtkIdType, std::vector<double> > > 
+    std::vector< std::pair<vtkIdType, Vec2> > 
         intersects = loc->findIntersectionsWithLine(p0, p1);
     double totLam = 0;
     for (const auto& cLams : intersects) {

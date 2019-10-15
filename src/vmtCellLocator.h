@@ -129,7 +129,7 @@ public:
      * @param pEnd end point of the line
      * @return list of (cellId, [lambda0, lambda1]) pairs
      */
-    std::vector< std::pair<vtkIdType, std::vector<double> > >
+    std::vector< std::pair<vtkIdType, Vec2> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**

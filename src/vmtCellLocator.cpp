@@ -6,8 +6,8 @@
 
 struct LambdaBegFunctor {
     // compare two elements of the array
-    bool operator()(const std::pair<vtkIdType, std::vector<double> >& x, 
-                    const std::pair<vtkIdType, std::vector<double> >& y) {
+    bool operator()(const std::pair<vtkIdType, Vec2>& x, 
+                    const std::pair<vtkIdType, Vec2>& y) {
         return (x.second[0] < y.second[0]);
     }
 };
@@ -156,11 +156,13 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 }
 
 
-std::vector< std::pair<vtkIdType, std::vector<double> > >
+std::vector< std::pair<vtkIdType, Vec2> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
+    double lambdaInOut[2];
+
     // store result
-    std::vector< std::pair<vtkIdType, std::vector<double> > > res;
+    std::vector< std::pair<vtkIdType, Vec2> > res;
 
     // collect the cells intersected by the line
     vtkIdList* cells = vtkIdList::New();
@@ -176,14 +178,12 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
         if (lambdas.size() >= 2) {
 
-            double lambdaIn = lambdas[0];
-            double lambdaOut = lambdas[lambdas.size() - 1];
+            lambdaInOut[0] = lambdas[0];
+            lambdaInOut[1] = lambdas[lambdas.size() - 1];
 
             // found entry/exit points so add
             res.push_back( 
-                std::pair<vtkIdType, std::vector<double> >(
-                     cellId, std::vector<double>{lambdaIn, lambdaOut}
-                                                       )
+                std::pair<vtkIdType, Vec2>( cellId, Vec2(lambdaInOut) )
                          );
         }
     }
