@@ -253,6 +253,51 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
                 " totLambda = " << totLambda << '\n';
     assert(std::abs(totLambda - 1.0) < 1.e-10);
 
+    // both points are just outside
+    pBeg[0] = -0.001; pBeg[1] = -90.0;
+    pEnd[0] = -0.001; pEnd[1] = +90.0;
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd, 360.0);
+    totLambda = 0.0;
+    for (const auto& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
+    // start point is outside, end point is inside
+    pBeg[0] = -0.001; pBeg[1] = -90.0;
+    pEnd[0] = +0.001; pEnd[1] = +90.0;
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (const auto& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
+    // start point is inside, end point is outside
+    pBeg[0] = -0.001; pBeg[1] = -90.0;
+    pEnd[0] = +0.001; pEnd[1] = +90.0;
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (const auto& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
 
     // clean up
     cloc->Delete();

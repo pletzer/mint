@@ -127,10 +127,11 @@ public:
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
      * @param pEnd end point of the line
+     * @param xPeriodicity periodicity length (0 if not periodic)
      * @return list of (cellId, [lambda0, lambda1]) pairs
      */
     std::vector< std::pair<vtkIdType, Vec2> >
-    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
+    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd, double xPeriodicity=0.0);
 
     /**
      * Check if a point is indide a face
