@@ -182,9 +182,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
             lambdaInOut[1] = lambdas[lambdas.size() - 1];
 
             // found entry/exit points so add
-            res.push_back( 
-                std::pair<vtkIdType, Vec2>( cellId, Vec2(lambdaInOut) )
-                         );
+            res.push_back(  std::pair<vtkIdType, Vec2>( cellId, Vec2(lambdaInOut) )  );
         }
     }
     cells->Delete();
