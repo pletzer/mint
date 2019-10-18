@@ -225,14 +225,14 @@ private:
      * Collect the intersection points between line and cell
      * @param cellId cell Id
      * @param pBeg start point of the line
-     * @param pEnd end point of the line
+     * @param direction direction of the line (pEnd = pBeg + direction)
      * @return array of line parameter coordinates in increasing order
      * @note expect either 0 (no intersection) or 2 values (intersection) to be returned.
      *       start/end points qualify as intersection if they fall into the cell
      */
     std::vector<double> collectIntersectionPoints(vtkIdType cellId, 
-                                                  const double pBeg[3],
-                                                  const double pEnd[3]);
+                                                  const Vec3& pBeg,
+                                                  const Vec3& direction);
 
     /**
      * Get the nodal points of the face

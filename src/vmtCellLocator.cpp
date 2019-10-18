@@ -159,6 +159,9 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 std::vector< std::pair<vtkIdType, Vec2> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd, double xPeriodicity) {
 
+	Vec3 direction = pEnd - pBeg;
+	Vec3 p0 = pBeg;
+
     double lambdaInOut[2];
 
     // store result
@@ -174,7 +177,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd, do
 
     	vtkIdType cellId = cells->GetId(i);
 
-        std::vector<double> lambdas = this->collectIntersectionPoints(cellId, &pBeg[0], &pEnd[0]);
+        std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
 
         if (lambdas.size() >= 2) {
 
@@ -209,8 +212,10 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd, do
 
 std::vector<double>
 vmtCellLocator::collectIntersectionPoints(vtkIdType cellId, 
-                                          const double pBeg[3],
-                                          const double pEnd[3]) {
+                                          const Vec3& pBeg,
+                                          const Vec3& direction) {
+
+	Vec3 pEnd = pBeg + direction;
 
     std::vector<double> lambdas;
     // expect two values
@@ -227,7 +232,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
     LineLineIntersector intersector;
 
     // is the starting point inside the cell?
-    if (this->containsPoint(cellId, pBeg, eps)) {
+    if (this->containsPoint(cellId, &pBeg[0], eps)) {
         lambdas.push_back(0.);
     }
 
@@ -275,7 +280,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
     }
 
     // is the end point inside the cell?
-    if (this->containsPoint(cellId, pEnd, eps)) {
+    if (this->containsPoint(cellId, &pEnd[0], eps)) {
         lambdas.push_back(1.);
     }
 
