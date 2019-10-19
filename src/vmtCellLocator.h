@@ -31,6 +31,7 @@ public:
             this->xmin[i] = big;
             this->xmax[i] = -big;
         }
+        this->periodicityLengthX = 0.0;
     }
 
     static vmtCellLocator* New() {

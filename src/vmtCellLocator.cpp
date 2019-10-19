@@ -186,27 +186,41 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
     // store result
     std::vector< std::pair<vtkIdType, Vec2> > res;
 
-    // collect the cells intersected by the line
+    const double eps = 10 * std::numeric_limits<double>::epsilon();
+
     vtkIdList* cells = vtkIdList::New();
-    const double eps = 10 * std::numeric_limits<double>::epsilon();    
-    this->FindCellsAlongLine(&pBeg[0], &pEnd[0], eps, cells);
 
-    // iterate over the intersected cells
-    for (vtkIdType i = 0; i < cells->GetNumberOfIds(); ++i) {
+    std::vector<double> modPeriodX(1, 0.0);
+    if (this->periodicityLengthX > 0.) {
+        modPeriodX.push_back(-1.);
+        modPeriodX.push_back(+1.);
+    }
 
-    	vtkIdType cellId = cells->GetId(i);
+    for (double modPx : modPeriodX) {
 
-        std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+        p0[0] = pBeg[0] + modPx;
 
-        if (lambdas.size() >= 2) {
+        // collect the cell Ids intersected by the line  
+        this->FindCellsAlongLine(&pBeg[0], &pEnd[0], eps, cells);
 
-            lambdaInOut[0] = lambdas[0];
-            lambdaInOut[1] = lambdas[lambdas.size() - 1];
+        // iterate over the intersected cells
+        for (vtkIdType i = 0; i < cells->GetNumberOfIds(); ++i) {
 
-            // found entry/exit points so add
-            res.push_back(  std::pair<vtkIdType, Vec2>( cellId, Vec2(lambdaInOut) )  );
+    	   vtkIdType cellId = cells->GetId(i);
+
+            std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+
+            if (lambdas.size() >= 2) {
+
+                lambdaInOut[0] = lambdas[0];
+                lambdaInOut[1] = lambdas[lambdas.size() - 1];
+
+                // found entry/exit points so add
+                res.push_back(  std::pair<vtkIdType, Vec2>( cellId, Vec2(lambdaInOut) )  );
+            }
         }
     }
+
     cells->Delete();
 
     // sort by starting lambda
