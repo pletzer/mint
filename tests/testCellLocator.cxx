@@ -256,7 +256,8 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // both points are just outside
     pBeg[0] = -0.001; pBeg[1] = -90.0;
     pEnd[0] = -0.001; pEnd[1] = +90.0;
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd, 360.0);
+    cloc->setPeriodicityLengthX(360.0);
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
     for (const auto& cIdLam : cellIdLambdas) {
         double lamIn = cIdLam.second[0];
@@ -271,7 +272,8 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // start point is outside, end point is inside
     pBeg[0] = -0.001; pBeg[1] = -90.0;
     pEnd[0] = +0.001; pEnd[1] = +90.0;
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd, 360.);
+    cloc->setPeriodicityLengthX(360.0);
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
     for (const auto& cIdLam : cellIdLambdas) {
         double lamIn = cIdLam.second[0];
@@ -286,7 +288,8 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // start point is inside, end point is outside
     pBeg[0] = -0.001; pBeg[1] = -90.0;
     pEnd[0] = +0.001; pEnd[1] = +90.0;
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd, 360.);
+    cloc->setPeriodicityLengthX(360.0);
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
     for (const auto& cIdLam : cellIdLambdas) {
         double lamIn = cIdLam.second[0];

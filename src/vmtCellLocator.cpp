@@ -157,7 +157,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 
 
 std::vector< std::pair<vtkIdType, Vec2> >
-vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd, double xPeriodicity) {
+vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
 	Vec3 direction = pEnd - pBeg;
 	Vec3 p0 = pBeg;

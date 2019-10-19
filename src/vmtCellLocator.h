@@ -124,14 +124,21 @@ public:
 
 
     /**
+     * Set the periodicity length in x
+     * @param periodicityX length (0 means not periodic)
+     */
+    void setPeriodicityLengthX(double periodicityX) {
+    	this->periodicityLengthX = periodicityX;
+    }
+
+    /**
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
      * @param pEnd end point of the line
-     * @param xPeriodicity periodicity length (0 if not periodic)
      * @return list of (cellId, [lambda0, lambda1]) pairs
      */
     std::vector< std::pair<vtkIdType, Vec2> >
-    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd, double xPeriodicity=0.0);
+    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**
      * Check if a point is indide a face
@@ -171,6 +178,9 @@ private:
     double xmax[3];
 
     double weights[8];
+
+    // 0 if not periodic
+    double periodicityLengthX;
 
     // number of buckets in X and Y
     int numBucketsX;
