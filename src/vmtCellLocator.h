@@ -98,6 +98,15 @@ public:
     vtkIdType FindCell(const double point[3], double tol2, vtkGenericCell *cell, double pcoords[3], double *weights);
 
     /**
+     * Find cell given a target point
+     * @param point target
+     * @param tol2 tolerance
+     * @return cell Id if found, < 0 otherwise
+     */
+    vtkIdType quickFindCell(const Vec3& point, double tol2);
+
+
+    /**
      * Find all the cells intersected by line
      * @param p0 start point
      * @param p1 end point
