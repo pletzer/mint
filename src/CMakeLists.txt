@@ -8,7 +8,6 @@ set(LIB_FILES
   mntUgrid2D.cpp
   mntQuadEdgeIter.cpp
   mntPolylineParser.cpp
-  mntLineGridIntersector.cpp
   CmdLineArgParser.cpp
   GrExprParser.cpp
   GrExprAdaptor.cpp
@@ -33,7 +32,6 @@ set(HEADER_FILES
   mntUgrid2D.h
   mntQuadEdgeIter.h
   mntPolylineParser.h
-  mntLineGridIntersector.h
   CmdLineArgParser.h
   GrExprParser.h
   GrExprAdaptor.h
