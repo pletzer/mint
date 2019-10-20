@@ -36,6 +36,8 @@ if args.output_file == args.grid_file:
 try:
     grid_file, grid_var = args.grid_file.split(':')
 except:
+	print('ERROR: argument passed to -g should be in format GRID_FILE:GRID_NAME')
+	sys.exit(4)
 
 
 def copyAttributes(fromNcVar, toNcVar):
