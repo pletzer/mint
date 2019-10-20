@@ -121,7 +121,7 @@ faceEdgeUp[:] = ncGrid[ncGridVar.face_edge_connectivity][:]
 edgeNodeUp = ncUp.createVariable(gridVarUp.edge_node_connectivity, 'i4',
                                (numEdgesDimName, twoDimName))
 copyAttributes(ncGrid[ncGridVar.edge_node_connectivity], edgeNodeUp)
-edgeNodeUp[:] = ncGrid[ncGridVarc.edge_node_connectivity][:]
+edgeNodeUp[:] = ncGrid[ncGridVar.edge_node_connectivity][:]
 
 
 velocity = ncUp.createVariable('velocity', 'f8', (numPointsDimName, twoDimName))
