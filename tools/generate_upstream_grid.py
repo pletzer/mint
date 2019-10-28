@@ -8,13 +8,13 @@ from scipy.integrate import odeint
 
 
 parser = argparse.ArgumentParser(description='Generate upstream grid')
-parser.add_argument('-u', dest='velocityX', default='sin(pi*x/180.)',
+parser.add_argument('-u', dest='velocity_x', default='sin(pi*x/180.)',
                     help='Specify the contravariant velocity component u (deg/time) along longitudes as a function of x (deg. east) and y (deg. north)')
-parser.add_argument('-v', dest='velocityY', default='cos(pi*y/180.)',
+parser.add_argument('-v', dest='velocity_y', default='cos(pi*y/180.)',
                     help='Specify the contravariant velocity component v (deg/time) along latitudes as a function of x (deg. east) and y (deg. north)')
 parser.add_argument('-g', dest='grid_file', default='', 
                     help='Specify the netcdf file containing the grid geometry/topology and grid name as FILE_NAME:GRID_NAME')
-parser.add_argument('-tf', dest='finalTime', default=1.0, type=float,
+parser.add_argument('-t', dest='time', default=1.0, type=float,
                     help='Specify final time for integrating trajectories upstream')
 parser.add_argument('-o', dest='output_file', default='', 
                     help='Specify the output netcdf file containing the upstream coordinates and the velocity')
@@ -131,16 +131,16 @@ velocity.location = 'node'
 from numpy import sin, cos, pi
 x = xInitial
 y = yInitial
-velocity[:, 0] = eval(args.velocityX)
-velocity[:, 1] = eval(args.velocityY)
+velocity[:, 0] = eval(args.velocity_x)
+velocity[:, 1] = eval(args.velocity_y)
 
 # integrate the nodal positions backwards in time
 vxy = numpy.zeros((numPoints*2,), numpy.float64)
 def tendency(xy, t):
     x = xy[:numPoints]
     y = xy[numPoints:]
-    vxy[:numPoints] = eval(args.velocityX)
-    vxy[numPoints:] = eval(args.velocityY)
+    vxy[:numPoints] = eval(args.velocity_x)
+    vxy[numPoints:] = eval(args.velocity_y)
     return vxy
 
 # integrate the trajectories upstream 
@@ -149,7 +149,7 @@ xy[:numPoints] = xInitial
 xy[numPoints:] = yInitial
 xMin = xInitial.min()
 xMax = xInitial.max()
-xyUpstream = odeint(tendency, xy, [0.0, -args.finalTime])
+xyUpstream = odeint(tendency, xy, [0.0, -args.time])
 # we're only interested in the final positions
 xUpstream = xyUpstream[1, :numPoints]
 yUpstream = xyUpstream[1, numPoints:]
