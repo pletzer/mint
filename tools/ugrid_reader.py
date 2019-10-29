@@ -133,16 +133,26 @@ class UgridReader(ReaderBase):
                 nComps = data.shape[1]
             else:
                 data = data.reshape((-1, 1))
-            cData = numpy.zeros((ncells * 4, nComps), numpy.float64)
+
+
+            nCompsVec = 1
+            if nComps > 1:
+                # it's a vector and we need 3 components
+                nCompsVec = 3
+
+            cData = numpy.zeros((ncells * 4, nCompsVec), numpy.float64)
+
             for icell in range(ncells): 
                 i00, i10, i11, i01 = connectivity[icell, :]
                 d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
-                cData[icell*4 + 0, :] = d00
-                cData[icell*4 + 1, :] = d10
-                cData[icell*4 + 2, :] = d11
-                cData[icell*4 + 3, :] = d01
+                cData[icell*4 + 0, :nComps] = d00
+                cData[icell*4 + 1, :nComps] = d10
+                cData[icell*4 + 2, :nComps] = d11
+                cData[icell*4 + 3, :nComps] = d01
+
             if nComps == 1:
                 cData = cData.reshape((ncells * 4,))
+
             self.setPointField(vname, cData)
 
         nc.close()
