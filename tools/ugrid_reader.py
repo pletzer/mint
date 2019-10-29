@@ -3,6 +3,22 @@ import numpy
 import vtk
 from reader_base import ReaderBase
 
+def getPointData(nc, mname):
+    """
+    Find all the variables that are attached to a mesh name
+    @param nc netCDF4 file handle
+    @param mname mesh name
+    @return {vname: var}
+    """
+    res = {}
+    for vname, var in nc.variables.items():
+        meshName = getattr(var, 'mesh', '')
+        location = getattr(var, 'location', '')
+        if meshName == mname and location == 'node':
+            res[vname] = var
+    return res
+
+
 class UgridReader(ReaderBase):
 
 
@@ -108,6 +124,31 @@ class UgridReader(ReaderBase):
 
 
         grid.SetPoints(points)
+
+        for vname, var in getPointData(nc, mname).items():
+            # read
+            data = var[:]
+            nComps = 1
+            if len(data.shape) > 1:
+                nComps = data.shape[1]
+            else:
+                data = data.reshape((-1, 1))
+            cData = numpy.zeros((ncells * 4, nComps), numpy.float64)
+            for icell in range(ncells): 
+                i00, i10, i11, i01 = connectivity[icell, :]
+                d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
+                cData[icell*4 + 0, :] = d00
+                cData[icell*4 + 1, :] = d10
+                cData[icell*4 + 2, :] = d11
+                cData[icell*4 + 3, :] = d01
+            if nComps == 1:
+                cData = cData.reshape((ncells * 4,))
+            self.setPointField(vname, cData)
+
+        nc.close()
+
+            
+
 
 
 ###############################################################################

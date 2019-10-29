@@ -139,13 +139,16 @@ class ReaderBase(object):
         @param name name of the field
         @param data array of size (numCells, 4)
         """
+        nComps = 1
+        if len(data.shape) > 1:
+            nComps = data.shape[1]
         self.pointArray = data
         self.pointData = vtk.vtkDoubleArray()
         self.pointData.SetName(name)
-        self.pointData.SetNumberOfComponents(1)
+        self.pointData.SetNumberOfComponents(nComps)
         numCells = self.getNumberOfCells()
         self.pointData.SetNumberOfTuples(numCells*4)
-        self.pointData.SetVoidArray(self.pointArray, numCells*4, 1)
+        self.pointData.SetVoidArray(self.pointArray, numCells*4*nComps, 1)
         self.vtk['grid'].GetPointData().AddArray(self.pointData)        
 
 
