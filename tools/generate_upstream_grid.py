@@ -126,6 +126,7 @@ edgeNodeUp[:] = ncGrid[ncGridVar.edge_node_connectivity][:]
 
 velocity = ncUp.createVariable('velocity', 'f8', (numPointsDimName, twoDimName))
 velocity.location = 'node'
+velocity.mesh = grid_var + '_upstream'
 
 # velocity at nodes
 from numpy import sin, cos, pi
