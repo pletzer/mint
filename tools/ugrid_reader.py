@@ -22,7 +22,7 @@ def getPointData(nc, mname):
 class UgridReader(ReaderBase):
 
 
-    def __init__(self, filename):
+    def __init__(self, filename, regularization=True):
         """
         Constructor
         @param filename UGRID file 
@@ -95,7 +95,7 @@ class UgridReader(ReaderBase):
             lts = numpy.array([lat00, lat10, lat11, lat01])
             lns = numpy.array([lon00, lon10, lon11, lon01])
             alts = numpy.fabs(lts)
-            if numpy.any(alts[:] == quarterPeriodicity):
+            if regularization and numpy.any(alts[:] == quarterPeriodicity):
                 # there is a latitude at the pole. The longitude is not well 
                 # defined in this case - we can set it to any value. For 
                 # esthetical reason it't good to set it to the average 
@@ -169,6 +169,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
     parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file in the form FILENAME:MESHNAME')
+    parser.add_argument('-r', dest='regularization', action='store_false', help='Disable pole regularization (required for latlon grid)')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
     parser.add_argument('-stream', dest='streamFunc', default='', 
                         help='Stream function as a function of x (longitude) and y (latitude)')
@@ -185,7 +186,7 @@ def main():
    
     args = parser.parse_args()
 
-    reader = UgridReader(filename=args.input)
+    reader = UgridReader(filename=args.input, regularization=args.regularization)
 
     if args.print:
         reader.printCellPoints()
