@@ -50,16 +50,19 @@ echo "u              : $U"
 echo "v              : $V"
 
 
-# Copy the grid file 
-cp ${GRIDFILE} "original_grid.nc"
-SRC_GRIDFILE_GRIDNAME="original_grid.nc:${GRIDNAME}"
+# Copy the grid file
+SRC_GRIDFILE="original_grid.nc"
+cp ${GRIDFILE} ${SRC_GRIDFILE}
+
+SRC_GRIDFILE_GRIDNAME="${SRC_GRIDFILE}:${GRIDNAME}"
 DST_GRIDFILE="upstream_grid.nc"
 
 # Add the edge field to the grid
-cmd="python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE_GRIDNAME"
+cmd="python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE"
 echo $cmd
 "$cmd" >& log.txt
 if [ $? != 0 ]; then
+    tail log.txt
     echo "ERROR: after generating edge field, check log.txt"
     exit 1
 fi
@@ -69,6 +72,7 @@ cmd="python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g $S
 echo $cmd
 "$cmd" >& log.txt
 if [ $? != 0 ]; then
+    tail log.txt
     echo "ERROR: after generating upstream grid, check log.txt"
     exit 2
 fi
@@ -78,6 +82,7 @@ cmd="@CMAKE_BINARY_DIR@/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edg
 echo $cmd
 "$cmd" >& log.txt
 if [ $? != 0 ]; then
+    tail log.txt
     echo "ERROR: after generating upstream grid, check log.txt"
     exit 3
 fi
