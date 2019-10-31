@@ -3,18 +3,19 @@ import numpy
 import vtk
 from reader_base import ReaderBase
 
-def getPointData(nc, mname):
+def getData(nc, mname, loc):
     """
     Find all the variables that are attached to a mesh name
     @param nc netCDF4 file handle
     @param mname mesh name
+    @param loc "node", "edge", or "face"
     @return {vname: var}
     """
     res = {}
     for vname, var in nc.variables.items():
         meshName = getattr(var, 'mesh', '')
         location = getattr(var, 'location', '')
-        if meshName == mname and location == 'node':
+        if meshName == mname and location == loc:
             res[vname] = var
     return res
 
@@ -125,35 +126,47 @@ class UgridReader(ReaderBase):
 
         grid.SetPoints(points)
 
-        for vname, var in getPointData(nc, mname).items():
-            # read
-            data = var[:]
-            nComps = 1
-            if len(data.shape) > 1:
-                nComps = data.shape[1]
-            else:
-                data = data.reshape((-1, 1))
+        # attach nodal and edge data to the grid. Nodal and edge data 
+        # can be treated (mostly) in the same way
+        for location in ('node', 'edge'):
+
+            for vname, var in getData(nc, mname, location).items():
+                # read
+                data = var[:]
+                nComps = 1
+                if len(data.shape) > 1:
+                    nComps = data.shape[1]
+                else:
+                    data = data.reshape((-1, 1))
 
 
-            nCompsVec = 1
-            if nComps > 1:
-                # it's a vector and we need 3 components
-                nCompsVec = 3
+                nCompsVec = 1
+                if nComps > 1:
+                    # it's a vector and we need 3 components
+                    nCompsVec = 3
 
-            cData = numpy.zeros((ncells * 4, nCompsVec), numpy.float64)
+                cData = numpy.zeros((ncells * 4, nCompsVec), numpy.float64)
 
-            for icell in range(ncells): 
-                i00, i10, i11, i01 = connectivity[icell, :]
-                d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
-                cData[icell*4 + 0, :nComps] = d00
-                cData[icell*4 + 1, :nComps] = d10
-                cData[icell*4 + 2, :nComps] = d11
-                cData[icell*4 + 3, :nComps] = d01
+                for icell in range(ncells): 
+                    i00, i10, i11, i01 = connectivity[icell, :]
+                    d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
+                    cData[icell*4 + 0, :nComps] = d00
+                    cData[icell*4 + 1, :nComps] = d10
+                    cData[icell*4 + 2, :nComps] = d11
+                    cData[icell*4 + 3, :nComps] = d01
 
-            if nComps == 1:
-                cData = cData.reshape((ncells * 4,))
+                if nComps == 1:
+                    # scalar, remove the dimension
+                    cData = cData.reshape((ncells * 4,))
 
-            self.setPointField(vname, cData)
+                if location == 'node':
+                    print('setting point field "{}"'.format(vname))
+                    self.setPointField(vname, cData)
+                else:
+                    print('setting edge field "{}"'.format(vname))
+                    self.setEdgeField(vname, cData)
+
+
 
         nc.close()
 

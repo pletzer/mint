@@ -21,7 +21,7 @@ etas = numpy.zeros((3,), numpy.float64)
 weights = numpy.zeros((8,), numpy.float64)
 cell = vtk.vtkGenericCell()
 
-parser = argparse.ArgumentParser(description='Convert cell-by-cell edge field into an edge field')
+parser = argparse.ArgumentParser(description='Compute streamlines of edge field')
 parser.add_argument('-i', dest='inputFile', default='res.vtk', help='Specify path to VTK, cell-by-cell input file')
 parser.add_argument('-o', dest='outputFile', default='trajectory.vtk', help='Specify name of VTK output file')
 parser.add_argument('-v', dest='edgeFieldName', default='edge_integrated_velocity', help='Specify name of edge integrated variable')

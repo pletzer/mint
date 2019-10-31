@@ -76,15 +76,22 @@ edge_integrated_velocity = nc.createVariable('edge_integrated_velocity', 'float6
 edge_integrated_velocity.mesh = mesh_name
 edge_integrated_velocity.location = 'edge'
 
-# set the lats/lons
+streamfunction = nc.createVariable('streamfunction', 'float64', ('nnodes',))
+streamfunction.mesh = mesh_name
+streamfunction.location = 'node'
+
+# set the lats/lons and the stream function
 lats = numpy.zeros((nnodes,), numpy.float64)
 lons = numpy.zeros((nnodes,), numpy.float64)
 dlat, dlon = 180./float(ny), 360.0/float(nx)
+point_data = numpy.zeros((nnodes,), numpy.float64)
 for j in range(ny + 1):
     for i in range(nx + 1):
         index = i + (nx + 1)*j
         lons[index] = 0.0 + i*dlon
         lats[index] = -90.0 + j*dlat
+        x, y = lons[index], lats[index]
+        point_data[index] = eval(args.stream_funct)
 xvar[:] = lons
 yvar[:] = lats
 
@@ -103,7 +110,7 @@ faceNodeConn[...] = fn
 
 # edge-node connectivity
 en = numpy.zeros((nedges, 2), numpy.int64)
-data = numpy.zeros((nedges,), numpy.float64)
+edge_data = numpy.zeros((nedges,), numpy.float64)
 # x edges
 count = 0
 for j in range(ny + 1):
@@ -116,7 +123,7 @@ for j in range(ny + 1):
         s00 = eval(args.stream_funct)
         x, y = lons[i10], lats[i10]
         s10 = eval(args.stream_funct)
-        data[count] = s10 - s00
+        edge_data[count] = s10 - s00
 
         count += 1
 # y edges
@@ -130,12 +137,13 @@ for j in range(ny):
         s00 = eval(args.stream_funct)
         x, y = lons[i01], lats[i01]
         s01 = eval(args.stream_funct)
-        data[count] = s01 - s00
+        edge_data[count] = s01 - s00
 
         count += 1
 
 edgeNodeConn[...] = en
-edge_integrated_velocity[:] = data
+streamfunction[:] = point_data
+edge_integrated_velocity[:] = edge_data
 
 # face-edge connectivity
 fe = numpy.zeros((nfaces, 4), numpy.int64)
