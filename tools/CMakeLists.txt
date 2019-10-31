@@ -3,7 +3,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
 )
 
-configure_file(advect.sh.in advect.sh)
+configure_file(advect.sh.in advect.sh @ONLY)
 
 link_directories(${NETCDF_DIR}/lib)
 

@@ -2,44 +2,46 @@
 
 
 # Initialize our own variables:
-GRIDFILE_GRIDNAME="cs_16.nc:physics"
-STREAMFUNC="cos(2*2*pi*x/360.)*(1.0 - (y/90.)**2)"
+GRIDFILE_GRIDNAME="@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"
+STREAMFUNC="cos(2*2*pi*x/360.)*(1.0-(y/90.)**2)"
 U="sin(2*pi*x/360.)"
 V="cos(2*pi*y/360.)"
 TIME="1.0"
-# A POSIX variable
-OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
-while getopts "h?i:s:u:v:t:" opt; do
+
+for opt in "$@"; do
     case "$opt" in
-    h|\?)
+    -h|--help)
         echo "$0 [options]"
-        echo "\t-i GRIDFILE:GRIDNAME Specify grid file name and grid name"
-        echo "\t-s STREAMFUNC Specify stream function defining edge field as function of x (lon in deg), y (lat in deg)"
-        echo "\t-u U Specify u vector field component as function of x, y"
-        echo "\t-s V Specify v vector field component as function of x, y"
-        echo "\t-t TIME Specify integration time"
+        echo "\t-i=GRIDFILE:GRIDNAME Specify grid file name and grid name"
+        echo "\t-s=STREAMFUNC Specify stream function defining edge field as function of x (lon in deg), y (lat in deg)"
+        echo "\t-u=U Specify u vector field component as function of x, y"
+        echo "\t-s=V Specify v vector field component as function of x, y"
+        echo "\t-t=TIME Specify integration time"
         exit 0
         ;;
-    i)  GRIDFILE_GRIDNAME=$OPTARG
+    -i=*)  GRIDFILE_GRIDNAME="${opt#*=}"
         ;;
-    s)  STREAMFUNC=$OPTARG
+    -s=*)  STREAMFUNC="${opt#*=}"
         ;;
-    u)  U=$OPTARG
+    -u=*)  U="${opt#*=}"
         ;;
-    v)  V=$OPTARG
+    -v=*)  V="${opt#*=}"
         ;;
-    t)  TIME=$OPTARG
+    -t=*)  TIME="${opt#*=}"
+        ;;
+    *)     echo "ERROR: unknown option $opt"
+           exit 1
         ;;
     esac
 done
 
-shift $((OPTIND-1))
-
-[ "${1:-}" = "--" ] && shift
-
 GRIDFILE=$(echo $GRIDFILE_GRIDNAME | awk -F":" '{print $1}')
 GRIDNAME=$(echo $GRIDFILE_GRIDNAME | awk -F":" '{print $2}')
+
+STREAMFUNC="\"$STREAMFUNC\""
+U="\"$U\""
+V="\"$V\""
 
 echo "grid file      : $GRIDFILE"
 echo "grid name      : $GRIDNAME"
@@ -47,17 +49,36 @@ echo "stream function: $STREAMFUNC"
 echo "u              : $U"
 echo "v              : $V"
 
+
 # Copy the grid file 
-cp ${GRIDFILE_GRIDNAME} "original_grid.nc:${GRIDNAME}"
+cp ${GRIDFILE} "original_grid.nc"
 SRC_GRIDFILE_GRIDNAME="original_grid.nc:${GRIDNAME}"
 DST_GRIDFILE="upstream_grid.nc"
 
 # Add the edge field to the grid
-python ${CMAKE_SRC_DIR}/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE_GRIDNAME
+cmd="python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE_GRIDNAME"
+echo $cmd
+"$cmd" >& log.txt
+if [ $? != 0 ]; then
+    echo "ERROR: after generating edge field, check log.txt"
+    exit 1
+fi
 
 # Generate the upstream grid 
-python ${CMAKE_SRC_DIR}/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o ${DST_GRIDFILE}
+cmd="python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o ${DST_GRIDFILE}"
+echo $cmd
+"$cmd" >& log.txt
+if [ $? != 0 ]; then
+    echo "ERROR: after generating upstream grid, check log.txt"
+    exit 2
+fi
 
 # Interpolate the present date onto the upstream grid
-${CMAKE_BINARY_DIR}/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d ${DST_GRIDFILE} -D 1 -o upstream_regridded_data.vtk
+cmd="@CMAKE_BINARY_DIR@/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d ${DST_GRIDFILE} -D 1 -o upstream_regridded_data.vtk"
+echo $cmd
+"$cmd" >& log.txt
+if [ $? != 0 ]; then
+    echo "ERROR: after generating upstream grid, check log.txt"
+    exit 3
+fi
 
