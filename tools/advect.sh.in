@@ -1,26 +1,24 @@
 #!/bin/env bash
 
 
+# Initialize our own variables:
 GRIDFILE_GRIDNAME="cs_16.nc:physics"
 STREAMFUNC="cos(2*2*pi*x/360.)*(1.0 - (y/90.)**2)"
 U="sin(2*pi*x/360.)"
 V="cos(2*pi*y/360.)"
-
+TIME="1.0"
 # A POSIX variable
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
-# Initialize our own variables:
-output_file=""
-verbose=0
-
-while getopts "h?i:s:u:v:" opt; do
+while getopts "h?i:s:u:v:t:" opt; do
     case "$opt" in
     h|\?)
         echo "$0 [options]"
         echo "\t-i GRIDFILE:GRIDNAME Specify grid file name and grid name"
-        echo "\t-s GRIDFILE:GRIDNAME Specify stream function defining edge field as function of x (lon in deg), y (lat in deg)"
-        echo "\t-u GRIDFILE:GRIDNAME Specify u vector field component as function of x, y"
-        echo "\t-s GRIDFILE:GRIDNAME Specify v vector field component as function of x, y"
+        echo "\t-s STREAMFUNC Specify stream function defining edge field as function of x (lon in deg), y (lat in deg)"
+        echo "\t-u U Specify u vector field component as function of x, y"
+        echo "\t-s V Specify v vector field component as function of x, y"
+        echo "\t-t TIME Specify integration time"
         exit 0
         ;;
     i)  GRIDFILE_GRIDNAME=$OPTARG
@@ -30,6 +28,8 @@ while getopts "h?i:s:u:v:" opt; do
     u)  U=$OPTARG
         ;;
     v)  V=$OPTARG
+        ;;
+    t)  TIME=$OPTARG
         ;;
     esac
 done
@@ -46,3 +46,18 @@ echo "grid name      : $GRIDNAME"
 echo "stream function: $STREAMFUNC"
 echo "u              : $U"
 echo "v              : $V"
+
+# Copy the grid file 
+cp ${GRIDFILE_GRIDNAME} "original_grid.nc:${GRIDNAME}"
+SRC_GRIDFILE_GRIDNAME="original_grid.nc:${GRIDNAME}"
+DST_GRIDFILE="upstream_grid.nc"
+
+# Add the edge field to the grid
+python ${CMAKE_SRC_DIR}/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE_GRIDNAME
+
+# Generate the upstream grid 
+python ${CMAKE_SRC_DIR}/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o ${DST_GRIDFILE}
+
+# Interpolate the present date onto the upstream grid
+${CMAKE_BINARY_DIR}/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d ${DST_GRIDFILE} -D 1 -o upstream_regridded_data.vtk
+

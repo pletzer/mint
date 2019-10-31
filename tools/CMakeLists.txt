@@ -3,6 +3,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
 )
 
+configure_file(advect.sh.in advect.sh)
+
 link_directories(${NETCDF_DIR}/lib)
 
 add_executable(regrid_edges regrid_edges.cxx)
