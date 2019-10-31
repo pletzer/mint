@@ -16,7 +16,8 @@ parser.add_argument('-nx', default=1, type=int,
                     help='Number of longitude cells')
 parser.add_argument('-ny', default=1, type=int, 
                     help='Number of latitude cells')
-parser.add_argument('-s', type=str, dest='stream_funct', default='sin(pi*x/180.)*cos(pi*y/180.)', help='Stream function of x (longitude in deg) and y (latitude in deg) used for setting the edge integrals')
+parser.add_argument('-s', type=str, dest='stream_funct', default='sin(pi*x/180.)*cos(pi*y/180.)',
+                    help='Stream function of x (longitude in deg) and y (latitude in deg) used for setting the edge integrals')
 args = parser.parse_args()
 
 # check
@@ -94,6 +95,7 @@ for j in range(ny + 1):
         point_data[index] = eval(args.stream_funct)
 xvar[:] = lons
 yvar[:] = lats
+streamfunction[:] = point_data
 
 # face-node connectivity
 fn = numpy.zeros((nfaces, 4), numpy.int64)
@@ -111,6 +113,7 @@ faceNodeConn[...] = fn
 # edge-node connectivity
 en = numpy.zeros((nedges, 2), numpy.int64)
 edge_data = numpy.zeros((nedges,), numpy.float64)
+
 # x edges
 count = 0
 for j in range(ny + 1):
@@ -126,6 +129,7 @@ for j in range(ny + 1):
         edge_data[count] = s10 - s00
 
         count += 1
+
 # y edges
 for j in range(ny):
     for i in range(nx + 1):
@@ -142,7 +146,6 @@ for j in range(ny):
         count += 1
 
 edgeNodeConn[...] = en
-streamfunction[:] = point_data
 edge_integrated_velocity[:] = edge_data
 
 # face-edge connectivity

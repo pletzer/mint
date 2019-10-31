@@ -145,19 +145,19 @@ class UgridReader(ReaderBase):
                     # it's a vector and we need 3 components
                     nCompsVec = 3
 
-                cData = numpy.zeros((ncells * 4, nCompsVec), numpy.float64)
+                cData = numpy.zeros((ncells, 4, nCompsVec), numpy.float64)
 
                 for icell in range(ncells): 
                     i00, i10, i11, i01 = connectivity[icell, :]
                     d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
-                    cData[icell*4 + 0, :nComps] = d00
-                    cData[icell*4 + 1, :nComps] = d10
-                    cData[icell*4 + 2, :nComps] = d11
-                    cData[icell*4 + 3, :nComps] = d01
+                    cData[icell, 0, :nComps] = d00
+                    cData[icell, 1, :nComps] = d10
+                    cData[icell, 2, :nComps] = d11
+                    cData[icell, 3, :nComps] = d01
 
                 if nComps == 1:
                     # scalar, remove the dimension
-                    cData = cData.reshape((ncells * 4,))
+                    cData = cData.reshape((ncells, 4,))
 
                 if location == 'node':
                     print('setting point field "{}"'.format(vname))
@@ -215,10 +215,12 @@ def main():
     if args.streamFunc:
 
         streamData = eval(args.streamFunc)
-        reader.setPointField('stream_function', streamData)
+        print('setting point {} data to "streamFunction"'.format(streamData.shape))
+        reader.setPointField('streamFunction', streamData)
 
         edgeVel = reader.getEdgeFieldFromStreamData(streamData)
-        reader.setEdgeField('edge_integrated_velocity', edgeVel)
+        print('setting edge {} data to "edgeIntegratedVelocity"'.format(edgeVel.shape))
+        reader.setEdgeField('edgeIntegratedVelocity', edgeVel)
 
         loopIntegrals = reader.getLoopIntegralsFromStreamData(streamData)
         reader.setLoopIntegrals('cell_loop_integrals', loopIntegrals)

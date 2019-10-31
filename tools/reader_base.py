@@ -140,7 +140,8 @@ class ReaderBase(object):
         @param data array of size (numCells, 4)
         """
         nComps = 1
-        if len(data.shape) > 1:
+        # get the number of components from the third index, if present
+        if len(data.shape) > 2:
             nComps = data.shape[1]
         self.pointArray = data
         self.pointData = vtk.vtkDoubleArray()
