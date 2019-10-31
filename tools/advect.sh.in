@@ -1,13 +1,14 @@
-#!/bin/env bash
+#!/bin/sh 
 
 
-# Initialize our own variables:
+# initialize variables
 GRIDFILE_GRIDNAME="@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"
 STREAMFUNC="cos(2*2*pi*x/360.)*(1.0-(y/90.)**2)"
 U="sin(2*pi*x/360.)"
 V="cos(2*pi*y/360.)"
 TIME="1.0"
 
+echo "python: $(which python)"
 
 for opt in "$@"; do
     case "$opt" in
@@ -58,19 +59,16 @@ SRC_GRIDFILE_GRIDNAME="${SRC_GRIDFILE}:${GRIDNAME}"
 DST_GRIDFILE="upstream_grid.nc"
 
 # Add the edge field to the grid
-cmd="python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE"
-echo $cmd
-"$cmd" >& log.txt
+python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE >& log.txt
 if [ $? != 0 ]; then
     tail log.txt
-    echo "ERROR: after generating edge field, check log.txt"
+    echo "ERROR: after generating edge field, check log.txt. Command was:"
+    echo "python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE"
     exit 1
 fi
 
 # Generate the upstream grid 
-cmd="python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o ${DST_GRIDFILE}"
-echo $cmd
-"$cmd" >& log.txt
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o ${DST_GRIDFILE} >& log.txt
 if [ $? != 0 ]; then
     tail log.txt
     echo "ERROR: after generating upstream grid, check log.txt"
@@ -78,12 +76,10 @@ if [ $? != 0 ]; then
 fi
 
 # Interpolate the present date onto the upstream grid
-cmd="@CMAKE_BINARY_DIR@/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d ${DST_GRIDFILE} -D 1 -o upstream_regridded_data.vtk"
-echo $cmd
-"$cmd" >& log.txt
+@CMAKE_BINARY_DIR@/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d ${DST_GRIDFILE} -D 1 -o upstream_regridded_data.vtk >& log.txt
 if [ $? != 0 ]; then
     tail log.txt
-    echo "ERROR: after generating upstream grid, check log.txt"
+    echo "ERROR: after regridding, check log.txt"
     exit 3
 fi
 
