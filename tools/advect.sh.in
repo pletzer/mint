@@ -1,0 +1,48 @@
+#!/bin/env bash
+
+
+GRIDFILE_GRIDNAME="cs_16.nc:physics"
+STREAMFUNC="cos(2*2*pi*x/360.)*(1.0 - (y/90.)**2)"
+U="sin(2*pi*x/360.)"
+V="cos(2*pi*y/360.)"
+
+# A POSIX variable
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+
+# Initialize our own variables:
+output_file=""
+verbose=0
+
+while getopts "h?i:s:u:v:" opt; do
+    case "$opt" in
+    h|\?)
+        echo "$0 [options]"
+        echo "\t-i GRIDFILE:GRIDNAME Specify grid file name and grid name"
+        echo "\t-s GRIDFILE:GRIDNAME Specify stream function defining edge field as function of x (lon in deg), y (lat in deg)"
+        echo "\t-u GRIDFILE:GRIDNAME Specify u vector field component as function of x, y"
+        echo "\t-s GRIDFILE:GRIDNAME Specify v vector field component as function of x, y"
+        exit 0
+        ;;
+    i)  GRIDFILE_GRIDNAME=$OPTARG
+        ;;
+    s)  STREAMFUNC=$OPTARG
+        ;;
+    u)  U=$OPTARG
+        ;;
+    v)  V=$OPTARG
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ "${1:-}" = "--" ] && shift
+
+GRIDFILE=$(echo $GRIDFILE_GRIDNAME | awk -F":" '{print $1}')
+GRIDNAME=$(echo $GRIDFILE_GRIDNAME | awk -F":" '{print $2}')
+
+echo "grid file      : $GRIDFILE"
+echo "grid name      : $GRIDNAME"
+echo "stream function: $STREAMFUNC"
+echo "u              : $U"
+echo "v              : $V"
