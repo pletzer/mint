@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/usr/bin/env bash
 
 
 # initialize variables
@@ -50,36 +50,24 @@ echo "stream function: $STREAMFUNC"
 echo "u              : $U"
 echo "v              : $V"
 
+export MNT_SRC_DIR=@CMAKE_SOURCE_DIR@
+export MNT_BIN_DIR=@CMAKE_BINARY_DIR@
 
 # Copy the grid file
 SRC_GRIDFILE="original_grid.nc"
-cp ${GRIDFILE} ${SRC_GRIDFILE}
+cp "$GRIDFILE" "$SRC_GRIDFILE"
 
 SRC_GRIDFILE_GRIDNAME="${SRC_GRIDFILE}:${GRIDNAME}"
-DST_GRIDFILE="upstream_grid.nc"
+DST_GRIDFILE_GRIDNAME="upstream_grid.nc:${GRIDNAME}_upstream"
 
-# Add the edge field to the grid
-python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE >& log.txt
-if [ $? != 0 ]; then
-    tail log.txt
-    echo "ERROR: after generating edge field, check log.txt. Command was:"
-    echo "python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE"
-    exit 1
-fi
+# add edge field
+cmd="python $MNT_SRC_DIR/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE"
+echo $cmd
 
-# Generate the upstream grid 
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o ${DST_GRIDFILE} >& log.txt
-if [ $? != 0 ]; then
-    tail log.txt
-    echo "ERROR: after generating upstream grid, check log.txt"
-    exit 2
-fi
 
-# Interpolate the present date onto the upstream grid
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d ${DST_GRIDFILE} -D 1 -o upstream_regridded_data.vtk >& log.txt
-if [ $? != 0 ]; then
-    tail log.txt
-    echo "ERROR: after regridding, check log.txt"
-    exit 3
-fi
+cmd="python $MNT_SRC_DIR/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o $DST_GRIDFILE"
+echo $cmd
+
+cmd="$MNT_BIN_DIR/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d $DST_GRIDFILE_GRIDNAME -D 1 -o upstream_regridded_data.vtk"
+echo $cmd
 
