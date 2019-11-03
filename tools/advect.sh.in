@@ -79,7 +79,7 @@ cmd="python $MNT_SRC_DIR/tools/generate_upstream_grid.py -u $ucomp -v $vcomp -g 
 echo $cmd
 
 # save the upstream grid as VTK
-cmd="python $MNT_SRC_DIR/tools/ucompgrid_reader.py -i $dst_gridfile_gridname -V $dst_gridfile_vtk"
+cmd="python $MNT_SRC_DIR/tools/ugrid_reader.py -i $dst_gridfile_gridname -V $dst_gridfile_vtk"
 echo $cmd
 
 # compute the edge 
