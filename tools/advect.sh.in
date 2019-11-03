@@ -1,12 +1,12 @@
-#!/usr/bin/env bash
+#!/ucompsr/bin/envcomp bash
 
 
-# initialize variables
-GRIDFILE_GRIDNAME="@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"
-STREAMFUNC="cos(2*2*pi*x/360.)*(1.0-(y/90.)**2)"
-U="sin(2*pi*x/360.)"
-V="cos(2*pi*y/360.)"
-TIME="1.0"
+# initialize vcompariables
+gridfile_gridname="@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"
+streamfunc="cos(2*2*pi*x/360.)*(1.0-(y/90.)**2)"
+ucomp="sin(2*pi*x/360.)"
+vcomp="cos(2*pi*y/360.)"
+time="1.0"
 
 echo "python: $(which python)"
 
@@ -14,60 +14,75 @@ for opt in "$@"; do
     case "$opt" in
     -h|--help)
         echo "$0 [options]"
-        echo "\t-i=GRIDFILE:GRIDNAME Specify grid file name and grid name"
-        echo "\t-s=STREAMFUNC Specify stream function defining edge field as function of x (lon in deg), y (lat in deg)"
-        echo "\t-u=U Specify u vector field component as function of x, y"
-        echo "\t-s=V Specify v vector field component as function of x, y"
+        echo "\t-i=gridfile:gridname Specify grid file name and grid name"
+        echo "\t-s=streamfucompnc Specify stream fucompnction defining edge field as fucompnction of x (lon in deg), y (lat in deg)"
+        echo "\t-ucomp=ucomp Specify ucomp vcompector field component as fucompnction of x, y"
+        echo "\t-s=vcomp Specify vcomp vcompector field component as fucompnction of x, y"
         echo "\t-t=TIME Specify integration time"
         exit 0
         ;;
-    -i=*)  GRIDFILE_GRIDNAME="${opt#*=}"
+    -i=*)  gridfile_gridname="${opt#*=}"
         ;;
-    -s=*)  STREAMFUNC="${opt#*=}"
+    -s=*)  streamfunc="${opt#*=}"
         ;;
-    -u=*)  U="${opt#*=}"
+    -u=*)  ucomp="${opt#*=}"
         ;;
-    -v=*)  V="${opt#*=}"
+    -v=*)  vcomp="${opt#*=}"
         ;;
-    -t=*)  TIME="${opt#*=}"
+    -t=*)  time="${opt#*=}"
         ;;
-    *)     echo "ERROR: unknown option $opt"
+    *)     echo "ERROR: ucompnknown option $opt"
            exit 1
         ;;
     esac
 done
 
-GRIDFILE=$(echo $GRIDFILE_GRIDNAME | awk -F":" '{print $1}')
-GRIDNAME=$(echo $GRIDFILE_GRIDNAME | awk -F":" '{print $2}')
+gridfile=$(echo $gridfile_gridname | awk -F":" '{print $1}')
+gridname=$(echo $gridfile_gridname | awk -F":" '{print $2}')
 
-STREAMFUNC="\"$STREAMFUNC\""
-U="\"$U\""
-V="\"$V\""
+streamfunc="\"$streamfunc\""
+ucomp="\"$ucomp\""
+vcomp="\"$vcomp\""
 
-echo "grid file      : $GRIDFILE"
-echo "grid name      : $GRIDNAME"
-echo "stream function: $STREAMFUNC"
-echo "u              : $U"
-echo "v              : $V"
+echo "grid file      : $gridfile"
+echo "grid name      : $gridname"
+echo "stream function: $streamfunc"
+echo "ucomp          : $ucomp"
+echo "vcomp          : $vcomp"
 
 export MNT_SRC_DIR=@CMAKE_SOURCE_DIR@
 export MNT_BIN_DIR=@CMAKE_BINARY_DIR@
 
 # Copy the grid file
-SRC_GRIDFILE="original_grid.nc"
-cp "$GRIDFILE" "$SRC_GRIDFILE"
+src_gridfile="original_grid.nc"
+cp "$gridfile" "$src_gridfile"
 
-SRC_GRIDFILE_GRIDNAME="${SRC_GRIDFILE}:${GRIDNAME}"
-DST_GRIDFILE_GRIDNAME="upstream_grid.nc:${GRIDNAME}_upstream"
+src_gridfile_gridname="${src_gridfile}:${gridname}"
+dst_gridfile="upstream_grid.nc"
+dst_gridname="${gridname}_upstream"
+dst_gridfile_gridname="${dst_gridfile}:${dst_gridname}"
+
+src_gridfile_vtk=$(echo $src_gridfile | sed 's/nc/vtk/')
+dst_gridfile_vtk=$(echo $dst_gridfile | sed 's/nc/vtk/')
+
 
 # add edge field
-cmd="python $MNT_SRC_DIR/tools/generate_edge_field.py -s $STREAMFUNC -n edgeField -g $SRC_GRIDFILE_GRIDNAME -d $SRC_GRIDFILE"
+cmd="python $MNT_SRC_DIR/tools/generate_edge_field.py -s $streamfunc -n edgeField -g $src_gridfile_gridname -d $src_gridfile"
 echo $cmd
 
-
-cmd="python $MNT_SRC_DIR/tools/generate_upstream_grid.py -u $U -v $V -g $SRC_GRIDFILE_GRIDNAME -t $TIME -o $DST_GRIDFILE"
+# save the data as VTK
+cmd="python $MNT_SRC_DIR/tools/ugrid_reader.py -i $src_gridfile_gridname -V $src_gridfile_vtk"
 echo $cmd
 
-cmd="$MNT_BIN_DIR/tools/regrid_edges -s $SRC_GRIDFILE_GRIDNAME -S 1 -v edgeField -d $DST_GRIDFILE_GRIDNAME -D 1 -o upstream_regridded_data.vtk"
+# integrate the grid upstream
+cmd="python $MNT_SRC_DIR/tools/generate_upstream_grid.py -u $ucomp -v $vcomp -g $src_gridfile_gridname -t $time -o $dst_gridfile"
+echo $cmd
+
+# save the upstream grid as VTK
+cmd="python $MNT_SRC_DIR/tools/ucompgrid_reader.py -i $dst_gridfile_gridname -V $dst_gridfile_vtk"
+echo $cmd
+
+# compute the edge 
+cmd="$MNT_BIN_DIR/tools/regrid_edges -s $src_gridfile_gridname -S 1 -v edgeField -d $dst_gridfile_gridname -D 1 -o upstream_regridded_data.vtk"
 echo $cmd
 
