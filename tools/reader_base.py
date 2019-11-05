@@ -118,6 +118,16 @@ class ReaderBase(object):
         return xy[..., 0], xy[..., 1]
 
 
+    def setLonLat(self, x, y):
+        """
+        Set the longitudes and latitudes from numpy arrays
+        @param x longitudes, array of size numCells*4
+        @param y latitudes, array of size numCells*4
+        """
+        self.vtk['pointArray'][:, 0] = x
+        self.vtk['pointArray'][:, 1] = y
+
+
     def setEdgeField(self, name, data):
         """
         Set edge field
@@ -142,7 +152,7 @@ class ReaderBase(object):
         nComps = 1
         # get the number of components from the third index, if present
         if len(data.shape) > 2:
-            nComps = data.shape[1]
+            nComps = data.shape[2]
         self.pointArray = data
         self.pointData = vtk.vtkDoubleArray()
         self.pointData.SetName(name)
