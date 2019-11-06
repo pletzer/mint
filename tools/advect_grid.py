@@ -9,9 +9,9 @@ from ugrid_reader import UgridReader
 import re
 
 parser = argparse.ArgumentParser(description='Generate upstream grid')
-parser.add_argument('-u', dest='velocity_x', default='sin(pi*x/180.)',
+parser.add_argument('-u', dest='velocity_x', default='sin(4*pi*(2*x-y)/180.)',
                     help='Specify the contravariant velocity component u (deg/time) along longitudes as a function of x (deg. east) and y (deg. north)')
-parser.add_argument('-v', dest='velocity_y', default='cos(pi*y/180.)',
+parser.add_argument('-v', dest='velocity_y', default='cos(4*pi*(x-2.76*y)/180.)*cos(pi*y/180.)',
                     help='Specify the contravariant velocity component v (deg/time) along latitudes as a function of x (deg. east) and y (deg. north)')
 parser.add_argument('-i', dest='input_grid_file', default='', 
                     help='Specify the netcdf file containing the grid geometry/topology and grid name as FILE_NAME:GRID_NAME')

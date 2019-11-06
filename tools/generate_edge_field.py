@@ -81,6 +81,7 @@ except:
     pass
 vel = nc.createVariable(args.fieldName, 'f8', (numEdgesDimName,))
 vel.location = 'edge'
+vel.mesh = grid_var
 vel[:] = integratedVelocity
 nc.close()
 
