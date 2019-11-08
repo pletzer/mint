@@ -35,7 +35,6 @@ class ReaderBase(object):
         3: (0, 3),
         }
 
-
     def getLonLatPoints(self):
         """
         Get the longitudes and latitudes in radian at the cell vertices
@@ -115,7 +114,7 @@ class ReaderBase(object):
         @return lon and lat arrays of size (numCells, 4)
         """
         xy = self.vtk['pointArray'].reshape((self.getNumberOfCells(), 4, 3))
-        return xy[..., 0], xy[..., 1]
+        return xy[..., 0].copy(), xy[..., 1].copy()
 
 
     def setLonLat(self, x, y):
@@ -190,7 +189,7 @@ class ReaderBase(object):
         edgeArray = numpy.zeros((numCells, 4), numpy.float64)
         for ie in range(4):
             i0, i1 = self.edgeIndex2PointInds[ie]
-            edgeArray[:, ie] = streamFuncData[:, i1] - streamFuncData[:, i0]
+            edgeArray[:, ie] = 0.5 * (streamFuncData[:, i1] + streamFuncData[:, i0]) #streamFuncData[:, i1] - streamFuncData[:, i0]
         return edgeArray
 
     def getLoopIntegralsFromStreamData(self, streamFuncData):

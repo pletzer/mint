@@ -38,14 +38,25 @@ class UgridReader(ReaderBase):
         mesh = nc.variables[mname][:]
         lonname, latname = nc.variables[mname].node_coordinates.split()
 
+        # read the coordinates
         lons = nc.variables[lonname]
         lats = nc.variables[latname]
 
+        # read the face to node connectivity
         f2nname = nc.variables[mname].face_node_connectivity
-        connectivity = nc.variables[f2nname][:]
-        connectivity -= nc.variables[f2nname].start_index
+        f2ename = nc.variables[mname].face_edge_connectivity
+        e2nname = nc.variables[mname].edge_node_connectivity
 
-        ncells = connectivity.shape[0]
+        f2n = nc.variables[f2nname][:]
+        f2n -= nc.variables[f2nname].start_index
+
+        f2e = nc.variables[f2ename][:]
+        f2e -= nc.variables[f2ename].start_index
+
+        e2n = nc.variables[e2nname][:]
+        e2n -= nc.variables[e2nname].start_index
+
+        ncells = f2n.shape[0]
 
         # construct the unstructured grid as a collection of 
         # 2D cells. Each cell has its own cooordinates. Make
@@ -72,7 +83,7 @@ class UgridReader(ReaderBase):
         quarterPeriodicity = self.PERIODICITY_LENGTH/4.
         for icell in range(ncells):
 
-            i00, i10, i11, i01 = connectivity[icell, :]
+            i00, i10, i11, i01 = f2n[icell, :]
 
             lon00, lat00 = lons[i00], lats[i00]
             lon10, lat10 = lons[i10], lats[i10]
@@ -126,45 +137,96 @@ class UgridReader(ReaderBase):
 
         grid.SetPoints(points)
 
-        # attach nodal and edge data to the grid. Nodal and edge data 
-        # can be treated (mostly) in the same way
-        for location in ('node', 'edge'):
+        # attach nodal data to the grid
+        for vname, var in getData(nc, mname, 'node').items():
+            # read
+            data = var[:]
+            nComps = 1
+            if len(data.shape) > 1:
+                nComps = data.shape[1]
+            else:
+                data = data.reshape((-1, 1))
 
-            for vname, var in getData(nc, mname, location).items():
-                # read
-                data = var[:]
-                nComps = 1
-                if len(data.shape) > 1:
-                    nComps = data.shape[1]
-                else:
-                    data = data.reshape((-1, 1))
+            nCompsVec = 1
+            if nComps > 1:
+                # it's a vector and we need 3 components
+                nCompsVec = 3
 
+            # 4 nodes per cell, may be vector
+            cData = numpy.zeros((ncells, 4, nCompsVec), numpy.float64)
 
-                nCompsVec = 1
-                if nComps > 1:
-                    # it's a vector and we need 3 components
-                    nCompsVec = 3
+            for icell in range(ncells): 
+                i00, i10, i11, i01 = f2n[icell, :]
+                d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
+                cData[icell, 0, :nComps] = d00
+                cData[icell, 1, :nComps] = d10
+                cData[icell, 2, :nComps] = d11
+                cData[icell, 3, :nComps] = d01
 
-                cData = numpy.zeros((ncells, 4, nCompsVec), numpy.float64)
+            if nComps == 1:
+                # scalar, remove the dimension
+                cData = cData.reshape((ncells, 4,))
 
-                for icell in range(ncells): 
-                    i00, i10, i11, i01 = connectivity[icell, :]
-                    d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
-                    cData[icell, 0, :nComps] = d00
-                    cData[icell, 1, :nComps] = d10
-                    cData[icell, 2, :nComps] = d11
-                    cData[icell, 3, :nComps] = d01
+            print('setting point field "{}"'.format(vname))
+            self.setPointField(vname, cData)
 
-                if nComps == 1:
-                    # scalar, remove the dimension
-                    cData = cData.reshape((ncells, 4,))
+        # set edge fields
+        for vname, var in getData(nc, mname, 'edge').items():
 
-                if location == 'node':
-                    print('setting point field "{}"'.format(vname))
-                    self.setPointField(vname, cData)
-                else:
-                    print('setting edge field "{}"'.format(vname))
-                    self.setEdgeField(vname, cData)
+            # read
+            data = var[:]
+
+            cData = numpy.zeros((ncells, 4), numpy.float64)
+
+            # iterate over faces
+            for icell in range(ncells):
+
+                # get the point Ids
+                ptIds = f2n[icell, :]
+
+                # iterate over the edges of the face
+                for edgeId in f2e[icell, :]:
+
+                    # get the start/end point Ids
+                    ptId0, ptId1 = e2n[edgeId, :]
+
+                    # get the face Id (0 <= ie < 4) and the sign
+                    ie = -1
+                    sign = 0.0
+
+                    for i in range(4):
+
+                        i0 = i
+                        i1 = (i + 1) % 4
+                        if i // 2 >= 1:
+                            # last two edges
+                            i0 = (i + 1) % 4
+                            i1 = i
+
+                        #       2
+                        #   3--->----2
+                        #   |        |
+                        # 3 ^        ^ 1
+                        #   |        |
+                        #   0--->----1
+                        #       0      
+
+                        if ptIds[i0] == ptId0 and ptIds[i1] == ptId1:
+                            # edge in netcdf file has the same orientation
+                            ie = i0
+                            sign = 1.0
+                            break
+
+                        elif ptIds[i0] == ptId1 and ptIds[i1] == ptId0:
+                            # opposite orientation
+                            ie = i1
+                            sign = -1.0
+                            break
+
+                    cData[icell, ie] = sign * data[edgeId]
+
+            print('setting edge field "{}"'.format(vname))
+            self.setEdgeField(vname, cData)
 
 
 
