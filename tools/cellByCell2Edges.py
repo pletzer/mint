@@ -53,6 +53,7 @@ for icell in range(ncells):
 		edata.SetTuple(iedge, (sign * data.GetComponent(icell, ie),))
 
 
+		"""
 		ptId0, ptId1 = edgePtIds.GetId(0), edgePtIds.GetId(1)
 		pts = ugrid.GetPoints()
 		p0 = pts.GetPoint(ptId0)
@@ -60,6 +61,7 @@ for icell in range(ncells):
 		d = sign * data.GetComponent(icell, ie)
 		print('setting edge value iedge={} for icell={} and ie={} to {} ptIds: {} -> {} pts: {} -> {}'.format(iedge, \
 			     icell, ie, d, ptId0, ptId1, p0, p1))
+		"""
 
 
 		egrid.InsertNextCell(vtk.VTK_LINE, edgePtIds)
