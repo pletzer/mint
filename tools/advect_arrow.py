@@ -136,40 +136,40 @@ xyAB[2:] = eval(args.bPoint)
 
 # integrate the trajectories. We're creating a simple, one cell grid
 # which we then advect
-onePointData = vtk.vtkDoubleArray()
-onePoints = vtk.vtkPoints()
-oneCellGrid = vtk.vtkUnstructuredGrid()
-oneWriter = vtk.vtkUnstructuredGridWriter()
+linePointData = vtk.vtkDoubleArray()
+linePoints = vtk.vtkPoints()
+lineGrid = vtk.vtkUnstructuredGrid()
+lineWriter = vtk.vtkUnstructuredGridWriter()
 
-onePointData.SetNumberOfComponents(3)
-onePointData.SetNumberOfTuples(2)
+linePointData.SetNumberOfComponents(3)
+linePointData.SetNumberOfTuples(2)
 
-onePoints.SetData(onePointData)
-oneCellGrid.SetPoints(onePoints)
+linePoints.SetData(linePointData)
+lineGrid.SetPoints(linePoints)
 abIds = vtk.vtkIdList()
 abIds.InsertNextId(0)
 abIds.InsertNextId(1)
-oneCellGrid.InsertNextCell(vtk.VTK_LINE, abIds)
+lineGrid.InsertNextCell(vtk.VTK_LINE, abIds)
 
-a = numpy.array([xyAB[0], xyAB[1], 0.0])
-b = numpy.array([xyAB[2], xyAB[3], 0.0])
-onePointData.SetTuple(0, a)
-onePointData.SetTuple(1, b)
+aPt = numpy.array([xyAB[0], xyAB[1], 0.0])
+bPt = numpy.array([xyAB[2], xyAB[3], 0.0])
+linePointData.SetTuple(0, aPt)
+linePointData.SetTuple(1, bPt)
 
-oneWriter.SetInputData(oneCellGrid)
-oneWriter.SetFileName(f'arrow_{0:05}.vtk')
-oneWriter.Update()
+lineWriter.SetInputData(lineGrid)
+lineWriter.SetFileName(f'arrow_{0:05}.vtk')
+lineWriter.Update()
 
 for i in range(args.numSteps):
     xyTrajectory = odeint(tendency, xyAB, [0.0, args.timeStep])
     # we're only interested in the final positions
     xyAB = xyTrajectory[1, :]
-    a[:2] = xyAB[:2]
-    b[:2] = xyAB[2:]
-    onePointData.SetTuple(0, a)
-    onePointData.SetTuple(1, b)
-    oneWriter.SetFileName(f'arrow_{i:05}.vtk')
-    oneWriter.Update()  
+    aPt[:2] = xyAB[:2]
+    bPt[:2] = xyAB[2:]
+    linePointData.SetTuple(0, aPt)
+    linePointData.SetTuple(1, bPt)
+    lineWriter.SetFileName(f'arrow_{i:05}.vtk')
+    lineWriter.Update()  
 
 
 
