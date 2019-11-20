@@ -11,7 +11,7 @@ Generate grid and edge data on uniform grid and save result in UGRID file
 """
 
 parser = argparse.ArgumentParser(description='Advect arrow')
-parser.add_argument('-o', dest='grid_file', default='', 
+parser.add_argument('-o', dest='grid_file', default='grid.vtk', 
                     help='Specify the output VTK file name containing the grid, stream function and velocity data')
 parser.add_argument('-nx', default=1, type=int, 
                     help='Number of longitude cells')
@@ -113,6 +113,7 @@ grid.GetPointData().AddArray(sdata)
 grid.GetCellData().AddArray(vdata)
 
 # write to file
+print(f'writing grid to {args.grid_file}')
 writer.SetFileName(args.grid_file)
 writer.SetInputData(grid)
 writer.Update()
@@ -157,6 +158,7 @@ linePointData.SetTuple(0, aPt)
 linePointData.SetTuple(1, bPt)
 
 lineWriter.SetInputData(lineGrid)
+print(f'writing line to arrow_{0:05}.vtk')
 lineWriter.SetFileName(f'arrow_{0:05}.vtk')
 lineWriter.Update()
 
@@ -168,6 +170,7 @@ for i in range(args.numSteps):
     bPt[:2] = xyAB[2:]
     linePointData.SetTuple(0, aPt)
     linePointData.SetTuple(1, bPt)
+    print(f'writing line to arrow_{i:05}.vtk')
     lineWriter.SetFileName(f'arrow_{i:05}.vtk')
     lineWriter.Update()  
 
