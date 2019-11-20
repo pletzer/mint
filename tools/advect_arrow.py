@@ -5,6 +5,7 @@ import argparse
 from scipy.integrate import odeint
 
 from math import sin, cos, pi
+from numpy import linspace
 
 """
 Generate grid and edge data on uniform grid and save result in UGRID file
@@ -17,8 +18,10 @@ parser.add_argument('-nx', default=1, type=int,
                     help='Number of longitude cells')
 parser.add_argument('-ny', default=1, type=int, 
                     help='Number of latitude cells')
-parser.add_argument('-line', default="(160,20),(160,30),(160,40),(160,50),(160,60),(160,70)", type=str, dest="initLinePoints",
-                    help='Initial line points')
+parser.add_argument('-xline', default="linspace(160,160,101)", type=str, dest="initXPoints",
+                    help='Initial x line coordinates')
+parser.add_argument('-yline', default="linspace(10,80,101)", type=str, dest="initYPoints",
+                    help='Initial y line coordinates')
 parser.add_argument('-s', type=str, dest='stream_funct', default='100*(sin((pi*(x - 2*y))/360.) + sin((pi*(x + 2*y))/360.))/2.', 
                    help='Stream function of x (longitude in deg) and y (latitude in deg) used for setting the edge integrals')
 parser.add_argument('-u', type=str, dest='u_funct', default='100*((pi*cos((pi*(x - 2*y))/360.))/180. - (pi*cos((pi*(x + 2*y))/360.))/180.)/2.', 
@@ -116,9 +119,15 @@ writer.SetFileName(args.grid_file)
 writer.SetInputData(grid)
 writer.Update()
 
-xyAB = numpy.array(eval(args.initLinePoints)).reshape((-1,))
-nPts = xyAB.shape[0] // 2
+initXPoints = eval(args.initXPoints)
+initYPoints = eval(args.initYPoints)
+nPts = len(initXPoints)
+assert(nPts == len(initYPoints))
 assert(nPts >= 2)
+xyAB = numpy.zeros((nPts, 2), numpy.float64)
+xyAB[:, 0] = initXPoints
+xyAB[:, 1] = initYPoints
+xyAB = xyAB.reshape((-1,))
 print(f'number of points: {nPts}')
 print(f'initial line: {xyAB}')
 
