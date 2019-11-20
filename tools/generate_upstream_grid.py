@@ -96,15 +96,15 @@ ncUp.createDimension(numEdgesDimName, numEdges)
 ncUp.createDimension(numFacesDimName, numFaces)
 
 # copy the topology over
-gridVarUpName = grid_var + '_upstream'
+gridVarUpName = grid_var
 gridVarUp = ncUp.createVariable(gridVarUpName, 'i4')
 # save upstream grid
 for attrName in ncGridVar.ncattrs():
     attrVal = getattr(ncGridVar, attrName)
     setattr(gridVarUp, attrName, attrVal)
 # new coordinates
-xNameUp = xName + '_upstream'
-yNameUp = yName + '_upstream'
+xNameUp = xName
+yNameUp = yName
 gridVarUp.node_coordinates = '{} {}'.format(xNameUp, yNameUp)
 
 faceNodeUp = ncUp.createVariable(gridVarUp.face_node_connectivity, 'i4', 
@@ -126,7 +126,7 @@ edgeNodeUp[:] = ncGrid[ncGridVar.edge_node_connectivity][:]
 
 velocity = ncUp.createVariable('velocity', 'f8', (numPointsDimName, twoDimName))
 velocity.location = 'node'
-velocity.mesh = grid_var + '_upstream'
+velocity.mesh = grid_var
 
 # velocity at nodes
 from numpy import sin, cos, pi

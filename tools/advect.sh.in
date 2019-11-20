@@ -59,7 +59,7 @@ cp "$gridfile" "$src_gridfile"
 
 src_gridfile_gridname="${src_gridfile}:${gridname}"
 dst_gridfile="upstream_grid.nc"
-dst_gridname="${gridname}_upstream"
+dst_gridname="${gridname}"
 dst_gridfile_gridname="${dst_gridfile}:${dst_gridname}"
 
 src_gridfile_vtk=$(echo $src_gridfile | sed 's/nc/vtk/')

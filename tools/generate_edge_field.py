@@ -67,11 +67,12 @@ integratedVelocity = streamValues[i1] - streamValues[i0]
 # write the velocity to disk
 if args.data_file == grid_file:
     # append to grid file
-    print('NOTE: edge field will be appended to grid file {}'.format(grid_file))
+    print('note: edge field "{}" will be appended to ugrid {}:{}'.format( \
+           args.fieldName, grid_file, grid_var))
     nc = netCDF4.Dataset(args.data_file, 'r+')
 else:
     # new file
-    print('NOTE: saving edge field in {}'.format(args.data_file))
+    print('note: saving edge field "{}" in {}'.format(args.data_file))
     nc = netCDF4.Dataset(args.data_file, 'w')
 # write global attributes
 nc.date = 'Created on {}'.format(time.asctime())
