@@ -22,11 +22,11 @@ parser.add_argument('-xline', default="linspace(160,160,101)", type=str, dest="i
                     help='Initial x line coordinates')
 parser.add_argument('-yline', default="linspace(10,80,101)", type=str, dest="initYPoints",
                     help='Initial y line coordinates')
-parser.add_argument('-s', type=str, dest='stream_funct', default='100*(sin((pi*(x - 2*y))/360.) + sin((pi*(x + 2*y))/360.))/2.', 
+parser.add_argument('-s', type=str, dest='stream_funct', default='100*(sin((pi*(x-30. - 2*y))/360.) + sin((pi*(x-30. + 2*y))/360.))/2.', 
                    help='Stream function of x (longitude in deg) and y (latitude in deg) used for setting the edge integrals')
-parser.add_argument('-u', type=str, dest='u_funct', default='100*((pi*cos((pi*(x - 2*y))/360.))/180. - (pi*cos((pi*(x + 2*y))/360.))/180.)/2.', 
+parser.add_argument('-u', type=str, dest='u_funct', default='100*((pi*cos((pi*(x-30. - 2*y))/360.))/180. - (pi*cos((pi*(x-30. + 2*y))/360.))/180.)/2.', 
                    help='u function of x (longitude in deg) and y (latitude in deg)')
-parser.add_argument('-v', type=str, dest='v_funct', default='100*((pi*cos((pi*(x - 2*y))/360.))/360. + (pi*cos((pi*(x + 2*y))/360.))/360.)/2.', 
+parser.add_argument('-v', type=str, dest='v_funct', default='100*((pi*cos((pi*(x-30. - 2*y))/360.))/360. + (pi*cos((pi*(x-30. + 2*y))/360.))/360.)/2.', 
                    help='v function of x (longitude in deg) and y (latitude in deg)')
 parser.add_argument('-t', default=1.0, type=float, dest="timeStep",
                     help='Time step')
@@ -121,7 +121,10 @@ writer.Update()
 
 initXPoints = eval(args.initXPoints)
 initYPoints = eval(args.initYPoints)
+
 nPts = len(initXPoints)
+nSegs = nPts - 1
+
 assert(nPts == len(initYPoints))
 assert(nPts >= 2)
 xyAB = numpy.zeros((nPts, 2), numpy.float64)
@@ -145,6 +148,7 @@ def tendency(xyAB, t):
 
 # integrate the trajectories. We're creating a simple, one cell grid
 # which we then advect
+lineData= vtk.vtkFloatArray()
 linePointData = vtk.vtkDoubleArray()
 linePoints = vtk.vtkPoints()
 lineGrid = vtk.vtkUnstructuredGrid()
@@ -155,17 +159,27 @@ linePointData.SetNumberOfTuples(nPts)
 for i in range(nPts):
     linePointData.SetTuple(i, (xyAB[i*2 + 0], xyAB[i*2 + 1], 0.0))
 
+lineData.SetNumberOfComponents(1)
+lineData.SetNumberOfTuples(nSegs)
+lineData.SetName('line_data')
+
 linePoints.SetData(linePointData)
 lineGrid.SetPoints(linePoints)
+lineGrid.GetCellData().AddArray(lineData)
 
 abIds = vtk.vtkIdList()
 abIds.SetNumberOfIds(2)
-nSegs = nPts - 1
 for iSeg in range(nSegs):
     i0, i1 = iSeg, iSeg + 1
     abIds.SetId(0, i0)
     abIds.SetId(1, i1)
     lineGrid.InsertNextCell(vtk.VTK_LINE, abIds)
+    x, y, _ = linePoints.GetPoint(i0)
+    s0 = eval(args.stream_funct)
+    x, y, _ = linePoints.GetPoint(i1)
+    s1 = eval(args.stream_funct)
+    lineData.SetTuple(iSeg, (s1 - s0,))
+
 
 lineWriter.SetInputData(lineGrid)
 print(f'writing line to arrow_{0:05}.vtk')
