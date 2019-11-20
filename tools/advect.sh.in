@@ -15,9 +15,9 @@ for opt in "$@"; do
     -h|--help)
         echo "$0 [options]"
         echo "\t-i=gridfile:gridname Specify grid file name and grid name"
-        echo "\t-s=streamfucompnc Specify stream fucompnction defining edge field as fucompnction of x (lon in deg), y (lat in deg)"
-        echo "\t-ucomp=ucomp Specify ucomp vcompector field component as fucompnction of x, y"
-        echo "\t-s=vcomp Specify vcomp vcompector field component as fucompnction of x, y"
+        echo "\t-s=streamfucompnc Specify stream function defining edge field as function of x (lon in deg), y (lat in deg)"
+        echo "\t-u=ucomp Specify u vector field component as function of x, y"
+        echo "\t-v=vcomp Specify v vector field component as function of x, y"
         echo "\t-t=TIME Specify integration time"
         exit 0
         ;;
