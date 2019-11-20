@@ -17,10 +17,8 @@ parser.add_argument('-nx', default=1, type=int,
                     help='Number of longitude cells')
 parser.add_argument('-ny', default=1, type=int, 
                     help='Number of latitude cells')
-parser.add_argument('-a', default="0.,0.", type=str, dest="aPoint",
-                    help='Initial start point of array')
-parser.add_argument('-b', default="1.,0.", type=str, dest="bPoint",
-                    help='Initial end point of array')
+parser.add_argument('-line', default="(160,20),(160,30),(160,40),(160,50),(160,60),(160,70)", type=str, dest="initLinePoints",
+                    help='Initial line points')
 parser.add_argument('-s', type=str, dest='stream_funct', default='100*(sin((pi*(x - 2*y))/360.) + sin((pi*(x + 2*y))/360.))/2.', 
                    help='Stream function of x (longitude in deg) and y (latitude in deg) used for setting the edge integrals')
 parser.add_argument('-u', type=str, dest='u_funct', default='100*((pi*cos((pi*(x - 2*y))/360.))/180. - (pi*cos((pi*(x + 2*y))/360.))/180.)/2.', 
@@ -118,22 +116,23 @@ writer.SetFileName(args.grid_file)
 writer.SetInputData(grid)
 writer.Update()
 
-# integrate the arrow, 2 points in 2D
-vxyAB = numpy.zeros((2*2,), numpy.float64)
+xyAB = numpy.array(eval(args.initLinePoints)).reshape((-1,))
+nPts = xyAB.shape[0] // 2
+assert(nPts >= 2)
+print(f'number of points: {nPts}')
+print(f'initial line: {xyAB}')
+
+
+# integrate the line in 2D
+vxyAB = numpy.zeros(xyAB.shape, numpy.float64)
 def tendency(xyAB, t):
-    x = xyAB[0]
-    y = xyAB[1]
-    vxyAB[0] = eval(args.u_funct)
-    vxyAB[1] = eval(args.v_funct)
-    x = xyAB[2]
-    y = xyAB[3]
-    vxyAB[2] = eval(args.u_funct)
-    vxyAB[3] = eval(args.v_funct)
+    for i in range(nPts):
+        x = xyAB[i*2 + 0]
+        y = xyAB[i*2 + 1]
+        vxyAB[i*2 + 0] = eval(args.u_funct)
+        vxyAB[i*2 + 1] = eval(args.v_funct)
     return vxyAB
 
-xyAB = numpy.zeros((2*2,), numpy.float64)
-xyAB[:2] = eval(args.aPoint)
-xyAB[2:] = eval(args.bPoint)
 
 # integrate the trajectories. We're creating a simple, one cell grid
 # which we then advect
@@ -143,35 +142,35 @@ lineGrid = vtk.vtkUnstructuredGrid()
 lineWriter = vtk.vtkUnstructuredGridWriter()
 
 linePointData.SetNumberOfComponents(3)
-linePointData.SetNumberOfTuples(2)
+linePointData.SetNumberOfTuples(nPts)
+for i in range(nPts):
+    linePointData.SetTuple(i, (xyAB[i*2 + 0], xyAB[i*2 + 1], 0.0))
 
 linePoints.SetData(linePointData)
 lineGrid.SetPoints(linePoints)
-abIds = vtk.vtkIdList()
-abIds.InsertNextId(0)
-abIds.InsertNextId(1)
-lineGrid.InsertNextCell(vtk.VTK_LINE, abIds)
 
-aPt = numpy.array([xyAB[0], xyAB[1], 0.0])
-bPt = numpy.array([xyAB[2], xyAB[3], 0.0])
-linePointData.SetTuple(0, aPt)
-linePointData.SetTuple(1, bPt)
+abIds = vtk.vtkIdList()
+abIds.SetNumberOfIds(2)
+nSegs = nPts - 1
+for iSeg in range(nSegs):
+    i0, i1 = iSeg, iSeg + 1
+    abIds.SetId(0, i0)
+    abIds.SetId(1, i1)
+    lineGrid.InsertNextCell(vtk.VTK_LINE, abIds)
 
 lineWriter.SetInputData(lineGrid)
 print(f'writing line to arrow_{0:05}.vtk')
 lineWriter.SetFileName(f'arrow_{0:05}.vtk')
 lineWriter.Update()
 
-for i in range(args.numSteps):
+for iStep in range(args.numSteps):
     xyTrajectory = odeint(tendency, xyAB, [0.0, args.timeStep])
     # we're only interested in the final positions
     xyAB = xyTrajectory[1, :]
-    aPt[:2] = xyAB[:2]
-    bPt[:2] = xyAB[2:]
-    linePointData.SetTuple(0, aPt)
-    linePointData.SetTuple(1, bPt)
-    print(f'writing line to arrow_{i:05}.vtk')
-    lineWriter.SetFileName(f'arrow_{i:05}.vtk')
+    for i in range(nPts):
+        linePointData.SetTuple(i, (xyAB[i*2 + 0], xyAB[i*2 + 1], 0.0))
+    print(f'writing line to arrow_{iStep:05}.vtk')
+    lineWriter.SetFileName(f'arrow_{iStep:05}.vtk')
     lineWriter.Update()  
 
 
