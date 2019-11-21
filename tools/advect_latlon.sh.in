@@ -17,7 +17,7 @@ python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc
 
 # regrid from current to upstream
 echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 -d upstream.nc:physics -D 0 -v edge_integrated_velocity -o upstream.vtk -O upstreamData.nc
+@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 -d upstream.nc:physics -D 0 -v edge_integrated_velocity -o upstream.vtk -O upstreamData.nc:physics
 
 # set the current edge values using the upstream values
 

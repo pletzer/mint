@@ -209,8 +209,16 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                                   const char* field_name, int nFieldNameLength,
                                   size_t ndata, const double data[]) {
     
-    std::string filename = std::string(fort_filename, nFilenameLength);
+    std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
     std::string fieldname = std::string(field_name, nFieldNameLength);
+
+    size_t columnL = fileAndMeshName.find(':');
+
+    // get the file name
+    std::string filename = fileAndMeshName.substr(0, columnL);
+    // get the mesh name
+    std::string meshname = fileAndMeshName.substr(columnL + 1);
+
 
     int ncid, ier;
     ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
@@ -250,6 +258,13 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 5;
+    }
+    ier = nc_put_att_text(ncid, dataId, "mesh", meshname.size(), meshname.c_str());
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not add attribute \"mesh\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 6;
     }
 
     // write the data
