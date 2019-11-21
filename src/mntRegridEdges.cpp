@@ -236,10 +236,20 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
     int dims[] = {numEdgesId};
     ier = nc_def_var(ncid, fieldname.c_str(), NC_DOUBLE, 1, dims, &dataId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"data\"! ier = " << ier << "\n";
+        std::cerr << "ERROR: could not define variable \"" << fieldname << "\"! ier = " << ier << "\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 3;
+    }
+
+    // add some attributes
+    std::string locationName = "edge";
+    ier = nc_put_att_text(ncid, dataId, "location", locationName.size(), locationName.c_str());
+    if (ier != NC_NOERR) {
+        std::cerr << "ERROR: could not add attribute \"location\"! ier = " << ier << "\n";
+        std::cerr << nc_strerror (ier);
+        nc_close(ncid);
+        return 5;
     }
 
     // write the data

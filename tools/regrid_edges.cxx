@@ -17,7 +17,8 @@ int main(int argc, char** argv) {
     args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file");
     args.set("-d", std::string(""), "UGRID destination grid file name");
     args.set("-w", std::string(""), "Write interpolation weights to file");
-    args.set("-o", std::string(""), "Specify output VTK file where regridded edge data is saved");
+    args.set("-o", std::string(""), "Specify output VTK file where regridded edge data are saved");
+    args.set("-O", std::string(""), "Specify output 2D UGRID file where regridded edge data are saved");
     args.set("-S", 1, "Set to zero if you want to disable source grid regularization. This might be required for uniform lon-lat grids");
     args.set("-D", 1, "Set to zero if you want to disable destination grid regularization. This might be required for uniform lon-lat grids");
     args.set("-N", 10, "Average number of cells per bucket");
@@ -30,6 +31,7 @@ int main(int argc, char** argv) {
         std::string dstFile = args.get<std::string>("-d");
         std::string weightsFile = args.get<std::string>("-w");
         std::string regridFile = args.get<std::string>("-o");
+        std::string dstEdgeDataFile = args.get<std::string>("-O");
 
         if (srcFile.size() == 0) {
             std::cerr << "ERROR: must specify a source grid file (-s)\n";
@@ -157,6 +159,13 @@ int main(int argc, char** argv) {
 
                 std::cout << "info: writing " << varname << " to " << regridFile << '\n';
                 mnt_grid_dump(&rg->dstGridObj, regridFile.c_str());
+            }
+
+            if (dstEdgeDataFile.size() > 0) {
+                std::cout << "info: writing " << varname << " to " << dstEdgeDataFile << '\n';
+                mnt_regridedges_dumpEdgeField(&rg, dstEdgeDataFile.c_str(), dstEdgeDataFile.size(), 
+                                               varname.c_str(), varname.size(), 
+                                               numDstEdges, &dstEdgeData[0]);
             }
         }
 
