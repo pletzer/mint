@@ -21,13 +21,14 @@ python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc
 
 cp grid.nc data.nc
 
-for step in $(seq 1 $NSTEPS); do
+for step in $(seq -f "%05g" 1 $NSTEPS); do
 	echo "step $step"
     # regrid from current to upstream
     @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
                                           -d "upstream.nc:physics" -D 0 \
                                           -v "edge_integrated_velocity@data.nc:physics" \
                                           -o upstream_${step}.vtk -O data.nc:physics
+    python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
     cp data.nc data_${step}.nc
 done
 
