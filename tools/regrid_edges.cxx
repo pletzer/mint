@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     CmdLineArgParser args;
     args.setPurpose("Regrid an edge centred field.");
     args.set("-s", std::string(""), "UGRID source grid file and mesh name, specified as \"filename:meshname\"");
-    args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file");
+    args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file, varname[@filename:meshname]");
     args.set("-d", std::string(""), "UGRID destination grid file name");
     args.set("-w", std::string(""), "Write interpolation weights to file");
     args.set("-o", std::string(""), "Specify output VTK file where regridded edge data are saved");
@@ -97,8 +97,21 @@ int main(int argc, char** argv) {
         std::string varname = args.get<std::string>("-v");
         if (varname.size() > 0) {
 
-            ier = mnt_regridedges_loadEdgeField(&rg, srcFile.c_str(), srcFile.size(),
-                                                varname.c_str(), varname.size(),
+            // by default the variable is stored in srcFile
+            std::string fileAndMeshName = srcFile;
+            std::string vname = varname;
+
+            size_t columnAt = varname.find('@');
+            if (columnAt < std::string::npos) {
+                // user specified the file and mesh names
+                fileAndMeshName = varname.substr(columnAt + 1);
+                vname = varname.substr(0, columnAt);
+            }
+
+            std::cout << "info: loading field " << vname << " from file \"" << fileAndMeshName << "\"\n";
+            ier = mnt_regridedges_loadEdgeField(&rg, 
+                                                fileAndMeshName.c_str(), fileAndMeshName.size(),
+                                                vname.c_str(), vname.size(),
                                                 numSrcEdges, &srcEdgeData[0]);
             if (ier != 0) {
                 std::cerr << "ERROR: could not load edge centred data \"" << varname << "\" from file \"" << srcFile << "\"\n";
