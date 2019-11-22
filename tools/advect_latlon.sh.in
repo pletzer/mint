@@ -15,9 +15,18 @@ python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STR
 # push the grid upstream grid
 python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc
 
-# regrid from current to upstream
 echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 -d upstream.nc:physics -D 0 -v edge_integrated_velocity@grid.nc:physics -o upstream.vtk -O upstreamData.nc:physics
 
-# set the current edge values using the upstream values
+# set initially the data to the data stored in the source grid file
+cp grid.nc data.nc
+
+for step in {0..1}; do
+	echo "step $step"
+    # regrid from current to upstream
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
+                                          -d "upstream.nc:physics" -D 0 \
+                                          -v "edge_integrated_velocity@data.nc:physics" \
+                                          -o upstream_${step}.vtk -O data.nc:physics
+    cp data.nc data_${step}.nc
+done
 

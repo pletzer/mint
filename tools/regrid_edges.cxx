@@ -94,18 +94,18 @@ int main(int argc, char** argv) {
         std::vector<double> srcEdgeData(numSrcEdges);
         std::vector<double> dstEdgeData(numDstEdges);
 
-        std::string varname = args.get<std::string>("-v");
-        if (varname.size() > 0) {
+        std::string varAtFileMesh = args.get<std::string>("-v");
+        if (varAtFileMesh.size() > 0) {
 
             // by default the variable is stored in srcFile
             std::string fileAndMeshName = srcFile;
-            std::string vname = varname;
+            std::string vname = varAtFileMesh;
 
-            size_t columnAt = varname.find('@');
+            size_t columnAt = varAtFileMesh.find('@');
             if (columnAt < std::string::npos) {
                 // user specified the file and mesh names
-                fileAndMeshName = varname.substr(columnAt + 1);
-                vname = varname.substr(0, columnAt);
+                fileAndMeshName = varAtFileMesh.substr(columnAt + 1);
+                vname = varAtFileMesh.substr(0, columnAt);
             }
 
             std::cout << "info: loading field " << vname << " from file \"" << fileAndMeshName << "\"\n";
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
                                                 vname.c_str(), vname.size(),
                                                 numSrcEdges, &srcEdgeData[0]);
             if (ier != 0) {
-                std::cerr << "ERROR: could not load edge centred data \"" << varname << "\" from file \"" << srcFile << "\"\n";
+                std::cerr << "ERROR: could not load edge centred data \"" << vname << "\" from file \"" << fileAndMeshName << "\"\n";
                 return 6;
             }
 
@@ -165,19 +165,19 @@ int main(int argc, char** argv) {
                 }
 
                 // attach field to grid so we can save the data in file
-                mnt_grid_attach(&rg->dstGridObj, varname.c_str(), numEdgesPerCell, &dstCellByCellData[0]);
+                mnt_grid_attach(&rg->dstGridObj, vname.c_str(), numEdgesPerCell, &dstCellByCellData[0]);
 
-                std::string loop_integral_varname = std::string("loop_integrals_of_") + varname;
+                std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
                 mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
 
-                std::cout << "info: writing " << varname << " to " << regridFile << '\n';
+                std::cout << "info: writing \"" << vname << "\" to " << regridFile << '\n';
                 mnt_grid_dump(&rg->dstGridObj, regridFile.c_str());
             }
 
             if (dstEdgeDataFile.size() > 0) {
-                std::cout << "info: writing " << varname << " to " << dstEdgeDataFile << '\n';
+                std::cout << "info: writing \"" << vname << "\" to " << dstEdgeDataFile << '\n';
                 mnt_regridedges_dumpEdgeField(&rg, dstEdgeDataFile.c_str(), dstEdgeDataFile.size(), 
-                                               varname.c_str(), varname.size(), 
+                                               vname.c_str(), vname.size(), 
                                                numDstEdges, &dstEdgeData[0]);
             }
         }
