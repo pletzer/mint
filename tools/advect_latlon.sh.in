@@ -8,6 +8,7 @@ NY=10
 STREAM_FUNC="10*(sin((pi*(x-30.-2*y))/360.)+sin((pi*(x-30.+2*y))/360.))/2."
 U="10*((pi*cos((pi*(x-30.-2*y))/360.))/180.-(pi*cos((pi*(x-30.+2*y))/360.))/180.)/2."
 V="10*((pi*cos((pi*(x-30.-2*y))/360.))/360.+(pi*cos((pi*(x-30.+2*y))/360.))/360.)/2."
+NSTEPS=10
 
 # generate grid.nc:physics with edge_integrated_velocity 
 python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o grid.nc:physics
@@ -20,7 +21,7 @@ python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc
 
 cp grid.nc data.nc
 
-for step in {0..10}; do
+for step in $(seq 1 $NSTEPS); do
 	echo "step $step"
     # regrid from current to upstream
     @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
