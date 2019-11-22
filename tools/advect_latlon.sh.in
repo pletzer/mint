@@ -10,17 +10,17 @@ U="10*((pi*cos((pi*(x-30.-2*y))/360.))/180.-(pi*cos((pi*(x-30.+2*y))/360.))/180.
 V="10*((pi*cos((pi*(x-30.-2*y))/360.))/360.+(pi*cos((pi*(x-30.+2*y))/360.))/360.)/2."
 
 # generate grid.nc:physics with edge_integrated_velocity 
-python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o grid.nc:physics 
+python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o grid.nc:physics
+
+# save the grid as a VTK file
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk
 
 # push the grid upstream grid
 python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc
 
-echo "DYLD_LIBRARY_PATH: $DYLD_LIBRARY_PATH"
-
-# set initially the data to the data stored in the source grid file
 cp grid.nc data.nc
 
-for step in {0..1}; do
+for step in {0..10}; do
 	echo "step $step"
     # regrid from current to upstream
     @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
