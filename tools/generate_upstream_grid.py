@@ -18,6 +18,8 @@ parser.add_argument('-t', dest='time', default=1.0, type=float,
                     help='Specify final time for integrating trajectories upstream')
 parser.add_argument('-o', dest='output_file', default='', 
                     help='Specify the output netcdf file containing the upstream coordinates and the velocity')
+parser.add_argument('-P', dest='periodicityLength', default=360., 
+                    help='Periodicity length in x (set to zero if non-periodic)')
 args = parser.parse_args()
 
 if len(args.grid_file) == 0:
@@ -151,15 +153,17 @@ xy[numPoints:] = yInitial
 xMin = xInitial.min()
 xMax = xInitial.max()
 xyUpstream = odeint(tendency, xy, [0.0, -args.time])
+
 # we're only interested in the final positions
 xUpstream = xyUpstream[1, :numPoints]
 yUpstream = xyUpstream[1, numPoints:]
 
+# apply periodicity
+#xUpstream += (xUpstream < 0.) * args.periodicityLength
+#xUpstream -= (xUpstream > args.periodicityLength) * args.periodicityLength
+
 # make sure the latitudes are within [-90, 90]
 numpy.clip(yUpstream, -90., 90., out=yUpstream)
-
-# TO DO: NEED TO DO SOMETHING ABOUT TRAJECTORIES LEAVING THE DOMAIN
-# HERE
 
 # save the new coordinates
 xVarUp = ncUp.createVariable(xNameUp, 'f8', (numPointsDimName,))

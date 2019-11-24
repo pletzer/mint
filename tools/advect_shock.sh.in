@@ -3,29 +3,37 @@
 export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
-NX=100
-NY=50
-#STREAM_FUNC="(sin((pi*(x-2*y))/360.)+sin((pi*(x+2*y))/360.))/2."
-#STREAM_FUNC="(cos((pi*(x-2*y))/360.)+cos((pi*(x+2*y))/360.))/2."
-STREAM_FUNC="sin(pi*(x-169.)/(201.-169.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.))*(heaviside(x-169.,1.)-heaviside(x-201,1.))/(201.-169.)"
-#U="0*x+10."
-#V="0*x"
-U="5*2*(cos(pi*(x-2*y)/360.)-cos(pi*(x+2*y)/360.))"
-V="5*1*(cos(pi*(x-2*y)/360.)+cos(pi*(x+2*y)/360.))"
+NX=40
+NY=20
+STREAM_FUNC="100*(sin((pi*(x-30.-2*y))/360.)+sin((pi*(x-30.+2*y))/360.))/2."
+U="100*((pi*cos((pi*(x-30.-2*y))/360.))/180.-(pi*cos((pi*(x-30.+2*y))/360.))/180.)/2."
+V="100*((pi*cos((pi*(x-30.-2*y))/360.))/360.+(pi*cos((pi*(x-30.+2*y))/360.))/360.)/2."
 NSTEPS=100
+DT=10
+
+NX=36
+NY=18
+STREAM_FUNC="((x-180)/10.)*heaviside(x-180,1.0)"
+U="0*x+10."
+V="0*x"
+NSTEPS=5
 DT=1
 
-
-# generate grid.nc:physics with edge_integrated_velocity
-echo "generating lat lon grid..."
+# generate grid.nc:physics with edge_integrated_velocity 
 python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o grid.nc:physics
 if [ $? != 0 ]; then
     echo "ERROR when running generate_latlon_ugrid.py"
     exit 1
 fi
 
+# save the grid as a VTK file
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk
+if [ $? != 0 ]; then
+    echo "ERROR when running ugrid_reader.py"
+    exit 2
+fi
+
 # push the grid upstream grid
-echo "pushing the grid upstream..."
 python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
 if [ $? != 0 ]; then
     echo "ERROR when running generate_upstream_grid.py"

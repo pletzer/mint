@@ -3,6 +3,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
 )
 
+configure_file(advect_shock.sh.in advect_shock.sh @ONLY)
 configure_file(advect_latlon.sh.in advect_latlon.sh @ONLY)
 configure_file(advect.sh.in advect.sh @ONLY)
 

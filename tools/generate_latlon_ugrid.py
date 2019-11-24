@@ -3,7 +3,7 @@ import numpy
 import sys
 import argparse
 
-from math import sin, cos, pi
+from numpy import sin, cos, pi, heaviside
 
 """
 Generate grid and edge data on uniform grid and save result in UGRID file
