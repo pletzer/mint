@@ -24,6 +24,14 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
+# saving the grid in VTK file
+echo "saving grid..."
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -r -V grid.vtk -stream $STREAM_FUNC -u $U -v $V
+if [ $? != 0 ]; then
+    echo "ERROR when running ugrid_reader.py"
+    exit 2
+fi
+
 # push the grid upstream grid
 echo "pushing the grid upstream..."
 python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
@@ -34,7 +42,8 @@ fi
 
 cp grid.nc data.nc
 
-for step in $(seq -f "%05g" 1 $NSTEPS); do
+NSTEPS1=$(expr $NSTEPS - 1)
+for step in $(seq -f "%05g" 0 $NSTEPS1); do
     echo "step $step"
     # regrid from current to upstream
     cp data.nc input_data.nc
