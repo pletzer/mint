@@ -332,10 +332,19 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
 
 extern "C"
 int mnt_grid_dump(Grid_t** self, const char* filename) {
+    std::cerr << "*** 0\n";
+    mnt_grid_print(self);
     vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
+    std::cerr << "*** 1 filename = " << filename << "\n";
     writer->SetFileName(filename);
+    std::cerr << "*** 2 grid = " << (*self)->grid << "\n";
+    (*self)->grid->PrintSelf(std::cout, vtkIndent(1));
+    std::cerr << "*** 2.1 points = " << (*self)->points << "\n";
+    (*self)->points->PrintSelf(std::cout, vtkIndent(2));
     writer->SetInputData((*self)->grid);
-    writer->Update();
+    std::cerr << "*** 3\n";
+    //writer->Update();
+    std::cerr << "*** 4\n";
     writer->Delete();
     return 0;
 }
@@ -361,6 +370,26 @@ int mnt_grid_print(Grid_t** self) {
             (*self)->points->GetPoint(k, &pt[0]);
             std::cout << "\tpoint " << pt[0] << ',' << pt[1] << ',' << pt[2] << '\n';
         }
+    }
+
+    size_t numArrays = (*self)->grid->GetCellData()->GetNumberOfArrays();
+    for (size_t i = 0; i < numArrays; ++i) {
+        vtkDataArray* darray = (*self)->grid->GetCellData()->GetArray(i);
+        char* name = darray->GetName();
+        std::cerr << " name: " << name << '\n';
+        size_t numComps = darray->GetNumberOfComponents();
+        std::cerr << " num components: " << numComps << '\n';
+        size_t numElems = darray->GetNumberOfTuples();
+        std::cerr << " num elements: " << numElems << '\n';
+        for (size_t j = 0; j < numElems; ++j) {
+            std::cerr << "\tarray " << name << " elem " << j << " ";
+            double* vals = darray->GetTuple(j);
+            for (size_t k = 0; k < numComps; ++k) {
+                std::cerr << vals[k] << ' ';
+            }
+            std::cerr << '\n';
+        }
+
     }
 
     return 0;

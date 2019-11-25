@@ -12,7 +12,7 @@ STREAM_FUNC="sin(pi*(x-169.)/(201.-169.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.
 #V="0*x"
 U="5*2*(cos(pi*(x-2*y)/360.)-cos(pi*(x+2*y)/360.))"
 V="5*1*(cos(pi*(x-2*y)/360.)+cos(pi*(x+2*y)/360.))"
-NSTEPS=100
+NSTEPS=1
 DT=1
 
 
@@ -43,7 +43,7 @@ fi
 # compute the regridding weights
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
                                       -d "upstream.nc:physics" -D 0 \
-                                      -w grid2UpstreamGridWeights.nc
+                                      -w grid.nc
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 4
@@ -60,8 +60,12 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     echo "step $step"
 
     # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
-                                          -d "upstream.nc:physics" -D 0 \
+    #@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
+    #                                      -d "upstream.nc:physics" -D 0 \
+    #                                      -v edge_integrated_velocity@data.nc \
+    #                                      -o upstream_${step}.vtk -O data.nc:physics
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics \
+                                          -d upstream.nc:physics \
                                           -v edge_integrated_velocity@data.nc \
                                           -o upstream_${step}.vtk -O data.nc:physics
     if [ $? != 0 ]; then

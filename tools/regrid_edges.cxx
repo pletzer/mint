@@ -7,6 +7,7 @@
 #include <iostream>
 #include <limits>
 #include <cmath>
+#include <algorithm>
 
 int main(int argc, char** argv) {
 
@@ -129,8 +130,31 @@ int main(int argc, char** argv) {
                 return 6;
             }
 
-            // regrid
+            std::cerr << "info: num src edge = " << numSrcEdges << " num dst edges = " << numDstEdges << '\n';
+
+#ifdef DEBUG
+            std::vector<double>::iterator dmin = std::min_element(srcEdgeData.begin(), srcEdgeData.end());
+            std::vector<double>::iterator dmax = std::max_element(srcEdgeData.begin(), srcEdgeData.end());
+            std::cout << "info: min/max src edge data: " << 
+                         srcEdgeData[std::distance(srcEdgeData.begin(), dmin)] << "/" <<  
+                         srcEdgeData[std::distance(srcEdgeData.begin(), dmax)] << '\n';
+#endif
+
+            // apply the weights to the src field to set the dst field
             ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
+            if (ier != 0) {
+                std::cerr << "ERROR: could not apply the weights to source edge field \"" << vname << "\" from file \"" << fileAndMeshName << "\"\n";
+                return 7;
+            }
+
+#ifdef DEBUG
+            dmin = std::min_element(dstEdgeData.begin(), dstEdgeData.end());
+            dmax = std::max_element(dstEdgeData.begin(), dstEdgeData.end());
+            std::cout << "info: min/max dst edge data: " << 
+                         dstEdgeData[std::distance(dstEdgeData.begin(), dmin)] << "/" <<  
+                         dstEdgeData[std::distance(dstEdgeData.begin(), dmax)] << '\n';
+#endif
+
 
             // compute loop integrals for each cell
             size_t numDstCells, dstEdgeId;
@@ -176,17 +200,17 @@ int main(int argc, char** argv) {
                 }
 
                 // attach field to grid so we can save the data in file
-                mnt_grid_attach(&rg->dstGridObj, vname.c_str(), numEdgesPerCell, &dstCellByCellData[0]);
+                //mnt_grid_attach(&rg->dstGridObj, vname.c_str(), numEdgesPerCell, &dstEdgeData[0]);
 
                 std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
-                mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
+                //mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
 
-                std::cout << "info: writing \"" << vname << "\" to " << regridFile << '\n';
+                std::cout << "info: writing \"" << vname << "\" to VTK file " << regridFile << '\n';
                 mnt_grid_dump(&rg->dstGridObj, regridFile.c_str());
             }
 
             if (dstEdgeDataFile.size() > 0) {
-                std::cout << "info: writing \"" << vname << "\" to " << dstEdgeDataFile << '\n';
+                std::cout << "info: writing \"" << vname << "\" to netCDF file " << dstEdgeDataFile << '\n';
                 mnt_regridedges_dumpEdgeField(&rg, dstEdgeDataFile.c_str(), dstEdgeDataFile.size(), 
                                                vname.c_str(), vname.size(), 
                                                numDstEdges, &dstEdgeData[0]);
