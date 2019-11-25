@@ -53,7 +53,7 @@ numEdgesDimName = nc.variables[edgeNodeConnName].dimensions[0]
 nc.close()
 
 # compute the stream function on nodes
-from numpy import sin, cos, pi
+from numpy import sin, cos, pi, heaviside
 streamValues = eval(args.streamFunction)
 
 # compute the integrated velocity on edges
@@ -72,7 +72,7 @@ if args.data_file == grid_file:
     nc = netCDF4.Dataset(args.data_file, 'r+')
 else:
     # new file
-    print('note: saving edge field "{}" in {}'.format(args.data_file))
+    print('note: saving edge field "{}" in {}'.format(args.fieldName, args.data_file))
     nc = netCDF4.Dataset(args.data_file, 'w')
 # write global attributes
 nc.date = 'Created on {}'.format(time.asctime())
