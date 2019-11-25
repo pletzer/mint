@@ -60,17 +60,16 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     echo "step $step"
 
     # regrid from current to upstream
-    cp data.nc input_data.nc
     @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
                                           -d "upstream.nc:physics" -D 0 \
-                                          -W grid2UpstreamGridWeights.nc \
+                                          -v edge_integrated_velocity@data.nc \
                                           -o upstream_${step}.vtk -O data.nc:physics
     if [ $? != 0 ]; then
         echo "ERROR when applying the regridding weights"
         exit 5
     fi
        
-    # convert from field sa ved cell by cell to edge field with unique edge Ids                               
+    # convert from field saved cell by cell to edge field with unique edge Ids                               
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
     if [ $? != 0 ]; then
         echo "ERROR when converting filed cell-by-cell to edge field with unique edge Ids"
