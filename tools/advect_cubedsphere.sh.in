@@ -12,7 +12,7 @@ STREAM_FUNC="sin(pi*(x-169.)/(201.-169.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.
 #V="0*x"
 U="5*2*(cos(pi*(x-2*y)/360.)-cos(pi*(x+2*y)/360.))"
 V="5*1*(cos(pi*(x-2*y)/360.)+cos(pi*(x+2*y)/360.))"
-NSTEPS=1
+NSTEPS=100
 DT=1
 
 
@@ -62,8 +62,7 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     # regrid from current to upstream
     @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
                                           -d "upstream.nc:physics" -D 1 \
-                                          -W grid2UpstreamGridWeights.nc \
-                                          -v edge_integrated_velocity@data.nc:physics \
+                                          -v edge_integrated_velocity@data.nc \
                                           -o upstream_${step}.vtk -O data.nc:physics
     if [ $? != 0 ]; then
         echo "ERROR when applying the regridding weights"
