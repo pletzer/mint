@@ -260,6 +260,28 @@ add_test(NAME regrid_edgesFromLatLonToUpstream
 set_tests_properties(regrid_edgesFromLatLonToUpstream PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
+add_test(NAME regrid_edgesFromLatLonToUpstream_dumpWeights
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon.nc:physics"
+                 "-S" "0"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/latlon_upstream.nc:physics"
+                 "-D" "0"
+                 "-w" "regrid_edgesFromLatLonToUpstreamWeights.nc")
+set_tests_properties(regrid_edgesFromLatLonToUpstream_dumpWeights PROPERTIES
+                     PASS_REGULAR_EXPRESSION "info: saving weights in file")
+
+add_test(NAME regrid_edgesFromLatLonToUpstream_loadWeights
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon.nc:physics"
+                 "-S" "0"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/latlon_upstream.nc:physics"
+                 "-D" "0"
+                 "-W" "${CMAKE_SOURCE_DIR}/data/regrid_edgesFromLatLonToUpstreamWeights.nc"
+                 "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/latlon_data.nc"
+                 "-o" "regrid_edgesFromLatLonToUpstream_loadWeights.vtk")
+set_tests_properties(regrid_edgesFromLatLonToUpstream_loadWeights PROPERTIES
+                     PASS_REGULAR_EXPRESSION "info: saving weights in file")
+
 add_test(NAME line_proj1
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
                  "-i" "${CMAKE_SOURCE_DIR}/data/latlon4x2.vtk"
