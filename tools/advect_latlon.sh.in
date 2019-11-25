@@ -62,7 +62,7 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     # regrid from current to upstream
     @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
                                           -d "upstream.nc:physics" -D 0 \
-                                          -W grid2UpstreamGridWeights.nc \
+                                          -v edge_integrated_velocity@data.nc \
                                           -o upstream_${step}.vtk -O data.nc:physics
     if [ $? != 0 ]; then
         echo "ERROR when applying the regridding weights"
