@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
     args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file, varname[@filename:meshname]");
     args.set("-d", std::string(""), "UGRID destination grid file name");
     args.set("-w", std::string(""), "Write interpolation weights to file");
+    args.set("-W", std::string(""), "Load interpolation weights from file");
     args.set("-o", std::string(""), "Specify output VTK file where regridded edge data are saved");
     args.set("-O", std::string(""), "Specify output 2D UGRID file where regridded edge data are saved");
     args.set("-S", 1, "Set to zero if you want to disable source grid regularization. This might be required for uniform lon-lat grids");
@@ -30,6 +31,7 @@ int main(int argc, char** argv) {
         std::string srcFile = args.get<std::string>("-s");
         std::string dstFile = args.get<std::string>("-d");
         std::string weightsFile = args.get<std::string>("-w");
+        std::string loadWeightsFile = args.get<std::string>("-W");
         std::string regridFile = args.get<std::string>("-o");
         std::string dstEdgeDataFile = args.get<std::string>("-O");
 
@@ -79,13 +81,22 @@ int main(int argc, char** argv) {
             return 4;
         }
 
-        ier = mnt_regridedges_build(&rg, args.get<int>("-N"));
-        if (ier != 0) return 5;
+        if (loadWeightsFile.size() == 0) {
+            ier = mnt_regridedges_build(&rg, args.get<int>("-N"));
+            if (ier != 0) return 5;
+        
+            if (weightsFile.size() != 0) {
+                std::cout << "info: saving weights in file " << weightsFile << '\n';
+                ier = mnt_regridedges_dumpWeights(&rg, weightsFile.c_str(), (int) weightsFile.size());
+            }
 
-        if (weightsFile.size() != 0) {
-            std::cout << "info: saving weights in file " << weightsFile << '\n';
-            ier = mnt_regridedges_dumpWeights(&rg, weightsFile.c_str(), (int) weightsFile.size());
         }
+        else {
+            std::cout << "info: loading weights from file " << loadWeightsFile << '\n';
+            ier = mnt_regridedges_loadWeights(&rg, loadWeightsFile.c_str(), (int) loadWeightsFile.size());
+            if (ier != 0) return 6;
+        }
+
 
         // regrid
         size_t numSrcEdges, numDstEdges;
