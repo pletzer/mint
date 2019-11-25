@@ -70,7 +70,7 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
         exit 5
     fi
        
-    # convert from field sa ved cell by cell to edge field with unique edge Ids                               
+    # convert from field saved cell by cell to edge field with unique edge Ids                               
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
     if [ $? != 0 ]; then
         echo "ERROR when converting filed cell-by-cell to edge field with unique edge Ids"
