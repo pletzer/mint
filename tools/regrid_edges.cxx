@@ -131,6 +131,10 @@ int main(int argc, char** argv) {
 
             // regrid
             ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
+            if (ier != 0) {
+                std::cerr << "ERROR: failed to apply weights to dst field \"" << vname << "\"\n";
+                return 6;
+            }
 
             // compute loop integrals for each cell
             size_t numDstCells, dstEdgeId;
