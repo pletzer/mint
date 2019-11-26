@@ -187,6 +187,14 @@ add_test(NAME cmdLineArgParserFB
 add_test(NAME c2fString
          COMMAND testC2fString)
 
+add_test(NAME regridedges_1
+	     COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+	        "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon" "-S" "0"
+	        "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+	        "-w" "regridedges_1_weights")
+set_tests_properties(regridedges_1 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "info: saving weights in file")
+
 add_test(NAME regrid_edgesLATLON4x2ToCS4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
                  "-S" "0"
