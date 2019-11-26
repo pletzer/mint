@@ -17,7 +17,7 @@ DT=1
 
 
 # get the grid
-cp @CMAKE_SOURCE_DIR@/data/cs_16.nc grid.nc
+cp @CMAKE_SOURCE_DIR@/data/mesh_C32.nc grid.nc
 
 echo "add edge field from stream function..."
 python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g grid.nc:physics -d input_data.nc \

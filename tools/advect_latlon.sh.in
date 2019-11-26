@@ -24,7 +24,7 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-# saving the grid in VTK file
+# saving the grid in VTK file. NOTE the -r option, which turns off regularization for the lat lon grid
 echo "saving grid..."
 python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -r -V grid.vtk -stream $STREAM_FUNC -u $U -v $V
 if [ $? != 0 ]; then
@@ -43,7 +43,7 @@ fi
 # compute the regridding weights
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
                                       -d "upstream.nc:physics" -D 0 \
-                                      -w grid2UpstreamGridWeights.nc
+                                      -w weights.nc
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 4
@@ -51,7 +51,7 @@ fi
 
 
 # copy the edge data
-cp grid.nc data.nc
+cp grid.nc input_data.nc
 
 # step in time
 NSTEPS1=$(expr $NSTEPS - 1)
@@ -60,10 +60,11 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     echo "step $step"
 
     # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
-                                          -d "upstream.nc:physics" -D 0 \
-                                          -v edge_integrated_velocity@data.nc \
-                                          -o upstream_${step}.vtk -O data.nc:physics
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics \
+                                          -d upstream.nc:physics \
+                                          -W weights.nc \
+                                          -v edge_integrated_velocity@input_data.nc \
+                                          -o upstream_${step}.vtk -O data_${step}.nc:physics
     if [ $? != 0 ]; then
         echo "ERROR when applying the regridding weights"
         exit 5
@@ -77,6 +78,6 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     fi
 
     # save the data for this time step
-    cp data.nc data_${step}.nc
+    cp data_${step}.nc input_data.nc
 done
 
