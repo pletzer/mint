@@ -60,8 +60,6 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vmtCellLocator::New();
-    (*self)->numSrcCells = 0;
-    (*self)->numDstCells = 0;
     (*self)->numPointsPerCell = 4; // 2d
     (*self)->numEdgesPerCell = 4;  // 2d
 
@@ -333,11 +331,11 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
 
-    (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
-    (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    size_t numSrcCells = (*self)->srcGrid->GetNumberOfCells();
+    size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // reserve some space for the weights and their cell/edge id arrays
-    size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell * 20;
+    size_t n = numDstCells * (*self)->numEdgesPerCell * 20;
     (*self)->weights.reserve(n);
     (*self)->weightSrcFaceEdgeIds.reserve(n);
     (*self)->weightDstFaceEdgeIds.reserve(n);
@@ -353,7 +351,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 #endif
 
     // iterate over the dst grid cells
-    for (vtkIdType dstCellId = 0; dstCellId < (*self)->numDstCells; ++dstCellId) {
+    for (vtkIdType dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
 
         // get this cell vertex Ids
         (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
@@ -461,13 +459,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
 extern "C"
 int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, size_t* n) {
-    *n = (*self)->numSrcCells;
+    *n = (*self)->srcGrid->GetNumberOfCells();
     return 0;
 }
 
 extern "C"
 int mnt_regridedges_getNumDstCells(RegridEdges_t** self, size_t* n) {
-    *n = (*self)->numDstCells;
+    *n = (*self)->dstGrid->GetNumberOfCells();
     return 0;
 }
 
@@ -502,7 +500,8 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
                                   const double src_data[], double dst_data[]) {
 
     // initialize the data to zero
-    size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell;
+    size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    size_t n = numDstCells * (*self)->numEdgesPerCell;
     for (size_t i = 0; i < n; ++i) {
         dst_data[i] = 0.0;
     }
