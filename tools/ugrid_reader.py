@@ -107,7 +107,7 @@ class UgridReader(ReaderBase):
             lts = numpy.array([lat00, lat10, lat11, lat01])
             lns = numpy.array([lon00, lon10, lon11, lon01])
             alts = numpy.fabs(lts)
-            if regularization and numpy.any(alts[:] == quarterPeriodicity):
+            if regularization and numpy.any(numpy.fabs(alts < quarterPeriodicity) < 1.e-6):
                 # there is a latitude at the pole. The longitude is not well 
                 # defined in this case - we can set it to any value. For 
                 # esthetical reason it't good to set it to the average 

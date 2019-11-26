@@ -12,7 +12,7 @@ STREAM_FUNC="sin(pi*(x-169.)/(201.-169.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.
 #V="0*x"
 U="5*2*(cos(pi*(x-2*y)/360.)-cos(pi*(x+2*y)/360.))"
 V="5*1*(cos(pi*(x-2*y)/360.)+cos(pi*(x+2*y)/360.))"
-NSTEPS=100
+NSTEPS=1
 DT=1
 
 
