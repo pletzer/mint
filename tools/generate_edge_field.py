@@ -53,7 +53,7 @@ numEdgesDimName = nc.variables[edgeNodeConnName].dimensions[0]
 nc.close()
 
 # compute the stream function on nodes
-from numpy import sin, cos, pi, heaviside
+from numpy import sin, cos, pi, heaviside, power
 streamValues = eval(args.streamFunction)
 
 # compute the integrated velocity on edges

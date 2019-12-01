@@ -131,7 +131,7 @@ velocity.location = 'node'
 velocity.mesh = grid_var
 
 # velocity at nodes
-from numpy import sin, cos, pi
+from numpy import sin, cos, pi, heaviside, power
 x = xInitial
 y = yInitial
 velocity[:, 0] = eval(args.velocity_x)

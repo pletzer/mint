@@ -240,7 +240,7 @@ class UgridReader(ReaderBase):
 
 def main():
     import argparse
-    from numpy import pi, sin, cos, exp, heaviside
+    from numpy import pi, sin, cos, exp, heaviside, power
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
     parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file in the form FILENAME:MESHNAME')
