@@ -278,6 +278,16 @@ add_test(NAME regrid_edgesUgrid16To16
 set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
+add_test(NAME regrid_nan
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc:physics" "-S" "1"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream.nc:physics" "-D" "1"
+                 "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/input_data_initial.nc")
+set_tests_properties(regrid_nan PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^nan]/")
+
+
+
 add_test(NAME line_proj1
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
                  "-i" "${CMAKE_SOURCE_DIR}/data/latlon4x2.vtk"

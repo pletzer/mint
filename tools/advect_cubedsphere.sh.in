@@ -18,7 +18,7 @@ STREAM_FUNC="sin(pi*(x-231.)/(271.-231.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.
 #STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
 U="100*((pi*cos((pi*(x-y))/180.))/180.-(pi*cos((pi*(x+y))/180.))/180.)/2."
 V="100*((pi*cos((pi*(x-y))/180.))/180.+(pi*cos((pi*(x+y))/180.))/180.)/2."
-NSTEPS="5"
+NSTEPS="1"
 DT=1
 
 
@@ -66,9 +66,12 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
 
     echo "step $step"
 
+    echo "**** checking for NANs in input_data.nc ****"
+    ncdump input_data.nc | grep -i nan
+
     # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics \
-                                          -d upstream.nc:physics \
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
+                                          -d upstream.nc:physics -D 1 \
                                           -W weights.nc \
                                           -v edge_integrated_velocity@input_data.nc \
                                           -o upstream_${step}.vtk -O data_${step}.nc
@@ -76,6 +79,9 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
         echo "ERROR when applying the regridding weights"
         exit 5
     fi
+
+    echo "**** checking for NANs in data_${step}.nc ****"
+    ncdump data_${step}.nc | grep -i nan
        
     # convert from field saved cell by cell to edge field with unique edge Ids                               
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
