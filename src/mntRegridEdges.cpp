@@ -283,7 +283,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
-		                        const char* fort_filename, int n) {
+                                const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -294,7 +294,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
-		                        const char* fort_filename, int n) {
+                                const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -422,7 +422,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                     
                     // compute the interpolation weight
                     double weight = computeWeight(&srcCellParamCoords[i0*3], 
-                    	                          &srcCellParamCoords[i1*3], xia, xib);
+                                                  &srcCellParamCoords[i1*3], xia, xib);
                     // coeff accounts for the duplicity in case where segments are shared between cells
                     weight *= coeff;
 
@@ -443,8 +443,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
             double totalT = polySegIter.getIntegratedParamCoord();
             if (std::abs(totalT - 1.0) > 1.e-10) {
-            	printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
-            		   totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
+                printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
+                       totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
             }
 
         }
@@ -519,6 +519,7 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
         size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
 
         dst_data[dstK] += (*self)->weights[i] * src_data[srcK];
+
     }
 
     return 0;
@@ -526,7 +527,7 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_apply(RegridEdges_t** self, 
-	                      const double src_data[], double dst_data[]) {
+                          const double src_data[], double dst_data[]) {
 
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
@@ -576,7 +577,12 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     }
 
     for (size_t i = 0; i < numDstEdges; ++i) {
-    	dst_data[i] /= edgeMultiplicity[i];
+
+        // there has been cases where edgeMultiplicity[i] is zero and so we need to guard 
+        // against a division by zero. I would expect in this case dst_data[i] to be also 
+        // zero but this would need to be checked! (edgeMultiplicity[i] is zero if the dst 
+        // edge lies outside the src domain)
+        dst_data[i] /= std::max(1, edgeMultiplicity[i]);
     }
 
     return 0;
@@ -704,7 +710,7 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
-		                        const char* fort_filename, int n) {
+                                const char* fort_filename, int n) {
 
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'

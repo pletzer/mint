@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
         std::string dstFile = args.get<std::string>("-d");
         std::string weightsFile = args.get<std::string>("-w");
         std::string loadWeightsFile = args.get<std::string>("-W");
-        std::string regridFile = args.get<std::string>("-o");
+        std::string vtkOutputFile = args.get<std::string>("-o");
         std::string dstEdgeDataFile = args.get<std::string>("-O");
 
         if (srcFile.size() == 0) {
@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
             avgAbsLoop /= double(numDstCells);
             std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
 
-            if (regridFile.size() > 0) {
+            if (vtkOutputFile.size() > 0) {
 
                 // cell by cell data
                 std::vector<double> dstCellByCellData(numDstCells * numEdgesPerCell);
@@ -185,8 +185,8 @@ int main(int argc, char** argv) {
                 std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
                 mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
 
-                std::cout << "info: writing \"" << vname << "\" to " << regridFile << '\n';
-                mnt_grid_dump(&rg->dstGridObj, regridFile.c_str());
+                std::cout << "info: writing \"" << vname << "\" to " << vtkOutputFile << '\n';
+                mnt_grid_dump(&rg->dstGridObj, vtkOutputFile.c_str());
             }
 
             if (dstEdgeDataFile.size() > 0) {

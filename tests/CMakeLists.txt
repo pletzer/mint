@@ -282,7 +282,10 @@ add_test(NAME regrid_nan
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc:physics" "-S" "1"
                  "-d" "${CMAKE_SOURCE_DIR}/data/upstream.nc:physics" "-D" "1"
-                 "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/input_data_initial.nc")
+                 "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/input_data_initial.nc"
+                 "-o" "regrid_nan.vtk"
+                 "-O" "regrid_nan_data.nc"
+                 )
 set_tests_properties(regrid_nan PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/nan/")
 
@@ -291,7 +294,10 @@ add_test(NAME regrid_nan_load_weights
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc:physics" "-S" "1"
                  "-d" "${CMAKE_SOURCE_DIR}/data/upstream.nc:physics" "-D" "1"
                  "-W" "${CMAKE_SOURCE_DIR}/data/weights.nc"
-                 "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/input_data_initial.nc")
+                 "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/input_data_initial.nc"
+                 "-o" "regrid_nan_load_weights.vtk"
+                 "-O" "regrid_nan_load_weights_data.nc"
+                 )
 set_tests_properties(regrid_nan_load_weights PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/nan/")
 

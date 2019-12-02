@@ -18,7 +18,7 @@ STREAM_FUNC="sin(pi*(x-231.)/(271.-231.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.
 #STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
 U="100*((pi*cos((pi*(x-y))/180.))/180.-(pi*cos((pi*(x+y))/180.))/180.)/2."
 V="100*((pi*cos((pi*(x-y))/180.))/180.+(pi*cos((pi*(x+y))/180.))/180.)/2."
-NSTEPS="1"
+NSTEPS="100"
 DT=1
 
 
