@@ -3,16 +3,29 @@
 export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
-NX=100
-NY=50
 #STREAM_FUNC="(sin((pi*(x-2*y))/360.)+sin((pi*(x+2*y))/360.))/2."
 #STREAM_FUNC="(cos((pi*(x-2*y))/360.)+cos((pi*(x+2*y))/360.))/2."
-STREAM_FUNC="sin(pi*(x-169.)/(201.-169.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.))*(heaviside(x-169.,1.)-heaviside(x-201,1.))/(201.-169.)"
 #U="0*x+10."
 #V="0*x"
-U="5*2*(cos(pi*(x-2*y)/360.)-cos(pi*(x+2*y)/360.))"
-V="5*1*(cos(pi*(x-2*y)/360.)+cos(pi*(x+2*y)/360.))"
-NSTEPS=1
+#U="2*(cos(pi*(x-y)/360.)-cos(pi*(x+y)/360.))"
+#V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
+#
+# Bump stream function. The stream function here does not correspond to the u, v field
+X0="183."
+X1="251."
+Y0="11." #"9."
+Y1="17." #"21."
+DX="(${X1}-${X0})"
+DY="(${Y1}-${Y0})"
+XM="((${X1}+${X0})/2.)"
+YM="((${Y1}+${Y0})/2.)"
+BOX_FUNC="((heaviside(x-${X0},1.)-heaviside(x-${X1},1.))*(heaviside(y-${Y0},1.)-heaviside(y-${Y1},1.)))"
+STREAM_FUNC="(cos(pi*((x-${XM})/${DX}-(y-${YM})/${DY}))+cos(pi*((x-${XM})/${DX}+(y-${YM})/${DY})))*${BOX_FUNC}"
+# stream function for the u, v field
+#STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
+U="500*((pi*cos((pi*(x-y))/180.))/180.-(pi*cos((pi*(x+y))/180.))/180.)/2."
+V="500*((pi*cos((pi*(x-y))/180.))/180.+(pi*cos((pi*(x+y))/180.))/180.)/2."
+NSTEPS="20"
 DT=1
 
 
@@ -20,16 +33,18 @@ DT=1
 cp @CMAKE_SOURCE_DIR@/data/mesh_C32.nc grid.nc
 
 echo "add edge field from stream function..."
-python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g grid.nc:physics -d input_data.nc \
+python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g grid.nc:unit_test -d input_data.nc \
        -n edge_integrated_velocity -s $STREAM_FUNC
 if [ $? != 0 ]; then
     echo "ERROR when running generate_edge_field.py"
     exit 1
 fi
 
+cp input_data.nc input_data_initial.nc
+
 # saving the grid in VTK file
 echo "saving grid in VTK file grid.vtk..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk -stream $STREAM_FUNC -u $U -v $V
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:unit_test -V grid.vtk -stream $STREAM_FUNC -u $U -v $V
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
@@ -37,15 +52,15 @@ fi
 
 # push the grid upstream grid
 echo "pushing the grid upstream..."
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:unit_test -o upstream.nc -t $DT
 if [ $? != 0 ]; then
     echo "ERROR when running generate_upstream_grid.py"
     exit 3
 fi
 
 # compute the regridding weights
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
-                                      -d "upstream.nc:physics" -D 0 \
+@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:unit_test -S 1 \
+                                      -d "upstream.nc:unit_test" -D 0 \
                                       -w weights.nc
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
@@ -58,9 +73,11 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
 
     echo "step $step"
 
+    ncdump input_data.nc | grep -i nan
+
     # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics \
-                                          -d upstream.nc:physics \
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:unit_test -S 1 \
+                                          -d upstream.nc:unit_test -D 1 \
                                           -W weights.nc \
                                           -v edge_integrated_velocity@input_data.nc \
                                           -o upstream_${step}.vtk -O data_${step}.nc
@@ -68,6 +85,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
         echo "ERROR when applying the regridding weights"
         exit 5
     fi
+
+    ncdump data_${step}.nc | grep -i nan
        
     # convert from field saved cell by cell to edge field with unique edge Ids                               
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
