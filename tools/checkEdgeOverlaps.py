@@ -33,7 +33,7 @@ print('done reading the weights')
 src = ugrid_reader.UgridReader(filename=args.src_grid_file, regularization=args.src_regularization)
 srcGrid = src.getUnstructuredGrid()
 srcPoints = srcGrid.GetPoints()
-print('done readng the src grid')
+print('done reading the src grid')
 
 # read the dst grid
 dst = ugrid_reader.UgridReader(filename=args.dst_grid_file, regularization=args.dst_regularization)
@@ -82,13 +82,15 @@ for i in range(len(weights)):
     dstCell = dstGrid.GetCell(dstCellId)
     srcCell = srcGrid.GetCell(srcCellId)
 
+
+
     # get the dst beg/end positions
-    dstCell.EvaluatePosition(subId, dstPcoordsBeg, dstPointBeg, weights)
-    dstCell.EvaluatePosition(subId, dstPcoordsEnd, dstPointEnd, weights)
+    dstCell.EvaluateLocation(subId, dstPcoordsBeg, dstPointBeg, weights)
+    dstCell.EvaluateLocation(subId, dstPcoordsEnd, dstPointEnd, weights)
 
     # get the src beg/end positions
-    srcCell.EvaluatePosition(subId, srcPcoordsBeg, srcPointBeg, weights)
-    srcCell.EvaluatePosition(subId, srcPcoordsEnd, srcPointEnd, weights)
+    srcCell.EvaluateLocation(subId, srcPcoordsBeg, srcPointBeg, weights)
+    srcCell.EvaluateLocation(subId, srcPcoordsEnd, srcPointEnd, weights)
 
     # build the matrix system
     srhs[:] = dstPointBeg[:2] - srcPointBeg[:2]
@@ -101,5 +103,9 @@ for i in range(len(weights)):
     # check if intersection is along the edge
     if numpy.any(lams < -eps) or numpy.any(lams > 1. + eps):
         print(f'no overlap for i = {i} dstCellId = {dstCellId} edge={dstEdgeIdx} srcCellId = {srcCellId} edge={srcEdgeIdx} (weight={weights[i]})')
+        print(f'lambdas = {lams}')
+        print(f'dst points = {dstPointBeg} -> {dstPointEnd}')
+        print(f'src points = {srcPointBeg} -> {srcPointEnd}')
+        print('-'*80)
 
 
