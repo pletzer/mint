@@ -3,6 +3,7 @@ import argparse
 import ugrid_reader
 import vtk
 import numpy
+import random
 
 parser = argparse.ArgumentParser(description='Check the overlap between edges')
 parser.add_argument('-w', dest='weights_file', default='', 
@@ -60,6 +61,16 @@ subId = vtk.mutable(0)
 
 eps = 1.236436e-10
 
+diags = {
+    'srcBegPts': [],
+    'srcEndPts': [],
+    'srcXpts': [],
+    'dstBegPts': [],
+    'dstEndPts': [],
+    'dstXpts': [],
+    }
+numBadOverlaps = 0
+
 # iterate over all the weights
 for i in range(len(weights)):
 
@@ -82,8 +93,6 @@ for i in range(len(weights)):
     dstCell = dstGrid.GetCell(dstCellId)
     srcCell = srcGrid.GetCell(srcCellId)
 
-
-
     # get the dst beg/end positions
     dstCell.EvaluateLocation(subId, dstPcoordsBeg, dstPointBeg, weights)
     dstCell.EvaluateLocation(subId, dstPcoordsEnd, dstPointEnd, weights)
@@ -93,6 +102,8 @@ for i in range(len(weights)):
     srcCell.EvaluateLocation(subId, srcPcoordsEnd, srcPointEnd, weights)
 
     # build the matrix system
+    # column 0 = dst
+    # column 1 = src
     srhs[:] = dstPointBeg[:2] - srcPointBeg[:2]
     amat[:, 0] = dstPointBeg[:2] - dstPointEnd[:2]
     amat[:, 1] = srcPointEnd[:2] - srcPointBeg[:2]
@@ -102,10 +113,76 @@ for i in range(len(weights)):
 
     # check if intersection is along the edge
     if numpy.any(lams < -eps) or numpy.any(lams > 1. + eps):
+        numBadOverlaps += 1
         print(f'no overlap for i = {i} dstCellId = {dstCellId} edge={dstEdgeIdx} srcCellId = {srcCellId} edge={srcEdgeIdx} (weight={weights[i]})')
         print(f'lambdas = {lams}')
         print(f'dst points = {dstPointBeg} -> {dstPointEnd}')
         print(f'src points = {srcPointBeg} -> {srcPointEnd}')
         print('-'*80)
+        diags['srcBegPts'].append(srcPointBeg)
+        diags['srcEndPts'].append(srcPointEnd)
+        diags['srcXpts'].append(srcPointBeg + lams[1]*(srcPointEnd - srcPointBeg)) 
+        diags['dstBegPts'].append(dstPointBeg)
+        diags['dstEndPts'].append(dstPointEnd)    
+        diags['dstXpts'].append(dstPointBeg + lams[0]*(dstPointEnd - dstPointBeg)) 
+
+# create pipeline
+srcCones = []
+srcConeMappers = []
+srcConeActors = []
+dstCones = []
+dstConeMappers = []
+dstConeActors = []
+random.seed(123)
+for i in range(numBadOverlaps):
+
+    color = (random.random(), random.random(), random.random())
+    print(f'i = {i} color = {color}')
+
+    # src edge
+    scone = vtk.vtkConeSource()
+    sconem = vtk.vtkPolyDataMapper()
+    sconea = vtk.vtkActor()
+    sconem.SetInputConnection(scone.GetOutputPort())
+    sconea.SetMapper(sconem)
+
+    scone.SetCenter(0.5*(diags['srcBegPts'][i] + diags['srcEndPts'][i]))
+    scone.SetDirection(diags['srcEndPts'][i] - diags['srcBegPts'][i])
+    scone.SetRadius(0.2)
+    sconea.GetProperty().SetColor(color)
+
+    srcCones.append(scone)
+    srcConeMappers.append(sconem)
+    srcConeActors.append(sconea)
+
+    # dst edge
+    dcone = vtk.vtkConeSource()
+    dconem = vtk.vtkPolyDataMapper()
+    dconea = vtk.vtkActor()
+    dconem.SetInputConnection(dcone.GetOutputPort())
+    dconea.SetMapper(dconem)
+
+    dcone.SetCenter(0.5*(diags['dstBegPts'][i] + diags['dstEndPts'][i]))
+    dcone.SetDirection(diags['dstEndPts'][i] - diags['dstBegPts'][i])
+    dcone.SetRadius(0.5)
+    dconea.GetProperty().SetColor(color)
+
+    dstCones.append(dcone)
+    dstConeMappers.append(dconem)
+    dstConeActors.append(dconea)
+
+renderer = vtk.vtkRenderer()
+renderWindow = vtk.vtkRenderWindow()
+renderWindowInteractor = vtk.vtkRenderWindowInteractor()
+
+renderWindow.AddRenderer(renderer)
+renderWindowInteractor.SetRenderWindow(renderWindow)
+
+for a in srcConeActors + dstConeActors:
+    renderer.AddActor(a)
+
+renderWindow.Render()
+renderWindowInteractor.Start()
+
 
 
