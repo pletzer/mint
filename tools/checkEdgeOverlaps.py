@@ -124,7 +124,53 @@ for i in range(len(weights)):
         diags['srcXpts'].append(srcPointBeg + lams[1]*(srcPointEnd - srcPointBeg)) 
         diags['dstBegPts'].append(dstPointBeg)
         diags['dstEndPts'].append(dstPointEnd)    
-        diags['dstXpts'].append(dstPointBeg + lams[0]*(dstPointEnd - dstPointBeg)) 
+        diags['dstXpts'].append(dstPointBeg + lams[0]*(dstPointEnd - dstPointBeg))
+
+# create unstructured grid with not overlapping edges
+fd = vtk.vtkDoubleArray()
+pa = vtk.vtkDoubleArray()
+pt = vtk.vtkPoints()
+ug = vtk.vtkUnstructuredGrid()
+wr = vtk.vtkUnstructuredGridWriter()
+
+fd.SetNumberOfComponents(1)
+fd.SetNumberOfTuples(numBadOverlaps * 2)
+fd.SetName('index')
+pa.SetNumberOfComponents(3)
+pa.SetNumberOfTuples(numBadOverlaps * 4)
+
+ug.Allocate(numBadOverlaps*2, 1)
+ptIds = vtk.vtkIdList()
+ptIds.SetNumberOfIds(2)
+for i in range(numBadOverlaps):
+
+    # dst edge
+    pa.SetTuple(4*i + 0, diags['dstBegPts'][i])
+    pa.SetTuple(4*i + 1, diags['dstEndPts'][i])
+    ptIds.SetId(0, 4*i + 0)
+    ptIds.SetId(1, 4*i + 1)
+    ug.InsertNextCell(vtk.VTK_LINE, ptIds)
+    fd.SetTuple(2*i + 0, [i])
+
+    # src edge
+    pa.SetTuple(4*i + 2, diags['srcBegPts'][i])
+    pa.SetTuple(4*i + 3, diags['srcEndPts'][i])
+    ptIds.SetId(0, 4*i + 2)
+    ptIds.SetId(1, 4*i + 3)
+    ug.InsertNextCell(vtk.VTK_LINE, ptIds)
+    fd.SetTuple(2*i + 1, [i])
+
+pt.SetData(pa)
+ug.SetPoints(pt)
+ug.GetCellData().AddArray(fd)
+wr.SetInputData(ug)
+
+wr.SetFileName('badOverlaps.vtk')
+print(f'info: writing bad edge overlap data into file badOverlaps.vtk')
+wr.Update()
+
+
+
 
 # create pipeline
 srcCones = []
@@ -147,8 +193,11 @@ for i in range(numBadOverlaps):
     sconea.SetMapper(sconem)
 
     scone.SetCenter(0.5*(diags['srcBegPts'][i] + diags['srcEndPts'][i]))
-    scone.SetDirection(diags['srcEndPts'][i] - diags['srcBegPts'][i])
-    scone.SetRadius(0.2)
+    u = diags['srcEndPts'][i] - diags['srcBegPts'][i]
+    length = numpy.sqrt(u.dot(u))
+    scone.SetDirection(u)
+    scone.SetRadius(0.1)
+    scone.SetHeight(length)
     sconea.GetProperty().SetColor(color)
 
     srcCones.append(scone)
@@ -163,8 +212,11 @@ for i in range(numBadOverlaps):
     dconea.SetMapper(dconem)
 
     dcone.SetCenter(0.5*(diags['dstBegPts'][i] + diags['dstEndPts'][i]))
-    dcone.SetDirection(diags['dstEndPts'][i] - diags['dstBegPts'][i])
-    dcone.SetRadius(0.5)
+    u = diags['dstEndPts'][i] - diags['dstBegPts'][i]
+    length = numpy.sqrt(u.dot(u))
+    dcone.SetDirection(u)
+    dcone.SetRadius(0.2)
+    dcone.SetHeight(length)
     dconea.GetProperty().SetColor(color)
 
     dstCones.append(dcone)
