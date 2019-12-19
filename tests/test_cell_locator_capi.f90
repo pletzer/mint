@@ -67,8 +67,8 @@ program test_cell_locator_capi
 
     print*,'cell_id = ', cell_id, ' for point ', point, ' (pcoords = ', pcoords, ')'
     if (cell_id < 0) then
-    	print*,'ERROR: could not find point'
-    	stop 7
+        print*,'ERROR: could not find point'
+        stop 7
     endif
 
     ier = mnt_celllocator_del(handle)
