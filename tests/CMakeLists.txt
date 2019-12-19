@@ -14,6 +14,7 @@ configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 
 add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
+set_target_properties(test_cell_locator_capi PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(test_cell_locator_capi
                       mint
                       ${VTK_LIBRARIES}

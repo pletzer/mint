@@ -1,5 +1,5 @@
 program test_cell_locator_capi
-    use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr, c_size_t
+    use, intrinsic :: iso_c_binding, only: c_long_long, c_int, c_double, c_ptr, c_size_t
     use mnt_celllocator_capi_mod,       only: mnt_celllocator_new, &
                                               mnt_celllocator_del, &
                                               mnt_celllocator_setpointsptr, &
@@ -9,7 +9,8 @@ program test_cell_locator_capi
                                               mnt_celllocator_interppoint
     implicit none
     integer              :: ier, nverts_per_cell, ndims, num_cells_per_bucket
-    integer(8)           :: ncells, cell_id, nx, ny, i, j, icell, index0, index1, index2, index3
+    integer              :: ncells, nx, ny, i, j, icell, index0, index1, index2, index3
+    integer(c_long_long) :: cell_id
     real(8), allocatable :: verts(:)
     real(8)              :: point(3), pcoords(3), dx, dy, x0, y0, x1, y1
     type(c_ptr)          :: handle
@@ -45,7 +46,8 @@ program test_cell_locator_capi
     ier = mnt_celllocator_new(handle)
     if (ier /= 0) stop 1
 
-    ier = mnt_celllocator_setpointsptr(handle, nverts_per_cell, ncells, verts(1))
+    ier = mnt_celllocator_setpointsptr(handle, nverts_per_cell, &
+                                       int(ncells, kind=c_size_t), verts(1))
     if (ier /= 0) stop 3
 
     num_cells_per_bucket = 2
@@ -62,6 +64,5 @@ program test_cell_locator_capi
     if (ier /= 0) stop 2
 
     deallocate(verts)
-
 
 end program test_cell_locator_capi
