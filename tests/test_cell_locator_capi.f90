@@ -9,11 +9,12 @@ program test_cell_locator_capi
                                               mnt_celllocator_interppoint
     implicit none
     integer              :: ier, nverts_per_cell, ndims, num_cells_per_bucket
-    integer              :: ncells, nx, ny, i, j, icell, index0, index1, index2, index3
+    integer              :: ncells, nx, ny, i, j, icell, index0, index1, index2, index3, index4
     integer(c_long_long) :: cell_id
     real(8), allocatable :: verts(:)
     real(8)              :: point(3), pcoords(3), dx, dy, x0, y0, x1, y1
     type(c_ptr)          :: handle
+    character(len=521)   :: output_file
 
     ! create a uniform grid
     nx = 20
@@ -25,20 +26,22 @@ program test_cell_locator_capi
     dx = 360._8 / real(nx, 8)
     dy = 180._8 / real(ny, 8)
     icell = 0
-    do j = 1, ny
-        do i = 1, nx
+    do j = 0, ny - 1
+        do i = 0, nx - 1
             x0 = 0._8 + dx*i
             y0 = -90._8 + dy*j
             x1 = x0 + dx
             y1 = y0 + dy
-            index0 = ndims * nverts_per_cell * icell
+            print*,'icell = ', icell, 'x0, y0 = ', x0, y0, ' x1, y1 = ', x1, y1
+            index0 = ndims*nverts_per_cell*icell + 1
             index1 = index0 + ndims
             index2 = index1 + ndims
             index3 = index2 + ndims
-            verts(index0:index0 + ndims - 1) = (/x0, y0, 0._8/)
-            verts(index1:index1 + ndims - 1) = (/x1, y0, 0._8/)
-            verts(index2:index2 + ndims - 1) = (/x1, y1, 0._8/)
-            verts(index3:index3 + ndims - 1) = (/x0, y1, 0._8/)
+            index4 = index3 + ndims
+            verts(index0:index1 - 1) = (/x0, y0, 0._8/)
+            verts(index1:index2 - 1) = (/x1, y0, 0._8/)
+            verts(index2:index3 - 1) = (/x1, y1, 0._8/)
+            verts(index3:index4 - 1) = (/x0, y1, 0._8/)
             icell = icell + 1
         enddo
     enddo
@@ -50,11 +53,15 @@ program test_cell_locator_capi
                                        int(ncells, kind=c_size_t), verts(1))
     if (ier /= 0) stop 3
 
-    num_cells_per_bucket = 2
+    output_file = 'test_cell_locator_capi_grid.vtk'
+    ier = mnt_celllocator_dumpgrid(handle, trim(output_file), int(len_trim(output_file), kind=8))
+    if (ier /= 0) stop 5
+
+    num_cells_per_bucket = 1
     ier = mnt_celllocator_build(handle, num_cells_per_bucket)
     if (ier /= 0) stop 4
 
-    point = (/0.9_8, 0.4_8, 0.0_8/)
+    point = (/10.0_8, 20.0_8, 0.0_8/)
     ier = mnt_celllocator_find(handle, point, cell_id, pcoords)
     if (ier /= 0) stop 5
 
