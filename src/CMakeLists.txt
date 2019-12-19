@@ -21,6 +21,7 @@ set(LIB_FILES
   mntLineTriangleIntersector.cpp
   mntRegridEdges.cpp
   mntRegridEdges2D.cpp
+  mntCellLocator.cpp
   mntCmdLineArgParser.cpp
   mnt_celllocator_capi_mod.f90
   mnt_regridedges_capi_mod.f90
@@ -41,6 +42,7 @@ set(HEADER_FILES
   mntPolysegmentIter.h
   mntRegridEdges.h
   mntRegridEdges2D.h
+  mntCellLocator.h
   mntCmdLineArgParser.h
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h

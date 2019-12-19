@@ -13,6 +13,13 @@ configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 
+add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
+target_link_libraries(test_cell_locator_capi
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testVecMat testVecMat.cxx)
 target_link_libraries(testVecMat
                       mint
@@ -147,6 +154,9 @@ target_link_libraries(testCmdLineArgParserFB
                       mint
                       ${VTK_LIBRARIES}
 )
+
+add_test(NAME test_cell_locator_capi
+         COMMAND test_cell_locator_capi)
 
 add_test(NAME regridEdgesF
          COMMAND testRegridEdgesF 

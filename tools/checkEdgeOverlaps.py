@@ -139,9 +139,25 @@ fd.SetName('index')
 pa.SetNumberOfComponents(3)
 pa.SetNumberOfTuples(numBadOverlaps * 4)
 
-ug.Allocate(numBadOverlaps*2, 1)
+fd2 = vtk.vtkDoubleArray()
+pa2 = vtk.vtkDoubleArray()
+pt2 = vtk.vtkPoints()
+ug2 = vtk.vtkUnstructuredGrid()
+wr2 = vtk.vtkUnstructuredGridWriter()
+
+fd2.SetNumberOfComponents(1)
+fd2.SetNumberOfTuples(numBadOverlaps * 2)
+fd2.SetName('index')
+pa2.SetNumberOfComponents(3)
+pa2.SetNumberOfTuples(numBadOverlaps * 2)
+
+
+ug.Allocate(numBadOverlaps*2, 1) # two edges per overlap
+ug2.Allocate(numBadOverlaps*2, 1) # two points per overlap
 ptIds = vtk.vtkIdList()
 ptIds.SetNumberOfIds(2)
+ptIds2 = vtk.vtkIdList()
+ptIds2.SetNumberOfIds(1)
 for i in range(numBadOverlaps):
 
     # dst edge
@@ -160,15 +176,33 @@ for i in range(numBadOverlaps):
     ug.InsertNextCell(vtk.VTK_LINE, ptIds)
     fd.SetTuple(2*i + 1, [i])
 
+    # x point
+    pa2.SetTuple(2*i + 0, diags['dstXpts'][i])
+    ptIds2.SetId(0, 2*i + 0)
+    ug2.InsertNextCell(vtk.VTK_VERTEX, ptIds2)
+    fd2.SetTuple(2*i + 0, [i])
+
+    pa2.SetTuple(2*i + 1, diags['srcXpts'][i])
+    ptIds2.SetId(0, 2*i + 1)
+    ug2.InsertNextCell(vtk.VTK_VERTEX, ptIds2)
+    fd2.SetTuple(2*i + 1, [i])
+
+
 pt.SetData(pa)
 ug.SetPoints(pt)
 ug.GetCellData().AddArray(fd)
 wr.SetInputData(ug)
-
-wr.SetFileName('badOverlaps.vtk')
-print(f'info: writing bad edge overlap data into file badOverlaps.vtk')
+wr.SetFileName('badOverlapEdges.vtk')
+print(f'info: writing bad edge overlap data into file badOverlapEdges.vtk')
 wr.Update()
 
+pt2.SetData(pa2)
+ug2.SetPoints(pt2)
+ug2.GetCellData().AddArray(fd2)
+wr2.SetInputData(ug2)
+wr2.SetFileName('badOverlapPoints.vtk')
+print(f'info: writing bad edge overlap data into file badOverlapPoints.vtk')
+wr2.Update()
 
 
 
@@ -179,7 +213,15 @@ srcConeActors = []
 dstCones = []
 dstConeMappers = []
 dstConeActors = []
+srcSpheres = []
+srcSphereMappers = []
+srcSphereActors = []
+dstSpheres = []
+dstSphereMappers = []
+dstSphereActors = []
+
 random.seed(123)
+
 for i in range(numBadOverlaps):
 
     color = (random.random(), random.random(), random.random())
@@ -223,14 +265,42 @@ for i in range(numBadOverlaps):
     dstConeMappers.append(dconem)
     dstConeActors.append(dconea)
 
+    # src intersection point
+    ssphere = vtk.vtkSphereSource()
+    sspherem = vtk.vtkPolyDataMapper()
+    sspherea = vtk.vtkActor()
+    sspherem.SetInputConnection(ssphere.GetOutputPort())
+    sspherea.SetMapper(sspherem)
+    ssphere.SetRadius(1.)
+    ssphere.SetCenter(diags['srcXpts'][i])
+    sspherea.GetProperty().SetColor(color)
+    srcSpheres.append(ssphere)
+    srcSphereMappers.append(sspherem)
+    srcSphereActors.append(sspherea)
+
+    # dst intersection point
+    dsphere = vtk.vtkSphereSource()
+    dspherem = vtk.vtkPolyDataMapper()
+    dspherea = vtk.vtkActor()
+    dspherem.SetInputConnection(dsphere.GetOutputPort())
+    dspherea.SetMapper(dspherem)
+    dsphere.SetRadius(1.)
+    dsphere.SetCenter(diags['dstXpts'][i])
+    dspherea.GetProperty().SetColor(color)
+    dstSpheres.append(dsphere)
+    dstSphereMappers.append(dspherem)
+    dstSphereActors.append(dspherea)
+
+
 renderer = vtk.vtkRenderer()
+renderer.SetBackground(1., 1., 1.)
 renderWindow = vtk.vtkRenderWindow()
 renderWindowInteractor = vtk.vtkRenderWindowInteractor()
 
 renderWindow.AddRenderer(renderer)
 renderWindowInteractor.SetRenderWindow(renderWindow)
 
-for a in srcConeActors + dstConeActors:
+for a in srcConeActors + dstConeActors + srcSphereActors + dstSphereActors:
     renderer.AddActor(a)
 
 renderWindow.Render()
