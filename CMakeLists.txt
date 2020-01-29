@@ -34,7 +34,7 @@ message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
 
 # allow the user to set the variables manually
 set(NETCDF_INCLUDE_DIR "" CACHE PATH "Directory containing the netCDF include files")
-set(NETCDF_LIBRARIES "" CACHE PATH "List of netCDF libraries")
+set(NETCDF_LIBRARIES "" CACHE STRING "List of netCDF libraries")
 
 # Find the NetCDF library. Setting NETCDF_INCLUDE_DIR and NETCDF_LIBRARIES takes precedence.
 # If not set then key off from nc-config
