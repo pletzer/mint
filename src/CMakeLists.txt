@@ -22,6 +22,7 @@ set(LIB_FILES
   mntRegridEdges.cpp
   mntCellLocator.cpp
   mntCmdLineArgParser.cpp
+  mntNcFieldRead.cpp
   mnt_celllocator_capi_mod.f90
   mnt_regridedges_capi_mod.f90
   mnt_cmdlineargparser_capi_mod.f90
@@ -42,6 +43,7 @@ set(HEADER_FILES
   mntRegridEdges.h
   mntCellLocator.h
   mntCmdLineArgParser.h
+  mntNcFieldRead.h
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h
