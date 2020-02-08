@@ -65,8 +65,8 @@ int mnt_ncfieldread_getNumDims(NcFieldRead_t** self, int* ndims) {
 
 
 extern "C"
-int mnt_ncfieldread_getDimName(NcFieldRead_t** self, int iAxis, char* dimName, int dimLen) {
-  dimName = strncpy(dimName, (*self)->dimNames[iAxis].c_str(), dimLen);
+int mnt_ncfieldread_getDimName(NcFieldRead_t** self, int iAxis, char* dimName, int dimNameLen) {
+  dimName = strncpy(dimName, (*self)->dimNames[iAxis].c_str(), dimNameLen);
   return 0;
 }
 
