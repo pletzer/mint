@@ -74,6 +74,48 @@ module mnt_ncfieldread_capi_mod
       integer(c_int)                   :: mnt_ncfieldread_getDim
     end function mnt_ncfieldread_getDim
 
+    function mnt_ncfieldread_getNumAttsStr(obj, n) &
+                                           bind(C, name='mnt_ncfieldread_getNumAttsStr')
+      ! Get the number of string attributes
+      ! @param obj instance of mntNcFieldRead_t (opaque handle)
+      ! @param n number 
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+      implicit none
+      type(c_ptr), intent(inout)       :: obj ! void**
+      integer(c_int), intent(out)      :: n
+      integer(c_int)                   :: mnt_ncfieldread_getNumAttsStr
+    end function mnt_ncfieldread_getNumAttsStr
+
+
+    function mnt_ncfieldread_getNumAttsInt(obj, n) &
+                                           bind(C, name='mnt_ncfieldread_getNumAttsInt')
+      ! Get the number of string attributes
+      ! @param obj instance of mntNcFieldRead_t (opaque handle)
+      ! @param n number 
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+      implicit none
+      type(c_ptr), intent(inout)       :: obj ! void**
+      integer(c_int), intent(out)      :: n
+      integer(c_int)                   :: mnt_ncfieldread_getNumAttsInt
+    end function mnt_ncfieldread_getNumAttsInt
+
+
+    function mnt_ncfieldread_getNumAttsDbl(obj, n) &
+                                           bind(C, name='mnt_ncfieldread_getNumAttsDbl')
+      ! Get the number of string attributes
+      ! @param obj instance of mntNcFieldRead_t (opaque handle)
+      ! @param n number 
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+      implicit none
+      type(c_ptr), intent(inout)       :: obj ! void**
+      integer(c_int), intent(out)      :: n
+      integer(c_int)                   :: mnt_ncfieldread_getNumAttsDbl
+    end function mnt_ncfieldread_getNumAttsDbl
+
+
     function mnt_ncfieldread_readData(obj, data) &
                                       bind(C, name='mnt_ncfieldread_readData')
       ! Read the entire netcdf variable

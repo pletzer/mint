@@ -115,6 +115,73 @@ int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, size_t* dim) {
 }
 
 extern "C"
+int mnt_ncfieldread_getNumAttsStr(NcFieldRead_t** self,
+                                 int* n) {
+  *n = (*self)->attStr.size();
+  return 0;
+}
+
+extern "C"
+int mnt_ncfieldread_getNumAttsInt(NcFieldRead_t** self,
+                                 int* n) {
+  *n = (*self)->attInt.size();
+  return 0;
+}
+
+extern "C"
+int mnt_ncfieldread_getNumAttsDbl(NcFieldRead_t** self,
+                                 int* n) {
+  *n = (*self)->attDbl.size();
+  return 0;
+}
+
+extern "C"
+int mnt_ncfieldread_getAttsStr(NcFieldRead_t** self,
+                              char attNames[], int attNameLen,
+                              char attVals[], int attValLen) {
+
+  size_t n = (*self)->attStr.size();
+  size_t count = 0;
+  for (auto it = (*self)->attStr.cbegin(); it != (*self)->attStr.cend(); ++it) {
+    strncpy(&attNames[count*attNameLen], it->first.c_str(), attNameLen);
+    strncpy(&attVals[count*attValLen], it->second.c_str(), attValLen);
+    count++;
+  }
+  return 0;
+}
+
+extern "C"
+int mnt_ncfieldread_getAttsInt(NcFieldRead_t** self,
+                              char attNames[], int attNameLen,
+                              int attVals[]) {
+
+  size_t n = (*self)->attInt.size();
+  size_t count = 0;
+  for (auto it = (*self)->attInt.cbegin(); it != (*self)->attInt.cend(); ++it) {
+    strncpy(&attNames[count*attNameLen], it->first.c_str(), attNameLen);
+    attVals[count] = it->second;
+    count++;
+  }
+  return 0;
+}
+
+extern "C"
+int mnt_ncfieldread_getAttsDbl(NcFieldRead_t** self,
+                              char attNames[], int attNameLen,
+                              double attVals[]) {
+
+
+  size_t n = (*self)->attDbl.size();
+  size_t count = 0;
+  for (auto it = (*self)->attDbl.cbegin(); it != (*self)->attDbl.cend(); ++it) {
+    strncpy(&attNames[count*attNameLen], it->first.c_str(), attNameLen);
+    attVals[count] = it->second;
+    count++;
+  }
+  return 0;
+}
+
+extern "C"
 int mnt_ncfieldread_readData(NcFieldRead_t** self, 
                              double data[]) {
 
@@ -131,5 +198,4 @@ int mnt_ncfieldread_readDataSlice(NcFieldRead_t** self,
                                startInds0, counts, data);
   return ier;
 }
-
 

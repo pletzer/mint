@@ -79,6 +79,63 @@ int mnt_ncfieldread_getDimName(NcFieldRead_t** self, int iAxis, char* dimName, i
 extern "C"
 int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, size_t* dim);
 
+/**
+ Get the number of string attributes
+ @param n number
+ */
+extern "C"
+int mnt_ncfieldread_getNumAttsStr(NcFieldRead_t** self, int* n);
+
+/**
+ Get the number of int attributes
+ @param n number
+ */
+extern "C"
+int mnt_ncfieldread_getNumAttsInt(NcFieldRead_t** self, int* n);
+
+/**
+ Get the number of double attributes
+ @param n number
+ */
+extern "C"
+int mnt_ncfieldread_getNumAttsDbl(NcFieldRead_t** self, int* n);
+
+/**
+ * Get all attributes of type string
+ * @param attNames array of attribute names to be filled in
+ * @param attNameLen length of each attribute name
+ * @param attVals array of values to be filled in (output)
+ * @param attValLen length of each attribute value
+ */
+extern "C"
+int mnt_ncfieldread_getAttsStr(NcFieldRead_t** self,
+                              char attNames[], int attNameLen,
+                              char attVals[], int attValLen);
+
+
+/**
+ * Get all the attributes of type int
+ * @param attNames array of attribute names to be filled in
+ * @param attNameLen length of each attribute name
+ * @param attVals attribute value (output)
+ */
+extern "C"
+int mnt_ncfieldread_getAttsInt(NcFieldRead_t** self,
+                              char attNames[], int attNameLen,
+                              int attVals[]);
+
+
+/**
+ * Get all the attributes of type double
+ * @param attNames array of attribute names to be filled in
+ * @param attNameLen length of each atttribute name
+ * @param attVals array of values to be filled in (output)
+ */
+extern "C"
+int mnt_ncfieldread_getAttsDbl(NcFieldRead_t** self,
+                              char attNames[], int attNameLen,
+                              double attVals[]);
+
 
 /**
  * Read the netcdf variable 
@@ -101,24 +158,6 @@ int mnt_ncfieldread_readDataSlice(NcFieldRead_t** self,
                                   const size_t* startInds0, 
                                   const size_t* counts, 
                                   double data[]);
-
-
-extern "C"
-int mnt_ncfieldread_getAttStr(NcFieldRead_t** self,
-                              const char* attName, int attNameLen,
-                              char* attVal, int attValLen);
-
-
-extern "C"
-int mnt_ncfieldread_getAttInt(NcFieldRead_t** self,
-                              const char* attName, int attNameLen,
-                              int* attVal);
-
-
-extern "C"
-int mnt_ncfieldread_getAttDbl(NcFieldRead_t** self,
-                              const char* attName, int attNameLen,
-                              double* attVal, int attValLen);
 
 
 
