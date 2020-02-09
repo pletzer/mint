@@ -1,6 +1,6 @@
 program test
 
-	use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr
+	use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
 	use mnt_ncfieldread_capi_mod 
 
     implicit none
@@ -8,10 +8,38 @@ program test
     character(len=512) :: ncfile = '${CMAKE_SOURCE_DIR}/data/lric_diag_ex.nc'
     character(len=32)  :: varname = 'u1'
     type(c_ptr)        :: handle
-    integer            :: ier
+    integer            :: ier, ndims, i
+    integer(c_size_t)  :: dim, ntot
+    integer(c_size_t), allocatable :: startInds0(:), counts(:)
+    real(c_double), allocatable    :: data(:)
+    character(len=32)  :: dimName
 
     ier = mnt_ncfieldread_new(handle, trim(ncfile), len_trim(ncfile), &
                                       trim(varname), len_trim(varname))
+
+    ier = mnt_ncfieldread_getNumDims(handle, ndims)
+
+    allocate(counts(ndims))
+    allocate(startInds0(ndims))
+
+    ntot = 1
+    do i = 1, ndims 
+        ier = mnt_ncfieldread_getDimName(handle, i, dimName, len(dimName))
+        ier = mnt_ncfieldread_getDim(handle, i, dim)
+        ntot = ntot * dim
+        startInds0(i) = 0
+        counts(i) = dim
+    enddo
+
+    allocate(data(ntot))
+
+    ier = mnt_ncfieldread_readData(handle, data)
+
+    ier = mnt_ncfieldread_readDataSlice(handle, startInds0, counts, data)
+
+    deallocate(data)
+    deallocate(startInds0)
+    deallocate(counts)
 
     ier = mnt_ncfieldread_del(handle)
 

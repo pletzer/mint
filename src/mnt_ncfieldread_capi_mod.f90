@@ -66,11 +66,11 @@ module mnt_ncfieldread_capi_mod
       ! @param iAxis dimension/axis number (0 based)
       ! @param dim dimension size
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_size_t
       implicit none
       type(c_ptr), intent(inout)       :: obj ! void**
       integer(c_int), value            :: iAxis
-      integer(c_int), intent(out)      :: dim
+      integer(c_size_t), intent(out)   :: dim
       integer(c_int)                   :: mnt_ncfieldread_getDim
     end function mnt_ncfieldread_getDim
 
@@ -83,7 +83,7 @@ module mnt_ncfieldread_capi_mod
       use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_double
       implicit none
       type(c_ptr), intent(inout)       :: obj ! void**
-      real(c_double), intent(out)      :: data
+      real(c_double), intent(out)      :: data(:)
       integer(c_int)                   :: mnt_ncfieldread_readData
     end function mnt_ncfieldread_readData
 
@@ -100,7 +100,7 @@ module mnt_ncfieldread_capi_mod
       type(c_ptr), intent(inout)       :: obj ! void**
       integer(c_size_t), intent(in)    :: startInds0(*)
       integer(c_size_t), intent(in)    :: counts(*)
-      real(c_double), intent(out)      :: data
+      real(c_double), intent(out)      :: data(:)
       integer(c_int)                   :: mnt_ncfieldread_readDataSlice
     end function mnt_ncfieldread_readDataSlice   
 
