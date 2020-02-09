@@ -1,0 +1,18 @@
+program test
+
+	use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr
+	use mnt_ncfieldread_capi_mod 
+
+    implicit none
+
+    character(len=512) :: ncfile = '${CMAKE_SOURCE_DIR}/data/lric_diag_ex.nc'
+    character(len=32)  :: varname = 'u1'
+    type(c_ptr)        :: handle
+    integer            :: ier
+
+    ier = mnt_ncfieldread_new(handle, trim(ncfile), len_trim(ncfile), &
+                                      trim(varname), len_trim(varname))
+
+    ier = mnt_ncfieldread_del(handle)
+
+end program test

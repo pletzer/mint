@@ -23,6 +23,7 @@ set(LIB_FILES
   mntCellLocator.cpp
   mntCmdLineArgParser.cpp
   mntNcFieldRead.cpp
+  mnt_ncfieldread_capi_mod.f90
   mnt_celllocator_capi_mod.f90
   mnt_regridedges_capi_mod.f90
   mnt_cmdlineargparser_capi_mod.f90

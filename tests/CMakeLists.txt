@@ -11,6 +11,15 @@ configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
+configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
+
+add_executable(test_ncfieldread ${CMAKE_BINARY_DIR}/tests/test_ncfieldread.f90)
+set_target_properties(test_ncfieldread PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(test_ncfieldread
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
 
 add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
 set_target_properties(test_cell_locator_capi PROPERTIES LINKER_LANGUAGE Fortran)
