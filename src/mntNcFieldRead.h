@@ -24,6 +24,11 @@ struct NcFieldRead_t {
   std::vector<std::string> dimNames;
   std::vector<size_t> dimSizes;
   std::vector<int> dimIds;
+
+  // attributes
+  std::map<std::string, std::string> attStr;
+  std::map<std::string, int> attInt;
+  std::map<std::string, double> attDbl;
 };
 
 /**
@@ -96,6 +101,24 @@ int mnt_ncfieldread_readDataSlice(NcFieldRead_t** self,
                                   const size_t* startInds0, 
                                   const size_t* counts, 
                                   double data[]);
+
+
+extern "C"
+int mnt_ncfieldread_getAttStr(NcFieldRead_t** self,
+                              const char* attName, int attNameLen,
+                              char* attVal, int attValLen);
+
+
+extern "C"
+int mnt_ncfieldread_getAttInt(NcFieldRead_t** self,
+                              const char* attName, int attNameLen,
+                              int* attVal);
+
+
+extern "C"
+int mnt_ncfieldread_getAttDbl(NcFieldRead_t** self,
+                              const char* attName, int attNameLen,
+                              double* attVal, int attValLen);
 
 
 

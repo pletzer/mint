@@ -16,18 +16,21 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
   std::string fname = std::string(fileName, fileNameLen);
   std::string vname = std::string(varName, varNameLen);
 
+  // open the file
   int ier = nc_open(fname.c_str(), NC_NOWRITE, &(*self)->ncid);
   if (ier != NC_NOERR) {
     std::cerr << "ERROR: could not open file " << fname << '\n';
     return 1;
   }
 
+  // get the variable Id
   ier = nc_inq_varid((*self)->ncid, vname.c_str(), &(*self)->varid);
   if (ier != NC_NOERR) {
     std::cerr << "ERROR: could not find variable " << vname << " in file " << fname << '\n';
     return 2;
   }
 
+  // inquire abut the variable
   int ndims = 0;
   int dimIds[NC_MAX_VAR_DIMS];
   int natts = 0;
@@ -37,6 +40,7 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
     return 3;
   }
 
+  // get the dimensions and dimension names
   char dimName[NC_MAX_NAME + 1];
   size_t dim;
   for (int iDim = 0; iDim < ndims; ++iDim) {
@@ -46,6 +50,37 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
       (*self)->dimSizes.push_back(dim);
     }
   }
+
+  // get the attributes
+  char attname[NC_MAX_NAME + 1];
+  size_t n;
+  nc_type xtype;
+  for (int i = 0; i < natts; ++i) {
+    ier = nc_inq_attname((*self)->ncid, (*self)->varid, i, attname);
+    ier = nc_inq_att((*self)->ncid, (*self)->varid, attname, &xtype, &n);
+    if (n == 1 && xtype == NC_DOUBLE) {
+      double val;
+      ier = nc_get_att_double((*self)->ncid, (*self)->varid, attname, &val);
+      (*self)->attDbl.insert(std::pair<std::string, double>(std::string(attname), val));
+    }
+    else if (n == 1 && xtype == NC_INT) {
+      int val;
+      ier = nc_get_att_int((*self)->ncid, (*self)->varid, attname, &val);
+      (*self)->attInt.insert(std::pair<std::string, int>(std::string(attname), val));
+    }
+    else if (xtype == NC_CHAR) {
+      char val[n + 1];
+      ier = nc_get_att_text((*self)->ncid, (*self)->varid, attname, val);
+      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), val));
+    }
+    else {
+      std::cerr << "Warning: unsupported attribute type " << xtype << " of length " << n << '\n';
+    }
+    if (ier != NC_NOERR) {
+      std::cerr << "Warning: failed to read attribute " << attname << " of variable " << vname << '\n';
+    }
+  }
+
 
   return 0;
 }
