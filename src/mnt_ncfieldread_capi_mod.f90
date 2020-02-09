@@ -116,6 +116,60 @@ module mnt_ncfieldread_capi_mod
     end function mnt_ncfieldread_getNumAttsDbl
 
 
+    function mnt_ncfieldread_getAttsStr(obj, attNames, attNameLen, attVals, attValLen) &
+                                        bind(C, name='mnt_ncfieldread_getAttsStr')
+      ! Get al the string attributes
+      ! @param obj instance of mntNcFieldRead_t (opaque handle)
+      ! @param attNames attribute names as a contiguous array, to be filled in
+      ! @param attNameLen length of each attribute name
+      ! @param attVals attribute values as a contiguous array, to be filled in
+      ! @param attValLen length of each attVals string
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char
+      implicit none
+      type(c_ptr), intent(inout)          :: obj ! void**
+      character(kind=c_char), intent(out) :: attNames(*)
+      integer(c_int), value               :: attNameLen
+      character(kind=c_char), intent(out) :: attVals(*)
+      integer(c_int), value               :: attValLen
+      integer(c_int)                      :: mnt_ncfieldread_getAttsStr
+    end function mnt_ncfieldread_getAttsStr
+
+    function mnt_ncfieldread_getAttsInt(obj, attNames, attNameLen, attVals) &
+                                        bind(C, name='mnt_ncfieldread_getAttsInt')
+      ! Get al the string attributes
+      ! @param obj instance of mntNcFieldRead_t (opaque handle)
+      ! @param attNames attribute names as a contiguous array, to be filled in
+      ! @param attNameLen length of each attribute name
+      ! @param attVals attribute values as a contiguous array, to be filled in
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char
+      implicit none
+      type(c_ptr), intent(inout)          :: obj ! void**
+      character(kind=c_char), intent(out) :: attNames(*)
+      integer(c_int), value               :: attNameLen
+      integer(c_int), intent(out)         :: attVals(*)
+      integer(c_int)                      :: mnt_ncfieldread_getAttsInt
+    end function mnt_ncfieldread_getAttsInt
+
+    function mnt_ncfieldread_getAttsDbl(obj, attNames, attNameLen, attVals) &
+                                        bind(C, name='mnt_ncfieldread_getAttsDbl')
+      ! Get al the string attributes
+      ! @param obj instance of mntNcFieldRead_t (opaque handle)
+      ! @param attNames attribute names as a contiguous array, to be filled in
+      ! @param attNameLen length of each attribute name
+      ! @param attVals attribute values as a contiguous array, to be filled in
+      ! @return 0 if successful
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char, c_double
+      implicit none
+      type(c_ptr), intent(inout)          :: obj ! void**
+      character(kind=c_char), intent(out) :: attNames(*)
+      integer(c_int), value               :: attNameLen
+      real(c_double), intent(out)         :: attVals(*)
+      integer(c_int)                      :: mnt_ncfieldread_getAttsDbl
+    end function mnt_ncfieldread_getAttsDbl
+
+
     function mnt_ncfieldread_readData(obj, data) &
                                       bind(C, name='mnt_ncfieldread_readData')
       ! Read the entire netcdf variable
