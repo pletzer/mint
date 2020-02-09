@@ -53,8 +53,12 @@ program test
     ier = mnt_ncfieldread_readData(handle, data)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readData'
 
+    print*,' checksum of data: ', sum(data)
+
     ier = mnt_ncfieldread_readDataSlice(handle, startInds0, counts, data)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readDataSlice'
+
+    print*,' checksum of data: ', sum(data)
 
     deallocate(data)
     deallocate(startInds0)
