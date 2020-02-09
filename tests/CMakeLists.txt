@@ -157,6 +157,11 @@ target_link_libraries(testCmdLineArgParserFB
                       ${VTK_LIBRARIES}
 )
 
+add_test(NAME test_ncfieldread
+	     COMMAND test_ncfieldread)
+set_tests_properties(test_ncfieldread PROPERTIES
+	                 FAIL_REGULAR_EXPRESSION "ERROR")
+
 add_test(NAME test_cell_locator_capi
          COMMAND test_cell_locator_capi)
 

@@ -7,14 +7,14 @@ module mnt_ncfieldread_capi_mod
       ! Constructor
       ! @param obj instance of mntNcFieldRead_t (opaque handle)
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char
       implicit none
-      type(c_ptr), intent(inout)       :: obj ! void**
-      character(len=1), intent(in)     :: fileName
-      integer(c_int), value            :: fileNameLen
-      character(len=1), intent(in)     :: varName
-      integer(c_int), value            :: varNameLen
-      integer(c_int)                   :: mnt_ncfieldread_new
+      type(c_ptr), intent(inout)             :: obj ! void**
+      character(kind=c_char), intent(in)     :: fileName(*)
+      integer(c_int), value                  :: fileNameLen
+      character(kind=c_char), intent(in)     :: varName(*)
+      integer(c_int), value                  :: varNameLen
+      integer(c_int)                         :: mnt_ncfieldread_new
     end function mnt_ncfieldread_new
 
     function mnt_ncfieldread_del(obj) &
@@ -50,13 +50,13 @@ module mnt_ncfieldread_capi_mod
       ! @param dimName dimension name
       ! @param dimNameLen max number of characters in dimName 
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char
       implicit none
-      type(c_ptr), intent(inout)       :: obj ! void**
-      integer(c_int), intent(in)       :: iAxis
-      character(len=1), intent(out)    :: dimName
-      integer(c_int), value            :: dimNameLen
-      integer(c_int)                   :: mnt_ncfieldread_getDimName
+      type(c_ptr), intent(inout)             :: obj ! void**
+      integer(c_int), value                  :: iAxis
+      character(kind=c_char), intent(out)    :: dimName(*)
+      integer(c_int), value                  :: dimNameLen
+      integer(c_int)                         :: mnt_ncfieldread_getDimName
     end function mnt_ncfieldread_getDimName
 
     function mnt_ncfieldread_getDim(obj, iAxis, dim) &
@@ -75,7 +75,7 @@ module mnt_ncfieldread_capi_mod
     end function mnt_ncfieldread_getDim
 
     function mnt_ncfieldread_readData(obj, data) &
-                                        bind(C, name='mnt_ncfieldread_readData')
+                                      bind(C, name='mnt_ncfieldread_readData')
       ! Read the entire netcdf variable
       ! @param obj instance of mntNcFieldRead_t (opaque handle)
       ! @param data array, will be filled in
@@ -83,7 +83,7 @@ module mnt_ncfieldread_capi_mod
       use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_double
       implicit none
       type(c_ptr), intent(inout)       :: obj ! void**
-      real(c_double), intent(out)      :: data(:)
+      real(c_double), intent(out)      :: data(*)
       integer(c_int)                   :: mnt_ncfieldread_readData
     end function mnt_ncfieldread_readData
 
@@ -100,7 +100,7 @@ module mnt_ncfieldread_capi_mod
       type(c_ptr), intent(inout)       :: obj ! void**
       integer(c_size_t), intent(in)    :: startInds0(*)
       integer(c_size_t), intent(in)    :: counts(*)
-      real(c_double), intent(out)      :: data(:)
+      real(c_double), intent(out)      :: data(*)
       integer(c_int)                   :: mnt_ncfieldread_readDataSlice
     end function mnt_ncfieldread_readDataSlice   
 
