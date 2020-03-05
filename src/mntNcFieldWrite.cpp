@@ -166,6 +166,7 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
   }
 
   (*self)->defined = true;
+  ier = nc_enddef((*self)->ncid);
 
   return ier;
 }
