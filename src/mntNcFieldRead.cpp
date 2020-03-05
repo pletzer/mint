@@ -30,7 +30,7 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
     return 2;
   }
 
-  // inquire abut the variable
+  // inquire about the variable
   int ndims = 0;
   int dimIds[NC_MAX_VAR_DIMS];
   int natts = 0;
@@ -182,18 +182,18 @@ int mnt_ncfieldread_getAttsDbl(NcFieldRead_t** self,
 }
 
 extern "C"
-int mnt_ncfieldread_readData(NcFieldRead_t** self, 
-                             double data[]) {
+int mnt_ncfieldread_data(NcFieldRead_t** self, 
+                         double data[]) {
 
   int ier = nc_get_var_double((*self)->ncid, (*self)->varid, data);
   return ier;
 }
 
 extern "C"
-int mnt_ncfieldread_readDataSlice(NcFieldRead_t** self, 
-                                  const size_t startInds0[], 
-                                  const size_t counts[], 
-                                  double data[]) {
+int mnt_ncfieldread_dataSlice(NcFieldRead_t** self, 
+                              const size_t startInds0[], 
+                              const size_t counts[], 
+                              double data[]) {
   int ier = nc_get_vara_double((*self)->ncid, (*self)->varid, 
                                startInds0, counts, data);
   return ier;

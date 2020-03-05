@@ -143,8 +143,8 @@ int mnt_ncfieldread_getAttsDbl(NcFieldRead_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldread_readData(NcFieldRead_t** self, 
-                             double data[]);
+int mnt_ncfieldread_data(NcFieldRead_t** self, 
+                         double data[]);
 
 /**
  * Read a slice of the netcdf variable
@@ -154,10 +154,10 @@ int mnt_ncfieldread_readData(NcFieldRead_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldread_readDataSlice(NcFieldRead_t** self, 
-                                  const size_t* startInds0, 
-                                  const size_t* counts, 
-                                  double data[]);
+int mnt_ncfieldread_dataSlice(NcFieldRead_t** self, 
+                              const size_t* startInds0, 
+                              const size_t* counts, 
+                              double data[]);
 
 
 

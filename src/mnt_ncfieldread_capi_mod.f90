@@ -170,8 +170,8 @@ module mnt_ncfieldread_capi_mod
     end function mnt_ncfieldread_getAttsDbl
 
 
-    function mnt_ncfieldread_readData(obj, data) &
-                                      bind(C, name='mnt_ncfieldread_readData')
+    function mnt_ncfieldread_data(obj, data) &
+                                      bind(C, name='mnt_ncfieldread_data')
       ! Read the entire netcdf variable
       ! @param obj instance of mntNcFieldRead_t (opaque handle)
       ! @param data array, will be filled in
@@ -180,11 +180,11 @@ module mnt_ncfieldread_capi_mod
       implicit none
       type(c_ptr), intent(inout)       :: obj ! void**
       real(c_double), intent(out)      :: data(*)
-      integer(c_int)                   :: mnt_ncfieldread_readData
-    end function mnt_ncfieldread_readData
+      integer(c_int)                   :: mnt_ncfieldread_data
+    end function mnt_ncfieldread_data
 
-    function mnt_ncfieldread_readDataSlice(obj, startInds0, counts, data) &
-                                        bind(C, name='mnt_ncfieldread_readDataSlice')
+    function mnt_ncfieldread_dataSlice(obj, startInds0, counts, data) &
+                                       bind(C, name='mnt_ncfieldread_dataSlice')
       ! Read a slice of the netcdf variable
       ! @param obj instance of mntNcFieldRead_t (opaque handle)
       ! @param startInds0 starting indices (0 based and assuming C ordering)
@@ -197,8 +197,8 @@ module mnt_ncfieldread_capi_mod
       integer(c_size_t), intent(in)    :: startInds0(*)
       integer(c_size_t), intent(in)    :: counts(*)
       real(c_double), intent(out)      :: data(*)
-      integer(c_int)                   :: mnt_ncfieldread_readDataSlice
-    end function mnt_ncfieldread_readDataSlice   
+      integer(c_int)                   :: mnt_ncfieldread_dataSlice
+    end function mnt_ncfieldread_dataSlice   
 
   end interface
 

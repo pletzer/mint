@@ -79,12 +79,12 @@ program test
     write(0, *) 'ntot = ', ntot
     allocate(data(ntot))
 
-    ier = mnt_ncfieldread_readData(handle, data)
+    ier = mnt_ncfieldread_data(handle, data)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readData'
 
     print*,' checksum of data: ', sum(data)
 
-    ier = mnt_ncfieldread_readDataSlice(handle, startInds0, counts, data)
+    ier = mnt_ncfieldread_dataSlice(handle, startInds0, counts, data)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readDataSlice'
 
     print*,' checksum of data: ', sum(data)
