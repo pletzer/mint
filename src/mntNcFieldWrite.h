@@ -30,6 +30,7 @@ struct NcFieldwrite_t {
   std::map<std::string, double> attDbl;
 
   bool defined;
+  bool append;
 };
 
 /**
@@ -38,12 +39,14 @@ struct NcFieldwrite_t {
  * @param fileNameLen length of filename string (excluding '\0' if present)
  * @param varName variable name (does not require termination character)
  * @param varNameLen length of varName string (excluding '\0' if present)
+ * @param mode 'a' for append, otherwise a new file will be created
  * @return error code (0 is OK)
  */
 extern "C"
 int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
                         const char* fileName, int fileNameLen, 
-                        const char* varName, int varNameLen);
+                        const char* varName, int varNameLen, 
+                        char mode);
 
 /**
  * Destructor
@@ -134,8 +137,13 @@ int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self,
 
 
 
+/* private methods */
+
 extern "C"
 int mnt_ncfieldwrite_define(NcFieldwrite_t** self);
+
+extern "C"
+int mnt_ncfieldwrite_inquire(NcFieldwrite_t** self);
 
 
 #endif // MNT_NC_FIELD_WRITE

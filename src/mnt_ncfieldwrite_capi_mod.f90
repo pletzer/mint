@@ -3,7 +3,7 @@ module mnt_ncfieldwrite_capi_mod
   interface
 
     function mnt_ncfieldwrite_new(obj, fileName, fileNameLen, &
-    	                          varName, varNameLen) &
+    	                            varName, varNameLen, mode) &
                                   bind(C, name='mnt_ncfieldwrite_new')
       ! Constructor
       ! @param obj instance of mntNcFieldwrite_t (opaque handle)
@@ -15,6 +15,7 @@ module mnt_ncfieldwrite_capi_mod
       integer(c_int), value                  :: fileNameLen
       character(kind=c_char), intent(in)     :: varName(*)
       integer(c_int), value                  :: varNameLen
+      character(kind=c_char), value          :: mode
       integer(c_int)                         :: mnt_ncfieldwrite_new
     end function mnt_ncfieldwrite_new
 

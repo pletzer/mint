@@ -7,22 +7,47 @@
 extern "C"
 int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
                         const char* fileName, int fileNameLen, 
-                        const char* varName, int varNameLen) {
+                        const char* varName, int varNameLen,
+                        char mode) {
 
   *self = new NcFieldwrite_t();
   (*self)->ncid = -1;
   (*self)->varid = -1;
   (*self)->defined = false;
+  (*self)->append = false;
   (*self)->varName = std::string(varName, varNameLen);
+
+  if (mode == 'a') {
+    (*self)->append = true;
+  }
 
   std::string fname = std::string(fileName, fileNameLen);
   std::string vname = std::string(varName, varNameLen);
 
-  // open the file
-  int ier = nc_create(fname.c_str(), NC_CLOBBER, &(*self)->ncid);
-  if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not create file " << fname << '\n';
-    return 1;
+  if ((*self)->append) {
+    // append data to existing file
+    int ier = nc_open(fname.c_str(), NC_WRITE, &(*self)->ncid);
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: could not open file " << fname << " in write access mode\n";
+      return 1;
+    }
+
+    // load the attributes and dimensions if in append mode
+    ier = mnt_ncfieldwrite_inquire(self);
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: failed to inquire the attributes and dimensions for variable " 
+                << varName << " in file " << fname << '\n';
+      return 2;
+    }
+
+  }
+  else {
+    // create a new file
+    int ier = nc_create(fname.c_str(), NC_CLOBBER, &(*self)->ncid);
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: could not create file " << fname << '\n';
+      return 1;
+    }
   }
 
   return 0;
@@ -118,6 +143,11 @@ int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self,
 extern "C"
 int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
 
+  if ((*self)->append) {
+    std::cerr << "ERROR: can define only in non-append mode\n";
+    return 1;
+  }  
+
   size_t ndims = (*self)->dimSizes.size();
   std::vector<int> dimIds(ndims);
   int ier;
@@ -127,6 +157,7 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
     if (ier != NC_NOERR) {
       std::cerr << "ERROR: could not define dimension " 
                 << (*self)->dimNames[i] << " = " << (*self)->dimSizes[i] << '\n';
+      return 2;
     }
   }
 
@@ -136,6 +167,7 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
     if (ier != NC_NOERR) {
       std::cerr << "ERROR: could not define variable " 
                 << (*self)->varName << '\n';
+      return 3;
     }
 
   // add the attributes
@@ -145,6 +177,7 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
     if (ier != NC_NOERR) {
       std::cerr << "ERROR: could not put attribute " 
                 << it->first << " = " << it->second << '\n';
+      return 4;
     }
 
   }
@@ -154,6 +187,7 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
     if (ier != NC_NOERR) {
       std::cerr << "ERROR: could not put attribute " 
                 << it->first << " = " << it->second << '\n';
+      return 5;
     }
   }
   for (auto it = (*self)->attDbl.begin(); it != (*self)->attDbl.end(); ++it) {
@@ -162,6 +196,7 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
     if (ier != NC_NOERR) {
       std::cerr << "ERROR: could not put attribute " 
                 << it->first << " = " << it->second << '\n';
+      return 6;
     }
   }
 
@@ -171,3 +206,75 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
   return ier;
 }
 
+extern "C"
+int mnt_ncfieldwrite_inquire(NcFieldwrite_t** self) {
+
+  int ier;
+
+  if (!(*self)->append) {
+    std::cerr << "ERROR: can inquire only in append mode\n";
+    return 1;
+  }
+
+  // get the variable Id
+  ier = nc_inq_varid((*self)->ncid, (*self)->varName.c_str(), &(*self)->varid);
+  if (ier != NC_NOERR) {
+    std::cerr << "ERROR: could not find variable " << (*self)->varName << '\n';
+    return 2;
+  }
+
+  // inquire about the variable
+  int ndims = 0;
+  int dimIds[NC_MAX_VAR_DIMS];
+  int natts = 0;
+  ier = nc_inq_var((*self)->ncid, (*self)->varid, NULL, NULL, &ndims, dimIds, &natts);
+  if (ier != NC_NOERR) {
+    std::cerr << "ERROR: could not inquire about variable " << (*self)->varName << '\n';
+    return 3;
+  }
+
+  // get the dimensions and dimension names
+  (*self)->dimNames.resize(0);
+  (*self)->dimSizes.resize(0);
+  char dimName[NC_MAX_NAME + 1];
+  size_t dim;
+  for (int iDim = 0; iDim < ndims; ++iDim) {
+    ier = nc_inq_dim((*self)->ncid, dimIds[iDim], dimName, &dim);
+    if (ier == NC_NOERR) {
+      (*self)->dimNames.push_back(std::string(dimName));
+      (*self)->dimSizes.push_back(dim);
+    }
+  }
+
+  // get the attributes
+  char attname[NC_MAX_NAME + 1];
+  size_t n;
+  nc_type xtype;
+  for (int i = 0; i < natts; ++i) {
+    ier = nc_inq_attname((*self)->ncid, (*self)->varid, i, attname);
+    ier = nc_inq_att((*self)->ncid, (*self)->varid, attname, &xtype, &n);
+    if (n == 1 && xtype == NC_DOUBLE) {
+      double val;
+      ier = nc_get_att_double((*self)->ncid, (*self)->varid, attname, &val);
+      (*self)->attDbl.insert(std::pair<std::string, double>(std::string(attname), val));
+    }
+    else if (n == 1 && xtype == NC_INT) {
+      int val;
+      ier = nc_get_att_int((*self)->ncid, (*self)->varid, attname, &val);
+      (*self)->attInt.insert(std::pair<std::string, int>(std::string(attname), val));
+    }
+    else if (xtype == NC_CHAR) {
+      char val[n + 1];
+      ier = nc_get_att_text((*self)->ncid, (*self)->varid, attname, val);
+      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), val));
+    }
+    else {
+      std::cerr << "Warning: unsupported attribute type " << xtype << " of length " << n << '\n';
+    }
+    if (ier != NC_NOERR) {
+      std::cerr << "Warning: failed to read attribute " << attname 
+                << " of variable " << (*self)->varName << '\n';
+    }
+  }
+
+}
