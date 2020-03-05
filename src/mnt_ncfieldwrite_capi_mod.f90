@@ -117,7 +117,7 @@ module mnt_ncfieldwrite_capi_mod
 
 
     function mnt_ncfieldwrite_data(obj, data) &
-                                   bind(C, name='mnt_ncfieldwrite_writeData')
+                                   bind(C, name='mnt_ncfieldwrite_data')
       ! write the entire netcdf variable
       ! @param obj instance of mntNcFieldwrite_t (opaque handle)
       ! @param data array, will be filled in

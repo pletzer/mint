@@ -64,6 +64,7 @@ int mnt_ncfieldwrite_setNumDims(NcFieldwrite_t** self, int ndims);
 
 /**
  * Set a netcdf variable's dimension
+ * @param iAxis axis index (zero-based)
  * @param dimName name
  * @param dimNameLen number of characters in dimName (excluding '\0')
  * @param dim size

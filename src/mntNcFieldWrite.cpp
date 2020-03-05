@@ -89,7 +89,11 @@ int mnt_ncfieldwrite_data(NcFieldwrite_t** self,
 
   if (!(*self)->defined) {
     int stat = mnt_ncfieldwrite_define(self);
+    if (stat != NC_NOERR) {
+       return stat;
+    }
   }
+
   int ier = nc_put_var_double((*self)->ncid, (*self)->varid, data);
   return ier;
 }
@@ -101,7 +105,11 @@ int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self,
                                const double data[]) {
   if (!(*self)->defined) {
     int stat = mnt_ncfieldwrite_define(self);
+    if (stat != NC_NOERR) {
+       return stat;
+    }
   }
+
   int ier = nc_put_vara_double((*self)->ncid, (*self)->varid, 
                                startInds0, counts, data);
   return ier;
@@ -116,22 +124,49 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
   for (int i = 0; i < ndims; ++i) {
     ier = nc_def_dim((*self)->ncid, (*self)->dimNames[i].c_str(),
                                     (*self)->dimSizes[i], &dimIds[i]);
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: could not define dimension " 
+                << (*self)->dimNames[i] << " = " << (*self)->dimSizes[i] << '\n';
+    }
   }
 
   // define the variable
   ier = nc_def_var((*self)->ncid, (*self)->varName.c_str(), NC_DOUBLE, ndims, 
                    &dimIds[0], &(*self)->varid);
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: could not define variable " 
+                << (*self)->varName << '\n';
+    }
 
   // add the attributes
   for (auto it = (*self)->attStr.begin(); it != (*self)->attStr.end(); ++it) {
-    ier = nc_put_att_text((*self)->ncid, (*self)->varid, it->first.c_str(), it->second.size(), it->second.c_str());
+    ier = nc_put_att_text((*self)->ncid, (*self)->varid, 
+                          it->first.c_str(), it->second.size(), it->second.c_str());
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: could not put attribute " 
+                << it->first << " = " << it->second << '\n';
+    }
+
   }
   for (auto it = (*self)->attInt.begin(); it != (*self)->attInt.end(); ++it) {
-    ier = nc_put_att_int((*self)->ncid, (*self)->varid, it->first.c_str(), NC_INT, 1, &it->second);
+    ier = nc_put_att_int((*self)->ncid, (*self)->varid, 
+                         it->first.c_str(), NC_INT, 1, &it->second);
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: could not put attribute " 
+                << it->first << " = " << it->second << '\n';
+    }
   }
   for (auto it = (*self)->attDbl.begin(); it != (*self)->attDbl.end(); ++it) {
-    ier = nc_put_att_double((*self)->ncid, (*self)->varid, it->first.c_str(), NC_DOUBLE, 1, &it->second);
+    ier = nc_put_att_double((*self)->ncid, (*self)->varid, 
+                            it->first.c_str(), NC_DOUBLE, 1, &it->second);
+    if (ier != NC_NOERR) {
+      std::cerr << "ERROR: could not put attribute " 
+                << it->first << " = " << it->second << '\n';
+    }
   }
 
+  (*self)->defined = true;
+
+  return ier;
 }
 
