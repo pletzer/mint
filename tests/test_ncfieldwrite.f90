@@ -13,6 +13,7 @@ program test
     character(len=32)              :: unitVal
     integer(c_int)                 :: ndimsVal
     real(c_double)                 :: fooVal
+    integer(c_size_t)              :: start(3), nsizes(3)
 
     ier = mnt_ncfieldwrite_new(handle, trim(ncfile), len_trim(ncfile), &
                                        trim(varname), len_trim(varname))
@@ -56,15 +57,22 @@ program test
     do k = 1, nz
         do j = 1, ny
             do i = 1, nx
-                u1(i, j, k) = i + j*nx + k*nx*ny
+                u1(i, j, k) = i-1 + (j-1)*nx + (k-1)*nx*ny
             enddo
         enddo
     enddo
 
-    ! write
-    u1 = 2
+    ! write all the data
     ier = mnt_ncfieldwrite_data(handle, u1)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldwrite_data ier = ', ier
+
+    ! write a slice of the data
+    start = [1, 1, 1]
+    nsizes = [nx-1, ny-1, nz-1]
+    u1 = -1
+    ier = mnt_ncfieldwrite_dataSlice(handle, start, nsizes, u1)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldwrite_data ier = ', ier
+
 
 
     ier = mnt_ncfieldwrite_del(handle)
