@@ -1,10 +1,15 @@
 #include <mntRegridEdges.h>
 #include <mntPolysegmentIter.h>
+#include <mntNcFieldRead.h>
+#include <mntNcFieldWrite.h>
+
+#include <netcdf.h>
+
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+
 #include <vtkIdList.h>
-#include <netcdf.h>
 #include <vtkHexahedron.h> // for 3d grids
 #include <vtkQuad.h>       // for 2d grids
 #include <vtkCell.h>
@@ -120,6 +125,8 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* field_name, int nFieldNameLength,
                                   size_t ndata, double data[]) {
 
+    int ier = 0;
+
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
 
     // filter out the mesh name, if present (not used here)
@@ -128,75 +135,40 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
 
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-    // open the file
-    int ncid;
-    int ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: cannot open \"" << filename << "\"\n";
-        nc_close(ncid);
+
+    NcFieldRead_t* rd;
+    int n1 = filename.size();
+    int n2 = fieldname.size();
+    ier = mnt_ncfieldread_new(&rd, filename.c_str(), n1, fieldname.c_str(), n2);
+    if (ier != 0) {
+        std::cerr << "ERROR: loading field " << fieldname << " from file " << filename << '\n';
+        ier = mnt_ncfieldread_del(&rd);
         return 1;
     }
 
-    // check if the variable/field exists
-    int varId;
-    ier = nc_inq_varid(ncid, fieldname.c_str(), &varId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not find variable \"" << fieldname << "\"\n";
-        nc_close(ncid);
-        return 1;
-    }
-
-    // check that the field has the "location" attribute
-    size_t nLoc;
-    ier = nc_inq_attlen(ncid, varId, "location", &nLoc);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: variable \"" << fieldname << "\" does not appear to have attribute 'location' (ier = " << ier << ")\n";
-        nc_close(ncid);
-        return 2;
-    }
-    char location[nLoc + 1];
-    ier = nc_get_att_text(ncid, varId, "location", location);
-    location[nLoc] = '\0';
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: attribute \"location\" of variable \"" << fieldname << "\" could not be read (ier = " << ier << ")\n";
-        nc_close(ncid);
-        return 6;
-    }
-    // check location is set to "edge"
-    if (strcmp(location, "edge") != 0) {
-        std::cerr << "ERROR: attribute \"location\" of variable " << fieldname << " is not edge  ("
-                  << location << ")\n";
-        nc_close(ncid);
-        return 3;
-    }
-
-    // check if the data has the right dimension
+    // get the number of dimensions
     int ndims;
-    ier = nc_inq_varndims(ncid, varId, &ndims);
-    int dimIds[ndims];
-    ier = nc_inq_vardimid(ncid, varId, dimIds);
-    size_t n;
-    ier = nc_inq_dimlen(ncid, dimIds[0], &n);
-    if (n != ndata) {
-        std::cerr << "ERROR: size of \"" << fieldname << "\" should be " << n
-                  << " but got " << ndata << "\n";
-        nc_close(ncid);
-        return 5;        
+    ier = mnt_ncfieldread_getNumDims(&rd, &ndims);
+    if (ier != 0) {
+        std::cerr << "ERROR: getting the number of dims of " << fieldname << " from file " << filename << '\n';
+        ier = mnt_ncfieldread_del(&rd);
+        return 2;
+   }
+
+    if (ndims != 1) {
+        std::cerr << "ERROR: number of dimensions must be 1, got " << ndims << '\n';
+        ier = mnt_ncfieldread_del(&rd);
+        return 3;        
     }
 
-    // TO DO 
-    // is there are way to check if a field is an edge integral? Assume this to be the case
-
-    // now read
-    ier = nc_get_var_double(ncid, varId, data);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: while reading variable '" << fieldname << "'\n";
-        nc_close(ncid);
+    ier = mnt_ncfieldread_data(&rd, data);
+    if (ier != 0) {
+        std::cerr << "ERROR: reading field " << fieldname << " from file " << filename << '\n';
+        ier = mnt_ncfieldread_del(&rd);
         return 4;
     }
 
-    // close the netcdf file
-    ier = nc_close(ncid);
+    ier = mnt_ncfieldread_del(&rd);
 
     return 0;
 }
