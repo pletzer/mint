@@ -39,14 +39,14 @@ struct NcFieldwrite_t {
  * @param fileNameLen length of filename string (excluding '\0' if present)
  * @param varName variable name (does not require termination character)
  * @param varNameLen length of varName string (excluding '\0' if present)
- * @param mode 'a' for append, otherwise a new file will be created
+ * @param append 1 for append, otherwise a new file will be created
  * @return error code (0 is OK)
  */
 extern "C"
 int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
                         const char* fileName, int fileNameLen, 
                         const char* varName, int varNameLen, 
-                        char mode);
+                        int append);
 
 /**
  * Destructor

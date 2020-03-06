@@ -8,7 +8,7 @@ extern "C"
 int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
                         const char* fileName, int fileNameLen, 
                         const char* varName, int varNameLen,
-                        char mode) {
+                        int append) {
 
   *self = new NcFieldwrite_t();
   (*self)->ncid = -1;
@@ -17,7 +17,7 @@ int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
   (*self)->append = false;
   (*self)->varName = std::string(varName, varNameLen);
 
-  if (mode == 'a') {
+  if (append == 1) {
     (*self)->append = true;
   }
 
@@ -142,6 +142,11 @@ int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self,
 
 extern "C"
 int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
+
+  if ((*self)->defined) {
+    // nothing to do
+    return 0;
+  }
 
   if ((*self)->append) {
     std::cerr << "ERROR: can define only in non-append mode\n";
@@ -274,7 +279,12 @@ int mnt_ncfieldwrite_inquire(NcFieldwrite_t** self) {
     if (ier != NC_NOERR) {
       std::cerr << "Warning: failed to read attribute " << attname 
                 << " of variable " << (*self)->varName << '\n';
+      return 4;
     }
   }
 
+  // no need to define the variable in append mode
+  (*self)->defined = true;
+
+  return 0;
 }
