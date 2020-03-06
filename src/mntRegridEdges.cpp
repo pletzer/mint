@@ -123,7 +123,8 @@ extern "C"
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
-                                  size_t ndata, double data[]) {
+                                  const size_t* start_inds, const size_t* counts,
+                                  double data[]) {
 
     int ier = 0;
 
@@ -146,22 +147,13 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
         return 1;
     }
 
-    // get the number of dimensions
-    int ndims;
-    ier = mnt_ncfieldread_getNumDims(&rd, &ndims);
-    if (ier != 0) {
-        std::cerr << "ERROR: getting the number of dims of " << fieldname << " from file " << filename << '\n';
-        ier = mnt_ncfieldread_del(&rd);
-        return 2;
-   }
-
-    if (ndims != 1) {
-        std::cerr << "ERROR: number of dimensions must be 1, got " << ndims << '\n';
-        ier = mnt_ncfieldread_del(&rd);
-        return 3;        
+    if (!start_inds) {
+        // reading the entire array
+        ier = mnt_ncfieldread_data(&rd, data);
+    } else {
+        // reading a slice
+        ier = mnt_ncfieldread_dataSlice(&rd, start_inds, counts, data);
     }
-
-    ier = mnt_ncfieldread_data(&rd, data);
     if (ier != 0) {
         std::cerr << "ERROR: reading field " << fieldname << " from file " << filename << '\n';
         ier = mnt_ncfieldread_del(&rd);

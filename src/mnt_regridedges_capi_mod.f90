@@ -60,7 +60,7 @@ module mnt_regridedges_capi_mod
 
     function mnt_regridedges_loadEdgeField(obj, filename, nFilenameLength, &
                                            field_name, nFieldNameLength, &
-                                           ndata, data) &
+                                           start_inds, counts, data) &
                                            bind(C, name='mnt_regridedges_loadEdgeField')
 
        ! Load field from 2D UGRID file
@@ -69,7 +69,8 @@ module mnt_regridedges_capi_mod
        ! @param nFilenameLength length of filename string (excluding '\0' if present)
        ! @param field_name name of the field
        ! @param nFieldNameLength length of field_name string (excluding '\0' if present)
-       ! @param ndata number of edges
+       ! @param start_inds starting indices (0 based, C ordering), or 0 if the entire array should be loaded
+       ! @param counts number of elements to load along each direction
        ! @param data array of size number of unique edges (output)
        ! @return 0 if successful
 
@@ -80,7 +81,8 @@ module mnt_regridedges_capi_mod
         integer(c_int), value                    :: nFilenameLength
         character(kind=c_char), intent(in)       :: field_name(*)
         integer(c_int), value                    :: nFieldNameLength
-        integer(c_size_t), value                 :: ndata
+        integer(c_size_t), intent(in)            :: start_inds
+        integer(c_size_t), intent(in)            :: counts
         real(c_double), intent(out)              :: data(*)
         integer(c_int)                           :: mnt_regridedges_loadEdgeField
     end function mnt_regridedges_loadEdgeField

@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
             ier = mnt_regridedges_loadEdgeField(&rg, 
                                                 fileAndMeshName.c_str(), fileAndMeshName.size(),
                                                 vname.c_str(), vname.size(),
-                                                numSrcEdges, &srcEdgeData[0]);
+                                                NULL, NULL, &srcEdgeData[0]);
             if (ier != 0) {
                 std::cerr << "ERROR: could not load edge centred data \"" << vname << "\" from file \"" << fileAndMeshName << "\"\n";
                 return 6;

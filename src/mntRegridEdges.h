@@ -99,7 +99,8 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
  * @param nFilenameLength length of filename string (excluding '\0' if present)
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
- * @param ndata number of edges and size of data
+ * @param start_inds starting indices (0 based, C ordering) or NULL if all the array should be loaded
+ * @param counts number of elements for each dimension
  * @param data array of size number of unique edges (output)
  * @return error code (0 is OK)
  */
@@ -107,7 +108,8 @@ extern "C"
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
-                                  size_t ndata, double data[]);
+                                  const size_t* start_inds, const size_t* counts, 
+                                  double data[]);
 
 /** 
  * Dump field to 2D UGRID file

@@ -65,7 +65,7 @@ void test1() {
     std::string fieldName = "line_integrated_velocity";
     ier = mnt_regridedges_loadEdgeField(&rg, srcFile.c_str(), (int) srcFile.size(),
                                         fieldName.c_str(), (int) fieldName.size(),
-                                        numSrcEdges, &srcData[0]);
+                                        NULL, NULL, &srcData[0]);
     assert(ier == 0);
 
     ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
