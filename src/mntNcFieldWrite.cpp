@@ -5,12 +5,12 @@
 #include <iostream>
 
 extern "C"
-int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
+int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
                         const char* fileName, int fileNameLen, 
                         const char* varName, int varNameLen,
                         int append) {
 
-  *self = new NcFieldwrite_t();
+  *self = new NcFieldWrite_t();
   (*self)->ncid = -1;
   (*self)->varid = -1;
   (*self)->defined = false;
@@ -54,7 +54,7 @@ int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
 }
 
 extern "C"
-int mnt_ncfieldwrite_del(NcFieldwrite_t** self) {
+int mnt_ncfieldwrite_del(NcFieldWrite_t** self) {
   int ier = nc_close((*self)->ncid);
   delete *self;
   return ier;
@@ -62,7 +62,7 @@ int mnt_ncfieldwrite_del(NcFieldwrite_t** self) {
 
 
 extern "C"
-int mnt_ncfieldwrite_setNumDims(NcFieldwrite_t** self, int ndims) {
+int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims) {
   (*self)->dimSizes.resize(ndims);
   (*self)->dimNames.resize(ndims);
   return 0;
@@ -70,7 +70,7 @@ int mnt_ncfieldwrite_setNumDims(NcFieldwrite_t** self, int ndims) {
 
 
 extern "C"
-int mnt_ncfieldwrite_setDim(NcFieldwrite_t** self, 
+int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, 
                             int iAxis, 
                             const char* dimName, int dimNameLen,
                             size_t dim) {
@@ -80,7 +80,7 @@ int mnt_ncfieldwrite_setDim(NcFieldwrite_t** self,
 }
 
 extern "C"
-int mnt_ncfieldwrite_setAttStr(NcFieldwrite_t** self, 
+int mnt_ncfieldwrite_setAttStr(NcFieldWrite_t** self, 
                                const char* attName, int attNameLen,
                                const char* attVal, int attValLen) {
   std::string nm = std::string(attName, attNameLen);
@@ -91,7 +91,7 @@ int mnt_ncfieldwrite_setAttStr(NcFieldwrite_t** self,
 }
 
 extern "C"
-int mnt_ncfieldwrite_setAttInt(NcFieldwrite_t** self,
+int mnt_ncfieldwrite_setAttInt(NcFieldWrite_t** self,
                               const char* attName, int attNameLen,
                               int attVal) {
   std::string nm = std::string(attName, attNameLen);
@@ -100,7 +100,7 @@ int mnt_ncfieldwrite_setAttInt(NcFieldwrite_t** self,
 }
 
 extern "C"
-int mnt_ncfieldwrite_setAttDbl(NcFieldwrite_t** self,
+int mnt_ncfieldwrite_setAttDbl(NcFieldWrite_t** self,
                               const char* attName, int attNameLen,
                               double attVal) {
   std::string nm = std::string(attName, attNameLen);
@@ -109,7 +109,7 @@ int mnt_ncfieldwrite_setAttDbl(NcFieldwrite_t** self,
 }
 
 extern "C"
-int mnt_ncfieldwrite_data(NcFieldwrite_t** self, 
+int mnt_ncfieldwrite_data(NcFieldWrite_t** self, 
                           const double data[]) {
 
   if (!(*self)->defined) {
@@ -124,7 +124,7 @@ int mnt_ncfieldwrite_data(NcFieldwrite_t** self,
 }
 
 extern "C"
-int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self, 
+int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self, 
                                const size_t startInds0[], 
                                const size_t counts[], 
                                const double data[]) {
@@ -141,7 +141,7 @@ int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self,
 }
 
 extern "C"
-int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
+int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
 
   if ((*self)->defined) {
     // nothing to do
@@ -212,7 +212,7 @@ int mnt_ncfieldwrite_define(NcFieldwrite_t** self) {
 }
 
 extern "C"
-int mnt_ncfieldwrite_inquire(NcFieldwrite_t** self) {
+int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self) {
 
   int ier;
 

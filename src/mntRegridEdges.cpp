@@ -136,7 +136,7 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
 
-    NcFieldRead_t* rd;
+    NcFieldRead_t* rd = NULL;
     int n1 = filename.size();
     int n2 = fieldname.size();
     ier = mnt_ncfieldread_new(&rd, filename.c_str(), n1, fieldname.c_str(), n2);
@@ -189,65 +189,71 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
     // get the mesh name
     std::string meshname = fileAndMeshName.substr(columnL + 1);
 
+    int ier;
+    NcFieldWrite_t* wr = NULL;
 
-    int ncid, ier;
-    ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not create file \"" << filename << "\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
+    int n1 = filename.size();
+    int n2 = fieldname.size();
+    const int append = 0; // new file
+    ier = mnt_ncfieldwrite_new(&wr, filename.c_str(), n1, fieldname.c_str(), n2, append);
+    if (ier != 0) {
+        std::cerr << "ERROR: create file " << filename << " with field " 
+                  << fieldname << " in append mode " << append << '\n';
         return 1;
-    }
+   }
 
-    // create dimensions
-    int numEdgesId;
-
-    ier = nc_def_dim(ncid, "num_edges", ndata, &numEdgesId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define dimension \"num_edges\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
+    ier = mnt_ncfieldwrite_setNumDims(&wr, 1); // 1D array only in this implementation
+    if (ier != 0) {
+        std::cerr << "ERROR: cannot set the number of dimensions for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
         return 2;
-    }    
+   }
 
-    // create variable
-    int dataId;
-    int dims[] = {numEdgesId};
-    ier = nc_def_var(ncid, fieldname.c_str(), NC_DOUBLE, 1, dims, &dataId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"" << fieldname << "\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
+    // add num_edges axis
+    std::string axname = "num_edges";
+    int n3 = axname.size();
+    ier = mnt_ncfieldwrite_setDim(&wr, 0, axname.c_str(), n3, ndata);
+    if (ier != 0) {
+        std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << ndata 
+                  << " for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
         return 3;
-    }
+   }
 
     // add some attributes
-    std::string locationName = "edge";
-    ier = nc_put_att_text(ncid, dataId, "location", locationName.size(), locationName.c_str());
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not add attribute \"location\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 5;
-    }
-    ier = nc_put_att_text(ncid, dataId, "mesh", meshname.size(), meshname.c_str());
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not add attribute \"mesh\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 6;
-    }
+    std::string locstr = "location";
+    n1  = locstr.size();
+    std::string locval = "edge";
+    n2 = locval.size();
+    ier = mnt_ncfieldwrite_setAttStr(&wr, locstr.c_str(), n1, locval.c_str(), n2);
+    if (ier != 0) {
+        std::cerr << "ERROR: setting attribute " << locstr << " to " << locval 
+                  << " for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
+        return 4;
+   }
 
-    // write the data
-    ier = nc_put_var_double(ncid, dataId, data);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"data\"\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
+    std::string meshstr = "mesh";
+    n1 = meshstr.size();
+    n2 = meshname.size();
+    ier = mnt_ncfieldwrite_setAttStr(&wr, meshstr.c_str(), n1, meshname.c_str(), n2);
+    if (ier != 0) {
+        std::cerr << "ERROR: setting attribute " << meshstr << " to " << meshname
+                  << " for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
         return 4;
     }
 
-    // close the netcdf file
-    ier = nc_close(ncid);    
+    // write the data to disk
+    ier = mnt_ncfieldwrite_data(&wr, data);
+    if (ier != 0) {
+        std::cerr << "ERROR: writing data for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
+        return 5;
+    }
+
+    // clean up
+    ier = mnt_ncfieldwrite_del(&wr);
 
     return 0;
 }

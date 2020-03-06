@@ -9,7 +9,7 @@
  * A class to write and write edge fields to/from netcdf files
  */
 
-struct NcFieldwrite_t {
+struct NcFieldWrite_t {
 
   // netcdf file handle
   int ncid;
@@ -43,7 +43,7 @@ struct NcFieldwrite_t {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
+int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
                         const char* fileName, int fileNameLen, 
                         const char* varName, int varNameLen, 
                         int append);
@@ -53,7 +53,7 @@ int mnt_ncfieldwrite_new(NcFieldwrite_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldwrite_del(NcFieldwrite_t** self);
+int mnt_ncfieldwrite_del(NcFieldWrite_t** self);
 
 
 /**
@@ -62,7 +62,7 @@ int mnt_ncfieldwrite_del(NcFieldwrite_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldwrite_setNumDims(NcFieldwrite_t** self, int ndims);
+int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims);
 
 
 /**
@@ -74,7 +74,7 @@ int mnt_ncfieldwrite_setNumDims(NcFieldwrite_t** self, int ndims);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldwrite_setDim(NcFieldwrite_t** self, int iAxis, 
+int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, int iAxis, 
                             const char* dimName, int dimNameLen, size_t dim);
 
 /**
@@ -85,7 +85,7 @@ int mnt_ncfieldwrite_setDim(NcFieldwrite_t** self, int iAxis,
  * @param attValLen length of attribute value
  */
 extern "C"
-int mnt_ncfieldwrite_setAttStr(NcFieldwrite_t** self,
+int mnt_ncfieldwrite_setAttStr(NcFieldWrite_t** self,
                                const char* attName, int attNameLen,
                                const char* attVal, int attValLen);
 
@@ -96,7 +96,7 @@ int mnt_ncfieldwrite_setAttStr(NcFieldwrite_t** self,
  * @param attVal attribute value
  */
 extern "C"
-int mnt_ncfieldwrite_setAttInt(NcFieldwrite_t** self,
+int mnt_ncfieldwrite_setAttInt(NcFieldWrite_t** self,
                                const char* attName, int attNameLen,
                                int attVal);
 
@@ -108,7 +108,7 @@ int mnt_ncfieldwrite_setAttInt(NcFieldwrite_t** self,
  * @param attVal attribute value
  */
 extern "C"
-int mnt_ncfieldwrite_setAttsDbl(NcFieldwrite_t** self,
+int mnt_ncfieldwrite_setAttsDbl(NcFieldWrite_t** self,
                                 const char* attName, int attNameLen,
                                 double attVal);
 
@@ -119,7 +119,7 @@ int mnt_ncfieldwrite_setAttsDbl(NcFieldwrite_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldwrite_data(NcFieldwrite_t** self, 
+int mnt_ncfieldwrite_data(NcFieldWrite_t** self, 
                           const double data[]);
 
 /**
@@ -130,7 +130,7 @@ int mnt_ncfieldwrite_data(NcFieldwrite_t** self,
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self, 
+int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self, 
                                const size_t startInds0[], 
                                const size_t counts[], 
                                const double data[]);
@@ -140,10 +140,10 @@ int mnt_ncfieldwrite_dataSlice(NcFieldwrite_t** self,
 /* private methods */
 
 extern "C"
-int mnt_ncfieldwrite_define(NcFieldwrite_t** self);
+int mnt_ncfieldwrite_define(NcFieldWrite_t** self);
 
 extern "C"
-int mnt_ncfieldwrite_inquire(NcFieldwrite_t** self);
+int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self);
 
 
 #endif // MNT_NC_FIELD_WRITE
