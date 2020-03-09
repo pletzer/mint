@@ -52,35 +52,8 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
   }
 
   // get the attributes
-  char attname[NC_MAX_NAME + 1];
-  size_t n;
-  nc_type xtype;
-  for (int i = 0; i < natts; ++i) {
-    ier = nc_inq_attname((*self)->ncid, (*self)->varid, i, attname);
-    ier = nc_inq_att((*self)->ncid, (*self)->varid, attname, &xtype, &n);
-    if (n == 1 && xtype == NC_DOUBLE) {
-      double val;
-      ier = nc_get_att_double((*self)->ncid, (*self)->varid, attname, &val);
-      (*self)->attDbl.insert(std::pair<std::string, double>(std::string(attname), val));
-    }
-    else if (n == 1 && xtype == NC_INT) {
-      int val;
-      ier = nc_get_att_int((*self)->ncid, (*self)->varid, attname, &val);
-      (*self)->attInt.insert(std::pair<std::string, int>(std::string(attname), val));
-    }
-    else if (xtype == NC_CHAR) {
-      char val[n + 1];
-      ier = nc_get_att_text((*self)->ncid, (*self)->varid, attname, val);
-      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), val));
-    }
-    else {
-      std::cerr << "Warning: unsupported attribute type " << xtype << " of length " << n << '\n';
-    }
-    if (ier != NC_NOERR) {
-      std::cerr << "Warning: failed to read attribute " << attname << " of variable " << vname << '\n';
-    }
-  }
-
+  ier = mnt_ncattributes_new(&(*self)->attrs);
+  ier = mnt_ncattributes_read(&(*self)->attrs, (*self)->ncid, (*self)->varid);
 
   return 0;
 }
@@ -88,6 +61,7 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
 extern "C"
 int mnt_ncfieldread_del(NcFieldRead_t** self) {
   int ier = nc_close((*self)->ncid);
+  ier = mnt_ncattributes_del(&(*self)->attrs);
   delete *self;
   return ier;
 }
@@ -111,73 +85,6 @@ int mnt_ncfieldread_getDimName(NcFieldRead_t** self,
 extern "C"
 int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, size_t* dim) {
   *dim = (*self)->dimSizes[iAxis];
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldread_getNumAttsStr(NcFieldRead_t** self,
-                                 int* n) {
-  *n = (*self)->attStr.size();
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldread_getNumAttsInt(NcFieldRead_t** self,
-                                 int* n) {
-  *n = (*self)->attInt.size();
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldread_getNumAttsDbl(NcFieldRead_t** self,
-                                 int* n) {
-  *n = (*self)->attDbl.size();
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldread_getAttsStr(NcFieldRead_t** self,
-                              char attNames[], int attNameLen,
-                              char attVals[], int attValLen) {
-
-  size_t n = (*self)->attStr.size();
-  size_t count = 0;
-  for (auto it = (*self)->attStr.cbegin(); it != (*self)->attStr.cend(); ++it) {
-    strncpy(&attNames[count*attNameLen], it->first.c_str(), attNameLen);
-    strncpy(&attVals[count*attValLen], it->second.c_str(), attValLen);
-    count++;
-  }
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldread_getAttsInt(NcFieldRead_t** self,
-                              char attNames[], int attNameLen,
-                              int attVals[]) {
-
-  size_t n = (*self)->attInt.size();
-  size_t count = 0;
-  for (auto it = (*self)->attInt.cbegin(); it != (*self)->attInt.cend(); ++it) {
-    strncpy(&attNames[count*attNameLen], it->first.c_str(), attNameLen);
-    attVals[count] = it->second;
-    count++;
-  }
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldread_getAttsDbl(NcFieldRead_t** self,
-                              char attNames[], int attNameLen,
-                              double attVals[]) {
-
-
-  size_t n = (*self)->attDbl.size();
-  size_t count = 0;
-  for (auto it = (*self)->attDbl.cbegin(); it != (*self)->attDbl.cend(); ++it) {
-    strncpy(&attNames[count*attNameLen], it->first.c_str(), attNameLen);
-    attVals[count] = it->second;
-    count++;
-  }
   return 0;
 }
 

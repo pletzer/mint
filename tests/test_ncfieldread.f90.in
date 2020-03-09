@@ -8,13 +8,11 @@ program test
     character(len=512)             :: ncfile = '${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc'
     character(len=32)              :: varname = 'u1'
     type(c_ptr)                    :: handle
-    integer                        :: ier, ndims, i, nattsStr, nattsInt, nattsDbl
+    integer                        :: ier, ndims, i
     integer(c_size_t)              :: dim, ntot
     integer(c_size_t), allocatable :: startInds0(:), counts(:)
     real(c_double), allocatable    :: data(:)
     character(len=32)              :: dimName
-    character, allocatable         :: attNames(:)
-    character, allocatable         :: attValsStr(:)
 
     ier = mnt_ncfieldread_new(handle, trim(ncfile), len_trim(ncfile), &
                                       trim(varname), len_trim(varname))
@@ -48,33 +46,6 @@ program test
         write(0, '(A, I6, A, A, A, I10)') ' > axis ', i - 1, ' (', trim(dimName), ') has size ', dim
 
     enddo
-
-    ! read attributes
-
-    ier = mnt_ncfieldread_getNumAttsStr(handle, nattsStr)
-    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getNumAttsStr'
-    write(0, *) 'number of string attributes: ', nattsStr
-
-    allocate(attNames(nattsStr*32))
-    allocate(attValsStr(nattsStr*128))
-    ier = mnt_ncfieldread_getAttsStr(handle, attNames, 32, attValsStr, 128)
-    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getAttsStr'
-    do i = 1, nattsStr
-        write(0, *) 'attribute ', attNames((i-1)*32+1:i*32), &
-                    ' has value ', attValsStr((i-1)*128+1:i*128)
-    enddo
-    deallocate(attNames)
-    deallocate(attValsStr)
-
-
-    ier = mnt_ncfieldread_getNumAttsInt(handle, nattsInt)
-    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getNumAttsInt'
-    write(0, *) 'number of int attributes: ', nattsInt
-
-    ier = mnt_ncfieldread_getNumAttsDbl(handle, nattsDbl)
-    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getNumAttsDbl'
-    write(0, *) 'number of double attributes: ', nattsDbl
-
 
     write(0, *) 'ntot = ', ntot
     allocate(data(ntot))

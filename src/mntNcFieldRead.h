@@ -1,6 +1,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "mntNcAttributes.h"
 
 #ifndef MNT_NC_FIELD_READ
 #define MNT_NC_FIELD_READ
@@ -17,18 +18,12 @@ struct NcFieldRead_t {
   // variable id
   int varid;
 
-  // string attributes
-  std::map<std::string, std::string> strAttr;
-
   // dimension names and values
   std::vector<std::string> dimNames;
   std::vector<size_t> dimSizes;
   std::vector<int> dimIds;
 
-  // attributes
-  std::map<std::string, std::string> attStr;
-  std::map<std::string, int> attInt;
-  std::map<std::string, double> attDbl;
+  NcAttributes_t* attrs;
 };
 
 /**
@@ -78,64 +73,6 @@ int mnt_ncfieldread_getDimName(NcFieldRead_t** self, int iAxis, char* dimName, i
  */
 extern "C"
 int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, size_t* dim);
-
-/**
- Get the number of string attributes
- @param n number
- */
-extern "C"
-int mnt_ncfieldread_getNumAttsStr(NcFieldRead_t** self, int* n);
-
-/**
- Get the number of int attributes
- @param n number
- */
-extern "C"
-int mnt_ncfieldread_getNumAttsInt(NcFieldRead_t** self, int* n);
-
-/**
- Get the number of double attributes
- @param n number
- */
-extern "C"
-int mnt_ncfieldread_getNumAttsDbl(NcFieldRead_t** self, int* n);
-
-/**
- * Get all attributes of type string
- * @param attNames array of attribute names to be filled in
- * @param attNameLen length of each attribute name
- * @param attVals array of values to be filled in (output)
- * @param attValLen length of each attribute value
- */
-extern "C"
-int mnt_ncfieldread_getAttsStr(NcFieldRead_t** self,
-                              char attNames[], int attNameLen,
-                              char attVals[], int attValLen);
-
-
-/**
- * Get all the attributes of type int
- * @param attNames array of attribute names to be filled in
- * @param attNameLen length of each attribute name
- * @param attVals attribute value (output)
- */
-extern "C"
-int mnt_ncfieldread_getAttsInt(NcFieldRead_t** self,
-                              char attNames[], int attNameLen,
-                              int attVals[]);
-
-
-/**
- * Get all the attributes of type double
- * @param attNames array of attribute names to be filled in
- * @param attNameLen length of each atttribute name
- * @param attVals array of values to be filled in (output)
- */
-extern "C"
-int mnt_ncfieldread_getAttsDbl(NcFieldRead_t** self,
-                              char attNames[], int attNameLen,
-                              double attVals[]);
-
 
 /**
  * Read the netcdf variable 
