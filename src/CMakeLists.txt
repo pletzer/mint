@@ -22,6 +22,7 @@ set(LIB_FILES
   mntRegridEdges.cpp
   mntCellLocator.cpp
   mntCmdLineArgParser.cpp
+  mntNcAttributes.cpp
   mntNcFieldRead.cpp
   mntNcFieldWrite.cpp
   mnt_ncfieldread_capi_mod.f90
@@ -46,6 +47,7 @@ set(HEADER_FILES
   mntRegridEdges.h
   mntCellLocator.h
   mntCmdLineArgParser.h
+  mntNcAttributes.h
   mntNcFieldRead.h
   mntNcFieldWrite.h
   mntMatMxN.h
