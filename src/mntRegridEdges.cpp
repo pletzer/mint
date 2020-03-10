@@ -200,14 +200,14 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
         std::cerr << "ERROR: create file " << filename << " with field " 
                   << fieldname << " in append mode " << append << '\n';
         return 1;
-   }
+    }
 
     ier = mnt_ncfieldwrite_setNumDims(&wr, 1); // 1D array only in this implementation
     if (ier != 0) {
         std::cerr << "ERROR: cannot set the number of dimensions for field " << fieldname << " in file " << filename << '\n';
         ier = mnt_ncfieldwrite_del(&wr);
         return 2;
-   }
+    }
 
     // add num_edges axis
     std::string axname = "num_edges";
@@ -218,7 +218,9 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                   << " for field " << fieldname << " in file " << filename << '\n';
         ier = mnt_ncfieldwrite_del(&wr);
         return 3;
-   }
+    }
+
+   /*
 
     // add some attributes
     std::string locstr = "location";
@@ -243,6 +245,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
         ier = mnt_ncfieldwrite_del(&wr);
         return 4;
     }
+    */
 
     // write the data to disk
     ier = mnt_ncfieldwrite_data(&wr, data);

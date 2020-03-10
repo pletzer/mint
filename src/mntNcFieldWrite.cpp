@@ -11,6 +11,7 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
                         int append) {
 
   *self = new NcFieldWrite_t();
+  int ier = mnt_ncattributes_new(&(*self)->attrs);
   (*self)->ncid = -1;
   (*self)->varid = -1;
   (*self)->defined = false;
@@ -56,6 +57,7 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
 extern "C"
 int mnt_ncfieldwrite_del(NcFieldWrite_t** self) {
   int ier = nc_close((*self)->ncid);
+  ier = mnt_ncattributes_del(&(*self)->attrs);
   delete *self;
   return ier;
 }
@@ -76,35 +78,6 @@ int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self,
                             size_t dim) {
   (*self)->dimNames[iAxis] = std::string(dimName, dimNameLen);
   (*self)->dimSizes[iAxis] = dim;
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldwrite_setAttStr(NcFieldWrite_t** self, 
-                               const char* attName, int attNameLen,
-                               const char* attVal, int attValLen) {
-  std::string nm = std::string(attName, attNameLen);
-  std::string val = std::string(attVal, attValLen);
-  (*self)->attStr[nm] = val;
-
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldwrite_setAttInt(NcFieldWrite_t** self,
-                              const char* attName, int attNameLen,
-                              int attVal) {
-  std::string nm = std::string(attName, attNameLen);
-  (*self)->attInt[nm] = attVal;
-  return 0;
-}
-
-extern "C"
-int mnt_ncfieldwrite_setAttDbl(NcFieldWrite_t** self,
-                              const char* attName, int attNameLen,
-                              double attVal) {
-  std::string nm = std::string(attName, attNameLen);
-  (*self)->attDbl[nm] = attVal;
   return 0;
 }
 
@@ -176,34 +149,7 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
     }
 
   // add the attributes
-  for (auto it = (*self)->attStr.begin(); it != (*self)->attStr.end(); ++it) {
-    ier = nc_put_att_text((*self)->ncid, (*self)->varid, 
-                          it->first.c_str(), it->second.size(), it->second.c_str());
-    if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not put attribute " 
-                << it->first << " = " << it->second << '\n';
-      return 4;
-    }
-
-  }
-  for (auto it = (*self)->attInt.begin(); it != (*self)->attInt.end(); ++it) {
-    ier = nc_put_att_int((*self)->ncid, (*self)->varid, 
-                         it->first.c_str(), NC_INT, 1, &it->second);
-    if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not put attribute " 
-                << it->first << " = " << it->second << '\n';
-      return 5;
-    }
-  }
-  for (auto it = (*self)->attDbl.begin(); it != (*self)->attDbl.end(); ++it) {
-    ier = nc_put_att_double((*self)->ncid, (*self)->varid, 
-                            it->first.c_str(), NC_DOUBLE, 1, &it->second);
-    if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not put attribute " 
-                << it->first << " = " << it->second << '\n';
-      return 6;
-    }
-  }
+  ier = mnt_ncattributes_write(&(*self)->attrs, (*self)->ncid, (*self)->varid);
 
   (*self)->defined = true;
   ier = nc_enddef((*self)->ncid);
@@ -252,36 +198,7 @@ int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self) {
   }
 
   // get the attributes
-  char attname[NC_MAX_NAME + 1];
-  size_t n;
-  nc_type xtype;
-  for (int i = 0; i < natts; ++i) {
-    ier = nc_inq_attname((*self)->ncid, (*self)->varid, i, attname);
-    ier = nc_inq_att((*self)->ncid, (*self)->varid, attname, &xtype, &n);
-    if (n == 1 && xtype == NC_DOUBLE) {
-      double val;
-      ier = nc_get_att_double((*self)->ncid, (*self)->varid, attname, &val);
-      (*self)->attDbl.insert(std::pair<std::string, double>(std::string(attname), val));
-    }
-    else if (n == 1 && xtype == NC_INT) {
-      int val;
-      ier = nc_get_att_int((*self)->ncid, (*self)->varid, attname, &val);
-      (*self)->attInt.insert(std::pair<std::string, int>(std::string(attname), val));
-    }
-    else if (xtype == NC_CHAR) {
-      char val[n + 1];
-      ier = nc_get_att_text((*self)->ncid, (*self)->varid, attname, val);
-      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), val));
-    }
-    else {
-      std::cerr << "Warning: unsupported attribute type " << xtype << " of length " << n << '\n';
-    }
-    if (ier != NC_NOERR) {
-      std::cerr << "Warning: failed to read attribute " << attname 
-                << " of variable " << (*self)->varName << '\n';
-      return 4;
-    }
-  }
+  ier = mnt_ncattributes_read(&(*self)->attrs, (*self)->ncid, (*self)->varid);
 
   // no need to define the variable in append mode
   (*self)->defined = true;

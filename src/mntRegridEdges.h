@@ -5,6 +5,7 @@
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
+#include <mntNcAttributes.h>
 
 #ifndef MNT_REGRID_EDGES
 #define MNT_REGRID_EDGES

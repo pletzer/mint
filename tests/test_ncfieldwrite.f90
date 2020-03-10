@@ -55,31 +55,13 @@ contains
             ier = mnt_ncfieldwrite_setDim(handle, 2, trim(zName), len_trim(zName), nz)
             if (ier /= 0) print*, 'ERROR after mnt_ncfieldwrite_setDim of axis 2'
 
-            ! attribues
-            unitStr = 'units'
-            unitVal = 'm/s'
-            ier = mnt_ncfieldwrite_setAttStr(handle, trim(unitStr), len_trim(unitStr), trim(unitVal), len_trim(unitVal))
-            if (ier /= 0) print*, 'ERROR after mnt_ncfieldwrite_setAttStr'
-
-
-            ndimsStr = 'ndims'
-            ndimsVal = 3
-            ier = mnt_ncfieldwrite_setAttInt(handle, trim(ndimsStr), len_trim(ndimsStr), ndimsVal)
-            if (ier /= 0) print*, 'ERROR after mnt_ncfieldwrite_setAttInt'
-
-
-            fooStr = 'foo'
-            fooVal = 3.4_c_double
-            ier = mnt_ncfieldwrite_setAttDbl(handle, trim(fooStr), len_trim(fooStr), fooVal)
-            if (ier /= 0) print*, 'ERROR after mnt_ncfieldwrite_setAttDbl'
-
         endif
 
         ! write all the data
         ier = mnt_ncfieldwrite_data(handle, u1)
         if (ier /= 0) print*, 'ERROR after mnt_ncfieldwrite_data ier = ', ier
 
-        ! write a slice of the data
+        ! write a slice of the data. Note indexing starts at 0 and is column major (a la C)!
         start = [1, 1, 1]
         nsizes = [nx-1, ny-1, nz-1]
         u1 = -1

@@ -63,60 +63,6 @@ module mnt_ncfieldwrite_capi_mod
       integer(c_int)                         :: mnt_ncfieldwrite_setDim
     end function mnt_ncfieldwrite_setDim
 
-    function mnt_ncfieldwrite_setAttStr(obj, attName, attNameLen, attVal, attValLen) &
-                                        bind(C, name='mnt_ncfieldwrite_setAttStr')
-      ! Set string attribute
-      ! @param obj instance of mntNcFieldwrite_t (opaque handle)
-      ! @param attName attribute name
-      ! @param attNameLen length of attribute name
-      ! @param attVal attribute value
-      ! @param attValLen length of attVal string
-      ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char
-      implicit none
-      type(c_ptr), intent(inout)          :: obj ! void**
-      character(kind=c_char), intent(in)  :: attName(*)
-      integer(c_int), value               :: attNameLen
-      character(kind=c_char), intent(in)  :: attVal(*)
-      integer(c_int), value               :: attValLen
-      integer(c_int)                      :: mnt_ncfieldwrite_setAttStr
-    end function mnt_ncfieldwrite_setAttStr
-
-    function mnt_ncfieldwrite_setAttInt(obj, attName, attNameLen, attVal) &
-                                        bind(C, name='mnt_ncfieldwrite_setAttInt')
-      ! Set int attribute
-      ! @param obj instance of mntNcFieldwrite_t (opaque handle)
-      ! @param attName attribute name
-      ! @param attNameLen length of attribute name
-      ! @param attVal attribute value
-      ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char
-      implicit none
-      type(c_ptr), intent(inout)          :: obj ! void**
-      character(kind=c_char), intent(in)  :: attName(*)
-      integer(c_int), value               :: attNameLen
-      integer(c_int), value               :: attVal
-      integer(c_int)                      :: mnt_ncfieldwrite_setAttInt
-    end function mnt_ncfieldwrite_setAttInt
-
-    function mnt_ncfieldwrite_setAttDbl(obj, attName, attNameLen, attVal) &
-                                        bind(C, name='mnt_ncfieldwrite_setAttDbl')
-      ! Set double attribute
-      ! @param obj instance of mntNcFieldwrite_t (opaque handle)
-      ! @param attName attribute name
-      ! @param attNameLen length of attribute name
-      ! @param attVal attribute value
-      ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_char, c_double
-      implicit none
-      type(c_ptr), intent(inout)          :: obj ! void**
-      character(kind=c_char), intent(in)  :: attName(*)
-      integer(c_int), value               :: attNameLen
-      real(c_double), value               :: attVal
-      integer(c_int)                      :: mnt_ncfieldwrite_setAttDbl
-    end function mnt_ncfieldwrite_setAttDbl
-
-
     function mnt_ncfieldwrite_data(obj, data) &
                                    bind(C, name='mnt_ncfieldwrite_data')
       ! write the entire netcdf variable
