@@ -7,6 +7,7 @@ include_directories(
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
 configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
+configure_file(testNcAttributes.cpp testNcAttributes.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
@@ -53,6 +54,13 @@ target_link_libraries(testUgridLocator
 
 add_executable(testNetcdf testNetcdf.cxx)
 target_link_libraries(testNetcdf
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testNcAttributes testNcAttributes.cxx)
+target_link_libraries(testNcAttributes
                     mint
                     ${VTK_LIBRARIES}
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
@@ -189,6 +197,7 @@ set_tests_properties(regridEdgesF PROPERTIES
 add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
+add_test(NAME attributes COMMAND testNcAttributes)
 add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
                         "-vtk" "cs_4.vtk")

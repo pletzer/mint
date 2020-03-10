@@ -52,7 +52,7 @@ int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid) {
     else if (xtype == NC_CHAR) {
       char val[n + 1];
       ier = nc_get_att_text(ncid, varid, attname, val);
-      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), val));
+      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), std::string(val, 0, n)));
     }
     else {
       std::cerr << "Warning: unsupported attribute type " << xtype << " of length " << n << '\n';
@@ -70,8 +70,7 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
 
   int ier;
 
-  // add the attributes
-  for (auto it = (*self)->attStr.begin(); it != (*self)->attStr.end(); ++it) {
+  for (auto it = (*self)->attStr.cbegin(); it != (*self)->attStr.cend(); ++it) {
     ier = nc_put_att_text(ncid, varid, 
                           it->first.c_str(), it->second.size(), it->second.c_str());
     if (ier != NC_NOERR) {
@@ -81,7 +80,7 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
     }
 
   }
-  for (auto it = (*self)->attInt.begin(); it != (*self)->attInt.end(); ++it) {
+  for (auto it = (*self)->attInt.cbegin(); it != (*self)->attInt.cend(); ++it) {
     ier = nc_put_att_int(ncid, varid, 
                          it->first.c_str(), NC_INT, 1, &it->second);
     if (ier != NC_NOERR) {
@@ -90,7 +89,7 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
       return 5;
     }
   }
-  for (auto it = (*self)->attDbl.begin(); it != (*self)->attDbl.end(); ++it) {
+  for (auto it = (*self)->attDbl.cbegin(); it != (*self)->attDbl.cend(); ++it) {
     ier = nc_put_att_double(ncid, varid, 
                             it->first.c_str(), NC_DOUBLE, 1, &it->second);
     if (ier != NC_NOERR) {
@@ -98,6 +97,26 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
                 << it->first << " = " << it->second << '\n';
       return 6;
     }
+  }
+
+  return 0;
+}
+
+
+extern "C"
+int mnt_ncattributes_print(NcAttributes_t** self) {
+
+  std::cout << "string attributes:\n";
+  for (auto it = (*self)->attStr.cbegin(); it != (*self)->attStr.cend(); ++it) {
+    std::cerr << it->first << " -> \"" << it->second << "\"\n";
+  }
+  std::cout << "int attributes   :\n";
+  for (auto it = (*self)->attInt.cbegin(); it != (*self)->attInt.cend(); ++it) {
+    std::cerr << it->first << " -> \"" << it->second << "\"\n";
+  }
+  std::cout << "double attributes:\n";
+  for (auto it = (*self)->attDbl.cbegin(); it != (*self)->attDbl.cend(); ++it) {
+    std::cerr << it->first << " -> \"" << it->second << "\"\n";
   }
 
   return 0;

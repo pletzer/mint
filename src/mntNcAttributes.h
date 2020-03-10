@@ -54,5 +54,12 @@ int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid);
 extern "C"
 int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid);
 
+/**
+ * Print the attributes
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_ncattributes_print(NcAttributes_t** self);
+
 
 #endif // MNT_NC_ATTRIBUTES
