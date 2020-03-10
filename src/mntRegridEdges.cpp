@@ -220,33 +220,6 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
         return 3;
     }
 
-   /*
-
-    // add some attributes
-    std::string locstr = "location";
-    n1  = locstr.size();
-    std::string locval = "edge";
-    n2 = locval.size();
-    ier = mnt_ncfieldwrite_setAttStr(&wr, locstr.c_str(), n1, locval.c_str(), n2);
-    if (ier != 0) {
-        std::cerr << "ERROR: setting attribute " << locstr << " to " << locval 
-                  << " for field " << fieldname << " in file " << filename << '\n';
-        ier = mnt_ncfieldwrite_del(&wr);
-        return 4;
-   }
-
-    std::string meshstr = "mesh";
-    n1 = meshstr.size();
-    n2 = meshname.size();
-    ier = mnt_ncfieldwrite_setAttStr(&wr, meshstr.c_str(), n1, meshname.c_str(), n2);
-    if (ier != 0) {
-        std::cerr << "ERROR: setting attribute " << meshstr << " to " << meshname
-                  << " for field " << fieldname << " in file " << filename << '\n';
-        ier = mnt_ncfieldwrite_del(&wr);
-        return 4;
-    }
-    */
-
     // write the data to disk
     ier = mnt_ncfieldwrite_data(&wr, data);
     if (ier != 0) {

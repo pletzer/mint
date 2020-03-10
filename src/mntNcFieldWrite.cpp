@@ -11,7 +11,6 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
                         int append) {
 
   *self = new NcFieldWrite_t();
-  int ier = mnt_ncattributes_new(&(*self)->attrs);
   (*self)->ncid = -1;
   (*self)->varid = -1;
   (*self)->defined = false;
@@ -57,7 +56,6 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
 extern "C"
 int mnt_ncfieldwrite_del(NcFieldWrite_t** self) {
   int ier = nc_close((*self)->ncid);
-  ier = mnt_ncattributes_del(&(*self)->attrs);
   delete *self;
   return ier;
 }
@@ -148,9 +146,6 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
       return 3;
     }
 
-  // add the attributes
-  ier = mnt_ncattributes_write(&(*self)->attrs, (*self)->ncid, (*self)->varid);
-
   (*self)->defined = true;
   ier = nc_enddef((*self)->ncid);
 
@@ -196,9 +191,6 @@ int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self) {
       (*self)->dimSizes.push_back(dim);
     }
   }
-
-  // get the attributes
-  ier = mnt_ncattributes_read(&(*self)->attrs, (*self)->ncid, (*self)->varid);
 
   // no need to define the variable in append mode
   (*self)->defined = true;

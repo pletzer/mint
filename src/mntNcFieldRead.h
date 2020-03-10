@@ -1,7 +1,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "mntNcAttributes.h"
 
 #ifndef MNT_NC_FIELD_READ
 #define MNT_NC_FIELD_READ
@@ -22,8 +21,6 @@ struct NcFieldRead_t {
   std::vector<std::string> dimNames;
   std::vector<size_t> dimSizes;
   std::vector<int> dimIds;
-
-  NcAttributes_t* attrs;
 };
 
 /**

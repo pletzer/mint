@@ -1,7 +1,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "mntNcAttributes.h"
 
 #ifndef MNT_NC_FIELD_WRITE
 #define MNT_NC_FIELD_WRITE
@@ -24,9 +23,6 @@ struct NcFieldWrite_t {
   // dimension names and values
   std::vector<std::string> dimNames;
   std::vector<size_t> dimSizes;
-
-  // attributes
-  NcAttributes_t* attrs;
 
   bool defined;
   bool append;
@@ -75,18 +71,6 @@ int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims);
 extern "C"
 int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, int iAxis, 
                             const char* dimName, int dimNameLen, size_t dim);
-
-/**
- * Set attribute of type string
- * @param attName attribute name as a flat array
- * @param attNameLen length of attribute name
- * @param attVal attribute value
- * @param attValLen length of attribute value
- */
-extern "C"
-int mnt_ncfieldwrite_setAttStr(NcFieldWrite_t** self,
-                               const char* attName, int attNameLen,
-                               const char* attVal, int attValLen);
 
 /**
  * Write the netcdf variable 

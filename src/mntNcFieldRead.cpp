@@ -10,7 +10,6 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
                         const char* varName, int varNameLen) {
 
   *self = new NcFieldRead_t();
-  int ier = mnt_ncattributes_new(&(*self)->attrs);
   (*self)->ncid = -1;
   (*self)->varid = -1;
 
@@ -18,7 +17,7 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
   std::string vname = std::string(varName, varNameLen);
 
   // open the file
-  ier = nc_open(fname.c_str(), NC_NOWRITE, &(*self)->ncid);
+  int ier = nc_open(fname.c_str(), NC_NOWRITE, &(*self)->ncid);
   if (ier != NC_NOERR) {
     std::cerr << "ERROR: could not open file " << fname << '\n';
     return 1;
@@ -52,16 +51,12 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
     }
   }
 
-  // get the attributes
-  ier = mnt_ncattributes_read(&(*self)->attrs, (*self)->ncid, (*self)->varid);
-
   return 0;
 }
 
 extern "C"
 int mnt_ncfieldread_del(NcFieldRead_t** self) {
   int ier = nc_close((*self)->ncid);
-  ier = mnt_ncattributes_del(&(*self)->attrs);
   delete *self;
   return ier;
 }
