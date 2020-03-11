@@ -1,0 +1,70 @@
+program test
+
+    use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
+    use mnt_ncfieldread_capi_mod 
+
+    implicit none
+
+    character(len=512)             :: ncfile = '${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc'
+    character(len=32)              :: varname = 'u1'
+    type(c_ptr)                    :: handle
+    integer                        :: ier, ndims, i
+    integer(c_size_t)              :: dim, ntot
+    integer(c_size_t), allocatable :: startInds0(:), counts(:)
+    real(c_double), allocatable    :: data(:)
+    character(len=32)              :: dimName
+
+    ier = mnt_ncfieldread_new(handle, trim(ncfile), len_trim(ncfile), &
+                                      trim(varname), len_trim(varname))
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_new'
+
+    ndims = 0
+    ier = mnt_ncfieldread_getNumDims(handle, ndims)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getNumDims'
+
+    write(0, *) 'Number of dimensions: ', ndims
+
+    allocate(counts(ndims))
+    allocate(startInds0(ndims))
+
+    ntot = 1
+    ! zero based!
+    do i = 1, ndims
+    
+        dim = 0
+        ier = mnt_ncfieldread_getDim(handle, i - 1, dim)
+        if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getDim'
+
+        dimName(:) = ' '
+        ier = mnt_ncfieldread_getDimName(handle, i - 1, dimName, len(dimName, kind=4))
+        if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getDimName'
+
+        ntot = ntot * dim
+        startInds0(i) = 0
+        counts(i) = dim
+
+        write(0, '(A, I6, A, A, A, I10)') ' > axis ', i - 1, ' (', trim(dimName), ') has size ', dim
+
+    enddo
+
+    write(0, *) 'ntot = ', ntot
+    allocate(data(ntot))
+
+    ier = mnt_ncfieldread_data(handle, data)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readData'
+
+    print*,' checksum of data: ', sum(data)
+
+    ier = mnt_ncfieldread_dataSlice(handle, startInds0, counts, data)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readDataSlice'
+
+    print*,' checksum of data: ', sum(data)
+
+    deallocate(data)
+    deallocate(startInds0)
+    deallocate(counts)
+
+    ier = mnt_ncfieldread_del(handle)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_del'
+
+end program test

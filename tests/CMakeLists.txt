@@ -7,10 +7,28 @@ include_directories(
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
 configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
+configure_file(testNcAttributes.cpp testNcAttributes.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
+configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
+
+add_executable(test_ncfieldwrite test_ncfieldwrite.f90)
+set_target_properties(test_ncfieldwrite PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(test_ncfieldwrite
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(test_ncfieldread ${CMAKE_BINARY_DIR}/tests/test_ncfieldread.f90)
+set_target_properties(test_ncfieldread PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(test_ncfieldread
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
 
 add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
 set_target_properties(test_cell_locator_capi PROPERTIES LINKER_LANGUAGE Fortran)
@@ -36,6 +54,20 @@ target_link_libraries(testUgridLocator
 
 add_executable(testNetcdf testNetcdf.cxx)
 target_link_libraries(testNetcdf
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testNcAttributes testNcAttributes.cxx)
+target_link_libraries(testNcAttributes
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testMultiArrayIter testMultiArrayIter.cxx)
+target_link_libraries(testMultiArrayIter
                     mint
                     ${VTK_LIBRARIES}
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
@@ -148,6 +180,16 @@ target_link_libraries(testCmdLineArgParserFB
                       ${VTK_LIBRARIES}
 )
 
+add_test(NAME test_ncfieldwrite
+         COMMAND test_ncfieldwrite)
+set_tests_properties(test_ncfieldwrite PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR")
+
+add_test(NAME test_ncfieldread
+         COMMAND test_ncfieldread)
+set_tests_properties(test_ncfieldread PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR")
+
 add_test(NAME test_cell_locator_capi
          COMMAND test_cell_locator_capi)
 
@@ -162,6 +204,8 @@ set_tests_properties(regridEdgesF PROPERTIES
 add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
+add_test(NAME attributes COMMAND testNcAttributes)
+add_test(NAME multiarrayiter COMMAND testMultiArrayIter)
 add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
                         "-vtk" "cs_4.vtk")

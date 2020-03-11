@@ -41,6 +41,21 @@ Ugrid2D() {
 
 
 /**
+ * Load from Ugrid file 
+ * @param filename file name
+ * @param meshname mesh name
+ * @return error (0=OK)
+ */
+int load(const std::string& filename, const std::string& meshname);
+
+
+/**
+ * Dump the grid to a Vtk file
+ * @param filename file name
+ */
+void dumpGridVtk(const std::string& filename);
+
+/**
  * Get the number of faces
  * @return number
  */
@@ -144,14 +159,6 @@ void getRange(double xmin[], double xmax[]) const;
 
 
 /**
- * Load from Ugrid file 
- * @param filename file name
- * @param meshname mesh name
- * @return error (0=OK)
- */
-int load(const std::string& filename, const std::string& meshname);
-
-/**
  * Get the face vertex coordinates
  * @return array of points
  */
@@ -217,12 +224,6 @@ void interpolate(const Vec3& pcoords, double point[]);
  */
 std::vector< std::pair<size_t, std::vector<double> > >
 findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
-
-/**
- * Dump the grid to a Vtk file
- * @param filename file name
- */
-void dumpGridVtk(const std::string& filename);
 
 
 private:

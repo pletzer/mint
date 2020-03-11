@@ -1,4 +1,6 @@
 #include <mntRegridEdges.h>
+#include <mntNcAttributes.h>
+#include <mntNcFieldWrite.h>
 #include <mntGrid.h>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
@@ -7,6 +9,7 @@
 #include <iostream>
 #include <limits>
 #include <cmath>
+#include <netcdf.h>
 
 int main(int argc, char** argv) {
 
@@ -97,7 +100,6 @@ int main(int argc, char** argv) {
             if (ier != 0) return 6;
         }
 
-
         // regrid
         size_t numSrcEdges, numDstEdges;
         mnt_regridedges_getNumSrcEdges(&rg, &numSrcEdges);
@@ -112,12 +114,28 @@ int main(int argc, char** argv) {
             std::string fileAndMeshName = srcFile;
             std::string vname = varAtFileMesh;
 
-            size_t columnAt = varAtFileMesh.find('@');
-            if (columnAt < std::string::npos) {
+            size_t posAt = varAtFileMesh.find('@');
+            if (posAt < std::string::npos) {
                 // user specified the file and mesh names
-                fileAndMeshName = varAtFileMesh.substr(columnAt + 1);
-                vname = varAtFileMesh.substr(0, columnAt);
+                fileAndMeshName = varAtFileMesh.substr(posAt + 1);
+                vname = varAtFileMesh.substr(0, posAt);
             }
+
+            std::string srcFileName = fileAndMeshName;
+            size_t posColumn = fileAndMeshName.find(':');
+            if (posColumn < std::string::npos) {
+                srcFileName = fileAndMeshName.substr(0, posColumn);
+            }
+
+            NcAttributes_t* attrs = NULL;
+            ier = mnt_ncattributes_new(&attrs);
+            int ncid;
+            ier = nc_open(srcFileName.c_str(), NC_NOWRITE, &ncid);
+            int varid;
+            ier = nc_inq_varid(ncid, vname.c_str(), &varid);
+            // read the attributes
+            ier = mnt_ncattributes_read(&attrs, ncid, varid);
+            ier = nc_close(ncid);
 
             std::cout << "info: loading field " << vname << " from file \"" << fileAndMeshName << "\"\n";
             ier = mnt_regridedges_loadEdgeField(&rg, 
@@ -190,10 +208,74 @@ int main(int argc, char** argv) {
             }
 
             if (dstEdgeDataFile.size() > 0) {
+
+                /*
                 std::cout << "info: writing \"" << vname << "\" to " << dstEdgeDataFile << '\n';
                 mnt_regridedges_dumpEdgeField(&rg, dstEdgeDataFile.c_str(), dstEdgeDataFile.size(), 
                                                vname.c_str(), vname.size(), 
                                                numDstEdges, &dstEdgeData[0]);
+                                               */
+
+                size_t columnL = dstEdgeDataFile.find(':');
+
+                // get the file name
+                std::string filename = dstEdgeDataFile.substr(0, columnL);
+                // get the mesh name
+                std::string meshname = dstEdgeDataFile.substr(columnL + 1);
+
+                int ier;
+                NcFieldWrite_t* wr = NULL;
+
+                int n1 = filename.size();
+                int n2 = vname.size();
+                const int append = 0; // new file
+                ier = mnt_ncfieldwrite_new(&wr, filename.c_str(), n1, vname.c_str(), n2, append);
+                if (ier != 0) {
+                    std::cerr << "ERROR: create file " << filename << " with field " 
+                              << vname << " in append mode " << append << '\n';
+                    return 1;
+                }
+
+                ier = mnt_ncfieldwrite_setNumDims(&wr, 1); // 1D array only in this implementation
+                if (ier != 0) {
+                    std::cerr << "ERROR: cannot set the number of dimensions for field " << vname << " in file " << filename << '\n';
+                    ier = mnt_ncfieldwrite_del(&wr);
+                    return 2;
+                }
+
+                // add num_edges axis
+                std::string axname = "num_edges";
+                int n3 = axname.size();
+                ier = mnt_ncfieldwrite_setDim(&wr, 0, axname.c_str(), n3, numDstEdges);
+                if (ier != 0) {
+                    std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << numDstEdges
+                              << " for field " << vname << " in file " << filename << '\n';
+                    ier = mnt_ncfieldwrite_del(&wr);
+                    return 3;
+                }
+
+                // add the attributes
+                ier = mnt_ncattributes_write(&attrs, wr->ncid, wr->varid);
+                if (ier != 0) {
+                    std::cerr << "ERROR: writing attributes for field " << vname << " in file " << filename << '\n';
+                    ier = mnt_ncfieldwrite_del(&wr);
+                    return 3;
+                }
+
+
+                // write the data to disk
+                ier = mnt_ncfieldwrite_data(&wr, &dstEdgeData[0]);
+                if (ier != 0) {
+                    std::cerr << "ERROR: writing data for field " << vname << " in file " << filename << '\n';
+                    ier = mnt_ncfieldwrite_del(&wr);
+                    return 5;
+                }
+
+                // clean up
+                ier = mnt_ncfieldwrite_del(&wr);
+                ier = mnt_ncattributes_del(&attrs);
+
+
             }
         }
 
