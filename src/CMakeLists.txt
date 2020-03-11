@@ -25,6 +25,7 @@ set(LIB_FILES
   mntNcAttributes.cpp
   mntNcFieldRead.cpp
   mntNcFieldWrite.cpp
+  mntMultiArrayIter.cpp
   mnt_ncfieldread_capi_mod.f90
   mnt_ncfieldwrite_capi_mod.f90
   mnt_celllocator_capi_mod.f90
@@ -50,6 +51,7 @@ set(HEADER_FILES
   mntNcAttributes.h
   mntNcFieldRead.h
   mntNcFieldWrite.h
+  mntMultiArrayIter.h
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h

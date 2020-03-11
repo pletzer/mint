@@ -66,6 +66,13 @@ target_link_libraries(testNcAttributes
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testMultiArrayIter testMultiArrayIter.cxx)
+target_link_libraries(testMultiArrayIter
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testUgrid2D testUgrid2D.cxx)
 target_link_libraries(testUgrid2D
                     mint
@@ -198,6 +205,7 @@ add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)
+add_test(NAME multiarrayiter COMMAND testMultiArrayIter)
 add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
                         "-vtk" "cs_4.vtk")
