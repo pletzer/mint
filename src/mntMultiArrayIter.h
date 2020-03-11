@@ -66,6 +66,6 @@ int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, size_t* n);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, size_t* indices);
+int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, size_t indices[]);
 
 #endif // MULTI_ARRAY_ITER

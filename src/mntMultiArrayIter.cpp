@@ -1,7 +1,12 @@
 #include <mntMultiArrayIter.h>
+#include <iostream>
 
 extern "C"
 int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const size_t* dims) {
+
+    if (ndims <= 0) {
+        return 1;
+    }
 
     *self = new MultiArrayIter_t();
     (*self)->dims.resize(ndims);
@@ -49,10 +54,11 @@ int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, size_t* n) {
 }
 
 extern "C"
-int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, size_t* indices) {
+int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, size_t indices[]) {
 
     for (size_t i = 0; i < (*self)->dims.size(); ++i) {
         indices[i] = (*self)->bigIndex / (*self)->prodDims[i] % (*self)->dims[i];
     }
+
     return 0;
 }

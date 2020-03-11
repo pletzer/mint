@@ -22,13 +22,16 @@ void test(const std::vector<size_t>& dims) {
 
     std::vector<size_t> inds(ndims);
     for (size_t i = 0; i < niters; ++i) {
+
         ier = mnt_multiarrayiter_getIndices(&mai, &inds[0]);
         assert(ier == 0);
+
         std::cout << i << ": ";
         for (int j = 0; j < ndims; ++j) {
-            std::cout << ' ' << inds[i] << ' ';
+            std::cout << ' ' << inds[j] << ' ';
         }
         std::cout << '\n';
+
         ier = mnt_multiarrayiter_next(&mai);
         assert(ier == 0);
     }
@@ -39,8 +42,14 @@ void test(const std::vector<size_t>& dims) {
 
 int main(int argc, char** argv) {
 
-    std::vector<size_t> dims0;
-	test(dims0);
+    std::vector<size_t> dims1{2};
+	test(dims1);
+
+    std::vector<size_t> dims2{2, 3};
+    test(dims2);
+
+    std::vector<size_t> dims3{2, 3, 4};
+    test(dims3);
 
     return 0;
 }
