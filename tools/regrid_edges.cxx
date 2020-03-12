@@ -147,16 +147,27 @@ int main(int argc, char** argv) {
             ier = nc_close(ncid);
 
             std::cout << "info: loading field " << vname << " from file \"" << fileAndMeshName << "\"\n";
-            ier = mnt_regridedges_loadEdgeField(&rg, 
-                                                fileAndMeshName.c_str(), fileAndMeshName.size(),
-                                                vname.c_str(), vname.size(),
-                                                numSrcEdges, &srcEdgeData[0]);
+
+            size_t columnL = fileAndMeshName.find(':');
+            // get the file name
+            std::string filename = fileAndMeshName.substr(0, columnL);
+
+            ier = mnt_ncfieldread_new(&reader, filename.c_str(), (int) filename.size(), vname.c_str(), (int) vname.size());
             if (ier != 0) {
-                std::cerr << "ERROR: could not load edge centred data \"" << vname << "\" from file \"" << fileAndMeshName << "\"\n";
+                std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << filename << "\"\n";
                 return 6;
             }
 
-            // regrid
+            // read the data
+            ier = mnt_ncfieldread_data(&reader, &srcEdgeData[0]);
+            if (ier != 0) {
+                std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << filename << "\"\n";
+                return 6;
+            }
+
+            ier = mnt_ncfieldread_del(&reader);
+
+            // apply the weights to the src field
             ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
             if (ier != 0) {
                 std::cerr << "ERROR: failed to apply weights to dst field \"" << vname << "\"\n";
@@ -217,13 +228,6 @@ int main(int argc, char** argv) {
             }
 
             if (dstEdgeDataFile.size() > 0) {
-
-                /*
-                std::cout << "info: writing \"" << vname << "\" to " << dstEdgeDataFile << '\n';
-                mnt_regridedges_dumpEdgeField(&rg, dstEdgeDataFile.c_str(), dstEdgeDataFile.size(), 
-                                               vname.c_str(), vname.size(), 
-                                               numDstEdges, &dstEdgeData[0]);
-                                               */
 
                 size_t columnL = dstEdgeDataFile.find(':');
 
