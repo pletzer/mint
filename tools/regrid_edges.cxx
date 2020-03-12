@@ -153,27 +153,35 @@ int main(int argc, char** argv) {
         // get the ncid and varid's so we can read the attributes and dimensions
         int srcNcid;
         ier = nc_open(srcFileName.c_str(), NC_NOWRITE, &srcNcid);
+        if (ier != 0) {
+            std::cerr << "ERROR: could not open file \"" << srcFileName << "\"\n";
+            return 8;
+        }
+
         int srcVarid;
         ier = nc_inq_varid(srcNcid, vname.c_str(), &srcVarid);
+        if (ier != 0) {
+            std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
+            return 9;
+        }
 
         int ndims;
         ier = nc_inq_varndims(srcNcid, srcVarid, &ndims);
+        if (ier != 0) {
+            std::cerr << "ERROR: could not extract number of dimensions for variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
+            return 10;
+        }
         
 
         // read the attributes
         ier = mnt_ncattributes_read(&attrs, srcNcid, srcVarid);
+        if (ier != 0) {
+            std::cerr << "ERROR: could not extract attributes for variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
+            return 11;
+        }
 
-        std::cout << "info: loading field " << vname << " from file \"" << fileAndMeshName << "\"\n";
-
-        size_t columnL = fileAndMeshName.find(':');
-        // get the file name
-        std::string filename = fileAndMeshName.substr(0, columnL);
 
         ier = mnt_ncfieldread_new(&reader, srcNcid, srcVarid);
-        if (ier != 0) {
-            std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << filename << "\"\n";
-            return 8;
-        }
 
         // get the number of edges and allocate src/dst data
         size_t numSrcEdges, numDstEdges;
@@ -185,10 +193,11 @@ int main(int argc, char** argv) {
         std::vector<double> dstEdgeData(numDstEdges);
 
         // read the data from file
+        std::cout << "info: reading field " << vname << " from file \"" << srcFileName << "\"\n";
         ier = mnt_ncfieldread_data(&reader, &srcEdgeData[0]);
         if (ier != 0) {
-            std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << filename << "\"\n";
-            return 9;
+            std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
+            return 12;
         }
 
         // must destroy before we close the file
@@ -201,7 +210,7 @@ int main(int argc, char** argv) {
         ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
         if (ier != 0) {
             std::cerr << "ERROR: failed to apply weights to dst field \"" << vname << "\"\n";
-            return 10;
+            return 13;
         }
 
         // compute loop integrals for each cell
@@ -273,14 +282,14 @@ int main(int argc, char** argv) {
             if (ier != 0) {
                 std::cerr << "ERROR: create file " << filename << " with field " 
                           << vname << " in append mode " << append << '\n';
-                return 11;
+                return 14;
             }
 
             ier = mnt_ncfieldwrite_setNumDims(&writer, 1); // 1D array only in this implementation
             if (ier != 0) {
                 std::cerr << "ERROR: cannot set the number of dimensions for field " << vname << " in file " << filename << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
-                return 12;
+                return 15;
             }
 
             // add num_edges axis
@@ -291,7 +300,7 @@ int main(int argc, char** argv) {
                 std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << numDstEdges
                           << " for field " << vname << " in file " << filename << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
-                return 13;
+                return 16;
             }
 
             // add the attributes
@@ -299,7 +308,7 @@ int main(int argc, char** argv) {
             if (ier != 0) {
                 std::cerr << "ERROR: writing attributes for field " << vname << " in file " << filename << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
-                return 14;
+                return 17;
             }
 
 
@@ -308,7 +317,7 @@ int main(int argc, char** argv) {
             if (ier != 0) {
                 std::cerr << "ERROR: writing data for field " << vname << " in file " << filename << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
-                return 15;
+                return 18;
             }
 
             // clean up
