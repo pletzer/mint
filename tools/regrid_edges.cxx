@@ -170,18 +170,10 @@ int main(int argc, char** argv) {
         // read the attributes
         ier = mnt_ncattributes_read(&attrs, ncid, varid);
 
-        // done with reading the attributes
-        ier = nc_close(ncid);
-
         std::cout << "info: loading field " << vname << " from file \"" << fileAndMeshName << "\"\n";
-
-        size_t columnL = fileAndMeshName.find(':');
-        // get the file name
-        std::string filename = fileAndMeshName.substr(0, columnL);
-
-        ier = mnt_ncfieldread_new(&reader, filename.c_str(), (int) filename.size(), vname.c_str(), (int) vname.size());
+        ier = mnt_ncfieldread_new(&reader, ncid, varid);
         if (ier != 0) {
-            std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << filename << "\"\n";
+            std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
             return 8;
         }
 
@@ -197,11 +189,13 @@ int main(int argc, char** argv) {
         // read the data from file
         ier = mnt_ncfieldread_data(&reader, &srcEdgeData[0]);
         if (ier != 0) {
-            std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << filename << "\"\n";
+            std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
             return 9;
         }
 
         ier = mnt_ncfieldread_del(&reader);
+        // done with reading the netcdf variable
+        ier = nc_close(ncid);
 
         // apply the weights to the src field
         ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);

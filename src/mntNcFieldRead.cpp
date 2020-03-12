@@ -5,30 +5,13 @@
 #include <iostream>
 
 extern "C"
-int mnt_ncfieldread_new(NcFieldRead_t** self,
-                        const char* fileName, int fileNameLen, 
-                        const char* varName, int varNameLen) {
+int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
+
+  int ier;
 
   *self = new NcFieldRead_t();
-  (*self)->ncid = -1;
-  (*self)->varid = -1;
-
-  std::string fname = std::string(fileName, fileNameLen);
-  std::string vname = std::string(varName, varNameLen);
-
-  // open the file
-  int ier = nc_open(fname.c_str(), NC_NOWRITE, &(*self)->ncid);
-  if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not open file " << fname << '\n';
-    return 1;
-  }
-
-  // get the variable Id
-  ier = nc_inq_varid((*self)->ncid, vname.c_str(), &(*self)->varid);
-  if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not find variable " << vname << " in file " << fname << '\n';
-    return 2;
-  }
+  (*self)->ncid = ncid;
+  (*self)->varid = varid;
 
   // inquire about the variable
   int ndims = 0;
@@ -36,7 +19,7 @@ int mnt_ncfieldread_new(NcFieldRead_t** self,
   int natts = 0;
   ier = nc_inq_var((*self)->ncid, (*self)->varid, NULL, NULL, &ndims, dimIds, &natts);
   if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not inquire about variable " << vname << " in file " << fname << '\n';
+    std::cerr << "ERROR: could not inquire about variable with Id " << varid << " in netcdf file with Id " << ncid << '\n';
     return 3;
   }
 

@@ -27,7 +27,7 @@ set_target_properties(test_ncfieldread PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(test_ncfieldread
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+                      netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
