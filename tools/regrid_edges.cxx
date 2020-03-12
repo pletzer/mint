@@ -151,29 +151,27 @@ int main(int argc, char** argv) {
         ier = mnt_ncattributes_new(&attrs);
 
         // get the ncid and varid's so we can read the attributes and dimensions
-        int ncid;
-        ier = nc_open(srcFileName.c_str(), NC_NOWRITE, &ncid);
-        int varid;
-        ier = nc_inq_varid(ncid, vname.c_str(), &varid);
+        int srcNcid;
+        ier = nc_open(srcFileName.c_str(), NC_NOWRITE, &srcNcid);
+        int srcVarid;
+        ier = nc_inq_varid(srcNcid, vname.c_str(), &srcVarid);
 
         int ndims;
-        ier = nc_inq_varndims(ncid, varid, &ndims);
+        ier = nc_inq_varndims(srcNcid, srcVarid, &ndims);
         
-        std::vector<int> dimIds(ndims);
-        ier = nc_inq_vardimid(ncid, varid, &dimIds[0]);
-
-        std::vector<size_t> dims(ndims);
-        for (int i = 0; i < ndims; ++i) {
-            ier = nc_inq_dimlen(ncid, dimIds[i], &dims[i]);
-        }
 
         // read the attributes
-        ier = mnt_ncattributes_read(&attrs, ncid, varid);
+        ier = mnt_ncattributes_read(&attrs, srcNcid, srcVarid);
 
         std::cout << "info: loading field " << vname << " from file \"" << fileAndMeshName << "\"\n";
-        ier = mnt_ncfieldread_new(&reader, ncid, varid);
+
+        size_t columnL = fileAndMeshName.find(':');
+        // get the file name
+        std::string filename = fileAndMeshName.substr(0, columnL);
+
+        ier = mnt_ncfieldread_new(&reader, srcNcid, srcVarid);
         if (ier != 0) {
-            std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
+            std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << filename << "\"\n";
             return 8;
         }
 
@@ -189,13 +187,15 @@ int main(int argc, char** argv) {
         // read the data from file
         ier = mnt_ncfieldread_data(&reader, &srcEdgeData[0]);
         if (ier != 0) {
-            std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
+            std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << filename << "\"\n";
             return 9;
         }
 
+        // must destroy before we close the file
         ier = mnt_ncfieldread_del(&reader);
-        // done with reading the netcdf variable
-        ier = nc_close(ncid);
+
+        // done with reading the attributes
+        ier = nc_close(srcNcid);
 
         // apply the weights to the src field
         ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
