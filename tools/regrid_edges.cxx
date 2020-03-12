@@ -101,11 +101,15 @@ int main(int argc, char** argv) {
     }
 
     if (loadWeightsFile.size() == 0) {
+
+        // compute the weights
+        std::cout << "info: computing weights\n";
         ier = mnt_regridedges_build(&rg, args.get<int>("-N"));
         if (ier != 0) {
             return 6;
         }
     
+        // save the weights to file
         if (weightsFile.size() != 0) {
             std::cout << "info: saving weights in file " << weightsFile << '\n';
             ier = mnt_regridedges_dumpWeights(&rg, weightsFile.c_str(), (int) weightsFile.size());
@@ -113,19 +117,15 @@ int main(int argc, char** argv) {
 
     }
     else {
+
+        // weights have been pre-computed, just load them
         std::cout << "info: loading weights from file " << loadWeightsFile << '\n';
         ier = mnt_regridedges_loadWeights(&rg, loadWeightsFile.c_str(), (int) loadWeightsFile.size());
         if (ier != 0) {
             return 7;
         }
-    }
 
-    // regrid
-    size_t numSrcEdges, numDstEdges;
-    mnt_regridedges_getNumSrcEdges(&rg, &numSrcEdges);
-    mnt_regridedges_getNumDstEdges(&rg, &numDstEdges);
-    std::vector<double> srcEdgeData(numSrcEdges);
-    std::vector<double> dstEdgeData(numDstEdges);
+    }
 
     std::string varAtFileMesh = args.get<std::string>("-v");
     if (varAtFileMesh.size() > 0) {
@@ -150,11 +150,22 @@ int main(int argc, char** argv) {
         NcAttributes_t* attrs = NULL;
         ier = mnt_ncattributes_new(&attrs);
 
-        // get the ncid and varid's
+        // get the ncid and varid's so we can read the attributes and dimensions
         int ncid;
         ier = nc_open(srcFileName.c_str(), NC_NOWRITE, &ncid);
         int varid;
         ier = nc_inq_varid(ncid, vname.c_str(), &varid);
+
+        int ndims;
+        ier = nc_inq_varndims(ncid, varid, &ndims);
+        
+        std::vector<int> dimIds(ndims);
+        ier = nc_inq_vardimid(ncid, varid, &dimIds[0]);
+
+        std::vector<size_t> dims(ndims);
+        for (int i = 0; i < ndims; ++i) {
+            ier = nc_inq_dimlen(ncid, dimIds[i], &dims[i]);
+        }
 
         // read the attributes
         ier = mnt_ncattributes_read(&attrs, ncid, varid);
@@ -174,7 +185,16 @@ int main(int argc, char** argv) {
             return 8;
         }
 
-        // read the data
+        // get the number of edges and allocate src/dst data
+        size_t numSrcEdges, numDstEdges;
+        mnt_regridedges_getNumSrcEdges(&rg, &numSrcEdges);
+        mnt_regridedges_getNumDstEdges(&rg, &numDstEdges);
+        std::cout << "info: number of src edges: " << numSrcEdges << '\n';
+        std::cout << "info: number of dst edges: " << numDstEdges << '\n';
+        std::vector<double> srcEdgeData(numSrcEdges);
+        std::vector<double> dstEdgeData(numDstEdges);
+
+        // read the data from file
         ier = mnt_ncfieldread_data(&reader, &srcEdgeData[0]);
         if (ier != 0) {
             std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << filename << "\"\n";
