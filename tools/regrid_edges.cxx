@@ -32,6 +32,15 @@ std::pair<std::string, std::string> split(const std::string& fmname, char separa
     return res;
 }
 
+/**
+ * Compute the loop integrals for each cell
+ * @param gridObj grid object
+ * @param edge data
+ * @param avgAbsLoop abs of average loop integral (output)
+ * @param minAbsLoop abs of min loop integral (output)
+ * @param maxAbsLoop abs of max loop integral (output)
+ * @return loop integrals
+ */
 std::vector<double> computeLoopIntegrals(Grid_t* grd, const std::vector<double>& edgeData,
                                          double* avgAbsLoop, double* minAbsLoop, double* maxAbsLoop) {
     size_t numCells, edgeId;
@@ -213,7 +222,8 @@ int main(int argc, char** argv) {
         int ndims;
         ier = nc_inq_varndims(srcNcid, srcVarid, &ndims);
         if (ier != 0) {
-            std::cerr << "ERROR: could not extract number of dimensions for variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
+            std::cerr << "ERROR: could not extract number of dimensions for variable \"" 
+                      << vname << "\" in file \"" << srcFileName << "\"\n";
             return 10;
         }
         
@@ -221,10 +231,10 @@ int main(int argc, char** argv) {
         // read the attributes
         ier = mnt_ncattributes_read(&attrs, srcNcid, srcVarid);
         if (ier != 0) {
-            std::cerr << "ERROR: could not extract attributes for variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
+            std::cerr << "ERROR: could not extract attributes for variable \"" 
+                      << vname << "\" in file \"" << srcFileName << "\"\n";
             return 11;
         }
-
 
         ier = mnt_ncfieldread_new(&reader, srcNcid, srcVarid);
 
@@ -244,12 +254,6 @@ int main(int argc, char** argv) {
             std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
             return 12;
         }
-
-        // must destroy before we close the file
-        ier = mnt_ncfieldread_del(&reader);
-
-        // done with reading the attributes
-        ier = nc_close(srcNcid);
 
         // apply the weights to the src field
         ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
@@ -292,7 +296,7 @@ int main(int argc, char** argv) {
         if (dstEdgeDataFile.size() > 0) {
 
             std::pair<std::string, std::string> fm = split(dstEdgeDataFile, ':');
-            // get the file name
+            // get the dst file name
             std::string dstFileName = fm.first;
 
             int n1 = dstFileName.size();
@@ -331,7 +335,6 @@ int main(int argc, char** argv) {
                 return 17;
             }
 
-
             // write the data to disk
             ier = mnt_ncfieldwrite_data(&writer, &dstEdgeData[0]);
             if (ier != 0) {
@@ -340,12 +343,16 @@ int main(int argc, char** argv) {
                 return 18;
             }
 
-            // clean up
             ier = mnt_ncfieldwrite_del(&writer);
-            ier = mnt_ncattributes_del(&attrs);
-
         }
-    }
+
+        // must destroy before closing the file
+        ier = mnt_ncfieldread_del(&reader);
+        ier = mnt_ncattributes_del(&attrs);
+
+        // done with reading the attributes
+        ier = nc_close(srcNcid);
+    } // has variable 
 
     // cleanup
     mnt_regridedges_del(&rg);
