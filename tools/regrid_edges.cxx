@@ -291,26 +291,23 @@ int main(int argc, char** argv) {
 
         if (dstEdgeDataFile.size() > 0) {
 
-            size_t columnL = dstEdgeDataFile.find(':');
-
+            std::pair<std::string, std::string> fm = split(dstEdgeDataFile, ':');
             // get the file name
-            std::string filename = dstEdgeDataFile.substr(0, columnL);
-            // get the mesh name
-            std::string meshname = dstEdgeDataFile.substr(columnL + 1);
+            std::string dstFileName = fm.first;
 
-            int n1 = filename.size();
+            int n1 = dstFileName.size();
             int n2 = vname.size();
             const int append = 0; // new file
-            ier = mnt_ncfieldwrite_new(&writer, filename.c_str(), n1, vname.c_str(), n2, append);
+            ier = mnt_ncfieldwrite_new(&writer, dstFileName.c_str(), n1, vname.c_str(), n2, append);
             if (ier != 0) {
-                std::cerr << "ERROR: create file " << filename << " with field " 
+                std::cerr << "ERROR: create file " << dstFileName << " with field " 
                           << vname << " in append mode " << append << '\n';
                 return 14;
             }
 
             ier = mnt_ncfieldwrite_setNumDims(&writer, 1); // 1D array only in this implementation
             if (ier != 0) {
-                std::cerr << "ERROR: cannot set the number of dimensions for field " << vname << " in file " << filename << '\n';
+                std::cerr << "ERROR: cannot set the number of dimensions for field " << vname << " in file " << dstFileName << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
                 return 15;
             }
@@ -321,7 +318,7 @@ int main(int argc, char** argv) {
             ier = mnt_ncfieldwrite_setDim(&writer, 0, axname.c_str(), n3, numDstEdges);
             if (ier != 0) {
                 std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << numDstEdges
-                          << " for field " << vname << " in file " << filename << '\n';
+                          << " for field " << vname << " in file " << dstFileName << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
                 return 16;
             }
@@ -329,7 +326,7 @@ int main(int argc, char** argv) {
             // add the attributes
             ier = mnt_ncattributes_write(&attrs, writer->ncid, writer->varid);
             if (ier != 0) {
-                std::cerr << "ERROR: writing attributes for field " << vname << " in file " << filename << '\n';
+                std::cerr << "ERROR: writing attributes for field " << vname << " in file " << dstFileName << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
                 return 17;
             }
@@ -338,7 +335,7 @@ int main(int argc, char** argv) {
             // write the data to disk
             ier = mnt_ncfieldwrite_data(&writer, &dstEdgeData[0]);
             if (ier != 0) {
-                std::cerr << "ERROR: writing data for field " << vname << " in file " << filename << '\n';
+                std::cerr << "ERROR: writing data for field " << vname << " in file " << dstFileName << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
                 return 18;
             }
