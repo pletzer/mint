@@ -12,6 +12,24 @@
 #include <cmath>
 #include <netcdf.h>
 
+/**
+ * Split string by separator
+ * @param fmname string, eg "filename:meshname"
+ * @param separator separator, eg ':'
+ * @return filename, meshname pair
+ */
+std::pair<std::string, std::string> split(const std::string& fmname, char separator) {
+    std::pair<std::string, std::string> res;
+    size_t pos = fmname.find(separator);
+    res.first = fmname.substr(0, pos);
+    if (pos < std::string::npos) {
+        // file name substring
+        // mesh name substring
+        res.second = fmname.substr(pos + 1, std::string::npos);
+    }
+    return res;
+}
+
 int main(int argc, char** argv) {
 
     int ier;
@@ -130,22 +148,16 @@ int main(int argc, char** argv) {
     std::string varAtFileMesh = args.get<std::string>("-v");
     if (varAtFileMesh.size() > 0) {
 
+        // get the variable name and the source file/mesh names
+        std::pair<std::string, std::string> vfm = split(varAtFileMesh, '@');
+        std::string vname = vfm.first;
         // by default the variable is stored in srcFile
-        std::string fileAndMeshName = srcFile;
-        std::string vname = varAtFileMesh;
-
-        size_t posAt = varAtFileMesh.find('@');
-        if (posAt < std::string::npos) {
-            // user specified the file and mesh names
-            fileAndMeshName = varAtFileMesh.substr(posAt + 1);
-            vname = varAtFileMesh.substr(0, posAt);
+        std::string srcFileMeshName = srcFile;
+        if (vfm.second.size() > 0) {
+            srcFileMeshName = vfm.second;
         }
-
-        std::string srcFileName = fileAndMeshName;
-        size_t posColumn = fileAndMeshName.find(':');
-        if (posColumn < std::string::npos) {
-            srcFileName = fileAndMeshName.substr(0, posColumn);
-        }
+        std::pair<std::string, std::string> fm = split(srcFileMeshName, ':');
+        std::string srcFileName = fm.first;
 
         NcAttributes_t* attrs = NULL;
         ier = mnt_ncattributes_new(&attrs);
