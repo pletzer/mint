@@ -12,6 +12,8 @@
 #include <cmath>
 #include <netcdf.h>
 
+#define NUM_EDGES_PER_CELL 4
+
 /**
  * Split string by separator
  * @param fmname string, eg "filename:meshname"
@@ -28,6 +30,37 @@ std::pair<std::string, std::string> split(const std::string& fmname, char separa
         res.second = fmname.substr(pos + 1, std::string::npos);
     }
     return res;
+}
+
+std::vector<double> computeLoopIntegrals(Grid_t* grd, const std::vector<double>& edgeData,
+                                         double* avgAbsLoop, double* minAbsLoop, double* maxAbsLoop) {
+    size_t numCells, edgeId;
+    int edgeSign, ier;
+    mnt_grid_getNumberOfCells(&grd, &numCells);
+    std::vector<double> loop_integrals(numCells);
+    *minAbsLoop = + std::numeric_limits<double>::max();
+    *maxAbsLoop = - std::numeric_limits<double>::max();
+    *avgAbsLoop = 0.0;
+    for (size_t cellId = 0; cellId < numCells; ++cellId) {
+        double loop = 0.0;
+        for (int ie = 0; ie < NUM_EDGES_PER_CELL; ++ie) {
+
+            ier = mnt_grid_getEdgeId(&grd, cellId, ie, &edgeId, &edgeSign);
+            assert(ier == 0);
+
+            // +1 for ie = 0, 1; -1 for ie = 2, 3
+            int sgn = 1 - 2*(ie/2);
+            loop += sgn * edgeSign * edgeData[edgeId];
+        }
+
+        loop_integrals[cellId] = loop;
+        loop = std::abs(loop);
+        *minAbsLoop = std::min(loop, *minAbsLoop);
+        *maxAbsLoop = std::max(loop, *maxAbsLoop);
+        *avgAbsLoop += loop;
+    }
+    *avgAbsLoop /= double(numCells);
+    return loop_integrals;
 }
 
 int main(int argc, char** argv) {
@@ -226,50 +259,28 @@ int main(int argc, char** argv) {
         }
 
         // compute loop integrals for each cell
-        size_t numDstCells, dstEdgeId;
-        int dstEdgeSign;
-        mnt_regridedges_getNumDstCells(&rg, &numDstCells);
-        int numEdgesPerCell;
-        mnt_regridedges_getNumEdgesPerCell(&rg, &numEdgesPerCell);
-        std::vector<double> loop_integrals(numDstCells);
-        double minAbsLoop = std::numeric_limits<double>::max();
-        double maxAbsLoop = - std::numeric_limits<double>::max();
-        double avgAbsLoop = 0.0;
-        for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
-            double loop = 0.0;
-            for (int ie = 0; ie < numEdgesPerCell; ++ie) {
-
-                ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
-                assert(ier == 0);
-
-                // +1 for ie = 0, 1; -1 for ie = 2, 3
-                int sgn = 1 - 2*(ie/2);
-                loop += sgn * dstEdgeSign * dstEdgeData[dstEdgeId];
-            }
-
-            loop_integrals[dstCellId] = loop;
-            loop = std::abs(loop);
-            minAbsLoop = std::min(loop, minAbsLoop);
-            maxAbsLoop = std::max(loop, maxAbsLoop);
-            avgAbsLoop += loop;
-        }
-        avgAbsLoop /= double(numDstCells);
+        double avgAbsLoop, minAbsLoop, maxAbsLoop;
+        std::vector<double> loop_integrals = computeLoopIntegrals(rg->dstGridObj, dstEdgeData, 
+                                                                  &avgAbsLoop, &minAbsLoop, &maxAbsLoop);
         std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
 
         if (vtkOutputFile.size() > 0) {
 
             // cell by cell data
-            std::vector<double> dstCellByCellData(numDstCells * numEdgesPerCell);
+            size_t numDstCells, dstEdgeId;
+            int dstEdgeSign;
+            mnt_regridedges_getNumDstCells(&rg, &numDstCells);
+            std::vector<double> dstCellByCellData(numDstCells * NUM_EDGES_PER_CELL);
             for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
                 for (int ie = 0; ie < 4; ++ie) {
                     ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
-                    size_t k = dstCellId*numEdgesPerCell + ie;
+                    size_t k = dstCellId*NUM_EDGES_PER_CELL + ie;
                     dstCellByCellData[k] = dstEdgeData[dstEdgeId] * dstEdgeSign;
                 }
             }
 
             // attach field to grid so we can save the data in file
-            mnt_grid_attach(&rg->dstGridObj, vname.c_str(), numEdgesPerCell, &dstCellByCellData[0]);
+            mnt_grid_attach(&rg->dstGridObj, vname.c_str(), NUM_EDGES_PER_CELL, &dstCellByCellData[0]);
 
             std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
             mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
