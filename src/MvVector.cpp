@@ -323,7 +323,8 @@ template<class T>
 Vector<T> operator/(T f, const Vector<T> &v) 
 {
   Vector<T> c(v.size());
-  std::transform(v.begin(), v.end(), c.begin(), bind1st(std::divides<T>(), f));
+  std::transform(v.begin(), v.end(), c.begin(), 
+  	bind(std::divides<T>(), f, std::placeholders::_1));
   return c;
 }
 
