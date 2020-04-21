@@ -8,6 +8,7 @@ configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
 configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testNcAttributes.cpp testNcAttributes.cxx)
+configure_file(testNcDimensions.cpp testNcDimensions.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
@@ -61,6 +62,13 @@ target_link_libraries(testNetcdf
 
 add_executable(testNcAttributes testNcAttributes.cxx)
 target_link_libraries(testNcAttributes
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testNcDimensions testNcDimensions.cxx)
+target_link_libraries(testNcDimensions
                     mint
                     ${VTK_LIBRARIES}
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
@@ -205,6 +213,7 @@ add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)
+add_test(NAME dimensions COMMAND testNcDimensions)
 add_test(NAME multiarrayiter COMMAND testMultiArrayIter)
 add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
