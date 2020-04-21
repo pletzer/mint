@@ -43,6 +43,7 @@ int mnt_ncdimensions_getNumDims(NcDimensions_t** self, int* ndims) {
 extern "C"
 int mnt_ncdimensions_get(NcDimensions_t** self, int i, size_t* len) {
   *len = (*self)->dims[i];
+  return 0;
 }
 
 extern "C"

@@ -27,6 +27,17 @@ void test(const std::string& filename, const std::string& varname) {
     ier = mnt_ncdimensions_read(&attrs, ncid, varid);
     assert(ier == NC_NOERR);
 
+    int ndims;
+    ier = mnt_ncdimensions_getNumDims(&attrs, &ndims);
+    assert(ier == NC_NOERR);
+    assert(ndims == 3);
+
+    size_t dims[ndims];
+    for (int i = 0; i < ndims; ++i) {
+        ier = mnt_ncdimensions_get(&attrs, i, &dims[i]);
+        assert(ier == NC_NOERR);
+    }
+
     ier = nc_close(ncid);
     assert(ier == NC_NOERR);
 
