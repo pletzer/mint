@@ -1,5 +1,6 @@
 #include <mntRegridEdges.h>
 #include <mntNcAttributes.h>
+#include <mntNcDimensions.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
 #include <mntGrid.h>
@@ -219,14 +220,16 @@ int main(int argc, char** argv) {
             return 9;
         }
 
+        // read the dimensions
+        NcDimensions_t* srcVarDims = NULL;
+        ier = mnt_ncdimensions_new(&srcVarDims);
+        ier = mnt_ncdimensions_read(&srcVarDims, srcNcid, srcVarid);
         int ndims;
-        ier = nc_inq_varndims(srcNcid, srcVarid, &ndims);
-        if (ier != 0) {
-            std::cerr << "ERROR: could not extract number of dimensions for variable \"" 
-                      << vname << "\" in file \"" << srcFileName << "\"\n";
-            return 10;
-        }
-        
+        ier = mnt_ncdimensions_getNumDims(&srcVarDims, &ndims);
+        size_t srcDims[ndims];
+        for (int i = 0; i < ndims; ++i) {
+            ier = mnt_ncdimensions_get(&srcVarDims, i, &srcDims[i]); 
+        }      
 
         // read the attributes
         ier = mnt_ncattributes_read(&attrs, srcNcid, srcVarid);
@@ -349,6 +352,7 @@ int main(int argc, char** argv) {
         // must destroy before closing the file
         ier = mnt_ncfieldread_del(&reader);
         ier = mnt_ncattributes_del(&attrs);
+        ier = mnt_ncdimensions_del(&srcVarDims);
 
         // done with reading the attributes
         ier = nc_close(srcNcid);
