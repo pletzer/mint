@@ -392,7 +392,7 @@ int main(int argc, char** argv) {
 
                 // new file name for each elevation, time, etc
                 std::string vtkFilename = std::regex_replace(vtkOutputFile, 
-                                          std::regex(".vtk"), std::string("_") + toString(iter) + std::string(".vtk"));
+                                          std::regex(".vtk"), "_" + toString(iter) + ".vtk");
 
                 // compute the cell by cell data
                 size_t dstEdgeId;
