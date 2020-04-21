@@ -1,6 +1,7 @@
 #include <mntRegridEdges.h>
 #include <mntNcAttributes.h>
 #include <mntNcDimensions.h>
+#include <mntMultiArrayIter.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
 #include <mntGrid.h>
@@ -10,10 +11,24 @@
 #include <vtkCellData.h>
 #include <iostream>
 #include <limits>
+#include <string>
+#include <sstream>
 #include <cmath>
 #include <netcdf.h>
 
 #define NUM_EDGES_PER_CELL 4
+
+/**
+ * Convert a number to a string
+ * @param arg number
+ * @return string
+ */
+template <typename T>
+std::string toString (T arg) {
+    std::stringstream ss;
+    ss << arg;
+    return ss.str ();
+}
 
 /**
  * Split string by separator
@@ -40,14 +55,14 @@ std::pair<std::string, std::string> split(const std::string& fmname, char separa
  * @param avgAbsLoop abs of average loop integral (output)
  * @param minAbsLoop abs of min loop integral (output)
  * @param maxAbsLoop abs of max loop integral (output)
- * @return loop integrals
+ * @param loop_integrals loop integrals, array must have number of cells elements
  */
-std::vector<double> computeLoopIntegrals(Grid_t* grd, const std::vector<double>& edgeData,
-                                         double* avgAbsLoop, double* minAbsLoop, double* maxAbsLoop) {
+void computeLoopIntegrals(Grid_t* grd, const std::vector<double>& edgeData,
+                          double* avgAbsLoop, double* minAbsLoop, double* maxAbsLoop,
+                          std::vector<double>& loop_integrals) {
     size_t numCells, edgeId;
     int edgeSign, ier;
     mnt_grid_getNumberOfCells(&grd, &numCells);
-    std::vector<double> loop_integrals(numCells);
     *minAbsLoop = + std::numeric_limits<double>::max();
     *maxAbsLoop = - std::numeric_limits<double>::max();
     *avgAbsLoop = 0.0;
@@ -70,7 +85,6 @@ std::vector<double> computeLoopIntegrals(Grid_t* grd, const std::vector<double>&
         *avgAbsLoop += loop;
     }
     *avgAbsLoop /= double(numCells);
-    return loop_integrals;
 }
 
 int main(int argc, char** argv) {
@@ -202,9 +216,6 @@ int main(int argc, char** argv) {
         std::pair<std::string, std::string> fm = split(srcFileMeshName, ':');
         std::string srcFileName = fm.first;
 
-        NcAttributes_t* attrs = NULL;
-        ier = mnt_ncattributes_new(&attrs);
-
         // get the ncid and varid's so we can read the attributes and dimensions
         int srcNcid;
         ier = nc_open(srcFileName.c_str(), NC_NOWRITE, &srcNcid);
@@ -220,17 +231,9 @@ int main(int argc, char** argv) {
             return 9;
         }
 
-        // read the dimensions
-        NcDimensions_t* srcVarDims = NULL;
-        ier = mnt_ncdimensions_new(&srcVarDims);
-        ier = mnt_ncdimensions_read(&srcVarDims, srcNcid, srcVarid);
-        int ndims;
-        ier = mnt_ncdimensions_getNumDims(&srcVarDims, &ndims);
-        size_t srcDims[ndims];
-        for (int i = 0; i < ndims; ++i) {
-            ier = mnt_ncdimensions_get(&srcVarDims, i, &srcDims[i]); 
-        }      
-
+        // get the attributes of the variable from the netcdf file
+        NcAttributes_t* attrs = NULL;
+        ier = mnt_ncattributes_new(&attrs);
         // read the attributes
         ier = mnt_ncattributes_read(&attrs, srcNcid, srcVarid);
         if (ier != 0) {
@@ -239,6 +242,19 @@ int main(int argc, char** argv) {
             return 11;
         }
 
+        // read the dimensions
+        NcDimensions_t* srcVarDimsObj = NULL;
+        ier = mnt_ncdimensions_new(&srcVarDimsObj);
+        ier = mnt_ncdimensions_read(&srcVarDimsObj, srcNcid, srcVarid);
+        int srcNdims;
+        ier = mnt_ncdimensions_getNumDims(&srcVarDimsObj, &srcNdims);
+        size_t srcDims[srcNdims];
+        for (int i = 0; i < srcNdims; ++i) {
+            ier = mnt_ncdimensions_get(&srcVarDimsObj, i, &srcDims[i]); 
+        }      
+        ier = mnt_ncdimensions_del(&srcVarDimsObj);
+
+        // prepare to read the field 
         ier = mnt_ncfieldread_new(&reader, srcNcid, srcVarid);
 
         // get the number of edges and allocate src/dst data
@@ -250,53 +266,12 @@ int main(int argc, char** argv) {
         std::vector<double> srcEdgeData(numSrcEdges);
         std::vector<double> dstEdgeData(numDstEdges);
 
-        // read the data from file
-        std::cout << "info: reading field " << vname << " from file \"" << srcFileName << "\"\n";
-        ier = mnt_ncfieldread_data(&reader, &srcEdgeData[0]);
-        if (ier != 0) {
-            std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
-            return 12;
-        }
-
-        // apply the weights to the src field
-        ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
-        if (ier != 0) {
-            std::cerr << "ERROR: failed to apply weights to dst field \"" << vname << "\"\n";
-            return 13;
-        }
-
-        // compute loop integrals for each cell
-        double avgAbsLoop, minAbsLoop, maxAbsLoop;
-        std::vector<double> loop_integrals = computeLoopIntegrals(rg->dstGridObj, dstEdgeData, 
-                                                                  &avgAbsLoop, &minAbsLoop, &maxAbsLoop);
-        std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
-
-        if (vtkOutputFile.size() > 0) {
-
-            // cell by cell data
-            size_t numDstCells, dstEdgeId;
-            int dstEdgeSign;
-            mnt_regridedges_getNumDstCells(&rg, &numDstCells);
-            std::vector<double> dstCellByCellData(numDstCells * NUM_EDGES_PER_CELL);
-            for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
-                for (int ie = 0; ie < 4; ++ie) {
-                    ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
-                    size_t k = dstCellId*NUM_EDGES_PER_CELL + ie;
-                    dstCellByCellData[k] = dstEdgeData[dstEdgeId] * dstEdgeSign;
-                }
-            }
-
-            // attach field to grid so we can save the data in file
-            mnt_grid_attach(&rg->dstGridObj, vname.c_str(), NUM_EDGES_PER_CELL, &dstCellByCellData[0]);
-
-            std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
-            mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
-
-            std::cout << "info: writing \"" << vname << "\" to " << vtkOutputFile << '\n';
-            mnt_grid_dump(&rg->dstGridObj, vtkOutputFile.c_str());
-        }
+        size_t numSrcCells, numDstCells;
+        mnt_regridedges_getNumSrcCells(&rg, &numSrcCells);
+        mnt_regridedges_getNumDstCells(&rg, &numDstCells);
 
         if (dstEdgeDataFile.size() > 0) {
+            // user provided a file name to store the regridded data
 
             std::pair<std::string, std::string> fm = split(dstEdgeDataFile, ':');
             // get the dst file name
@@ -312,22 +287,32 @@ int main(int argc, char** argv) {
                 return 14;
             }
 
-            ier = mnt_ncfieldwrite_setNumDims(&writer, 1); // 1D array only in this implementation
+            ier = mnt_ncfieldwrite_setNumDims(&writer, srcNdims); // matches the number of source field dimensions
             if (ier != 0) {
                 std::cerr << "ERROR: cannot set the number of dimensions for field " << vname << " in file " << dstFileName << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
                 return 15;
             }
 
+            // add the field's axes. Assume the dst field dimensions are the same as the src field except for the last
+            // num edges dimension
+
+
             // add num_edges axis
             std::string axname = "num_edges";
             int n3 = axname.size();
-            ier = mnt_ncfieldwrite_setDim(&writer, 0, axname.c_str(), n3, numDstEdges);
+            ier = mnt_ncfieldwrite_setDim(&writer, srcNdims - 1, axname.c_str(), n3, numDstEdges);
             if (ier != 0) {
                 std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << numDstEdges
                           << " for field " << vname << " in file " << dstFileName << '\n';
                 ier = mnt_ncfieldwrite_del(&writer);
                 return 16;
+            }
+
+            // add the remaining axes, ASSUME THE ADDITIONAL DST AXES TO MATCH THE SRC AXES
+            for (int i = 0; i < srcNdims - 1; ++i) {
+                axname = "n_" + toString(srcDims[i]);
+                ier = mnt_ncfieldwrite_setDim(&writer, i, axname.c_str(), axname.size(), srcDims[i]);
             }
 
             // add the attributes
@@ -337,25 +322,124 @@ int main(int argc, char** argv) {
                 ier = mnt_ncfieldwrite_del(&writer);
                 return 17;
             }
+        }
 
-            // write the data to disk
-            ier = mnt_ncfieldwrite_data(&writer, &dstEdgeData[0]);
+        std::vector<double> loop_integrals;
+        std::vector<double> dstCellByCellData;
+        if (vtkOutputFile.size() > 0) {
+
+            // allocate
+            loop_integrals.resize(numDstCells);
+            dstCellByCellData.resize(numDstCells * NUM_EDGES_PER_CELL);
+
+            // attach field to grid so we can save the data to file
+            mnt_grid_attach(&rg->dstGridObj, vname.c_str(), NUM_EDGES_PER_CELL, &dstCellByCellData[0]);
+
+            std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
+            mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
+        }
+
+        //
+        // iterate over the axes other than edge. ASSUMES num edges is the last dimension!!!
+        //
+
+        // leading indives into the src/dst array for each slice
+        std::vector<size_t> srcIndices(srcNdims, 0);
+        std::vector<size_t> dstIndices(srcNdims, 0);
+
+        // number of data values to read/write
+        std::vector<size_t> srcCounts(srcNdims, 1);
+        srcCounts[srcNdims - 1] = numSrcEdges;
+        std::vector<size_t> dstCounts(srcNdims, 1);
+        dstCounts[srcNdims - 1] = numDstEdges;
+
+        MultiArrayIter_t* mai = NULL;
+        // iterate over the non-edge indices only, hence srcNdims - 1
+        ier = mnt_multiarrayiter_new(&mai, srcNdims - 1, srcDims);
+
+        // total number of elevation * time values
+        size_t numIters;
+        ier = mnt_multiarrayiter_getNumIters(&mai, &numIters);
+        for (size_t iter = 0; iter < numIters; ++iter) {
+
+            // same indices in this version, in later versions srcIndices and dstIndices 
+            // might be different
+            ier = mnt_multiarrayiter_getIndices(&mai, &srcIndices[0]);
+            ier = mnt_multiarrayiter_getIndices(&mai, &dstIndices[0]);
+
+            // read a slice of the data from file
+            std::cout << "info: reading slice " << iter << " of field " << vname << " from file \"" << srcFileName << "\"\n";
+            ier = mnt_ncfieldread_dataSlice(&reader, &srcIndices[0], &srcCounts[0], &srcEdgeData[0]);
             if (ier != 0) {
-                std::cerr << "ERROR: writing data for field " << vname << " in file " << dstFileName << '\n';
-                ier = mnt_ncfieldwrite_del(&writer);
-                return 18;
+                std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
+                return 12;
             }
 
+            // apply the weights to the src field
+            ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
+            if (ier != 0) {
+                std::cerr << "ERROR: failed to apply weights to dst field \"" << vname << "\"\n";
+                return 13;
+            }
+
+            // compute loop integrals for each cell
+            double avgAbsLoop, minAbsLoop, maxAbsLoop;
+            computeLoopIntegrals(rg->dstGridObj, dstEdgeData, &avgAbsLoop, &minAbsLoop, &maxAbsLoop, loop_integrals);
+            std::cout << "Min/avg/max cell loop integrals: " << minAbsLoop << "/" << avgAbsLoop << "/" << maxAbsLoop << '\n';
+
+            if (vtkOutputFile.size() > 0) {
+
+                size_t ipos = vtkOutputFile.find(".vtk");
+                // new file name for each elevation, time, etc
+                std::string vtkFilename = vtkOutputFile.replace(ipos, 4, "_" + toString(iter) + ".vtk");
+
+                // compute the cell by cell data
+                size_t dstEdgeId;
+                int dstEdgeSign;
+                std::vector<double> dstCellByCellData(numDstCells * NUM_EDGES_PER_CELL);
+                for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+                    for (int ie = 0; ie < 4; ++ie) {
+                        ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
+                        size_t k = dstCellId*NUM_EDGES_PER_CELL + ie;
+                        dstCellByCellData[k] = dstEdgeData[dstEdgeId] * dstEdgeSign;
+                    }
+                }
+
+                std::cout << "info: writing \"" << vname << "\" to " << vtkFilename << '\n';
+                mnt_grid_dump(&rg->dstGridObj, vtkFilename.c_str());
+            }
+
+            if (dstEdgeDataFile.size() > 0) {
+
+                // write the slice of data to a netcdf file
+                ier = mnt_ncfieldwrite_dataSlice(&writer, &dstIndices[0], &dstCounts[0], &dstEdgeData[0]);
+                if (ier != 0) {
+                    std::cerr << "ERROR: writing slice " << iter << " of data for field " 
+                              << vname << " in file " << dstEdgeDataFile << '\n';
+                    ier = mnt_ncfieldwrite_del(&writer);
+                    return 18;
+                }
+
+            }
+
+            // increment the iterator (next time, elevation....)
+            ier = mnt_multiarrayiter_next(&mai);
+
+        }
+
+        ier = mnt_multiarrayiter_del(&mai);
+
+        if (dstEdgeDataFile.size() > 0) {
             ier = mnt_ncfieldwrite_del(&writer);
         }
 
         // must destroy before closing the file
         ier = mnt_ncfieldread_del(&reader);
         ier = mnt_ncattributes_del(&attrs);
-        ier = mnt_ncdimensions_del(&srcVarDims);
 
         // done with reading the attributes
         ier = nc_close(srcNcid);
+
     } // has variable 
 
     // cleanup
