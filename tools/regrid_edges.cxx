@@ -14,6 +14,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include <regex>
 #include <netcdf.h>
 
 #define NUM_EDGES_PER_CELL 4
@@ -389,9 +390,8 @@ int main(int argc, char** argv) {
 
             if (vtkOutputFile.size() > 0) {
 
-                size_t ipos = vtkOutputFile.find(".vtk");
                 // new file name for each elevation, time, etc
-                std::string vtkFilename = vtkOutputFile.replace(ipos, 4, "_" + toString(iter) + ".vtk");
+                std::string vtkFilename = std::regex_replace(vtkOutputFile, ".vtk", "_" + toString(iter) + ".vtk");
 
                 // compute the cell by cell data
                 size_t dstEdgeId;

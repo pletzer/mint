@@ -48,7 +48,7 @@ template<size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator+=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
-        std::bind2nd(std::plus<T>(), f));
+        std::bind(std::plus<T>(), std::placeholders::_1, f));
   return (*this);
 }
 
@@ -76,7 +76,7 @@ template<size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator-=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
-        bind2nd(std::minus<T>(), f));
+        bind(std::minus<T>(), std::placeholders::_1, f));
   return (*this);
 }
 
@@ -84,7 +84,7 @@ template<size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator*=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
-        bind2nd(std::multiplies<T>(), f));
+        bind(std::multiplies<T>(), std::placeholders::_1, f));
   return *this;  
 }
 
@@ -102,7 +102,7 @@ template<size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator/=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
-        bind2nd(std::divides<T>(), f));
+        bind(std::divides<T>(), std::placeholders::_1, f));
   return (*this);
 }
 
@@ -324,7 +324,8 @@ template<size_t N, class T>
 VecN<N, T> pow(const VecN<N, T> &v, T exp) 
 { 
   VecN<N, T> b; 
-  std::transform(v.begin(), v.end(), b.begin(), bind2nd(Power<T>(), exp));  
+  std::transform(v.begin(), v.end(), b.begin(), 
+                 bind(Power<T>(), std::placeholders::_1, exp));  
   return b;  
 }  
 
@@ -350,7 +351,8 @@ template<size_t N, class T>
 VecN<N, T> max(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> res;
-  std::transform(v.begin(), v.end(), res.begin(), bind2nd(Max<T>(), f));
+  std::transform(v.begin(), v.end(), res.begin(), 
+                 bind(Max<T>(), std::placeholders::_1, f));
   return res;
 }
 
@@ -374,7 +376,8 @@ VecN<N, T>  min(const VecN<N, T> &v, const VecN<N, T> &w)
 template<size_t N, class T> VecN<N, T>  min(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> res;
-  std::transform(v.begin(), v.end(), res.begin(), bind2nd(Min<T>(), f));
+  std::transform(v.begin(), v.end(), res.begin(), 
+                 bind(Min<T>(), std::placeholders::_1, f));
   return res;
 }
 

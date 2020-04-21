@@ -244,7 +244,7 @@ add_test(NAME c2fString
 
 add_test(NAME regridedges_axes
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_edge_half_levels" "-S" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
             "-v" "u1@${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
             "-O" "regridedges_axes.nc"
