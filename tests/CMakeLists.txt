@@ -242,6 +242,16 @@ add_test(NAME cmdLineArgParserFB
 add_test(NAME c2fString
          COMMAND testC2fString)
 
+add_test(NAME regridedges_axes
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_edge_half_levels" "-S" "1"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-v" "u1@${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
+            "-O" "regridedges_axes.nc"
+            "-o" "regridedges_axes.vtk")
+set_tests_properties(regridedges_axes PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
+
 add_test(NAME regridedges_0
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
             "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon" "-S" "0"
