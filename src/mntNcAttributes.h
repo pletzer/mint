@@ -45,6 +45,14 @@ int mnt_ncattributes_del(NcAttributes_t** self);
 extern "C"
 int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid);
 
+
+/**
+ * Check if the variable is intensive
+ * @return 1 if intensive, 0 otherwise
+ */
+extern "C"
+int mnt_ncattributes_isIntensive(NcAttributes_t** self);
+
 /**
  * Write the attributes of a variable
  * @param ncid netcdf id

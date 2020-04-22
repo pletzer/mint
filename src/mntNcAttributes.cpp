@@ -102,6 +102,13 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
   return 0;
 }
 
+extern "C"
+int mnt_ncattributes_isIntensive(NcAttributes_t** self) {
+  if ((*self)->attStr["field_methods"] == "intensive") {
+    return 1;
+  }
+  return 0;
+}
 
 extern "C"
 int mnt_ncattributes_print(NcAttributes_t** self) {
