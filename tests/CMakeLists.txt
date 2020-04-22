@@ -242,6 +242,16 @@ add_test(NAME cmdLineArgParserFB
 add_test(NAME c2fString
          COMMAND testC2fString)
 
+add_test(NAME regridedges_edge_field_lfric_diag
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-v" "edge_field@${CMAKE_SOURCE_DIR}/data/edge_field_lfric_diag_ex.nc"
+            "-O" "regridedges_edge_field_lfric_diag_ex.nc"
+            "-o" "regridedges_edge_field_lfric_diag_ex.vtk")
+set_tests_properties(regridedges_edge_field_lfric_diag PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-0[8-9]")
+
 add_test(NAME regridedges_axes
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
             "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
