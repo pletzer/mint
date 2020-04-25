@@ -55,6 +55,9 @@ void testUgrid() {
     std::cout << "attaching edge field " << fieldName << " to grid\n";
     ier = mnt_grid_attach(&grd, fieldName, 4, &cellByCellData[0]);
     assert(ier == 0);
+
+    ier = mnt_grid_computeEdgeArcLengths(&grd);
+    assert(ier == 0);
     
     ier = mnt_grid_dump(&grd, "cs_16.vtk");
     assert(ier == 0);

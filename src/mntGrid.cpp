@@ -159,6 +159,64 @@ int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const 
     return 0;
 }
 
+extern "C"
+int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
+
+    if (!(*self)->grid) {
+        return 1;
+    }
+
+    size_t numCells;
+    int ier = mnt_grid_getNumberOfCells(self, &numCells);
+
+    (*self)->edgeArcLengths.resize(numCells * 4);
+    for (size_t cellId = 0; cellId < numCells; ++cellId) {
+        for (int ie = 0; ie < 4; ++ie) {
+
+            // edgeId under consideration
+            vtkIdType eId = (*self)->faceEdgeConnectivity[4*cellId + ie];
+
+            // vertex Ids of the edge
+            vtkIdType nId0 = (*self)->edgeNodeConnectivity[eId*2 + 0];
+            vtkIdType nId1 = (*self)->edgeNodeConnectivity[eId*2 + 1];
+
+            // get the vertices of this edge
+            double* p0 = (*self)->points->GetPoint(nId0);
+            double* p1 = (*self)->points->GetPoint(nId1);
+
+            // assumes points are in degrees
+            double lam0 = p0[LON_INDEX] * M_PI/180.;
+            double the0 = p0[LAT_INDEX] * M_PI/180.;
+            double lam1 = p1[LON_INDEX] * M_PI/180.;
+            double the1 = p1[LAT_INDEX] * M_PI/180.;
+
+            double cos_lam0 = cos(lam0);
+            double sin_lam0 = sin(lam0);
+            double cos_the0 = cos(the0);
+            double sin_the0 = sin(the0);
+
+            double cos_lam1 = cos(lam1);
+            double sin_lam1 = sin(lam1);
+            double cos_the1 = cos(the1);
+            double sin_the1 = sin(the1);
+
+            size_t k = cellId*4 + ie;
+
+            // edge length is angle between the two points. Assume radius = 1. Angle is
+            // acos of dot product in Cartesian space.
+            (*self)->edgeArcLengths[k] = acos( cos_the0*cos_lam0*cos_the1*cos_lam1 + 
+                                               cos_the0*sin_lam0*cos_the1*sin_lam1 + 
+                                               sin_the0*sin_the1 );
+
+        }
+    }
+
+    // add the field
+    ier = mnt_grid_attach(self, (*self)->EDGE_LENGTH_NAME.c_str(), 4, &(*self)->edgeArcLengths[0]);
+
+    return 0;
+}
+
 
 extern "C"
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {

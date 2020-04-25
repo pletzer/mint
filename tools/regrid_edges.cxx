@@ -76,6 +76,7 @@ void computeLoopIntegrals(Grid_t* grd, const std::vector<double>& edgeData,
 
             // +1 for ie = 0, 1; -1 for ie = 2, 3
             int sgn = 1 - 2*(ie/2);
+            
             loop += sgn * edgeSign * edgeData[edgeId];
         }
 
