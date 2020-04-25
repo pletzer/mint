@@ -169,6 +169,11 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     size_t numCells;
     int ier = mnt_grid_getNumberOfCells(self, &numCells);
 
+    if ((*self)->edgeArcLengths.size() == numCells * 4) {
+        // already done
+        return 0;
+    }
+
     (*self)->edgeArcLengths.resize(numCells * 4);
     for (size_t cellId = 0; cellId < numCells; ++cellId) {
         for (int ie = 0; ie < 4; ++ie) {

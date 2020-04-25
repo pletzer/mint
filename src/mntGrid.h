@@ -44,8 +44,6 @@ struct Grid_t {
     bool fixLonAcrossDateline;
     bool averageLonAtPole;
 
-
-
 };
 
 

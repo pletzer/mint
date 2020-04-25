@@ -58,6 +58,10 @@ void testUgrid() {
 
     ier = mnt_grid_computeEdgeArcLengths(&grd);
     assert(ier == 0);
+
+    // should be able tp compute the edge arcs multitple times
+    ier = mnt_grid_computeEdgeArcLengths(&grd);
+    assert(ier == 0);    
     
     ier = mnt_grid_dump(&grd, "cs_16.vtk");
     assert(ier == 0);
