@@ -5,6 +5,8 @@ program test
 
     implicit none
 
+    include 'netcdf.inc'
+
     character(len=512)             :: ncfile = '${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc'
     character(len=32)              :: varname = 'u1'
     type(c_ptr)                    :: handle
@@ -13,9 +15,15 @@ program test
     integer(c_size_t), allocatable :: startInds0(:), counts(:)
     real(c_double), allocatable    :: data(:)
     character(len=32)              :: dimName
+    integer                        :: ncid, varid
 
-    ier = mnt_ncfieldread_new(handle, trim(ncfile), len_trim(ncfile), &
-                                      trim(varname), len_trim(varname))
+    ier = nf_open(ncfile, NF_NOWRITE, ncid)
+    if (ier /= 0) print*, 'ERROR after nf_open'
+
+    ier = nf_inq_varid(ncid, varname, varid)
+    if (ier /= 0) print*, 'ERROR after nf_inq_varid'
+
+    ier = mnt_ncfieldread_new(handle, ncid, varid)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_new'
 
     ndims = 0
@@ -66,5 +74,7 @@ program test
 
     ier = mnt_ncfieldread_del(handle)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_del'
+
+    ier = nf_close(ncid)
 
 end program test

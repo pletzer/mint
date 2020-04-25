@@ -8,6 +8,7 @@ configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
 configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testNcAttributes.cpp testNcAttributes.cxx)
+configure_file(testNcDimensions.cpp testNcDimensions.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
@@ -27,7 +28,7 @@ set_target_properties(test_ncfieldread PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(test_ncfieldread
                       mint
                       ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+                      netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
@@ -61,6 +62,13 @@ target_link_libraries(testNetcdf
 
 add_executable(testNcAttributes testNcAttributes.cxx)
 target_link_libraries(testNcAttributes
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testNcDimensions testNcDimensions.cxx)
+target_link_libraries(testNcDimensions
                     mint
                     ${VTK_LIBRARIES}
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
@@ -205,6 +213,7 @@ add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)
+add_test(NAME dimensions COMMAND testNcDimensions)
 add_test(NAME multiarrayiter COMMAND testMultiArrayIter)
 add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
@@ -232,6 +241,27 @@ add_test(NAME cmdLineArgParserFB
          COMMAND testCmdLineArgParserFB "-i" "in.vtk")
 add_test(NAME c2fString
          COMMAND testC2fString)
+
+add_test(NAME regridedges_edge_field_lfric_diag
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-v" "edge_field@${CMAKE_SOURCE_DIR}/data/edge_field_lfric_diag_ex.nc"
+            "-O" "regridedges_edge_field_lfric_diag_ex.nc"
+            "-o" "regridedges_edge_field_lfric_diag_ex.vtk")
+set_tests_properties(regridedges_edge_field_lfric_diag PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-0[8-9]")
+
+add_test(NAME regridedges_axes
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-v" "u1@${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
+            "-O" "regridedges_axes.nc"
+            "-o" "regridedges_axes.vtk")
+# we do not expect conseervation
+#set_tests_properties(regridedges_axes PROPERTIES
+#                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regridedges_0
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"

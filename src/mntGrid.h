@@ -8,11 +8,14 @@
 #ifndef MNT_GRID
 #define MNT_GRID
 
+// index of each vertex
 #define LON_INDEX 0
 #define LAT_INDEX 1
 #define ELV_INDEX 2
 
 struct Grid_t {
+
+    const std::string EDGE_LENGTH_NAME = "_edge_lengths";
 
     // vertex raw data
     std::vector<double> verts;
@@ -24,7 +27,7 @@ struct Grid_t {
 
     vtkUnstructuredGridReader* reader;
 
-    // stores the field (4 * numFaces)
+    // stores the fields (4 * numFaces)
     std::vector<vtkDoubleArray*> doubleArrays;
 
     // flat array of size numFaces * 4
@@ -36,8 +39,12 @@ struct Grid_t {
     // flat array of size numEdges * 2
     std::vector<size_t> edgeNodeConnectivity;
 
+    std::vector<double> edgeArcLengths;
+
     bool fixLonAcrossDateline;
     bool averageLonAtPole;
+
+
 
 };
 
@@ -107,6 +114,14 @@ int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, co
  */
 extern "C"
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]);
+
+/**
+ * Compute ans store the edge arc lengths
+ * @param self instance of Grid_t
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_computeEdgeArcLengths(Grid_t** self);
 
 /**
  * Get the VTK unstructured grid
@@ -201,7 +216,7 @@ extern "C"
 int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells);
 
 /**
- * Get the nnumber of cells
+ * Get the number of cells
  * @param self instance of Grid_t
  * @param numCells number of edges (output)
  * @return error code (0 = OK)

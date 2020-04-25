@@ -135,16 +135,23 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
 
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-
-    NcFieldRead_t* rd = NULL;
-    int n1 = filename.size();
-    int n2 = fieldname.size();
-    ier = mnt_ncfieldread_new(&rd, filename.c_str(), n1, fieldname.c_str(), n2);
+    int ncid;
+    ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
     if (ier != 0) {
-        std::cerr << "ERROR: loading field " << fieldname << " from file " << filename << '\n';
-        ier = mnt_ncfieldread_del(&rd);
+        std::cerr << "ERROR: could not open " << filename << '\n';
         return 1;
     }
+
+    int varid;
+    ier = nc_inq_varid(ncid, fieldname.c_str(), &varid);
+    if (ier != 0) {
+        std::cerr << "ERROR: could not find variable " << fieldname << " in file " << filename << '\n';
+        nc_close(ncid);
+        return 1;
+    }
+
+    NcFieldRead_t* rd = NULL;
+    ier = mnt_ncfieldread_new(&rd, ncid, varid);
 
     // get the number of dimensions
     int ndims;
@@ -152,12 +159,14 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
     if (ier != 0) {
         std::cerr << "ERROR: getting the number of dims of " << fieldname << " from file " << filename << '\n';
         ier = mnt_ncfieldread_del(&rd);
+        nc_close(ncid);
         return 2;
    }
 
     if (ndims != 1) {
         std::cerr << "ERROR: number of dimensions must be 1, got " << ndims << '\n';
         ier = mnt_ncfieldread_del(&rd);
+        nc_close(ncid);
         return 3;        
     }
 
@@ -165,10 +174,12 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
     if (ier != 0) {
         std::cerr << "ERROR: reading field " << fieldname << " from file " << filename << '\n';
         ier = mnt_ncfieldread_del(&rd);
+        nc_close(ncid);
         return 4;
     }
 
     ier = mnt_ncfieldread_del(&rd);
+    nc_close(ncid);
 
     return 0;
 }

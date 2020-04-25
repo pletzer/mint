@@ -33,6 +33,8 @@ void test(const std::string& filename, const std::string& varname) {
     ier = mnt_ncattributes_print(&attrs);
     assert(ier == NC_NOERR);
 
+    assert(mnt_ncattributes_isIntensive(&attrs) == 0);
+
     // write the attributes in another file
     int ncid2, varid2;
     ier = nc_create("attributes.nc", NC_CLOBBER|NC_NETCDF4, &ncid2);

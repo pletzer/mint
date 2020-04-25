@@ -5,9 +5,31 @@
 #include <cassert>
 #include "mntMultiArrayIter.h"
 
+void test0() {
+
+    // tests the case ndims == 0
+    // expect one interation 
+    // getIndices should be a no operation
+
+    int ier;
+
+    MultiArrayIter_t* mai;
+
+    ier = mnt_multiarrayiter_new(&mai, 0, NULL);
+    assert(ier == 0);
+
+    size_t niters;
+    ier = mnt_multiarrayiter_getNumIters(&mai, &niters);
+    assert(ier == 0);
+    assert(niters == 1);
+
+    ier = mnt_multiarrayiter_del(&mai);
+    assert(ier == 0);
+}
+
 void test(const std::vector<size_t>& dims) {
 
-	int ier;
+    int ier;
 
     MultiArrayIter_t* mai;
     
@@ -42,8 +64,11 @@ void test(const std::vector<size_t>& dims) {
 
 int main(int argc, char** argv) {
 
+    std::vector<size_t> dims0{};
+    test0();
+
     std::vector<size_t> dims1{2};
-	test(dims1);
+    test(dims1);
 
     std::vector<size_t> dims2{2, 3};
     test(dims2);

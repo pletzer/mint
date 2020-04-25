@@ -25,16 +25,12 @@ struct NcFieldRead_t {
 
 /**
  * Constructor
- * @param fileName file name (does not require termination character)
- * @param fileNameLen length of filename string (excluding '\0' if present)
- * @param varName variable name (does not require termination character)
- * @param varNameLen length of varName string (excluding '\0' if present)
+ * @param ncid netcdf file Id
+ * @param varid netcdf variable Id
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldread_new(NcFieldRead_t** self,
-                        const char* fileName, int fileNameLen, 
-                        const char* varName, int varNameLen);
+int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid);
 
 /**
  * Destructor

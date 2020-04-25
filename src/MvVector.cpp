@@ -109,7 +109,7 @@ template<class T>
 Vector<T> &Vector<T>::operator+=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
-        std::bind2nd(std::plus<T>(), f));
+        std::bind(std::plus<T>(), std::placeholders::_1, f));
   return (*this);
 }
 
@@ -143,7 +143,7 @@ template<class T>
 Vector<T> &Vector<T>::operator-=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
-        bind2nd(std::minus<T>(), f));
+        bind(std::minus<T>(), std::placeholders::_1, f));
   return (*this);
 }
 
@@ -151,7 +151,7 @@ template<class T>
 Vector<T> &Vector<T>::operator*=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
-        bind2nd(std::multiplies<T>(), f));
+        bind(std::multiplies<T>(), std::placeholders::_1, f));
   return *this;  
 }
 
@@ -172,7 +172,7 @@ template<class T>
 Vector<T> &Vector<T>::operator/=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
-        bind2nd(std::divides<T>(), f));
+        bind(std::divides<T>(), std::placeholders::_1, f));
   return (*this);
 }
 
@@ -323,7 +323,8 @@ template<class T>
 Vector<T> operator/(T f, const Vector<T> &v) 
 {
   Vector<T> c(v.size());
-  std::transform(v.begin(), v.end(), c.begin(), bind1st(std::divides<T>(), f));
+  std::transform(v.begin(), v.end(), c.begin(), 
+  	bind(std::divides<T>(), f, std::placeholders::_1));
   return c;
 }
 
@@ -461,7 +462,8 @@ template<class T>
 Vector<T> pow(const Vector<T> &v, T exp) 
 { 
   Vector<T> b(v.size()); 
-  std::transform(v.begin(), v.end(), b.begin(), bind2nd(Power<T>(), exp));  
+  std::transform(v.begin(), v.end(), b.begin(), 
+  	             bind(Power<T>(), std::placeholders::_1, exp));  
   return b;  
 }  
 
@@ -511,7 +513,8 @@ template<class T>
 Vector<T> max(const Vector<T> &v, T f) 
 {
   Vector<T> res(v.size());
-  std::transform(v.begin(), v.end(), res.begin(), bind2nd(Max<T>(), f));
+  std::transform(v.begin(), v.end(), res.begin(), 
+  	             bind(Max<T>(), std::placeholders::_1, f));
   return res;
 }
 
@@ -539,7 +542,8 @@ Vector<T>  min(const Vector<T> &v, const Vector<T> &w)
 template<class T> Vector<T>  min(const Vector<T> &v, T f) 
 {
   Vector<T> res(v.size());
-  std::transform(v.begin(), v.end(), res.begin(), bind2nd(Min<T>(), f));
+  std::transform(v.begin(), v.end(), res.begin(), 
+  	             bind(Min<T>(), std::placeholders::_1, f));
   return res;
 }
 
