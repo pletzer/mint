@@ -16,8 +16,8 @@ STREAM_FUNC="sin(pi*(x-178.)/(185.-178.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.
 #STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
 U="100*((pi*cos((pi*(x-y))/180.))/180.-(pi*cos((pi*(x+y))/180.))/180.)/2."
 V="100*((pi*cos((pi*(x-y))/180.))/180.+(pi*cos((pi*(x+y))/180.))/180.)/2."
-NSTEPS="10" #"500"
-DT=10 # 1
+NSTEPS="500"
+DT=1
 
 
 # get the grid
@@ -80,10 +80,10 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     ncdump data_${step}.nc | grep -i nan
     mv upstream_${step}_0.vtk upstream_${step}.vtk
        
-    # convert from field saved cell by cell to edge field with unique edge Ids                               
+    # convert field saved cell by cell to edge field with unique edge Ids                               
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
     if [ $? != 0 ]; then
-        echo "ERROR when converting filed cell-by-cell to edge field with unique edge Ids"
+        echo "ERROR when converting cell-by-cell field to edge field with unique edge Ids"
         exit 6
     fi
 
