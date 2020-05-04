@@ -300,7 +300,7 @@ int main(int argc, char** argv) {
             // num edges dimension
 
 
-            // add num_edges axis
+            // add num_edges axis. WE SHOULD GET THIS FROM THE DEST FILE?
             std::string axname = "num_edges";
             int n3 = axname.size();
             ier = mnt_ncfieldwrite_setDim(&writer, srcNdims - 1, axname.c_str(), n3, numDstEdges);
@@ -345,11 +345,11 @@ int main(int argc, char** argv) {
         // iterate over the axes other than edge. ASSUMES num edges is the last dimension!!!
         //
 
-        // leading indives into the src/dst array for each slice
+        // leading indices into the src/dst array for each slice
         std::vector<size_t> srcIndices(srcNdims, 0);
         std::vector<size_t> dstIndices(srcNdims, 0);
 
-        // number of data values to read/write
+        // number of data values to read, regrid and write
         std::vector<size_t> srcCounts(srcNdims, 1);
         srcCounts[srcNdims - 1] = numSrcEdges;
         std::vector<size_t> dstCounts(srcNdims, 1);
@@ -373,7 +373,7 @@ int main(int argc, char** argv) {
             std::cout << "info: reading slice " << iter << " of field " << vname << " from file \"" << srcFileName << "\"\n";
             ier = mnt_ncfieldread_dataSlice(&reader, &srcIndices[0], &srcCounts[0], &srcEdgeData[0]);
             if (ier != 0) {
-                std::cerr << "ERROR: could read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
+                std::cerr << "ERROR: could not read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
                 return 12;
             }
 
@@ -398,7 +398,6 @@ int main(int argc, char** argv) {
                 // compute the cell by cell data
                 size_t dstEdgeId;
                 int dstEdgeSign;
-                std::vector<double> dstCellByCellData(numDstCells * NUM_EDGES_PER_CELL);
                 for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
                     for (int ie = 0; ie < 4; ++ie) {
                         ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
