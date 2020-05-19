@@ -5,7 +5,11 @@ int mnt_regridaxis_new(RegridAxis_t** self) {
 
     *self = new RegridAxis_t();
 
-    (*self)->spline = NULL;
+    (*self)->spline = vtkCardinalSpline::New();
+
+    // let the the spline estimate the second derivative at the boundaries
+    (*self)->spline->SetLeftConstraint(3);
+    (*self)->spline->SetRightConstraint(3);
 
     return 0;
 }
@@ -14,9 +18,7 @@ extern "C"
 int mnt_regridaxis_del(RegridAxis_t** self) {
 
     // destroy the spline object
-    if ((*self)->spline) {
-        (*self)->spline->Delete();
-    }
+    (*self)->spline->Delete();
 
     delete *self;
 
@@ -26,6 +28,8 @@ int mnt_regridaxis_del(RegridAxis_t** self) {
 
 extern "C"
 int mnt_regridaxis_build(RegridAxis_t** self, int numValues, const double srcValues[]) {
+
+    (*self)->spline->RemoveAllPoints();
 
     if (numValues < 2) {
         // need at least two values (one interval)
@@ -47,7 +51,6 @@ int mnt_regridaxis_build(RegridAxis_t** self, int numValues, const double srcVal
     // axis values to indices. This will allow us to quickly find the 
     // float index of a target axis value.
     int ier = 0;
-    (*self)->spline = vtkCardinalSpline::New();
     for (int i = 0; i < numValues - 1; ++i) {
 
         (*self)->spline->AddPoint(srcValues[i], double(i));
