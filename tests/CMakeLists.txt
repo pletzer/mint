@@ -188,6 +188,12 @@ target_link_libraries(testCmdLineArgParserFB
                       ${VTK_LIBRARIES}
 )
 
+add_executable(testRegridAxis testRegridAxis.cxx)
+target_link_libraries(testRegridAxis
+                      mint
+                      ${VTK_LIBRARIES}
+)
+
 add_test(NAME test_ncfieldwrite
          COMMAND test_ncfieldwrite)
 set_tests_properties(test_ncfieldwrite PROPERTIES
@@ -442,3 +448,8 @@ add_test(NAME flux_line_3pts
 set_tests_properties(flux_line_3pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 
+
+add_test(NAME regrid_axis
+         COMMAND "testRegridAxis")
+set_tests_properties(regrid_axis PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Success")
