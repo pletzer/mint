@@ -114,7 +114,7 @@ void testCellInside(int n) {
     assert(ier == 0);
     std::cout << "target interval: " << xtargets[0] << ',' << xtargets[1] << " indices/weights: ";
     for (int i = 0; i < numCellWeights; ++i) {
-        std::cout << indices[i] << '/' << weights[0];
+        std::cout << indices[i] << '/' << weights[0] << ", ";
     }
     std::cout << '\n';
     //assert(indices[0] == 1);
