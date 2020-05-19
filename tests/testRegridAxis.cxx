@@ -1,6 +1,7 @@
 #include <mntRegridAxis.h>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <cassert>
 #undef NDEBUG // turn on asserts
 
@@ -85,7 +86,7 @@ void testDecreasing(int n) {
     assert(ier == 0);
 }
 
-void testCellInside(int n) {
+void testCells(int n, const double xtargets[]) {
     std::vector<double> t(n);
     std::vector<double> x(n);
     for (int i = 0; i < n; ++i) {
@@ -102,23 +103,17 @@ void testCellInside(int n) {
     ier = mnt_regridaxis_build(&interp, (int) x.size(), &x[0]);
     assert(ier == 0);
 
-    double xtargets[] = {1.1, 1.2};
-    int numCellWeights;
-    ier = mnt_regridaxis_getNumCellWeights(&interp, xtargets, &numCellWeights);
+    double indexBounds[2];
+    ier = mnt_regridaxis_getCellIndexBounds(&interp, xtargets, indexBounds);
     assert(ier == 0);
-    assert(numCellWeights == 1);
 
-    int indices[numCellWeights];
-    double weights[numCellWeights];
-    ier = mnt_regridaxis_getCellWeights(&interp, indices, weights);
-    assert(ier == 0);
-    std::cout << "target interval: " << xtargets[0] << ',' << xtargets[1] << " indices/weights: ";
-    for (int i = 0; i < numCellWeights; ++i) {
-        std::cout << indices[i] << '/' << weights[0] << ", ";
+    // conservative interpolation weights
+    std::cout << "target interval: " << xtargets[0] << ',' << xtargets[1] 
+              << " index bounds = " << indexBounds[0] << ',' << indexBounds[1] << '\n';
+    for (int i = std::floor(indexBounds[0]); i < std::floor(indexBounds[1]) + 1; ++i) {
+        std::cout << " cell index = " << i << " weight = " 
+                  << std::min(indexBounds[1], double(i + 1)) - std::max(indexBounds[0], double(i)) << '\n';
     }
-    std::cout << '\n';
-    //assert(indices[0] == 1);
-    //assert(std::fabs(weights[0] - 0.1) < 1.e-10);
 
     ier = mnt_regridaxis_del(&interp);
     assert(ier == 0);
@@ -130,7 +125,18 @@ int main(int argc, char** argv) {
     testLinear();
     testQuadratic(10);
     testDecreasing(10);
-    testCellInside(10);
+
+    // target cell is inside
+    double xtargets[] = {1.1, 1.2};
+    testCells(10, xtargets);
+
+    // target cell matches a grid cell
+    xtargets[0] = 1.; xtargets[1] = 2.;
+    testCells(10, xtargets);
+
+    // target cell overlaps several grid cells
+    xtargets[0] = 1.1; xtargets[1] = 5.9;
+    testCells(10, xtargets);
 
     std::cout << "Success\n";
 

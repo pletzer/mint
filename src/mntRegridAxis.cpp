@@ -91,40 +91,10 @@ int mnt_regridaxis_getPointWeights(RegridAxis_t** self, double target, int indic
 
 
 extern "C"
-int mnt_regridaxis_getNumCellWeights(RegridAxis_t** self, const double targets[2], int* numCellWeights) {
+int mnt_regridaxis_getCellIndexBounds(RegridAxis_t** self, const double targets[2], double indexBounds[2]) {
 
-    (*self)->tA = (*self)->spline->Evaluate(targets[0]);
-    (*self)->tB = (*self)->spline->Evaluate(targets[1]);
-
-    (*self)->indicesA[0] = std::max(0, std::min((*self)->numValues - 2, int(floor((*self)->tA))));
-    (*self)->indicesA[1] = (*self)->indicesA[0] + 1;
-
-    (*self)->indicesB[0] = std::max(0, std::min((*self)->numValues - 2, int(floor((*self)->tB))));
-    (*self)->indicesB[1] = (*self)->indicesB[0] + 1;
-
-    (*self)->numCellWeights = (*self)->indicesB[1] - (*self)->indicesA[0];
-
-    *numCellWeights = (*self)->numCellWeights;
-
-    return 0;
-}
-
-extern "C"
-int mnt_regridaxis_getCellWeights(RegridAxis_t** self, int indices[], double weights[]) {
-
-    // right weight on the low side
-    indices[0] = (*self)->indicesA[0];
-    weights[0] = (*self)->tA - (*self)->indicesA[0];
-
-    // wwight of one for all the fully covered intervals
-    for (int i = 1; i < (*self)->numCellWeights - 2; ++i) {
-        indices[i] = (*self)->indicesA[0] + i;
-        weights[i] = 1.0;
-    }
-
-    // left weight for the right side
-    indices[(*self)->numCellWeights - 1] = (*self)->indicesB[0];
-    weights[(*self)->numCellWeights - 1] = (*self)->indicesB[1] - (*self)->tB;
+    indexBounds[0] = (*self)->spline->Evaluate(targets[0]);
+    indexBounds[1] = (*self)->spline->Evaluate(targets[1]);
 
     return 0;
 }
