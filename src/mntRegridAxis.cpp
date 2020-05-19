@@ -100,9 +100,9 @@ int mnt_regridaxis_getNumCellWeights(RegridAxis_t** self, const double targets[2
     (*self)->indicesA[1] = (*self)->indicesA[0] + 1;
 
     (*self)->indicesB[0] = std::max(0, std::min((*self)->numValues - 2, int(floor((*self)->tB))));
-    (*self)->indicesB[1] = (*self)->indicesA[0] + 1;
+    (*self)->indicesB[1] = (*self)->indicesB[0] + 1;
 
-    (*self)->numCellWeights = (*self)->indicesB[0] - (*self)->indicesA[1] + 2;
+    (*self)->numCellWeights = (*self)->indicesB[1] - (*self)->indicesA[0];
 
     *numCellWeights = (*self)->numCellWeights;
 
