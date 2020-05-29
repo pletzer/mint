@@ -11,8 +11,19 @@ set(VERSION_MINOR "5")
 set(VERSION_PATCH "0")
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
+
 # Required version
 cmake_minimum_required(VERSION 3.1)
+
+#
+# Set default build type to Release
+#
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+    message(STATUS "CMAKE_BUILD_TYPE not specified -- setting to Release")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+endif()
+
+
 enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
