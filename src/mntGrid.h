@@ -4,6 +4,7 @@
 #include <vtkIdList.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkGenericCell.h>
+#include <vector>
 
 #ifndef MNT_GRID
 #define MNT_GRID
