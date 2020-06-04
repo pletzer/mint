@@ -104,7 +104,7 @@ index = 0
 for j in range(ny + 1):
     y = -90.0 + j*dlat
     for i in range(nx + 1):
-        x = 0.0 + i*dlon
+        x = -180. + i*dlon
         lons[index] = x
         lats[index] = y
         index += 1
