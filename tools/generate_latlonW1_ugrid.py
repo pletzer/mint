@@ -38,6 +38,7 @@ except:
 nx, ny, nz, nt = args.nx, args.ny, args.nz, args.nt
 
 nc = netCDF4.Dataset(grid_file, 'w')
+nc.command = ' '.join(sys.argv)
 
 nnodes = (nx + 1) * (ny + 1)
 nedges = nx * (ny + 1) + (nx + 1) * ny
@@ -80,7 +81,7 @@ yvar.standard_name = "latitude"
 yvar.units = "degrees_north"
 
 zvar = nc.createVariable("elev", "float64", ("nelevs",))
-#zvar.name = "levels"
+zvar.setncattr('name', "full_levels")
 
 tvar = nc.createVariable("time", "float64", ("ntimes",))
 tvar.standard_name = "time"
@@ -197,6 +198,9 @@ for j in range(ny):
         fe[count, :] = is0, i1s, is1, i0s
         count += 1
 faceEdgeConn[...] = fe
+
+
+nc.close()
 
 
 
