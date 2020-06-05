@@ -29,9 +29,11 @@ parser.add_argument('-tf', dest='finalTime', default=100.0, type=float, help='Sp
 parser.add_argument('-nt', dest='numSteps', default=100, type=int, help='Specify number of time steps')
 parser.add_argument('-ns', default=10, type=int, 
                     help='Number of random seed points')
+parser.add_argument('-lonmin', default=-180., type=float, help='Specify min longitude (default is -180)')
 
 
 args = parser.parse_args()
+LONMIN = args.lonmin
 
 def saveTrajectory(sols, outputFile):
     """
@@ -116,7 +118,11 @@ def tendency(t, point, loc, grid):
     data = grid.GetCellData().GetAbstractArray(args.edgeFieldName)
 
     # apply periodicity on longitudes when leaving domain
-    point[0] = point[0] % 360.
+    #point[0] = point[0] % 360.
+    if point[0] < LONMIN:
+    	point[0] += 360.
+    if point[0] > LONMIN + 360.:
+    	point[0] -= 360.
 
     # lat cannot exceed 90 deg
     point[1] = max(-90., min(90., point[1]))
@@ -183,7 +189,8 @@ timeSteps = numpy.linspace(0.0, args.finalTime, args.numSteps + 1)
 sols = []
 zrs = numpy.zeros((3,), numpy.float64)
 for isol in range(args.ns):
-    p0 = numpy.array([0. + 360.*random.random(), -90. + 180.*random.random(), 0.0])
+	# assume lons start at -190 deg!
+    p0 = numpy.array([-180. + 360.*random.random(), -90. + 180.*random.random(), 0.0])
     sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(loc, ugrid))
 
     # filter out all the 0, 0 positions which can arise when the trajectory 
