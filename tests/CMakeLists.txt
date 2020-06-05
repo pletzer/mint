@@ -15,6 +15,15 @@ configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 
+add_executable(test_multiarrayiterF test_multiarrayiterF.f90)
+set_target_properties(test_multiarrayiterF PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(test_multiarrayiterF
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+
 add_executable(test_ncfieldwrite test_ncfieldwrite.f90)
 set_target_properties(test_ncfieldwrite PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(test_ncfieldwrite
@@ -193,6 +202,11 @@ target_link_libraries(testRegridAxis
                       mint
                       ${VTK_LIBRARIES}
 )
+
+add_test(NAME test_multiarrayiterF
+         COMMAND test_multiarrayiterF)
+set_tests_properties(test_multiarrayiterF PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR")
 
 add_test(NAME test_ncfieldwrite
          COMMAND test_ncfieldwrite)

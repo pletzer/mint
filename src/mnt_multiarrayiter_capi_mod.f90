@@ -9,7 +9,7 @@ module mnt_multiarrayiter_capi_mod
       ! @param ndims number of axes/dimensions
       ! @param dims dimension along each axis
       ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_size_t, c_double, c_ptr
+      use, intrinsic :: iso_c_binding, only: c_int, c_size_t, c_ptr
       implicit none
       type(c_ptr), intent(inout)       :: obj ! void**
       integer(c_int), value            :: ndims
@@ -69,6 +69,7 @@ module mnt_multiarrayiter_capi_mod
       ! @param obj instance of mntmultiarrayiter_t (opaque handle)
       ! @param indices array of indices (output)
       ! @return 0 if successful
+      ! @note indices are zero based
       use, intrinsic :: iso_c_binding, only: c_int, c_size_t, c_ptr
       implicit none
       type(c_ptr), intent(inout)       :: obj ! void**
