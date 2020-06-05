@@ -268,6 +268,16 @@ add_test(NAME regridedges_xyzt
 set_tests_properties(regridedges_xyzt PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
+add_test(NAME regridedges_xyzt2
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc:mesh2d" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc:physics" "-D" "1"
+            "-v" "u@${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc"
+            "-O" "regridedges_xyzt2.nc"
+            "-o" "regridedges_xyzt2.vtk")
+set_tests_properties(regridedges_xyzt2 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
+
 add_test(NAME regridedges_axes
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
             "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
