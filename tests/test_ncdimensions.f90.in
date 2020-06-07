@@ -1,0 +1,48 @@
+program test
+    use mnt_ncdimensions_capi_mod
+    use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
+    implicit none
+    include 'netcdf.inc'
+
+    character(len=128) :: filename, varname
+    integer :: ncid, varid, ier, ndims, i
+    type(c_ptr)      :: ncdims
+    integer(c_size_t), allocatable  :: dims(:)
+
+    filename = "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
+    varname = "u2"
+
+    print *,"Opening file: ", filename
+    ier = nf_open(filename, NF_NOWRITE, ncid)
+    print *,"ncid = ", ncid
+    if (ier /= NF_NOERR) print*, "ERROR"
+
+    print *,"Gettig Id of variable: ", varname
+    ier = nf_inq_varid(ncid, varname, varid)
+    print *,"varid = ", varid
+    if (ier /= NF_NOERR) print*, "ERROR"
+
+    ier = mnt_ncdimensions_new(ncdims)
+    if (ier /= NF_NOERR) print*, "ERROR"
+
+    ier = mnt_ncdimensions_read(ncdims, ncid, varid)
+    if (ier /= NF_NOERR) print*, "ERROR"
+
+    ier = mnt_ncdimensions_getNumDims(ncdims, ndims)
+    if (ier /= NF_NOERR) print*, "ERROR"
+    if (ndims /= 3) print *,"ERROR"
+
+    allocate(dims(ndims))
+    do i = 1,  ndims
+        ier = mnt_ncdimensions_get(ncdims, i, dims(i))
+        if (ier /= NF_NOERR) print*, "ERROR"
+    enddo
+    deallocate(dims)
+
+    ier = nf_close(ncid)
+    if (ier /= NF_NOERR) print*, "ERROR"
+
+    ier = mnt_ncdimensions_print(ncdims)
+    if (ier /= NF_NOERR) print*, "ERROR"
+
+end program
