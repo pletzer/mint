@@ -217,9 +217,9 @@ add_test(NAME test_multiarrayiterF
 set_tests_properties(test_multiarrayiterF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
-add_test(NAME test_ncdimensions
+add_test(NAME test_ncdimensionsF
          COMMAND test_ncdimensions)
-set_tests_properties(test_ncdimensions PROPERTIES
+set_tests_properties(test_ncdimensionsF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
 add_test(NAME test_ncfieldwrite
@@ -248,7 +248,6 @@ add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)
 add_test(NAME dimensions COMMAND testNcDimensions)
-add_test(NAME dimensionsF COMMAND test_ncdimensions)
 add_test(NAME multiarrayiter COMMAND testMultiArrayIter)
 add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"

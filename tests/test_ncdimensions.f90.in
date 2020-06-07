@@ -15,34 +15,34 @@ program test
     print *,"Opening file: ", filename
     ier = nf_open(filename, NF_NOWRITE, ncid)
     print *,"ncid = ", ncid
-    if (ier /= NF_NOERR) print*, "ERROR"
+    if (ier /= NF_NOERR) print*, "ERROR after nf_open"
 
     print *,"Gettig Id of variable: ", varname
     ier = nf_inq_varid(ncid, varname, varid)
     print *,"varid = ", varid
-    if (ier /= NF_NOERR) print*, "ERROR"
+    if (ier /= NF_NOERR) print*, "ERROR after nf_inq_varid"
 
     ier = mnt_ncdimensions_new(ncdims)
-    if (ier /= NF_NOERR) print*, "ERROR"
+    if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_new"
 
     ier = mnt_ncdimensions_read(ncdims, ncid, varid)
-    if (ier /= NF_NOERR) print*, "ERROR"
+    if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_read"
 
     ier = mnt_ncdimensions_getNumDims(ncdims, ndims)
-    if (ier /= NF_NOERR) print*, "ERROR"
-    if (ndims /= 3) print *,"ERROR"
+    if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_getNumDims"
+    if (ndims /= 3) print *, "ERROR wrong ndims"
 
     allocate(dims(ndims))
     do i = 1,  ndims
         ier = mnt_ncdimensions_get(ncdims, i, dims(i))
-        if (ier /= NF_NOERR) print*, "ERROR"
+        if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_get"
     enddo
     deallocate(dims)
 
     ier = nf_close(ncid)
-    if (ier /= NF_NOERR) print*, "ERROR"
+    if (ier /= NF_NOERR) print*, "ERROR after nf_close"
 
     ier = mnt_ncdimensions_print(ncdims)
-    if (ier /= NF_NOERR) print*, "ERROR"
+    if (ier /= NF_NOERR) print*, "ERROR after ncdimensions_print"
 
 end program
