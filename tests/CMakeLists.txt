@@ -15,6 +15,15 @@ configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
+configure_file(test_vel_cs_16.f90.in test_vel_cs_16.f90)
+
+add_executable(test_vel_cs_16 ${CMAKE_BINARY_DIR}/tests/test_vel_cs_16.f90)
+set_target_properties(test_vel_cs_16 PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(test_vel_cs_16
+                      mint
+                      ${VTK_LIBRARIES}
+                      netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
 
 add_executable(test_ncdimensions ${CMAKE_BINARY_DIR}/tests/test_ncdimensions.f90)
 set_target_properties(test_ncdimensions PROPERTIES LINKER_LANGUAGE Fortran)
@@ -211,6 +220,11 @@ target_link_libraries(testRegridAxis
                       mint
                       ${VTK_LIBRARIES}
 )
+
+add_test(NAME test_vel_cs_16 COMMAND test_vel_cs_16)
+set_tests_properties(test_vel_cs_16 PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR")
+
 
 add_test(NAME test_multiarrayiterF
          COMMAND test_multiarrayiterF)
@@ -430,8 +444,6 @@ add_test(NAME regrid_nan_load_weights
                  )
 set_tests_properties(regrid_nan_load_weights PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/nan/")
-
-
 
 add_test(NAME line_proj1
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
