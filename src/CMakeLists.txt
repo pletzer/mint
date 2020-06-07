@@ -34,6 +34,7 @@ set(LIB_FILES
   mnt_regridedges_capi_mod.f90
   mnt_cmdlineargparser_capi_mod.f90
   mnt_multiarrayiter_capi_mod.f90
+  mnt_ncdimensions_capi_mod.f90
 )
 
 set(HEADER_FILES
