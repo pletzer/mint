@@ -4,13 +4,11 @@ program test
     implicit none
     include 'netcdf.inc'
 
-    character(len=128) :: filename, varname
+    character(len=512) :: filename = '${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc'
+    character(len=32)  :: varname = 'u1'
     integer :: ncid, varid, ier, ndims, i
     type(c_ptr)      :: ncdims
     integer(c_size_t), allocatable  :: dims(:)
-
-    filename = "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
-    varname = "u2"
 
     print *,"Opening file: ", filename
     ier = nf_open(filename, NF_NOWRITE, ncid)
