@@ -40,9 +40,8 @@ int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
 
 extern "C"
 int mnt_ncfieldread_del(NcFieldRead_t** self) {
-  int ier = nc_close((*self)->ncid);
   delete *self;
-  return ier;
+  return 0;
 }
 
 
