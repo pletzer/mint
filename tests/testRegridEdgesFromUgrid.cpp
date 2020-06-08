@@ -61,28 +61,35 @@ void test1() {
     std::vector<double> srcData(numSrcEdges);
     std::vector<double> dstData(numDstEdges);
 
-    // load the source data from file
+    std::string resFile = "regridded_line_integrated_velocity.nc";
+
+    // initialize the slices by reading the metcdf metadata from file
     std::string fieldName = "line_integrated_velocity";
+    std::string dstFieldFile = "line_integrated_velocity.nc";
+    int append = 0; // new file
     size_t numSlices;
-    ier = mnt_regridedges_initSrcSlice(&rg, 
-    	                               srcFile.c_str(), (int) srcFile.size(),
-                                       fieldName.c_str(), (int) fieldName.size(),
-                                       &numSlices);
+    ier = mnt_regridedges_initSliceIter(&rg, 
+                                        srcFile.c_str(), (int) srcFile.size(),
+                                        dstFieldFile.c_str(), (int) dstFieldFile.size(),
+                                        append,
+                                        fieldName.c_str(), (int) fieldName.size(),
+                                        &numSlices);
     assert(ier == 0);
 
     for (size_t i = 0; i < numSlices; ++i) {
-    	ier = mnt_regridedges_loadNextSrcSlice(&rg, &srcData[0]);
-    	assert(ier == 0);
+        ier = mnt_regridedges_loadSrcSlice(&rg, &srcData[0]);
+        assert(ier == 0);
+
+        ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
+        assert(ier == 0);
+
+        ier = mnt_regridedges_dumpDstSlice(&rg, &dstData[0]);
+        assert(ier == 0);
+
+        ier = mnt_regridedges_nextSlice(&rg);
+        assert(ier == 0);
     }
 
-    ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
-    assert(ier == 0);
-
-    std::string resFile = "regridded_line_integrated_velocity.nc";
-    ier = mnt_regridedges_dumpEdgeField(&rg, resFile.c_str(), (int) resFile.size(),
-                                        fieldName.c_str(), (int) fieldName.size(),
-                                        numDstEdges, &dstData[0]);
-    assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);

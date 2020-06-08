@@ -7,6 +7,7 @@
 #include <mntQuadEdgeIter.h>
 #include <mntNcAttributes.h>
 #include <mntNcFieldRead.h>
+#include <mntNcFieldWrite.h>
 #include <mntMultiArrayIter.h>
 
 #ifndef MNT_REGRID_EDGES
@@ -43,13 +44,19 @@ struct RegridEdges_t {
 
     QuadEdgeIter edgeConnectivity;
 
-    NcFieldRead_t* srcReader;
     int ndims;
-    int srcNcid;
-    int srcVarid;
+    std::vector<size_t> startIndices;
+    std::vector<std::string> dimNames;
+
+
+    NcFieldRead_t* srcReader;
+    int srcNcid, srcVarid;
     std::vector<size_t> srcDims;
-    std::vector<size_t> srcStartIndices;
     std::vector<size_t> srcCounts;
+
+    NcFieldWrite_t* dstWriter;
+    std::vector<size_t> dstDims;
+    std::vector<size_t> dstCounts;
 
     MultiArrayIter_t* mai;
 
@@ -109,27 +116,23 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
 
 /** 
  * Inititalize source slice iterator
- * @param fort_filename file name (does not require termination character)
- * @param nFilenameLength length of filename string (excluding '\0' if present)
+ * @param src_fort_filename src file name (does not require termination character)
+ * @param src_nFilenameLength length of src filename string (excluding '\0' if present)
+ * @param dst_fort_filename dst file name (does not require termination character)
+ * @param dst_nFilenameLength length of dst filename string (excluding '\0' if present)
+ * @param append set this to 1 in order to append the data to an exisiting file, 0 otherwise
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
  * @param numSlices number of slices (output)
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_initSrcSlice(RegridEdges_t** self,
-                                 const char* fort_filename, int nFilenameLength,
-                                 const char* field_name, int nFieldNameLength, 
-                                 size_t* numSlices);
-
-
-/** 
- * Load source field from 2D UGRID file
- * @param data array of size number of unique edges (output)
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_loadSrcField(RegridEdges_t** self, double data[]);
+int mnt_regridedges_initSliceIter(RegridEdges_t** self,
+                                  const char* src_fort_filename, int src_nFilenameLength,
+                                  const char* dst_fort_filename, int dst_nFilenameLength,
+                                  int append,
+                                  const char* field_name, int nFieldNameLength, 
+                                  size_t* numSlices);
 
 
 /** 
@@ -139,7 +142,41 @@ int mnt_regridedges_loadSrcField(RegridEdges_t** self, double data[]);
  * @note call this method until the return code is != 0 to read each slice
  */
 extern "C"
-int mnt_regridedges_loadNextSrcSlice(RegridEdges_t** self, double data[]);
+int mnt_regridedges_loadSrcSlice(RegridEdges_t** self, double data[]);
+
+
+/** 
+ * Dump slice of destination field slice to 2D UGRID file
+ * @param data array of size number of unique edges (output)
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges_dumpDstSlice(RegridEdges_t** self, double data[]);
+
+
+/** 
+ * Increment the slice iterator
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges_nextSlice(RegridEdges_t** self);
+
+
+/** 
+ * Load field from 2D UGRID file
+ * @param fort_filename file name (does not require termination character)
+ * @param nFilenameLength length of filename string (excluding '\0' if present)
+ * @param field_name name of the field
+ * @param nFieldNameLength length of field_name string (excluding '\0' if present)
+ * @param ndata number of edges and size of data
+ * @param data array of size number of unique edges (output)
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
+                                  const char* fort_filename, int nFilenameLength,
+                                  const char* field_name, int nFieldNameLength,
+                                  size_t ndata, double data[]);
 
 /** 
  * Dump field to 2D UGRID file
