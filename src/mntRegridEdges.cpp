@@ -140,9 +140,10 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
 
 
 extern "C"
-int mnt_regridedges_inquireSrcField(RegridEdges_t** self,
+int mnt_regridedges_initSrcSlice(RegridEdges_t** self,
                                     const char* fort_filename, int nFilenameLength,
-                                    const char* field_name, int nFieldNameLength) {
+                                    const char* field_name, int nFieldNameLength, 
+                                    size_t* numSlices) {
 
     int ier = 0;
 
@@ -193,6 +194,8 @@ int mnt_regridedges_inquireSrcField(RegridEdges_t** self,
    // create iterator, assume the last dimension is the number of edges. Note ndims - 1
    ier = mnt_multiarrayiter_new(&(*self)->mai, (*self)->ndims - 1, &(*self)->srcDims[0]);
 
+   ier = mnt_multiarrayiter_getNumIters(&(*self)->mai, numSlices);
+
    return ier;
 }
 
@@ -221,7 +224,7 @@ int mnt_regridedges_loadSrcField(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_loadSrcFieldSlice(RegridEdges_t** self,
+int mnt_regridedges_loadNextSrcSlice(RegridEdges_t** self,
                                       double data[]) {
 
     if ((*self)->ndims != 1) {

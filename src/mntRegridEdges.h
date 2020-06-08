@@ -108,17 +108,19 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength);
 
 /** 
- * Inquire source field dimensions from NetCDF file
+ * Inititalize source slice iterator
  * @param fort_filename file name (does not require termination character)
  * @param nFilenameLength length of filename string (excluding '\0' if present)
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
+ * @param numSlices number of slices (output)
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_inquireSrcField(RegridEdges_t** self,
-                                    const char* fort_filename, int nFilenameLength,
-                                    const char* field_name, int nFieldNameLength);
+int mnt_regridedges_initSrcSlice(RegridEdges_t** self,
+                                 const char* fort_filename, int nFilenameLength,
+                                 const char* field_name, int nFieldNameLength, 
+                                 size_t* numSlices);
 
 
 /** 
@@ -131,13 +133,13 @@ int mnt_regridedges_loadSrcField(RegridEdges_t** self, double data[]);
 
 
 /** 
- * Load a slice of a source field from 2D UGRID file
+ * Load a slice of a source field from 2D UGRID file and increment iterator
  * @param data array of size number of unique edges (output)
  * @return error code (0 is OK)
  * @note call this method until the return code is != 0 to read each slice
  */
 extern "C"
-int mnt_regridedges_loadSrcFieldSlice(RegridEdges_t** self, double data[]);
+int mnt_regridedges_loadNextSrcSlice(RegridEdges_t** self, double data[]);
 
 /** 
  * Dump field to 2D UGRID file

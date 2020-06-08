@@ -63,12 +63,17 @@ void test1() {
 
     // load the source data from file
     std::string fieldName = "line_integrated_velocity";
-    ier = mnt_regridedges_inquireSrcField(&rg, 
-    	                                  srcFile.c_str(), (int) srcFile.size(),
-                                          fieldName.c_str(), (int) fieldName.size());
+    size_t numSlices;
+    ier = mnt_regridedges_initSrcSlice(&rg, 
+    	                               srcFile.c_str(), (int) srcFile.size(),
+                                       fieldName.c_str(), (int) fieldName.size(),
+                                       &numSlices);
     assert(ier == 0);
-    ier = mnt_regridedges_loadSrcField(&rg, &srcData[0]);
-    assert(ier == 0);
+
+    for (size_t i = 0; i < numSlices; ++i) {
+    	ier = mnt_regridedges_loadNextSrcSlice(&rg, &srcData[0]);
+    	assert(ier == 0);
+    }
 
     ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
     assert(ier == 0);
