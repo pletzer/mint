@@ -48,7 +48,7 @@ struct RegridEdges_t {
     int srcNcid;
     int srcVarid;
     std::vector<size_t> srcDims;
-    std::vector<size_t> srcIndices;
+    std::vector<size_t> srcStartIndices;
     std::vector<size_t> srcCounts;
 
     MultiArrayIter_t* mai;
@@ -128,6 +128,16 @@ int mnt_regridedges_inquireSrcField(RegridEdges_t** self,
  */
 extern "C"
 int mnt_regridedges_loadSrcField(RegridEdges_t** self, double data[]);
+
+
+/** 
+ * Load a slice of a source field from 2D UGRID file
+ * @param data array of size number of unique edges (output)
+ * @return error code (0 is OK)
+ * @note call this method until the return code is != 0 to read each slice
+ */
+extern "C"
+int mnt_regridedges_loadSrcFieldSlice(RegridEdges_t** self, double data[]);
 
 /** 
  * Dump field to 2D UGRID file

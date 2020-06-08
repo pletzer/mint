@@ -177,18 +177,23 @@ int mnt_regridedges_inquireSrcField(RegridEdges_t** self,
 
    // get the dimensions
    (*self)->srcDims.resize((*self)->ndims);
-   (*self)->srcIndices.resize((*self)->ndims);
-   (*self)->srcCounts.resize((*self)->ndims);
+   (*self)->srcStartIndices.resize((*self)->ndims);
+   (*self)->srcCounts.resize((*self)->ndims);   
 
    for (int i = 0; i < (*self)->ndims; ++i) {
+       // get the source field dimensions along each axis
        ier = mnt_ncfieldread_getDim(&(*self)->srcReader, i, &(*self)->srcDims[i]);
+       (*self)->srcStartIndices[i] = 0;
+       (*self)->srcCounts[i] = 1;
    }
 
-   // create iterator
-   ier = mnt_multiarrayiter_new(&(*self)->mai, (*self)->ndims, &(*self)->srcDims[0]);
+   // last dimension is number of edges
+   (*self)->srcCounts[(*self)->ndims - 1] = (*self)->srcDims[(*self)->ndims - 1];
 
+   // create iterator, assume the last dimension is the number of edges. Note ndims - 1
+   ier = mnt_multiarrayiter_new(&(*self)->mai, (*self)->ndims - 1, &(*self)->srcDims[0]);
 
-   return 0;
+   return ier;
 }
 
 extern "C"
@@ -214,6 +219,41 @@ int mnt_regridedges_loadSrcField(RegridEdges_t** self,
 
     return 0;
 }
+
+extern "C"
+int mnt_regridedges_loadSrcFieldSlice(RegridEdges_t** self,
+                                      double data[]) {
+
+    if ((*self)->ndims != 1) {
+        std::cerr << "ERROR: number of dimensions must be 1, got " << (*self)->ndims << '\n';
+        return 3;        
+    }
+
+    if (!(*self)->srcReader) {
+        std::cerr << "ERROR: must call mnt_regridedges_inquireSrcField prior to mnt_regridedges_loadEdgeField\n";
+        return 5;        
+    }
+
+    int ier = mnt_multiarrayiter_getIndices(&(*self)->mai, &(*self)->srcStartIndices[0]);
+
+
+    ier = mnt_ncfieldread_dataSlice(&(*self)->srcReader, 
+                                    &(*self)->srcStartIndices[0], 
+                                    &(*self)->srcCounts[0], data);
+    if (ier != 0) {
+        std::cerr << "ERROR: reading data\n";
+        return 4;
+    }
+
+    ier = mnt_multiarrayiter_next(&(*self)->mai);
+    if (ier != 0) {
+        // no more iterations
+        return 1;
+    }
+
+    return 0;
+}
+
 
 extern "C"
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
