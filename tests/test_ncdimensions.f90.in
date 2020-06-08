@@ -1,8 +1,8 @@
 program test
     use mnt_ncdimensions_capi_mod
     use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
+    use netcdf
     implicit none
-    include 'netcdf.inc'
 
     character(len=512) :: filename = '${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc'
     character(len=32)  :: varname = 'u1'
@@ -11,36 +11,38 @@ program test
     integer(c_size_t), allocatable  :: dims(:)
 
     print *,"Opening file: ", filename
-    ier = nf_open(filename, NF_NOWRITE, ncid)
+    ier = nf90_open(filename, NF90_NOWRITE, ncid)
     print *,"ncid = ", ncid
-    if (ier /= NF_NOERR) print*, "ERROR after nf_open"
+    if (ier /= NF90_NOERR) print*, "ERROR after nf90_open"
 
     print *,"Gettig Id of variable: ", varname
-    ier = nf_inq_varid(ncid, varname, varid)
+    ier = nf90_inq_varid(ncid, varname, varid)
     print *,"varid = ", varid
-    if (ier /= NF_NOERR) print*, "ERROR after nf_inq_varid"
+    if (ier /= NF90_NOERR) print*, "ERROR after nf90_inq_varid"
 
     ier = mnt_ncdimensions_new(ncdims)
-    if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_new"
+    if (ier /= NF90_NOERR) print*, "ERROR after mnt_ncdimensions_new"
 
     ier = mnt_ncdimensions_read(ncdims, ncid, varid)
-    if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_read"
+    if (ier /= 0) print*, "ERROR after mnt_ncdimensions_read"
 
     ier = mnt_ncdimensions_getNumDims(ncdims, ndims)
-    if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_getNumDims"
+    if (ier /= 0) print*, "ERROR after mnt_ncdimensions_getNumDims"
     if (ndims /= 3) print *, "ERROR wrong ndims"
 
-    allocate(dims(ndims))
-    do i = 1,  ndims
+    allocate(dims(0:ndims))
+    ! zero based indexing
+    do i = 0,  ndims - 1
         ier = mnt_ncdimensions_get(ncdims, i, dims(i))
-        if (ier /= NF_NOERR) print*, "ERROR after mnt_ncdimensions_get"
+        if (ier /= 0) print*, "ERROR after mnt_ncdimensions_get"
+        print *, i, ' dim = ', dims(i)
     enddo
     deallocate(dims)
 
-    ier = nf_close(ncid)
-    if (ier /= NF_NOERR) print*, "ERROR after nf_close"
+    ier = nf90_close(ncid)
+    if (ier /= NF90_NOERR) print*, "ERROR after nf90_close"
 
     ier = mnt_ncdimensions_print(ncdims)
-    if (ier /= NF_NOERR) print*, "ERROR after ncdimensions_print"
+    if (ier /= 0) print*, "ERROR after ncdimensions_print"
 
 end program

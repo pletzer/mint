@@ -1,34 +1,38 @@
 program test
 
+    use netcdf
     use mnt_ncfieldread_capi_mod
     use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int
 
     implicit none
 
-    include 'netcdf.inc'
-
-    integer :: src_ncid, src_varid, src_ndims, i, rc
+    integer :: src_ncid, src_varid, src_ndims, i, rc, xtype, dimids(10)
     integer(c_size_t), allocatable :: src_dims(:)
-    character(len=512) :: src_ugrid_filename, src_field_name
+    character(len=512) :: src_ugrid_filename, src_field_name, varname
     type(c_ptr)        :: ncreader_h
 
     src_ugrid_filename = '${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc:physics'
     src_field_name = 'line_integrated_velocity'
 
     i = scan( src_ugrid_filename, ':' ) ! grab the filename, drop the mesh name
-    rc = nf_open(src_ugrid_filename(1:i - 1), NF_NOWRITE, src_ncid)
-    if (rc /= NF_NOERR) print *, 'ERROR'
+    rc = nf90_open(src_ugrid_filename(1:i - 1), NF90_NOWRITE, src_ncid)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_open'
 
-    rc = nf_inq_varid(src_ncid, trim(src_field_name), src_varid)
-    if (rc /= NF_NOERR) print *, 'ERROR'
+    rc = nf90_inq_varid(src_ncid, trim(src_field_name), src_varid)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inq_varid'
+
+    rc = nf90_inquire_variable(src_ncid, src_varid, ndims=src_ndims)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inquire_variable'
+
+    print *,'src_ndims = ', src_ndims
 
     rc = mnt_ncfieldread_new(ncreader_h, src_ncid, src_varid)
-    if (rc /= NF_NOERR) print *, 'ERROR'
+    if (rc /= 0) print *, 'ERROR when calling mnt_ncfieldread_new'
 
     rc = mnt_ncfieldread_del(ncreader_h)
-    if (rc /= NF_NOERR) print *, 'ERROR'
+    if (rc /= 0) print *, 'ERROR when calling mnt_ncfieldread_del'
 
-    rc = nf_close(src_ncid)
-    if (rc /= NF_NOERR) print *, 'ERROR'
+    rc = nf90_close(src_ncid)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_close'
 
 end program test
