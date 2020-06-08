@@ -51,7 +51,7 @@ double computeWeight(const double srcXi0[], const double srcXi1[],
 
         // taking the abs value because the correct the sign for edges that 
         // run from top to bottom or right to left.
-                        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
+        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
     }
 
     return weight;
@@ -71,11 +71,19 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
 
+    (*self)->srcReader = NULL;
+    (*self)->mai = NULL;
+    (*self)->srcNcid = -1;
+    (*self)->srcVarid = -1;
+    (*self)->ndims = 0;
+
     return 0;
 }
 
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self) {
+
+    int ier = 0;
 
     // destroy the cell locator
     (*self)->srcLoc->Delete();
@@ -84,9 +92,20 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     mnt_grid_del(&((*self)->srcGridObj));
     mnt_grid_del(&((*self)->dstGridObj));
 
+    if ((*self)->srcReader) {
+        ier = mnt_ncfieldread_del(&(*self)->srcReader);
+    }
+    if ((*self)->mai) {
+        ier = mnt_multiarrayiter_del(&(*self)->mai);
+    }
+
+    if ((*self)->srcNcid >= 0) {
+        ier = nc_close((*self)->srcNcid);
+    }
+
     delete *self;
 
-    return 0;
+    return ier;
 }
 
 extern "C"
@@ -119,11 +138,11 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
 
 }
 
+
 extern "C"
-int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
-                                  const char* fort_filename, int nFilenameLength,
-                                  const char* field_name, int nFieldNameLength,
-                                  size_t ndata, double data[]) {
+int mnt_regridedges_inquireSrcField(RegridEdges_t** self,
+                                    const char* fort_filename, int nFilenameLength,
+                                    const char* field_name, int nFieldNameLength) {
 
     int ier = 0;
 
@@ -135,51 +154,63 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
 
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-    int ncid;
-    ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
+    ier = nc_open(filename.c_str(), NC_NOWRITE, &(*self)->srcNcid);
     if (ier != 0) {
         std::cerr << "ERROR: could not open " << filename << '\n';
         return 1;
     }
 
-    int varid;
-    ier = nc_inq_varid(ncid, fieldname.c_str(), &varid);
+    ier = nc_inq_varid((*self)->srcNcid, fieldname.c_str(), &(*self)->srcVarid);
     if (ier != 0) {
         std::cerr << "ERROR: could not find variable " << fieldname << " in file " << filename << '\n';
-        nc_close(ncid);
         return 1;
     }
 
-    NcFieldRead_t* rd = NULL;
-    ier = mnt_ncfieldread_new(&rd, ncid, varid);
+    ier = mnt_ncfieldread_new(&(*self)->srcReader, (*self)->srcNcid, (*self)->srcVarid);
 
     // get the number of dimensions
-    int ndims;
-    ier = mnt_ncfieldread_getNumDims(&rd, &ndims);
+    ier = mnt_ncfieldread_getNumDims(&(*self)->srcReader, &(*self)->ndims);
     if (ier != 0) {
         std::cerr << "ERROR: getting the number of dims of " << fieldname << " from file " << filename << '\n';
-        ier = mnt_ncfieldread_del(&rd);
-        nc_close(ncid);
         return 2;
    }
 
-    if (ndims != 1) {
-        std::cerr << "ERROR: number of dimensions must be 1, got " << ndims << '\n';
-        ier = mnt_ncfieldread_del(&rd);
-        nc_close(ncid);
+   // get the dimensions
+   (*self)->srcDims.resize((*self)->ndims);
+   (*self)->srcIndices.resize((*self)->ndims);
+   (*self)->srcCounts.resize((*self)->ndims);
+
+   for (int i = 0; i < (*self)->ndims; ++i) {
+       ier = mnt_ncfieldread_getDim(&(*self)->srcReader, i, &(*self)->srcDims[i]);
+   }
+
+   // create iterator
+   ier = mnt_multiarrayiter_new(&(*self)->mai, (*self)->ndims, &(*self)->srcDims[0]);
+
+
+   return 0;
+}
+
+extern "C"
+int mnt_regridedges_loadSrcField(RegridEdges_t** self,
+                                 double data[]) {
+
+
+    if ((*self)->ndims != 1) {
+        std::cerr << "ERROR: number of dimensions must be 1, got " << (*self)->ndims << '\n';
         return 3;        
     }
 
-    ier = mnt_ncfieldread_data(&rd, data);
-    if (ier != 0) {
-        std::cerr << "ERROR: reading field " << fieldname << " from file " << filename << '\n';
-        ier = mnt_ncfieldread_del(&rd);
-        nc_close(ncid);
-        return 4;
+    if (!(*self)->srcReader) {
+        std::cerr << "ERROR: must call mnt_regridedges_inquireSrcField prior to mnt_regridedges_loadEdgeField\n";
+        return 5;        
     }
 
-    ier = mnt_ncfieldread_del(&rd);
-    nc_close(ncid);
+    int ier = mnt_ncfieldread_data(&(*self)->srcReader, data);
+    if (ier != 0) {
+        std::cerr << "ERROR: reading data\n";
+        return 4;
+    }
 
     return 0;
 }

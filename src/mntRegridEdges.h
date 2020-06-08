@@ -6,6 +6,8 @@
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
 #include <mntNcAttributes.h>
+#include <mntNcFieldRead.h>
+#include <mntMultiArrayIter.h>
 
 #ifndef MNT_REGRID_EDGES
 #define MNT_REGRID_EDGES
@@ -40,6 +42,17 @@ struct RegridEdges_t {
     Grid_t* dstGridObj;
 
     QuadEdgeIter edgeConnectivity;
+
+    NcFieldRead_t* srcReader;
+    int ndims;
+    int srcNcid;
+    int srcVarid;
+    std::vector<size_t> srcDims;
+    std::vector<size_t> srcIndices;
+    std::vector<size_t> srcCounts;
+
+    MultiArrayIter_t* mai;
+
 };
 
 /**
@@ -95,20 +108,26 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength);
 
 /** 
- * Load field from 2D UGRID file
+ * Inquire source field dimensions from NetCDF file
  * @param fort_filename file name (does not require termination character)
  * @param nFilenameLength length of filename string (excluding '\0' if present)
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
- * @param ndata number of edges and size of data
+ * @return error code (0 is OK)
+ */
+extern "C"
+int mnt_regridedges_inquireSrcField(RegridEdges_t** self,
+                                    const char* fort_filename, int nFilenameLength,
+                                    const char* field_name, int nFieldNameLength);
+
+
+/** 
+ * Load source field from 2D UGRID file
  * @param data array of size number of unique edges (output)
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
-                                  const char* fort_filename, int nFilenameLength,
-                                  const char* field_name, int nFieldNameLength,
-                                  size_t ndata, double data[]);
+int mnt_regridedges_loadSrcField(RegridEdges_t** self, double data[]);
 
 /** 
  * Dump field to 2D UGRID file
