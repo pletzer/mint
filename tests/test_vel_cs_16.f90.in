@@ -23,6 +23,7 @@ program test
     rc = nf90_inq_varid(src_ncid, trim(src_field_name), src_varid)
     if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inq_varid'
 
+    print *,'...inquiring the number of dims for src_ncid = ', src_ncid, ' and src_varid = ', src_varid
     rc = nf90_inquire_variable(src_ncid, src_varid, ndims=src_ndims)
     if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inquire_variable'
 

@@ -15,19 +15,26 @@ int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
 
   // inquire about the variable
   int ndims = 0;
-  int dimIds[NC_MAX_VAR_DIMS];
-  ier = nc_inq_var((*self)->ncid, (*self)->varid, NULL, NULL, &ndims, dimIds, NULL);
+  ier = nc_inq_varndims(ncid, varid, &ndims);
   if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not inquire about variable with Id " 
+    std::cerr << "ERROR: could not inquire ndims for variable with Id " 
               << varid << " in netcdf file with Id " << ncid << " ier = " << ier << '\n';
     return 3;
+  }
+
+  int dimIds[NC_MAX_VAR_DIMS];
+  ier = nc_inq_vardimid(ncid, varid, dimIds);
+  if (ier != NC_NOERR) {
+    std::cerr << "ERROR: could not inquire dim ids for variable with Id " 
+              << varid << " in netcdf file with Id " << ncid << " ier = " << ier << '\n';
+    return 4;
   }
 
   // get the dimensions and dimension names
   char dimName[NC_MAX_NAME + 1];
   size_t dim;
   for (int iDim = 0; iDim < ndims; ++iDim) {
-    ier = nc_inq_dim((*self)->ncid, dimIds[iDim], dimName, &dim);
+    ier = nc_inq_dim(ncid, dimIds[iDim], dimName, &dim);
     if (ier == NC_NOERR) {
       (*self)->dimNames.push_back(std::string(dimName));
       (*self)->dimSizes.push_back(dim);
