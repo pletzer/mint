@@ -30,7 +30,7 @@ program test
     if (ier /= 0) print*, "ERROR after mnt_ncdimensions_getNumDims"
     if (ndims /= 3) print *, "ERROR wrong ndims"
 
-    allocate(dims(0:ndims))
+    allocate(dims(0:ndims - 1))
     ! zero based indexing
     do i = 0,  ndims - 1
         ier = mnt_ncdimensions_get(ncdims, i, dims(i))

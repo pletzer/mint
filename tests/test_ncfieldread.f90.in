@@ -2,10 +2,8 @@ program test
 
     use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
     use mnt_ncfieldread_capi_mod 
-
+    use netcdf
     implicit none
-
-    include 'netcdf.inc'
 
     character(len=512)             :: ncfile = '${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc'
     character(len=32)              :: varname = 'u1'
@@ -17,11 +15,11 @@ program test
     character(len=32)              :: dimName
     integer                        :: ncid, varid
 
-    ier = nf_open(ncfile, NF_NOWRITE, ncid)
-    if (ier /= 0) print*, 'ERROR after nf_open'
+    ier = nf90_open(ncfile, NF90_NOWRITE, ncid)
+    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_open'
 
-    ier = nf_inq_varid(ncid, varname, varid)
-    if (ier /= 0) print*, 'ERROR after nf_inq_varid'
+    ier = nf90_inq_varid(ncid, varname, varid)
+    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_inq_varid'
 
     ier = mnt_ncfieldread_new(handle, ncid, varid)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_new'
@@ -32,26 +30,26 @@ program test
 
     write(0, *) 'Number of dimensions: ', ndims
 
-    allocate(counts(ndims))
-    allocate(startInds0(ndims))
+    allocate(counts(0:ndims - 1))
+    allocate(startInds0(0:ndims - 1))
 
     ntot = 1
-    ! zero based!
-    do i = 1, ndims
+    ! zero based indexing
+    do i = 0, ndims - 1
     
         dim = 0
-        ier = mnt_ncfieldread_getDim(handle, i - 1, dim)
+        ier = mnt_ncfieldread_getDim(handle, i, dim)
         if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getDim'
 
         dimName(:) = ' '
-        ier = mnt_ncfieldread_getDimName(handle, i - 1, dimName, len(dimName, kind=4))
+        ier = mnt_ncfieldread_getDimName(handle, i, dimName, len(dimName, kind=4))
         if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getDimName'
 
         ntot = ntot * dim
         startInds0(i) = 0
         counts(i) = dim
 
-        write(0, '(A, I6, A, A, A, I10)') ' > axis ', i - 1, ' (', trim(dimName), ') has size ', dim
+        write(0, '(A, I6, A, A, A, I10)') ' > axis ', i, ' (', trim(dimName), ') has size ', dim
 
     enddo
 
@@ -75,6 +73,7 @@ program test
     ier = mnt_ncfieldread_del(handle)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_del'
 
-    ier = nf_close(ncid)
+    ier = nf90_close(ncid)
+    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_close ier = ', ier
 
 end program test
