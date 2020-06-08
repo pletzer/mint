@@ -16,8 +16,7 @@ int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
   // inquire about the variable
   int ndims = 0;
   int dimIds[NC_MAX_VAR_DIMS];
-  int natts = 0;
-  ier = nc_inq_var((*self)->ncid, (*self)->varid, NULL, NULL, &ndims, dimIds, &natts);
+  ier = nc_inq_var((*self)->ncid, (*self)->varid, NULL, NULL, &ndims, dimIds, NULL);
   if (ier != NC_NOERR) {
     std::cerr << "ERROR: could not inquire about variable with Id " 
               << varid << " in netcdf file with Id " << ncid << " ier = " << ier << '\n';
