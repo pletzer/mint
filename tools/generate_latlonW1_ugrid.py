@@ -9,7 +9,7 @@ from numpy import sin, cos, pi, heaviside, exp
 Generate grid and edge data on uniform grid and save result in UGRID file
 """
 
-parser = argparse.ArgumentParser(description='Generate the output file storing the lat-lon grid and edge data in UGRID format')
+parser = argparse.ArgumentParser(description='Generate output file storing the lat-lon grid and edge data in UGRID format')
 parser.add_argument('-o', dest='file_mesh', default='', 
                     help='Specify the netcdf file containing the grid and the mesh name in the format "FILENAME:MESHNAME"')
 parser.add_argument('-nx', default=1, type=int, 
@@ -21,7 +21,7 @@ parser.add_argument('-nz', default=1, type=int,
 parser.add_argument('-nt', default=1, type=int, 
                     help='Number of time cells')
 parser.add_argument('-s', type=str, dest='potential_funct', default='sin(pi*x/180.)*cos(pi*y/180.)*z**2 * exp(t)',
-                    help='Potential function of x (lon in deg), y (lat in deg), z (0 <= z <=1) and time (0, ...nt)')
+                    help='Potential function of x (lon in deg), y (lat in deg), z (0 <= z <=1) and t (t=0, ...nt-1)')
 args = parser.parse_args()
 
 # check
