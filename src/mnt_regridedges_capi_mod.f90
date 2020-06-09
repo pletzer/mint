@@ -4,34 +4,34 @@ module mnt_regridedges_capi_mod
 
     function mnt_regridedges_new(obj) &
                                  bind(C, name='mnt_regridedges_new')
-      ! Constructor
-      ! @param obj instance of mntRegridEdges_t (opaque handle)
-      ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
-      implicit none
-      type(c_ptr), intent(inout)       :: obj ! void**
-      integer(c_int)                   :: mnt_regridedges_new
+        ! Constructor
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @return 0 if successful
+        use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
+        implicit none
+        type(c_ptr), intent(inout)       :: obj ! void**
+        integer(c_int)                   :: mnt_regridedges_new
     end function mnt_regridedges_new
 
     function mnt_regridedges_del(obj) &
                                  bind(C, name='mnt_regridedges_del')
-      ! Destructor
-      ! @param obj instance of mntRegridEdges_t (opaque handle)
-      ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
-      implicit none
-      type(c_ptr), intent(inout)       :: obj ! void**
-      integer(c_int)                   :: mnt_regridedges_del
+        ! Destructor
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @return 0 if successful
+        use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
+        implicit none
+        type(c_ptr), intent(inout)       :: obj ! void**
+        integer(c_int)                   :: mnt_regridedges_del
     end function mnt_regridedges_del
 
     function mnt_regridedges_setSrcGridFlags(obj, fixLonAcrossDateline, averageLonAtPole) &
                                              bind(C, name='mnt_regridedges_setSrcGridFlags')
-       ! Set source grid flags that control periodicity and regularization
-       ! @param obj instance of mntRegridEdges_t (opaque handle)
-       ! @param fixLonAcrossDateline set this to 1 to ensure that cells that are cut by the dateline don't wrap around
-       ! @param averageLonAtPole set this to 1 to reset the longitude at the pole to match the average longitude of the cell, this
-       !                         reduces the size of the cell in lon-lat space
-       ! @return 0 if successful
+        ! Set source grid flags that control periodicity and regularization
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @param fixLonAcrossDateline set this to 1 to ensure that cells that are cut by the dateline don't wrap around
+        ! @param averageLonAtPole set this to 1 to reset the longitude at the pole to match the average longitude of the cell, this
+        !                         reduces the size of the cell in lon-lat space
+        ! @return 0 if successful
 
         use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
         implicit none
@@ -39,16 +39,16 @@ module mnt_regridedges_capi_mod
         integer(c_int), value                    :: fixLonAcrossDateline
         integer(c_int), value                    :: averageLonAtPole
         integer(c_int)                           :: mnt_regridedges_setSrcGridFlags
-    end	function mnt_regridedges_setSrcGridFlags
+    end function mnt_regridedges_setSrcGridFlags
 
     function mnt_regridedges_setDstGridFlags(obj, fixLonAcrossDateline, averageLonAtPole) &
                                              bind(C, name='mnt_regridedges_setDstGridFlags')
-       ! Set destination grid flags that control periodicity and regularization
-       ! @param obj instance of mntRegridEdges_t (opaque handle)
-       ! @param fixLonAcrossDateline set this to 1 to ensure that cells that are cut by the dateline don't wrap around
-       ! @param averageLonAtPole set this to 1 to reset the longitude at the pole to match the average longitude of the cell, this
-       !                         reduces the size of the cell in lon-lat space
-       ! @return 0 if successful
+        ! Set destination grid flags that control periodicity and regularization
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @param fixLonAcrossDateline set this to 1 to ensure that cells that are cut by the dateline don't wrap around
+        ! @param averageLonAtPole set this to 1 to reset the longitude at the pole to match the average longitude of the cell, this
+        !                         reduces the size of the cell in lon-lat space
+        ! @return 0 if successful
 
         use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char, c_double
         implicit none
@@ -57,6 +57,70 @@ module mnt_regridedges_capi_mod
         integer(c_int), value                    :: averageLonAtPole
         integer(c_int)                           :: mnt_regridedges_setDstGridFlags
     end function mnt_regridedges_setDstGridFlags
+
+    function mnt_regridedges_initSliceIter(obj, &
+                                           src_fort_filename, src_nFilenameLength, &
+                                           dst_fort_filename, dst_nFilenameLength, &
+                                           append, field_name, nFieldNameLength, numSlices) &
+                                           bind(C, name='mnt_regridedges_initSliceIter')
+        ! Read field metadata and initialize the slice iterator
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @param src_fort_filename file name (does not require termination character)
+        ! @param src_nFilenameLength length of filename string (excluding '\0' if present)
+        ! @param dst_fort_filename file name (does not require termination character)
+        ! @param dst_nFilenameLength length of filename string (excluding '\0' if present)
+        ! @param append set to 1 to append to exisiting netcdf file, 0 otherwise
+        ! @param field_name name of the field
+        ! @param nFieldNameLength length of field_name string (excluding '\0' if present)
+        ! @param numSlices number of slices (output)
+        ! @return 0 if successful
+        use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_ptr, c_char
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        character(kind=c_char), intent(in)       :: src_fort_filename(*)
+        integer(c_int), value                    :: src_nFilenameLength
+        character(kind=c_char), intent(in)       :: dst_fort_filename(*)
+        integer(c_int), value                    :: dst_nFilenameLength
+        integer(c_int), value                    :: append
+        character(kind=c_char), intent(in)       :: field_name(*)
+        integer(c_int), value                    :: nFieldNameLength
+        integer(c_size_t), intent(out)           :: numSlices
+        integer(c_int)                           :: mnt_regridedges_initSliceIter
+    end function mnt_regridedges_initSliceIter
+
+    function mnt_regridedges_loadSrcSlice(obj, data) bind(C, name='mnt_regridedges_loadSrcSlice')
+        ! Load a source field slice from netcdf file
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @param data slice of edge data to be loaded
+        ! @return 0 if successful
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_double
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        real(c_double), intent(out)              :: data(*)
+        integer(c_int)                           :: mnt_regridedges_loadSrcSlice
+    end function mnt_regridedges_loadSrcSlice
+
+    function mnt_regridedges_dumpDstSlice(obj, data) bind(C, name='mnt_regridedges_dumpDstSlice')
+        ! Dump a destination field slice to netcdf file
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @param data slice of edge data to be written
+        ! @return 0 if successful
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_double
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        real(c_double), intent(out)              :: data(*)
+        integer(c_int)                           :: mnt_regridedges_dumpDstSlice
+    end function mnt_regridedges_dumpDstSlice
+
+    function mnt_regridedges_nextSlice(obj) bind(C, name='mnt_regridedges_nextSlice')
+        ! Incfrement the slice iterator
+        ! @param obj instance of mntRegridEdges_t (opaque handle)
+        ! @return 0 if successful
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+        implicit none
+        type(c_ptr), intent(inout)               :: obj ! void**
+        integer(c_int)                           :: mnt_regridedges_nextSlice
+    end function mnt_regridedges_nextSlice
 
     function mnt_regridedges_loadEdgeField(obj, filename, nFilenameLength, &
                                            field_name, nFieldNameLength, &
@@ -232,7 +296,7 @@ module mnt_regridedges_capi_mod
       real(c_double), intent(in)               :: src_data(*)
       real(c_double), intent(out)              :: dst_data(*)
       integer(c_int)                           :: mnt_regridedges_applyCellEdge
-    end	function mnt_regridedges_applyCellEdge
+    end function mnt_regridedges_applyCellEdge
 
     function mnt_regridedges_apply(obj, src_data, dst_data) &
                                    bind(C, name='mnt_regridedges_apply')
@@ -247,7 +311,7 @@ module mnt_regridedges_capi_mod
       real(c_double), intent(in)               :: src_data(*)
       real(c_double), intent(out)              :: dst_data(*)
       integer(c_int)                           :: mnt_regridedges_apply
-    end	function mnt_regridedges_apply
+    end function mnt_regridedges_apply
 
   end interface
 
