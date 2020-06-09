@@ -195,7 +195,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     // allocate
     (*self)->startIndices.resize((*self)->ndims, 0); // initialize to zero
     (*self)->dimNames.resize((*self)->ndims);
-    // slice has dimsension one except for the edge axis
+    // slice has dimension one except for the edge axis
     (*self)->srcCounts.resize((*self)->ndims, 1);
     (*self)->dstCounts.resize((*self)->ndims, 1); 
     (*self)->srcDims.resize((*self)->ndims, 0);
@@ -205,11 +205,24 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     // assume that the src and dst data have the same axes/dimensions except for the last (number of edges)
     //
     for (int i = 0; i < (*self)->ndims - 1; ++i) {
-       // get the source field dimensions along each axis
-       ier = mnt_ncfieldread_getDim(&(*self)->srcReader, i, &(*self)->srcDims[i]);
-       (*self)->dimNames[i].resize(128);
-       ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i, 
-                                        &(*self)->dimNames[i][0], (int) (*self)->dimNames[i].size());
+        // get the source field dimensions along each axis
+        ier = mnt_ncfieldread_getDim(&(*self)->srcReader, i, &(*self)->srcDims[i]);
+        if (ier != 0) {
+            std::cerr << "ERROR: getting the dimension " << i << " from source file\n";
+        }
+
+        
+        (*self)->dimNames[i].resize(256);
+
+
+        ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i, 
+                                         &(*self)->dimNames[i][0], (int) (*self)->dimNames[i].size());
+        if (ier != 0) {
+            std::cerr << "ERROR: getting the dimension name " << i << " from source file\n";
+        }
+
+        // all except last dimensions are the same 
+        (*self)->dstDims[i] = (*self)->srcDims[i];
     }
 
     // last dimension is edge axis
@@ -254,8 +267,16 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
 
     // create iterator, assume the last dimension is the number of edges. Note ndims - 1
     ier = mnt_multiarrayiter_new(&(*self)->mai, (*self)->ndims - 1, &(*self)->srcDims[0]);
+    if (ier != 0) {
+        std::cerr << "ERROR: creating multiarray iterator\n";
+        return 4;
+    }
 
     ier = mnt_multiarrayiter_getNumIters(&(*self)->mai, numSlices);
+    if (ier != 0) {
+        std::cerr << "ERROR: getting the number of iterations from the multiarray iterator\n";
+        return 4;
+    }
 
     return ier;
 }
