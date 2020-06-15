@@ -15,7 +15,16 @@ configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
+configure_file(test_ncattributes.f90.in test_ncattributes.f90)
 
+
+add_executable(test_ncattributes ${CMAKE_BINARY_DIR}/tests/test_ncattributes.f90)
+set_target_properties(test_ncattributes PROPERTIES LINKER_LANGUAGE Fortran)
+target_link_libraries(test_ncattributes
+                      mint
+                      ${VTK_LIBRARIES}
+                      netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
 
 add_executable(test_ncdimensions ${CMAKE_BINARY_DIR}/tests/test_ncdimensions.f90)
 set_target_properties(test_ncdimensions PROPERTIES LINKER_LANGUAGE Fortran)
@@ -216,6 +225,11 @@ target_link_libraries(testRegridAxis
 add_test(NAME test_multiarrayiterF
          COMMAND test_multiarrayiterF)
 set_tests_properties(test_multiarrayiterF PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR")
+
+add_test(NAME test_ncattributesF
+         COMMAND test_ncattributes)
+set_tests_properties(test_ncattributesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
 add_test(NAME test_ncdimensionsF

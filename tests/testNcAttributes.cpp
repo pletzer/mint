@@ -7,15 +7,15 @@
 
 void test(const std::string& filename, const std::string& varname) {
 
-	int ncid, ier;
+    int ncid, ier;
 
-	std::cout << "Opening file: '" << filename << "'\n";
+    std::cout << "Opening file: '" << filename << "'\n";
     ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
     std::cout << "ncid = " << ncid << '\n';
     assert(ier == NC_NOERR);
 
     int varid;
-	std::cout << "Gettig Id of variable: '" << varname << "'\n";
+    std::cout << "Gettig Id of variable: '" << varname << "'\n";
     ier = nc_inq_varid(ncid, varname.c_str(), &varid);
     std::cout << "varid = " << varid << '\n';
     assert(ier == NC_NOERR);
@@ -58,7 +58,7 @@ void test(const std::string& filename, const std::string& varname) {
 
 int main(int argc, char** argv) {
 
-	test("${CMAKE_SOURCE_DIR}/data/cs_16.nc", "physics");
+    test("${CMAKE_SOURCE_DIR}/data/cs_16.nc", "physics");
 
     return 0;
 }
