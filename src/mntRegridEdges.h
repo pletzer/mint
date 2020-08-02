@@ -217,10 +217,11 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
 /**
  * Build the regridder
  * @param numCellsPerBucket average number of cells per bucket
+ * @param debug 0=no debug info, 1=print debug info, 2=save bad edges in VTK file
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket);
+int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug);
 
 /**
  * Get number of source grid cells

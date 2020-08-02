@@ -13,8 +13,10 @@
 #include <vtkHexahedron.h> // for 3d grids
 #include <vtkQuad.h>       // for 2d grids
 #include <vtkCell.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridWriter.h>
+#include <vtkPoints.h>
 
-//#define MYDEBUG
 
 /**
  * Compute the interpolation weight between a source cell edge and a destination line segment
@@ -492,7 +494,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
+int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug) {
 
     // checks
     if (!(*self)->srcGrid) {
@@ -534,9 +536,21 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     double srcLonMin = srcGridBounds[mnt_grid_getLonIndex()];
     
 
-#ifdef MYDEBUG
-    printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId            xia          xib\n");
-#endif
+    vtkPoints* badSegmentsPoints = NULL;
+    vtkUnstructuredGrid* badSegmentsGrid = NULL;
+    vtkIdList* badSegmentPtIds = NULL;
+    vtkIdType badPtId = 0;
+    if (debug == 1) {
+        printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId            xia          xib\n");
+    }
+    else if (debug == 2) {
+        badSegmentsPoints = vtkPoints::New();
+        badSegmentsGrid = vtkUnstructuredGrid::New();
+        badSegmentsGrid->SetPoints(badSegmentsPoints);
+        badSegmentsGrid->Allocate(1000);
+        badSegmentPtIds = vtkIdList::New();
+        badSegmentPtIds->SetNumberOfIds(2);
+    }
 
     // iterate over the dst grid cells
     for (vtkIdType dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
@@ -587,13 +601,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                 const Vec3& xib = polySegIter.getEndCellParamCoord();
                 const double coeff = polySegIter.getCoefficient();
 
-#ifdef MYDEBUG
-            printf("%12lld %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf\n", 
-                    dstCellId, dstEdgeIndex, 
-                    dstEdgePt0[0], dstEdgePt0[1], 
-                    dstEdgePt1[0], dstEdgePt1[1], srcCellId,
-                    xia[0], xia[1], xib[0], xib[1]);
-#endif
+                if (debug == 1) {
+                    printf("%12lld %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf\n", 
+                        dstCellId, dstEdgeIndex, 
+                        dstEdgePt0[0], dstEdgePt0[1], 
+                        dstEdgePt1[0], dstEdgePt1[1], srcCellId,
+                        xia[0], xia[1], xib[0], xib[1]);
+                }
 
                 // create pair (dstCellId, srcCellId)
                 std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
@@ -629,10 +643,18 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
             }
 
-            double totalT = polySegIter.getIntegratedParamCoord();
-            if (std::abs(totalT - 1.0) > 1.e-10) {
-                printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
+            if (debug > 0) {
+                double totalT = polySegIter.getIntegratedParamCoord();
+                if (std::abs(totalT - 1.0) > 1.e-10) {
+                    printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
                        totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
+                    badSegmentsPoints->InsertPoint(badPtId, dstEdgePt0);
+                    badSegmentsPoints->InsertPoint(badPtId + 1, dstEdgePt1);
+                    badSegmentPtIds->SetId(0, badPtId);
+                    badSegmentPtIds->SetId(1, badPtId + 1);
+                    badSegmentsGrid->InsertNextCell(VTK_LINE, badSegmentPtIds);
+                    badPtId += 2;
+                }
             }
 
         }
@@ -641,6 +663,19 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
     // clean up
     srcCellIds->Delete();
     dstPtIds->Delete();
+
+    if (debug == 2 && badPtId > 0) {
+        vtkUnstructuredGridWriter* wr = vtkUnstructuredGridWriter::New();
+        std::string fname = "badSegments.vtk";
+        std::cout << "Warning: saving segments that are not full contained in the source grid in file " << fname << '\n';
+        wr->SetFileName(fname.c_str());
+        wr->SetInputData(badSegmentsGrid);
+        wr->Update();
+        wr->Delete();
+        badSegmentPtIds->Delete();
+        badSegmentsGrid->Delete();
+        badSegmentsPoints->Delete();
+    }
 
     return 0;
 }
