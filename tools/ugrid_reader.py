@@ -123,11 +123,11 @@ def main():
                         help='Stream function as a function of x (longitude) and y (latitude)')
     parser.add_argument('-b', dest='binary', action='store_true', help='Write binary file')
     parser.add_argument('-u', dest='uFunc', default='', 
-                        help='u vector component function of x (longitude) and y (latitude)')
+                        help='u vector component function of x (longitude) and y (latitude) on points')
     parser.add_argument('-v', dest='vFunc', default='', 
-                        help='v vector component function of x (longitude) and y (latitude)')
+                        help='v vector component function of x (longitude) and y (latitude) on points')
     parser.add_argument('-p', dest='print', action='store_true', 
-                        help='Print point coordinates cell be cell')
+                        help='Print point coordinates cell by cell')
 
 
 
