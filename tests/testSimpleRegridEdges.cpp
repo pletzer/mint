@@ -29,7 +29,7 @@ int main() {
     assert(ier == 0);
 
     int num_cells_per_bucket = 1;
-    int debug = 2cd test;
+    int debug = 2;
     ier = mnt_regridedges_build(&rg, num_cells_per_bucket, debug);
     assert(ier == 0);
 

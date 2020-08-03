@@ -509,6 +509,14 @@ add_test(NAME flux_line_3pts
 set_tests_properties(flux_line_3pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 
+add_test(NAME polySegmentIter1
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+                 "-p0" "264.5516205224688520,78.7115408475241338"
+                 "-p1" "260.0320543712643939,81.4423909253333420")
+set_tests_properties(polySegmentIter1 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
 
 add_test(NAME regrid_axis
          COMMAND "testRegridAxis")
