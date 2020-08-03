@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
     args.set("-s", std::string(""), "UGRID source grid file and mesh name, specified as \"filename:meshname\"");
     args.set("-p0", std::string("0., 0."), "lon,lat start point");
     args.set("-p1", std::string("360., 0."), "lon,lat end point");
+    args.set("-S", 1, "Set to zero to disable source grid regularization, -S 0 is required for uniform lon-lat grid");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -43,6 +44,17 @@ int main(int argc, char** argv) {
         std::cerr << "ERROR: failed to read " << srcFileMesh << '\n';
         return 2;        
     }
+
+    // defaults are suitable for cubed-sphere 
+    int fixLonAcrossDateline = 1;
+    int averageLonAtPole = 1;
+    if (args.get<int>("-S") == 0) {
+        fixLonAcrossDateline = 0;
+        averageLonAtPole = 0;
+        std::cout << "info: no regularization applied to grid\n";
+    }
+    ier = mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole);
+
 
     vtkUnstructuredGrid* ugrid;
     ier = mnt_grid_get(&grd, &ugrid);
