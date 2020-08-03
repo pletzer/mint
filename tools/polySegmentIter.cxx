@@ -58,7 +58,9 @@ int main(int argc, char** argv) {
     }
 
     Vec3 p0 = getVectorFromString(args.get<std::string>("-p0"));
+    std::cout << "start point: " << p0 << '\n';
     Vec3 p1 = getVectorFromString(args.get<std::string>("-p1"));
+    std::cout << "end   point: " << p1 << '\n';
 
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(ugrid);
