@@ -644,12 +644,14 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
                 if (std::abs(totalT - 1.0) > 1.e-10) {
                     printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
                        totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
-                    badSegmentsPoints->InsertNextPoint(dstEdgePt0);
-                    badSegmentsPoints->InsertNextPoint(dstEdgePt1);
-                    badSegmentPtIds->SetId(0, badPtId);
-                    badSegmentPtIds->SetId(1, badPtId + 1);
-                    badSegmentsGrid->InsertNextCell(VTK_LINE, badSegmentPtIds);
-                    badPtId += 2;
+                    if (debug == 2) {
+                        badSegmentsPoints->InsertNextPoint(dstEdgePt0);
+                        badSegmentsPoints->InsertNextPoint(dstEdgePt1);
+                        badSegmentPtIds->SetId(0, badPtId);
+                        badSegmentPtIds->SetId(1, badPtId + 1);
+                        badSegmentsGrid->InsertNextCell(VTK_LINE, badSegmentPtIds);
+                        badPtId += 2;
+                    }
                 }
             }
 
