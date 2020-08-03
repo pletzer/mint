@@ -30,3 +30,10 @@ target_link_libraries(flux
                       ${VTK_LIBRARIES}
                       ${NETCDF_LIBRARIES}
 )
+
+add_executable(polySegmentIter polySegmentIter.cxx)
+target_link_libraries(polySegmentIter
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES}
+)

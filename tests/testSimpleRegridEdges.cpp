@@ -12,7 +12,7 @@
 
 int main() {
 
-	std::string srcFile = "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics";
+    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics";
     std::string dstFile = "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics";
 
 
@@ -29,12 +29,12 @@ int main() {
     assert(ier == 0);
 
     int num_cells_per_bucket = 1;
-    int debug = 1;
+    int debug = 2cd test;
     ier = mnt_regridedges_build(&rg, num_cells_per_bucket, debug);
     assert(ier == 0);
 
     ier = mnt_regridedges_print(&rg);
-    assert(ier == 0);    
+    assert(ier == 0);
     
     std::string outputFilename = "simpleRegridEdgesWeights.nc";
     ier = mnt_regridedges_dumpWeights(&rg, outputFilename.c_str(), outputFilename.size());

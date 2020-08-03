@@ -61,7 +61,7 @@ fi
 # compute the regridding weights
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:unit_test -S 1 \
                                       -d "upstream.nc:unit_test" -D 0 \
-                                      -w weights.nc
+                                      -w weights.nc -debug 2
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 4
@@ -75,9 +75,9 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
 
     ncdump input_data.nc | grep -i nan
 
-    # regrid from current to upstream
+    # regrid from current to upstream using the previously computed weights
     @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:unit_test -S 1 \
-                                          -d upstream.nc:unit_test -D 1 \
+                                          -d upstream.nc:unit_test -D 0 \
                                           -W weights.nc \
                                           -v edge_integrated_velocity@input_data.nc \
                                           -o upstream_${step}.vtk -O data_${step}.nc

@@ -537,7 +537,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
     vtkUnstructuredGrid* badSegmentsGrid = NULL;
     vtkIdList* badSegmentPtIds = NULL;
     vtkIdType badPtId = 0;
-    if (debug == 1) {
+    if (debug == 3) {
         printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId            xia          xib\n");
     }
     else if (debug == 2) {
@@ -597,7 +597,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
                 const Vec3& xib = polySegIter.getEndCellParamCoord();
                 const double coeff = polySegIter.getCoefficient();
 
-                if (debug == 1) {
+                if (debug == 3) {
                     printf("%12lld %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf\n", 
                         dstCellId, dstEdgeIndex, 
                         dstEdgePt0[0], dstEdgePt0[1], 
