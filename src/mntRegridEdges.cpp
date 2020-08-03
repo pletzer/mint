@@ -1,10 +1,15 @@
 #include <mntRegridEdges.h>
 #include <mntPolysegmentIter.h>
+#include <mntNcFieldRead.h>
+#include <mntNcFieldWrite.h>
+
+#include <netcdf.h>
+
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+
 #include <vtkIdList.h>
-#include <netcdf.h>
 #include <vtkHexahedron.h> // for 3d grids
 #include <vtkQuad.h>       // for 2d grids
 #include <vtkCell.h>
@@ -46,7 +51,7 @@ double computeWeight(const double srcXi0[], const double srcXi1[],
 
         // taking the abs value because the correct the sign for edges that 
         // run from top to bottom or right to left.
-                        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
+        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
     }
 
     return weight;
@@ -60,19 +65,29 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vmtCellLocator::New();
-    (*self)->numSrcCells = 0;
-    (*self)->numDstCells = 0;
     (*self)->numPointsPerCell = 4; // 2d
     (*self)->numEdgesPerCell = 4;  // 2d
 
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
 
+    (*self)->ndims = 0;
+    // multiarray iterator
+    (*self)->mai = NULL;
+
+    (*self)->srcReader = NULL;
+    (*self)->srcNcid = -1;
+    (*self)->srcVarid = -1;
+
+    (*self)->dstWriter = NULL;
+
     return 0;
 }
 
 extern "C"
 int mnt_regridedges_del(RegridEdges_t** self) {
+
+    int ier = 0;
 
     // destroy the cell locator
     (*self)->srcLoc->Delete();
@@ -81,9 +96,25 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     mnt_grid_del(&((*self)->srcGridObj));
     mnt_grid_del(&((*self)->dstGridObj));
 
+    if ((*self)->srcNcid >= 0) {
+        ier = nc_close((*self)->srcNcid);
+    }
+
+    if ((*self)->mai) {
+        ier = mnt_multiarrayiter_del(&(*self)->mai);
+    }
+
+    if ((*self)->srcReader) {
+        ier = mnt_ncfieldread_del(&(*self)->srcReader);
+    }
+
+    if ((*self)->dstWriter) {
+        ier = mnt_ncfieldwrite_del(&(*self)->dstWriter);
+    }
+
     delete *self;
 
-    return 0;
+    return ier;
 }
 
 extern "C"
@@ -116,11 +147,207 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
 
 }
 
+
+extern "C"
+int mnt_regridedges_initSliceIter(RegridEdges_t** self,
+                                  const char* src_fort_filename, int src_nFilenameLength,
+                                  const char* dst_fort_filename, int dst_nFilenameLength,
+                                  int append,
+                                  const char* field_name, int nFieldNameLength, 
+                                  size_t* numSlices) {
+
+    int ier = 0;
+
+    std::string srcFileAndMeshName = std::string(src_fort_filename, src_nFilenameLength);
+    std::string dstFileAndMeshName = std::string(dst_fort_filename, dst_nFilenameLength);
+    std::string fieldname = std::string(field_name, nFieldNameLength);
+
+    // filter out the mesh name, if present (not used here)
+    size_t columnL = srcFileAndMeshName.find(':');
+    std::string srcFilename = srcFileAndMeshName.substr(0, columnL);
+    columnL = dstFileAndMeshName.find(':');
+    std::string dstFilename = dstFileAndMeshName.substr(0, columnL);
+
+    // open the source file
+    ier = nc_open(srcFilename.c_str(), NC_NOWRITE, &(*self)->srcNcid);
+    if (ier != 0) {
+        std::cerr << "ERROR: could not open " << srcFilename << '\n';
+        return 1;
+    }
+
+    // get tht variable id
+    ier = nc_inq_varid((*self)->srcNcid, fieldname.c_str(), &(*self)->srcVarid);
+    if (ier != 0) {
+        std::cerr << "ERROR: could not find variable " << fieldname << " in file " << srcFilename << '\n';
+        return 1;
+    }
+
+    // intantiate the reader
+    ier = mnt_ncfieldread_new(&(*self)->srcReader, (*self)->srcNcid, (*self)->srcVarid);
+
+    // get the number of dimensions
+    ier = mnt_ncfieldread_getNumDims(&(*self)->srcReader, &(*self)->ndims);
+    if (ier != 0) {
+        std::cerr << "ERROR: getting the number of dims of " << fieldname << " from file " << srcFilename << '\n';
+        return 2;
+    }
+
+    // allocate
+    (*self)->startIndices.resize((*self)->ndims, 0); // initialize to zero
+    (*self)->dimNames.resize((*self)->ndims);
+    // slice has dimension one except for the edge axis
+    (*self)->srcCounts.resize((*self)->ndims, 1);
+    (*self)->dstCounts.resize((*self)->ndims, 1); 
+    (*self)->srcDims.resize((*self)->ndims, 0);
+    (*self)->dstDims.resize((*self)->ndims, 0);
+
+    //
+    // assume that the src and dst data have the same axes/dimensions except for the last (number of edges)
+    //
+    for (int i = 0; i < (*self)->ndims - 1; ++i) {
+        // get the source field dimensions along each axis
+        ier = mnt_ncfieldread_getDim(&(*self)->srcReader, i, &(*self)->srcDims[i]);
+        if (ier != 0) {
+            std::cerr << "ERROR: getting the dimension " << i << " from source file\n";
+        }
+
+        
+        (*self)->dimNames[i].resize(256);
+
+
+        ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i, 
+                                         &(*self)->dimNames[i][0], (int) (*self)->dimNames[i].size());
+        if (ier != 0) {
+            std::cerr << "ERROR: getting the dimension name " << i << " from source file\n";
+        }
+
+        // all except last dimensions are the same 
+        (*self)->dstDims[i] = (*self)->srcDims[i];
+    }
+
+    // last dimension is edge axis
+    int i = (*self)->ndims - 1;
+    size_t numSrcEdges;
+    size_t numDstEdges;
+    ier = mnt_grid_getNumberOfEdges(&(*self)->srcGridObj, &numSrcEdges);
+    ier = mnt_grid_getNumberOfEdges(&(*self)->dstGridObj, &numDstEdges);
+    (*self)->srcCounts[i] = numSrcEdges;
+    (*self)->dstCounts[i] = numDstEdges;
+    (*self)->srcDims[i] = numSrcEdges;
+    (*self)->dstDims[i] = numDstEdges;
+    (*self)->dimNames[i].resize(128);
+    ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i, 
+                                     &(*self)->dimNames[i][0], (int) (*self)->dimNames[i].size());
+
+    // initialize the writer
+    ier = mnt_ncfieldwrite_new(&(*self)->dstWriter, dstFilename.c_str(), (int) dstFilename.size(), 
+                                fieldname.c_str(), (int) fieldname.size(), append);
+    if (ier != 0) {
+        std::cerr << "ERROR: occurred when creating/opening file " << dstFilename << " with field " 
+                  << fieldname << " in append mode " << append << '\n';
+        return 1;
+    }
+
+    ier = mnt_ncfieldwrite_setNumDims(&(*self)->dstWriter, (*self)->ndims);
+    if (ier != 0) {
+        std::cerr << "ERROR: cannot set the number of dimensions for field " << fieldname << " in file " << dstFilename << '\n';
+        return 2;
+    }
+
+    // add num_edges axis
+    for (int i = 0; i < (*self)->ndims; ++i) {
+        std::string axname = (*self)->dimNames[i];
+        ier = mnt_ncfieldwrite_setDim(&(*self)->dstWriter, i, axname.c_str(), (int) axname.size(), (*self)->dstDims[i]);
+        if (ier != 0) {
+            std::cerr << "ERROR: setting dimension " << i << " (" << axname << ") to " << (*self)->dstDims[i]
+                  << " for field " << fieldname << " in file " << dstFilename << '\n';
+            return 3;
+        }
+    }
+
+    // create iterator, assume the last dimension is the number of edges. Note ndims - 1
+    ier = mnt_multiarrayiter_new(&(*self)->mai, (*self)->ndims - 1, &(*self)->srcDims[0]);
+    if (ier != 0) {
+        std::cerr << "ERROR: creating multiarray iterator\n";
+        return 4;
+    }
+
+    ier = mnt_multiarrayiter_getNumIters(&(*self)->mai, numSlices);
+    if (ier != 0) {
+        std::cerr << "ERROR: getting the number of iterations from the multiarray iterator\n";
+        return 4;
+    }
+
+    return ier;
+}
+
+
+extern "C"
+int mnt_regridedges_loadSrcSlice(RegridEdges_t** self,
+                                 double data[]) {
+
+    if (!(*self)->srcReader) {
+        std::cerr << "ERROR: must call mnt_regridedges_initSliceIter prior to mnt_regridedges_loadSrcSlice\n";
+        return 5;        
+    }
+
+    // get the current slice indices
+    int ier = mnt_multiarrayiter_getIndices(&(*self)->mai, &(*self)->startIndices[0]);
+
+
+    ier = mnt_ncfieldread_dataSlice(&(*self)->srcReader, 
+                                    &(*self)->startIndices[0], 
+                                    &(*self)->srcCounts[0], data);
+    if (ier != 0) {
+        std::cerr << "ERROR: occurred when loading slice of src data\n";
+        return 4;
+    }
+
+    return 0;
+}
+
+extern "C"
+int mnt_regridedges_dumpDstSlice(RegridEdges_t** self,
+                                 double data[]) {
+
+    if (!(*self)->dstWriter) {
+        std::cerr << "ERROR: must call mnt_regridedges_initSliceIter prior to mnt_regridedges_dumpDstSlice\n";
+        return 5;        
+    }
+
+    // get the current slice indices
+    int ier = mnt_multiarrayiter_getIndices(&(*self)->mai, &(*self)->startIndices[0]);
+
+
+    ier = mnt_ncfieldwrite_dataSlice(&(*self)->dstWriter, 
+                                     &(*self)->startIndices[0], 
+                                     &(*self)->dstCounts[0], data);
+    if (ier != 0) {
+        std::cerr << "ERROR: occurred when dumping slice of dst data\n";
+        return 4;
+    }
+
+    return 0;
+}
+
+
+extern "C"
+int mnt_regridedges_nextSlice(RegridEdges_t** self) {
+
+    // increment the iterator
+    int ier = mnt_multiarrayiter_next(&(*self)->mai);
+    
+    return ier;
+}
+
+
 extern "C"
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
                                   size_t ndata, double data[]) {
+
+    int ier = 0;
 
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
 
@@ -130,78 +357,55 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
 
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-    // open the file
     int ncid;
-    int ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: cannot open \"" << filename << "\"\n";
+    ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
+    if (ier != 0) {
+        std::cerr << "ERROR: could not open " << filename << '\n';
+        return 1;
+    }
+
+    int varid;
+    ier = nc_inq_varid(ncid, fieldname.c_str(), &varid);
+    if (ier != 0) {
+        std::cerr << "ERROR: could not find variable " << fieldname << " in file " << filename << '\n';
         nc_close(ncid);
         return 1;
     }
 
-    // check if the variable/field exists
-    int varId;
-    ier = nc_inq_varid(ncid, fieldname.c_str(), &varId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not find variable \"" << fieldname << "\"\n";
-        nc_close(ncid);
-        return 1;
-    }
+    NcFieldRead_t* rd = NULL;
+    ier = mnt_ncfieldread_new(&rd, ncid, varid);
 
-    // check that the field has the "location" attribute
-    size_t nLoc;
-    ier = nc_inq_attlen(ncid, varId, "location", &nLoc);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: variable \"" << fieldname << "\" does not appear to have attribute 'location' (ier = " << ier << ")\n";
+    // get the number of dimensions
+    int ndims;
+    ier = mnt_ncfieldread_getNumDims(&rd, &ndims);
+    if (ier != 0) {
+        std::cerr << "ERROR: getting the number of dims of " << fieldname << " from file " << filename << '\n';
+        ier = mnt_ncfieldread_del(&rd);
         nc_close(ncid);
         return 2;
     }
-    char location[nLoc + 1];
-    ier = nc_get_att_text(ncid, varId, "location", location);
-    location[nLoc] = '\0';
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: attribute \"location\" of variable \"" << fieldname << "\" could not be read (ier = " << ier << ")\n";
+
+    if (ndims != 1) {
+        std::cerr << "ERROR: number of dimensions must be 1, got " << ndims << '\n';
+        ier = mnt_ncfieldread_del(&rd);
         nc_close(ncid);
-        return 6;
-    }
-    // check location is set to "edge"
-    if (strcmp(location, "edge") != 0) {
-        std::cerr << "ERROR: attribute \"location\" of variable " << fieldname << " is not edge  ("
-                  << location << ")\n";
-        nc_close(ncid);
-        return 3;
+        return 3;        
     }
 
-    // check if the data has the right dimension
-    int ndims;
-    ier = nc_inq_varndims(ncid, varId, &ndims);
-    int dimIds[ndims];
-    ier = nc_inq_vardimid(ncid, varId, dimIds);
-    size_t n;
-    ier = nc_inq_dimlen(ncid, dimIds[0], &n);
-    if (n != ndata) {
-        std::cerr << "ERROR: size of \"" << fieldname << "\" should be " << n
-                  << " but got " << ndata << "\n";
-        nc_close(ncid);
-        return 5;        
-    }
-
-    // TO DO 
-    // is there are way to check if a field is an edge integral? Assume this to be the case
-
-    // now read
-    ier = nc_get_var_double(ncid, varId, data);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: while reading variable '" << fieldname << "'\n";
+    ier = mnt_ncfieldread_data(&rd, data);
+    if (ier != 0) {
+        std::cerr << "ERROR: reading field " << fieldname << " from file " << filename << '\n';
+        ier = mnt_ncfieldread_del(&rd);
         nc_close(ncid);
         return 4;
     }
 
-    // close the netcdf file
-    ier = nc_close(ncid);
+    ier = mnt_ncfieldread_del(&rd);
+    nc_close(ncid);
 
     return 0;
 }
+
 
 extern "C"
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
@@ -209,50 +413,57 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                                   const char* field_name, int nFieldNameLength,
                                   size_t ndata, const double data[]) {
     
-    std::string filename = std::string(fort_filename, nFilenameLength);
+    std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-    int ncid, ier;
-    ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not create file \"" << filename << "\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
+    size_t columnL = fileAndMeshName.find(':');
+
+    // get the file name
+    std::string filename = fileAndMeshName.substr(0, columnL);
+    // get the mesh name
+    std::string meshname = fileAndMeshName.substr(columnL + 1);
+
+    int ier;
+    NcFieldWrite_t* wr = NULL;
+
+    int n1 = filename.size();
+    int n2 = fieldname.size();
+    const int append = 0; // new file
+    ier = mnt_ncfieldwrite_new(&wr, filename.c_str(), n1, fieldname.c_str(), n2, append);
+    if (ier != 0) {
+        std::cerr << "ERROR: create file " << filename << " with field " 
+                  << fieldname << " in append mode " << append << '\n';
         return 1;
     }
 
-    // create dimensions
-    int numEdgesId;
-
-    ier = nc_def_dim(ncid, "num_edges", ndata, &numEdgesId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define dimension \"num_edges\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
+    ier = mnt_ncfieldwrite_setNumDims(&wr, 1); // 1D array only in this implementation
+    if (ier != 0) {
+        std::cerr << "ERROR: cannot set the number of dimensions for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
         return 2;
-    }    
+    }
 
-    // create variable
-    int dataId;
-    int dims[] = {numEdgesId};
-    ier = nc_def_var(ncid, fieldname.c_str(), NC_DOUBLE, 1, dims, &dataId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"data\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
+    // add num_edges axis
+    std::string axname = "num_edges";
+    int n3 = axname.size();
+    ier = mnt_ncfieldwrite_setDim(&wr, 0, axname.c_str(), n3, ndata);
+    if (ier != 0) {
+        std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << ndata 
+                  << " for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
         return 3;
     }
 
-    // write the data
-    ier = nc_put_var_double(ncid, dataId, data);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"data\"\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 4;
+    // write the data to disk
+    ier = mnt_ncfieldwrite_data(&wr, data);
+    if (ier != 0) {
+        std::cerr << "ERROR: writing data for field " << fieldname << " in file " << filename << '\n';
+        ier = mnt_ncfieldwrite_del(&wr);
+        return 5;
     }
 
-    // close the netcdf file
-    ier = nc_close(ncid);    
+    // clean up
+    ier = mnt_ncfieldwrite_del(&wr);
 
     return 0;
 }
@@ -260,7 +471,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
-		                        const char* fort_filename, int n) {
+                                const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -271,7 +482,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
-		                        const char* fort_filename, int n) {
+                                const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -308,11 +519,11 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
 
-    (*self)->numSrcCells = (*self)->srcGrid->GetNumberOfCells();
-    (*self)->numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    size_t numSrcCells = (*self)->srcGrid->GetNumberOfCells();
+    size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // reserve some space for the weights and their cell/edge id arrays
-    size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell * 20;
+    size_t n = numDstCells * (*self)->numEdgesPerCell * 20;
     (*self)->weights.reserve(n);
     (*self)->weightSrcFaceEdgeIds.reserve(n);
     (*self)->weightDstFaceEdgeIds.reserve(n);
@@ -328,7 +539,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 #endif
 
     // iterate over the dst grid cells
-    for (vtkIdType dstCellId = 0; dstCellId < (*self)->numDstCells; ++dstCellId) {
+    for (vtkIdType dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
 
         // get this cell vertex Ids
         (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
@@ -399,7 +610,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
                     
                     // compute the interpolation weight
                     double weight = computeWeight(&srcCellParamCoords[i0*3], 
-                    	                          &srcCellParamCoords[i1*3], xia, xib);
+                                                  &srcCellParamCoords[i1*3], xia, xib);
                     // coeff accounts for the duplicity in case where segments are shared between cells
                     weight *= coeff;
 
@@ -420,8 +631,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
             double totalT = polySegIter.getIntegratedParamCoord();
             if (std::abs(totalT - 1.0) > 1.e-10) {
-            	printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
-            		   totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
+                printf("Warning: total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
+                       totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
             }
 
         }
@@ -436,13 +647,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket) {
 
 extern "C"
 int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, size_t* n) {
-    *n = (*self)->numSrcCells;
+    *n = (*self)->srcGrid->GetNumberOfCells();
     return 0;
 }
 
 extern "C"
 int mnt_regridedges_getNumDstCells(RegridEdges_t** self, size_t* n) {
-    *n = (*self)->numDstCells;
+    *n = (*self)->dstGrid->GetNumberOfCells();
     return 0;
 }
 
@@ -477,7 +688,8 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
                                   const double src_data[], double dst_data[]) {
 
     // initialize the data to zero
-    size_t n = (*self)->numDstCells * (*self)->numEdgesPerCell;
+    size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    size_t n = numDstCells * (*self)->numEdgesPerCell;
     for (size_t i = 0; i < n; ++i) {
         dst_data[i] = 0.0;
     }
@@ -495,6 +707,7 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
         size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
 
         dst_data[dstK] += (*self)->weights[i] * src_data[srcK];
+
     }
 
     return 0;
@@ -502,7 +715,7 @@ int mnt_regridedges_applyCellEdge(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_apply(RegridEdges_t** self, 
-	                      const double src_data[], double dst_data[]) {
+                          const double src_data[], double dst_data[]) {
 
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
@@ -552,7 +765,12 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     }
 
     for (size_t i = 0; i < numDstEdges; ++i) {
-    	dst_data[i] /= edgeMultiplicity[i];
+
+        // there has been cases where edgeMultiplicity[i] is zero and so we need to guard 
+        // against a division by zero. I would expect in this case dst_data[i] to be also 
+        // zero but this would need to be checked! (edgeMultiplicity[i] is zero if the dst 
+        // edge lies outside the src domain)
+        dst_data[i] /= std::max(1, edgeMultiplicity[i]);
     }
 
     return 0;
@@ -680,7 +898,7 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
-		                        const char* fort_filename, int n) {
+                                const char* fort_filename, int n) {
 
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'

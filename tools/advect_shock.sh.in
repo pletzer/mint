@@ -1,0 +1,56 @@
+#!/bin/bash
+
+export DYLD_LIBRARY_PATH=$VTK_DIR/../..
+export LD_LIBRARY_PATH=$VTK_DIR/../..
+
+NX=40
+NY=20
+STREAM_FUNC="100*(sin((pi*(x-30.-2*y))/360.)+sin((pi*(x-30.+2*y))/360.))/2."
+U="100*((pi*cos((pi*(x-30.-2*y))/360.))/180.-(pi*cos((pi*(x-30.+2*y))/360.))/180.)/2."
+V="100*((pi*cos((pi*(x-30.-2*y))/360.))/360.+(pi*cos((pi*(x-30.+2*y))/360.))/360.)/2."
+NSTEPS=100
+DT=10
+
+NX=36
+NY=18
+STREAM_FUNC="((x-180)/10.)*heaviside(x-180,1.0)"
+U="0*x+10."
+V="0*x"
+NSTEPS=5
+DT=1
+
+# generate grid.nc:physics with edge_integrated_velocity 
+python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o grid.nc:physics
+if [ $? != 0 ]; then
+    echo "ERROR when running generate_latlon_ugrid.py"
+    exit 1
+fi
+
+# save the grid as a VTK file
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk
+if [ $? != 0 ]; then
+    echo "ERROR when running ugrid_reader.py"
+    exit 2
+fi
+
+# push the grid upstream grid
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
+if [ $? != 0 ]; then
+    echo "ERROR when running generate_upstream_grid.py"
+    exit 3
+fi
+
+cp grid.nc data.nc
+
+for step in $(seq -f "%05g" 1 $NSTEPS); do
+    echo "step $step"
+    # regrid from current to upstream
+    cp data.nc input_data.nc
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
+                                          -d "upstream.nc:physics" -D 0 \
+                                          -v "edge_integrated_velocity@input_data.nc:physics" \
+                                          -o upstream_${step}.vtk -O data.nc:physics
+    python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
+    cp data.nc data_${step}.nc
+done
+

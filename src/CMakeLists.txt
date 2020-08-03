@@ -20,11 +20,22 @@ set(LIB_FILES
   mntPolysegmentIter.cpp
   mntLineTriangleIntersector.cpp
   mntRegridEdges.cpp
-  mntRegridEdges2D.cpp
+  mntCellLocator.cpp
   mntCmdLineArgParser.cpp
+  mntNcAttributes.cpp
+  mntNcFieldRead.cpp
+  mntNcFieldWrite.cpp
+  mntNcDimensions.cpp
+  mntMultiArrayIter.cpp
+  mntRegridAxis.cpp
+  mnt_ncfieldread_capi_mod.f90
+  mnt_ncfieldwrite_capi_mod.f90
   mnt_celllocator_capi_mod.f90
   mnt_regridedges_capi_mod.f90
   mnt_cmdlineargparser_capi_mod.f90
+  mnt_multiarrayiter_capi_mod.f90
+  mnt_ncdimensions_capi_mod.f90
+  mnt_ncattributes_capi_mod.f90
 )
 
 set(HEADER_FILES
@@ -40,8 +51,14 @@ set(HEADER_FILES
   mntLineLineIntersector.h
   mntPolysegmentIter.h
   mntRegridEdges.h
-  mntRegridEdges2D.h
+  mntCellLocator.h
   mntCmdLineArgParser.h
+  mntNcAttributes.h
+  mntNcFieldRead.h
+  mntNcFieldWrite.h
+  mntNcDimensions.h
+  mntMultiArrayIter.h
+  mntRegridAxis.h
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h

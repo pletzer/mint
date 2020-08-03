@@ -3,7 +3,7 @@ import numpy
 import sys
 import argparse
 
-from math import sin, cos, pi
+from numpy import sin, cos, pi, heaviside
 
 """
 Generate grid and edge data on uniform grid and save result in UGRID file
@@ -16,7 +16,8 @@ parser.add_argument('-nx', default=1, type=int,
                     help='Number of longitude cells')
 parser.add_argument('-ny', default=1, type=int, 
                     help='Number of latitude cells')
-parser.add_argument('-s', type=str, dest='stream_funct', default='sin(pi*x/180.)*cos(pi*y/180.)', help='Stream function of x (longitude in deg) and y (latitude in deg) used for setting the edge integrals')
+parser.add_argument('-s', type=str, dest='stream_funct', default='sin(pi*x/180.)*cos(pi*y/180.)',
+                    help='Stream function of x (longitude in deg) and y (latitude in deg) used for setting the edge integrals')
 args = parser.parse_args()
 
 # check
@@ -76,17 +77,25 @@ edge_integrated_velocity = nc.createVariable('edge_integrated_velocity', 'float6
 edge_integrated_velocity.mesh = mesh_name
 edge_integrated_velocity.location = 'edge'
 
-# set the lats/lons
+streamfunction = nc.createVariable('streamfunction', 'float64', ('nnodes',))
+streamfunction.mesh = mesh_name
+streamfunction.location = 'node'
+
+# set the lats/lons and the stream function
 lats = numpy.zeros((nnodes,), numpy.float64)
 lons = numpy.zeros((nnodes,), numpy.float64)
 dlat, dlon = 180./float(ny), 360.0/float(nx)
+point_data = numpy.zeros((nnodes,), numpy.float64)
 for j in range(ny + 1):
     for i in range(nx + 1):
         index = i + (nx + 1)*j
         lons[index] = 0.0 + i*dlon
         lats[index] = -90.0 + j*dlat
+        x, y = lons[index], lats[index]
+        point_data[index] = eval(args.stream_funct)
 xvar[:] = lons
 yvar[:] = lats
+streamfunction[:] = point_data
 
 # face-node connectivity
 fn = numpy.zeros((nfaces, 4), numpy.int64)
@@ -103,7 +112,8 @@ faceNodeConn[...] = fn
 
 # edge-node connectivity
 en = numpy.zeros((nedges, 2), numpy.int64)
-data = numpy.zeros((nedges,), numpy.float64)
+edge_data = numpy.zeros((nedges,), numpy.float64)
+
 # x edges
 count = 0
 for j in range(ny + 1):
@@ -116,9 +126,10 @@ for j in range(ny + 1):
         s00 = eval(args.stream_funct)
         x, y = lons[i10], lats[i10]
         s10 = eval(args.stream_funct)
-        data[count] = s10 - s00
+        edge_data[count] = s10 - s00
 
         count += 1
+
 # y edges
 for j in range(ny):
     for i in range(nx + 1):
@@ -130,12 +141,12 @@ for j in range(ny):
         s00 = eval(args.stream_funct)
         x, y = lons[i01], lats[i01]
         s01 = eval(args.stream_funct)
-        data[count] = s01 - s00
+        edge_data[count] = s01 - s00
 
         count += 1
 
 edgeNodeConn[...] = en
-edge_integrated_velocity[:] = data
+edge_integrated_velocity[:] = edge_data
 
 # face-edge connectivity
 fe = numpy.zeros((nfaces, 4), numpy.int64)

@@ -41,9 +41,31 @@ void testUgrid() {
             assert(ier == 0);
         }
     }
+
+    // attach a field
+    std::vector<double> cellByCellData(numCells * 4);
+    for (size_t cellId = 0; cellId < numCells; ++cellId) {
+        for (int ie = 0; ie < 4; ++ie) {
+            ier = mnt_grid_getEdgeId(&grd, cellId, ie, &edgeId, &signEdge);
+            assert(ier == 0);
+            size_t k = cellId*4 + ie;
+            cellByCellData[k] = (double) edgeId * (double) signEdge;        }
+    }
+    const char fieldName[] = "edge_ids";
+    std::cout << "attaching edge field " << fieldName << " to grid\n";
+    ier = mnt_grid_attach(&grd, fieldName, 4, &cellByCellData[0]);
+    assert(ier == 0);
+
+    ier = mnt_grid_computeEdgeArcLengths(&grd);
+    assert(ier == 0);
+
+    // should be able tp compute the edge arcs multitple times
+    ier = mnt_grid_computeEdgeArcLengths(&grd);
+    assert(ier == 0);    
     
     ier = mnt_grid_dump(&grd, "cs_16.vtk");
     assert(ier == 0);
+
     ier = mnt_grid_del(&grd);
     assert(ier == 0); 
 }

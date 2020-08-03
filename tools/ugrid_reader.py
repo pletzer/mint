@@ -3,10 +3,27 @@ import numpy
 import vtk
 from reader_base import ReaderBase
 
+def getData(nc, mname, loc):
+    """
+    Find all the variables that are attached to a mesh name
+    @param nc netCDF4 file handle
+    @param mname mesh name
+    @param loc "node", "edge", or "face"
+    @return {vname: var}
+    """
+    res = {}
+    for vname, var in nc.variables.items():
+        meshName = getattr(var, 'mesh', '')
+        location = getattr(var, 'location', '')
+        if meshName == mname and location == loc:
+            res[vname] = var
+    return res
+
+
 class UgridReader(ReaderBase):
 
 
-    def __init__(self, filename):
+    def __init__(self, filename, regularization=True):
         """
         Constructor
         @param filename UGRID file 
@@ -21,14 +38,25 @@ class UgridReader(ReaderBase):
         mesh = nc.variables[mname][:]
         lonname, latname = nc.variables[mname].node_coordinates.split()
 
+        # read the coordinates
         lons = nc.variables[lonname]
         lats = nc.variables[latname]
 
+        # read the face to node connectivity
         f2nname = nc.variables[mname].face_node_connectivity
-        connectivity = nc.variables[f2nname][:]
-        connectivity -= nc.variables[f2nname].start_index
+        f2ename = nc.variables[mname].face_edge_connectivity
+        e2nname = nc.variables[mname].edge_node_connectivity
 
-        ncells = connectivity.shape[0]
+        f2n = nc.variables[f2nname][:]
+        f2n -= nc.variables[f2nname].start_index
+
+        f2e = nc.variables[f2ename][:]
+        f2e -= nc.variables[f2ename].start_index
+
+        e2n = nc.variables[e2nname][:]
+        e2n -= nc.variables[e2nname].start_index
+
+        ncells = f2n.shape[0]
 
         # construct the unstructured grid as a collection of 
         # 2D cells. Each cell has its own cooordinates. Make
@@ -55,7 +83,7 @@ class UgridReader(ReaderBase):
         quarterPeriodicity = self.PERIODICITY_LENGTH/4.
         for icell in range(ncells):
 
-            i00, i10, i11, i01 = connectivity[icell, :]
+            i00, i10, i11, i01 = f2n[icell, :]
 
             lon00, lat00 = lons[i00], lats[i00]
             lon10, lat10 = lons[i10], lats[i10]
@@ -79,7 +107,7 @@ class UgridReader(ReaderBase):
             lts = numpy.array([lat00, lat10, lat11, lat01])
             lns = numpy.array([lon00, lon10, lon11, lon01])
             alts = numpy.fabs(lts)
-            if numpy.any(alts[:] == quarterPeriodicity):
+            if regularization and numpy.any(numpy.fabs(alts < quarterPeriodicity) < 1.e-6):
                 # there is a latitude at the pole. The longitude is not well 
                 # defined in this case - we can set it to any value. For 
                 # esthetical reason it't good to set it to the average 
@@ -109,15 +137,114 @@ class UgridReader(ReaderBase):
 
         grid.SetPoints(points)
 
+        # attach nodal data to the grid
+        for vname, var in getData(nc, mname, 'node').items():
+            # read
+            data = var[:]
+            nComps = 1
+            if len(data.shape) > 1:
+                nComps = data.shape[1]
+            else:
+                data = data.reshape((-1, 1))
+
+            nCompsVec = 1
+            if nComps > 1:
+                # it's a vector and we need 3 components
+                nCompsVec = 3
+
+            # 4 nodes per cell, may be vector
+            cData = numpy.zeros((ncells, 4, nCompsVec), numpy.float64)
+
+            for icell in range(ncells): 
+                i00, i10, i11, i01 = f2n[icell, :]
+                d00, d10, d11, d01 = data[i00, :], data[i10, :], data[i11, :], data[i01, :]
+                cData[icell, 0, :nComps] = d00
+                cData[icell, 1, :nComps] = d10
+                cData[icell, 2, :nComps] = d11
+                cData[icell, 3, :nComps] = d01
+
+            if nComps == 1:
+                # scalar, remove the dimension
+                cData = cData.reshape((ncells, 4,))
+
+            print('setting point field "{}"'.format(vname))
+            self.setPointField(vname, cData)
+
+        # set edge fields
+        for vname, var in getData(nc, mname, 'edge').items():
+
+            # read
+            data = var[:]
+
+            cData = numpy.zeros((ncells, 4), numpy.float64)
+
+            # iterate over faces
+            for icell in range(ncells):
+
+                # get the point Ids
+                ptIds = f2n[icell, :]
+
+                # iterate over the edges of the face
+                for edgeId in f2e[icell, :]:
+
+                    # get the start/end point Ids
+                    ptId0, ptId1 = e2n[edgeId, :]
+
+                    # get the face Id (0 <= ie < 4) and the sign
+                    ie = -1
+                    sign = 0.0
+
+                    for i in range(4):
+
+                        i0 = i
+                        i1 = (i + 1) % 4
+                        if i // 2 >= 1:
+                            # last two edges
+                            i0 = (i + 1) % 4
+                            i1 = i
+
+                        #       2
+                        #   3--->----2
+                        #   |        |
+                        # 3 ^        ^ 1
+                        #   |        |
+                        #   0--->----1
+                        #       0      
+
+                        if ptIds[i0] == ptId0 and ptIds[i1] == ptId1:
+                            # edge in netcdf file has the same orientation
+                            ie = i0
+                            sign = 1.0
+                            break
+
+                        elif ptIds[i0] == ptId1 and ptIds[i1] == ptId0:
+                            # opposite orientation
+                            ie = i1
+                            sign = -1.0
+                            break
+
+                    cData[icell, ie] = sign * data[edgeId]
+
+            print('setting edge field "{}"'.format(vname))
+            self.setEdgeField(vname, cData)
+
+
+
+        nc.close()
+
+            
+
+
 
 ###############################################################################
 
 def main():
     import argparse
-    from numpy import pi, sin, cos, exp
+    from numpy import pi, sin, cos, exp, heaviside, power
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
     parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file in the form FILENAME:MESHNAME')
+    parser.add_argument('-r', dest='regularization', action='store_false', help='Disable pole regularization (required for latlon grid)')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
     parser.add_argument('-stream', dest='streamFunc', default='', 
                         help='Stream function as a function of x (longitude) and y (latitude)')
@@ -134,7 +261,7 @@ def main():
    
     args = parser.parse_args()
 
-    reader = UgridReader(filename=args.input)
+    reader = UgridReader(filename=args.input, regularization=args.regularization)
 
     if args.print:
         reader.printCellPoints()
@@ -150,10 +277,12 @@ def main():
     if args.streamFunc:
 
         streamData = eval(args.streamFunc)
-        reader.setPointField('stream_function', streamData)
+        print('setting point {} data to "streamFunction"'.format(streamData.shape))
+        reader.setPointField('streamFunction', streamData)
 
         edgeVel = reader.getEdgeFieldFromStreamData(streamData)
-        reader.setEdgeField('edge_integrated_velocity', edgeVel)
+        print('setting edge {} data to "edgeIntegratedVelocity"'.format(edgeVel.shape))
+        reader.setEdgeField('edgeIntegratedVelocity', edgeVel)
 
         loopIntegrals = reader.getLoopIntegralsFromStreamData(streamData)
         reader.setLoopIntegrals('cell_loop_integrals', loopIntegrals)

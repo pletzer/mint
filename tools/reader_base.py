@@ -35,7 +35,6 @@ class ReaderBase(object):
         3: (0, 3),
         }
 
-
     def getLonLatPoints(self):
         """
         Get the longitudes and latitudes in radian at the cell vertices
@@ -115,7 +114,17 @@ class ReaderBase(object):
         @return lon and lat arrays of size (numCells, 4)
         """
         xy = self.vtk['pointArray'].reshape((self.getNumberOfCells(), 4, 3))
-        return xy[..., 0], xy[..., 1]
+        return xy[..., 0].copy(), xy[..., 1].copy()
+
+
+    def setLonLat(self, x, y):
+        """
+        Set the longitudes and latitudes from numpy arrays
+        @param x longitudes, array of size numCells*4
+        @param y latitudes, array of size numCells*4
+        """
+        self.vtk['pointArray'][:, 0] = x
+        self.vtk['pointArray'][:, 1] = y
 
 
     def setEdgeField(self, name, data):
@@ -139,13 +148,17 @@ class ReaderBase(object):
         @param name name of the field
         @param data array of size (numCells, 4)
         """
+        nComps = 1
+        # get the number of components from the third index, if present
+        if len(data.shape) > 2:
+            nComps = data.shape[2]
         self.pointArray = data
         self.pointData = vtk.vtkDoubleArray()
         self.pointData.SetName(name)
-        self.pointData.SetNumberOfComponents(1)
+        self.pointData.SetNumberOfComponents(nComps)
         numCells = self.getNumberOfCells()
         self.pointData.SetNumberOfTuples(numCells*4)
-        self.pointData.SetVoidArray(self.pointArray, numCells*4, 1)
+        self.pointData.SetVoidArray(self.pointArray, numCells*4*nComps, 1)
         self.vtk['grid'].GetPointData().AddArray(self.pointData)        
 
 
@@ -176,7 +189,7 @@ class ReaderBase(object):
         edgeArray = numpy.zeros((numCells, 4), numpy.float64)
         for ie in range(4):
             i0, i1 = self.edgeIndex2PointInds[ie]
-            edgeArray[:, ie] = streamFuncData[:, i1] - streamFuncData[:, i0]
+            edgeArray[:, ie] = 0.5 * (streamFuncData[:, i1] + streamFuncData[:, i0]) #streamFuncData[:, i1] - streamFuncData[:, i0]
         return edgeArray
 
     def getLoopIntegralsFromStreamData(self, streamFuncData):

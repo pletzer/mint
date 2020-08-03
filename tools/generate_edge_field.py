@@ -53,23 +53,26 @@ numEdgesDimName = nc.variables[edgeNodeConnName].dimensions[0]
 nc.close()
 
 # compute the stream function on nodes
-from numpy import sin, cos, pi 
+from numpy import sin, cos, pi, heaviside, power
 streamValues = eval(args.streamFunction)
 
 # compute the integrated velocity on edges
 numEdges = edgeNodeConnectivity.shape[0]
+print('number of edges: {}'.format(numEdges))
 integratedVelocity = numpy.zeros( (numEdges,), numpy.float64 )
 i0, i1 = edgeNodeConnectivity[:, 0], edgeNodeConnectivity[:, 1]
+
 integratedVelocity = streamValues[i1] - streamValues[i0]
 
 # write the velocity to disk
 if args.data_file == grid_file:
     # append to grid file
-    print('NOTE: edge field will be appended to grid file {}'.format(grid_file))
+    print('note: edge field "{}" will be appended to ugrid {}:{}'.format( \
+           args.fieldName, grid_file, grid_var))
     nc = netCDF4.Dataset(args.data_file, 'r+')
 else:
     # new file
-    print('NOTE: saving edge field in {}'.format(args.data_file))
+    print('note: saving edge field "{}" in {}'.format(args.fieldName, args.data_file))
     nc = netCDF4.Dataset(args.data_file, 'w')
 # write global attributes
 nc.date = 'Created on {}'.format(time.asctime())
@@ -81,6 +84,7 @@ except:
     pass
 vel = nc.createVariable(args.fieldName, 'f8', (numEdgesDimName,))
 vel.location = 'edge'
+vel.mesh = grid_var
 vel[:] = integratedVelocity
 nc.close()
 

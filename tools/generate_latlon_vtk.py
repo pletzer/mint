@@ -11,7 +11,7 @@ Generate grid and edge data on uniform grid and save result in UGRID file
 
 parser = argparse.ArgumentParser(description='Generate the output file storing the lat-lon grid and edge data in VTK unstructured grid format')
 parser.add_argument('-o', dest='grid_file', default='', 
-                    help='Specify the netcdf file containing the grid and the mesh name in the format "FILENAME:MESHNAME"')
+                    help='Specify the output VTK file name containing the grid, stream function and velocity')
 parser.add_argument('-nx', default=1, type=int, 
                     help='Number of longitude cells')
 parser.add_argument('-ny', default=1, type=int, 

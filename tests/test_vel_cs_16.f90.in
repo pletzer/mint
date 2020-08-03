@@ -1,0 +1,130 @@
+subroutine test1
+
+    use netcdf
+    use mnt_ncfieldread_capi_mod
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int
+
+    implicit none
+
+    integer :: src_ncid, src_varid, src_ndims, i, rc, xtype, dimids(10)
+    integer(c_size_t), allocatable :: src_dims(:)
+    character(len=512) :: src_ugrid_filename
+    character(len=32)  :: src_field_name, varname
+    type(c_ptr)        :: ncreader_h
+
+    src_ugrid_filename = '${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc:physics'
+    src_field_name = 'physics_face_y' ! 'line_integrated_velocity'
+
+    i = scan( src_ugrid_filename, ':' ) ! grab the filename, drop the mesh name
+    print *, 'will open file with name"', trim(src_ugrid_filename(1:i - 1)), '"'
+    rc = nf90_open(trim(src_ugrid_filename(1:i - 1)), NF90_NOWRITE, src_ncid)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_open'
+
+    rc = nf90_inq_varid(src_ncid, trim(src_field_name), src_varid)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inq_varid'
+
+    print *,'...inquiring the number of dims for src_ncid = ', src_ncid, ' and src_varid = ', src_varid
+    rc = nf90_inquire_variable(src_ncid, src_varid, ndims=src_ndims)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inquire_variable'
+
+    print *,'src_ndims = ', src_ndims
+
+    rc = mnt_ncfieldread_new(ncreader_h, src_ncid, src_varid)
+    if (rc /= 0) print *, 'ERROR when calling mnt_ncfieldread_new'
+
+    rc = mnt_ncfieldread_del(ncreader_h)
+    if (rc /= 0) print *, 'ERROR when calling mnt_ncfieldread_del'
+
+    rc = nf90_close(src_ncid)
+    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_close'
+
+end subroutine test1
+
+subroutine test2
+
+    use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
+    use mnt_ncfieldread_capi_mod 
+    use netcdf
+    implicit none
+
+    character(len=512)             :: ncfile = '${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc' ! lfric_diag_ex.nc'
+    character(len=32)              :: varname = 'line_integrated_velocity' ! 'physics_face_y' !  ! 'u1'
+    type(c_ptr)                    :: handle
+    integer                        :: ier, ndims, i
+    integer(c_size_t)              :: dim, ntot
+    integer(c_size_t), allocatable :: startInds0(:), counts(:)
+    real(c_double), allocatable    :: data(:)
+    character(len=32)              :: dimName
+    integer                        :: ncid, varid
+
+    ier = nf90_open(ncfile, NF90_NOWRITE, ncid)
+    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_open'
+
+    ier = nf90_inq_varid(ncid, varname, varid)
+    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_inq_varid'
+
+    ier = mnt_ncfieldread_new(handle, ncid, varid)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_new'
+
+    ndims = 0
+    ier = mnt_ncfieldread_getNumDims(handle, ndims)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getNumDims'
+
+    write(0, *) 'Number of dimensions: ', ndims
+
+    allocate(counts(0:ndims - 1))
+    allocate(startInds0(0:ndims - 1))
+
+    ntot = 1
+    ! zero based indexing
+    do i = 0, ndims - 1
+    
+        dim = 0
+        ier = mnt_ncfieldread_getDim(handle, i, dim)
+        if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getDim'
+
+        dimName(:) = ' '
+        ier = mnt_ncfieldread_getDimName(handle, i, dimName, len(dimName, kind=4))
+        if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_getDimName'
+
+        ntot = ntot * dim
+        startInds0(i) = 0
+        counts(i) = dim
+
+        write(0, '(A, I6, A, A, A, I10)') ' > axis ', i, ' (', trim(dimName), ') has size ', dim
+
+    enddo
+
+    write(0, *) 'ntot = ', ntot
+    allocate(data(ntot))
+
+    ier = mnt_ncfieldread_data(handle, data)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readData'
+
+    print*,' checksum of data: ', sum(data)
+
+    ier = mnt_ncfieldread_dataSlice(handle, startInds0, counts, data)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_readDataSlice'
+
+    print*,' checksum of data: ', sum(data)
+
+    deallocate(data)
+    deallocate(startInds0)
+    deallocate(counts)
+
+    ier = mnt_ncfieldread_del(handle)
+    if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_del'
+
+    ier = nf90_close(ncid)
+    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_close ier = ', ier
+
+end subroutine test2
+
+program all_tests
+
+    call test2
+    print *,'===finished test2==='
+
+    call test1
+    print *,'===finished test1==='
+end program 
