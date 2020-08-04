@@ -428,6 +428,7 @@ add_test(NAME regrid_upstream
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test" "-S" "1"
                  "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc:unit_test" "-D" "1"
                  "-o" "regrid_edges_output_upstream.vtk"
+                 "-N" "128"
                  "-debug" "2")
 set_tests_properties(regrid_upstream PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
@@ -522,7 +523,8 @@ add_test(NAME polySegmentIter1
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
                  "-p0" "264.5516205224688520,78.7115408475241338"
-                 "-p1" "260.0320543712643939,81.4423909253333420")
+                 "-p1" "260.0320543712643939,81.4423909253333420"
+                 "-N" "128")
 set_tests_properties(polySegmentIter1 PROPERTIES
                      PASS_REGULAR_EXPRESSION "integrated param coord = 1")
 
@@ -539,7 +541,8 @@ add_test(NAME polySegmentIter3
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
                  "-p0" "134.2695194548424524,67.4474784907345395"
-                 "-p1" "129.1629029515314357,65.6845621777749642")
+                 "-p1" "129.1629029515314357,65.6845621777749642"
+                 "-N" "128")
 set_tests_properties(polySegmentIter3 PROPERTIES
                      PASS_REGULAR_EXPRESSION "integrated param coord = 1")
 
@@ -547,7 +550,8 @@ add_test(NAME polySegmentIter4
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
                  "-p0" "309.1629029515316347,-65.6845621777749500" 
-                 "-p1" "314.2695194548423387,-67.4474784907345111")
+                 "-p1" "314.2695194548423387,-67.4474784907345111"
+                 "-N" "128")
 set_tests_properties(polySegmentIter4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "integrated param coord = 1")
 

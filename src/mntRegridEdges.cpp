@@ -538,7 +538,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
     vtkIdList* badSegmentPtIds = NULL;
     vtkIdType badPtId = 0;
     if (debug == 3) {
-        printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId            xia          xib\n");
+        printf("   dstCellId dstEdgeIndex     dstEdgePt0     dstEdgePt1     srcCellId            xia          xib        ta     tb   tmax\n");
     }
     else if (debug == 2) {
         badSegmentsPoints = vtkPoints::New();
@@ -559,26 +559,15 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
         int numEdges = dstCell->GetNumberOfEdges();
 
         // iterate over the four edges of each dst cell
-        for (int dstEdgeIndex = 0; 
-             dstEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
+        for (int dstEdgeIndex = 0; dstEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
              ++dstEdgeIndex) {
 
             int id0, id1;
             (*self)->edgeConnectivity.getCellPointIds(dstEdgeIndex, &id0, &id1);
-              
+            
+            // fill in the start/end points of this edge  
             dstPoints->GetPoint(dstCell->GetPointId(id0), dstEdgePt0);
             dstPoints->GetPoint(dstCell->GetPointId(id1), dstEdgePt1);
-
-            // regularize by adding/removing 360 degrees
-            double lonMid = 0.5*(dstEdgePt0[0] + dstEdgePt1[0]);
-            if (lonMid < srcLonMin) {
-                dstEdgePt0[0] += 360.0;
-                dstEdgePt1[0] += 360.0;
-            }
-            else if (lonMid > srcLonMin + 360.) {
-                dstEdgePt0[0] -= 360.0;
-                dstEdgePt1[0] -= 360.0;                
-            }
 
             // break the edge into sub-edges
             PolysegmentIter polySegIter = PolysegmentIter((*self)->srcGrid, 
@@ -599,11 +588,14 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
                 const double coeff = polySegIter.getCoefficient();
 
                 if (debug == 3) {
-                    printf("%12lld %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf\n", 
+                    printf("%12lld %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
                         dstCellId, dstEdgeIndex, 
                         dstEdgePt0[0], dstEdgePt0[1], 
-                        dstEdgePt1[0], dstEdgePt1[1], srcCellId,
-                        xia[0], xia[1], xib[0], xib[1]);
+                        dstEdgePt1[0], dstEdgePt1[1], 
+                        srcCellId,
+                        xia[0], xia[1], xib[0], xib[1], 
+                        polySegIter.getBegLineParamCoord(), polySegIter.getEndLineParamCoord(),
+                        polySegIter.getIntegratedParamCoord());
                 }
 
                 // create pair (dstCellId, srcCellId)
@@ -612,17 +604,17 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
                 double* srcCellParamCoords = srcCell->GetParametricCoords();
 
-                for (int srcEdgeIndex = 0; 
-                     srcEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
-                     ++srcEdgeIndex) {
+                for (int srcEdgeIndex = 0; srcEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
+                       ++srcEdgeIndex) {
 
-                    int i0, i1;
-                    (*self)->edgeConnectivity.getCellPointIds(srcEdgeIndex, &i0, &i1);
+                    int is0, is1;
+                    (*self)->edgeConnectivity.getCellPointIds(srcEdgeIndex, &is0, &is1);
                     
                     // compute the interpolation weight
-                    double weight = computeWeight(&srcCellParamCoords[i0*3], 
-                                                  &srcCellParamCoords[i1*3], xia, xib);
-                    // coeff accounts for the duplicity in case where segments are shared between cells
+                    double weight = computeWeight(&srcCellParamCoords[is0*3], 
+                                                  &srcCellParamCoords[is1*3], xia, xib);
+
+                    // coeff accounts for the duplicity in the case where segments are shared between cells
                     weight *= coeff;
 
                     if (std::abs(weight) > 1.e-15) {
@@ -643,9 +635,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
             if (debug > 0) {
                 double totalT = polySegIter.getIntegratedParamCoord();
                 if (std::abs(totalT - 1.0) > 1.e-10) {
-                    printf("Warning: total t of segment %d: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
+                    printf("Warning: [%d] total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
                        numBadSegments, totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
                     numBadSegments++;
+
                     if (debug == 2) {
                         badSegmentsPoints->InsertNextPoint(dstEdgePt0);
                         badSegmentsPoints->InsertNextPoint(dstEdgePt1);
@@ -667,7 +660,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
     if (debug == 2 && badPtId > 0) {
         vtkUnstructuredGridWriter* wr = vtkUnstructuredGridWriter::New();
         std::string fname = "badSegments.vtk";
-        std::cout << "Warning: saving segments that are not full contained in the source grid in file " << fname << '\n';
+        std::cout << "Warning: saving segments that are not fully contained in the source grid in file " << fname << '\n';
         wr->SetFileName(fname.c_str());
         wr->SetInputData(badSegmentsGrid);
         wr->Update();

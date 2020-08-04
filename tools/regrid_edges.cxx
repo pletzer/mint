@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     args.set("-O", std::string(""), "Specify output 2D UGRID file where regridded edge data are saved");
     args.set("-S", 1, "Set to zero to disable source grid regularization, -S 0 is required for uniform lon-lat grid");
     args.set("-D", 1, "Set to zero to disable destination grid regularization, -S 0 is required for uniform lon-lat grid");
-    args.set("-N", 10, "Average number of cells per bucket");
+    args.set("-N", 128, "Average number of cells per bucket");
     args.set("-debug", 1, "0=no checks, 1=print outside segments, 2=save outside segments");
 
     bool success = args.parse(argc, argv);
