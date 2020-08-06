@@ -11,12 +11,12 @@ export LD_LIBRARY_PATH=$VTK_DIR/../..
 #V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
 #
 # Bump stream function. The stream function here does not correspond to the u, v field
-STREAM_FUNC="sin(pi*(x-70.)/(70.-22.))*(heaviside(y+50.,1.)-heaviside(y+81.,1.))*(heaviside(x-40.,1.)-heaviside(x-12.,1.))/(70.-22.)"
+STREAM_FUNC="sin(pi*(x-90.)/(90.+20.))*(heaviside(y+56.,1.)-heaviside(y+61.,1.))*(heaviside(x-90.,1.)-heaviside(x+20.,1.))/(90.+20.)"
 # stream function for the u, v field
 #STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
 U="100*((pi*cos((pi*(x-y))/180.))/180.-(pi*cos((pi*(x+y))/180.))/180.)/2."
 V="100*((pi*cos((pi*(x-y))/180.))/180.+(pi*cos((pi*(x+y))/180.))/180.)/2."
-NSTEPS="200"
+NSTEPS="500"
 DT=1
 
 
