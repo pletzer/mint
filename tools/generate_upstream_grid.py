@@ -152,7 +152,7 @@ xy[:numPoints] = xInitial
 xy[numPoints:] = yInitial
 xMin = xInitial.min()
 xMax = xInitial.max()
-xyUpstream = odeint(tendency, xy, [0.0, -args.time])
+xyUpstream = odeint(tendency, xy, [0.0, -args.time], rtol=1.e-12, atol=1.e-12)
 
 # we're only interested in the final positions
 xUpstream = xyUpstream[1, :numPoints]
