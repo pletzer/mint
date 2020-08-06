@@ -11,17 +11,17 @@ export LD_LIBRARY_PATH=$VTK_DIR/../..
 #V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
 #
 # Bump stream function. The stream function here does not correspond to the u, v field
-STREAM_FUNC="sin(pi*(x-178.)/(185.-178.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.))*(heaviside(x-178.,1.)-heaviside(x-185,1.))/(185.-178.)"
+STREAM_FUNC="sin(pi*(x-40.)/(40.-12.))*(heaviside(y+50.,1.)-heaviside(y+81.,1.))*(heaviside(x-40.,1.)-heaviside(x-12.,1.))/(40.-12.)"
 # stream function for the u, v field
 #STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
 U="100*((pi*cos((pi*(x-y))/180.))/180.-(pi*cos((pi*(x+y))/180.))/180.)/2."
 V="100*((pi*cos((pi*(x-y))/180.))/180.+(pi*cos((pi*(x+y))/180.))/180.)/2."
-NSTEPS="500"
+NSTEPS="100"
 DT=1
 
 
 # get the grid
-cp @CMAKE_SOURCE_DIR@/data/cs_16.nc grid.nc
+cp @CMAKE_SOURCE_DIR@/data/cs_64.nc grid.nc
 
 echo "add edge field from stream function..."
 python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g grid.nc:physics -d input_data.nc \
@@ -52,7 +52,7 @@ fi
 # compute the regridding weights
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
                                       -d "upstream.nc:physics" -D 1 \
-                                      -w weights.nc -N 128 -debug 2
+                                      -w weights.nc -N 512 -debug 2
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 4

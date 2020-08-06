@@ -7,6 +7,7 @@ configure_file(advect_shock.sh.in advect_shock.sh @ONLY)
 configure_file(advect_latlon.sh.in advect_latlon.sh @ONLY)
 configure_file(advect_cubedsphere.sh.in advect_cubedsphere.sh @ONLY)
 configure_file(advect_cubedsphere2.sh.in advect_cubedsphere2.sh @ONLY)
+configure_file(advect_cubedsphere_64.sh.in advect_cubedsphere_64.sh @ONLY)
 
 link_directories(${NETCDF_DIR}/lib)
 
