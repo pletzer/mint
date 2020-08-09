@@ -146,7 +146,6 @@ def tendency(xy, t):
     vxy[numPoints:] = eval(args.velocity_y)
     return vxy
 
-# integrate the trajectories upstream 
 xy = numpy.zeros((numPoints*2,), numpy.float64)
 xy[:numPoints] = xInitial
 xy[numPoints:] = yInitial
