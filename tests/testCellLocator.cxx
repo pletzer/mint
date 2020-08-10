@@ -360,9 +360,36 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
                 " totLambda = " << totLambda << '\n';
     assert(std::abs(totLambda - 1.0) < 1.e-10);
 
-    // start point is way outside, need to apply periodicity
+    // start point is outside, need to apply periodicity
     pBeg[0] = -10.0; pBeg[1] = -90.0;
     pEnd[0] = +10.0; pEnd[1] = +90.0;
+    cloc->setPeriodicityLengthX(360.0);
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (const auto& cIdLam : cellIdLambdas) {
+        vtkIdType cellId = cIdLam.first;
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+
+        vtkPoints* pts = grid->GetCell(cellId)->GetPoints();
+
+        std::cout << "... pBeg = " << pBeg << " pEnd = " << pEnd << 
+                    " cellId " << cellId << " lambda = " << lamIn << ',' << lamOut << " points: ";
+        for (vtkIdType i = 0; i < pts->GetNumberOfPoints(); ++i) {
+            double* p = pts->GetPoint(i);
+            std::cout << '(' << p[0] << ',' << p[1] << ") "; 
+        }
+        std::cout << '\n';
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
+
+    // start point is way, way outside, need to apply periodicity
+    pBeg[0] = -300.0; pBeg[1] = -90.0;
+    pEnd[0] = +300.0; pEnd[1] = +90.0;
     cloc->setPeriodicityLengthX(360.0);
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;

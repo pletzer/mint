@@ -117,23 +117,6 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
 }
 
 
-vtkIdType
-vmtCellLocator::quickFindCell(const Vec3& point, double tol) {
-
-    int bucketId = this->getBucketId(&point[0]);
-
-    const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
-    for (const vtkIdType& cId : faces) {
-        if (this->containsPoint(cId, &point[0], tol)) {
-            return cId;
-        }
-    }
-
-    // failed to find cell
-    return -1;
-}
-
-
 void
 vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds) {
 
