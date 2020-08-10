@@ -3,6 +3,7 @@
 #include <vtkPoints.h>
 #include <vtkCell.h>
 #include <mntLineLineIntersector.h>
+#include <algorithm>
 
 struct LambdaBegFunctor {
     // compare two elements of the array
@@ -45,6 +46,9 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
     tol = std::abs(tol);
     bool res = true;
+    double* val;
+    double adeltas[3];
+    int k;
 
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     size_t npts = nodes.size();
@@ -57,11 +61,28 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
         double* p1 = &nodes[i1][0];
 
         // vector from point to the vertices
-        double d0[] = {point[0] - p0[0], point[1] - p0[1]};
-        double d1[] = {point[0] - p1[0], point[1] - p1[1]};
+        double dx0 = point[0] - p0[0];
+        double dx1 = point[0] - p1[0];
+        double dy0 = point[1] - p0[1];
+        double dy1 = point[1] - p1[1];
 
-        double cross = d0[0]*d1[1] - d0[1]*d1[0];
+        // add/substract periodicity length to minimize the distance between 
+        // longitudes
+        adeltas[0] = std::abs(dx0 - this->periodicityLengthX);
+        adeltas[1] = std::abs(dx0);
+        adeltas[2] = std::abs(dx0 + this->periodicityLengthX);
+        val = std::min_element(adeltas, adeltas + 3);
+        k = (int) std::distance(adeltas, val);
+        dx0 += (k - 1) * this->periodicityLengthX;
 
+        adeltas[0] = std::abs(dx1 - this->periodicityLengthX);
+        adeltas[1] = std::abs(dx1);
+        adeltas[2] = std::abs(dx1 + this->periodicityLengthX);
+        val = std::min_element(adeltas, adeltas + 3);
+        k = (int) std::distance(adeltas, val);
+        dx1 += (k - 1) * this->periodicityLengthX;
+
+        double cross = dx0*dy1 - dy0*dx1;
         if (cross < -tol) {
             // negative area
             res = false;
