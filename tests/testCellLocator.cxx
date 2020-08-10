@@ -4,8 +4,8 @@
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkGenericCell.h>
 #include <vtkPoints.h>
-#include <cassert>
 #undef NDEBUG // turn on asserts
+#include <cassert>
 
 void test1Quad(int numCellsPerBucket) {
 
@@ -301,6 +301,22 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
                 " totLambda = " << totLambda << '\n';
     assert(std::abs(totLambda - 1.0) < 1.e-10);
 
+    // start pooint is way outside, need to apply periodicity
+    pBeg[0] = -10.0; pBeg[1] = -90.0;
+    pEnd[0] = +10.0; pEnd[1] = +90.0;
+    cloc->setPeriodicityLengthX(360.0);
+    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    totLambda = 0.0;
+    for (const auto& cIdLam : cellIdLambdas) {
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        totLambda += lamOut - lamIn;
+    }
+    std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
+                 numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
+                " totLambda = " << totLambda << '\n';
+    assert(1 == 0);
+    assert(std::abs(totLambda - 1.0) < 1.e-10);
 
     // clean up
     cloc->Delete();
