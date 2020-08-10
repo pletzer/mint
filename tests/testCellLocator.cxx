@@ -367,9 +367,20 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
     for (const auto& cIdLam : cellIdLambdas) {
+        vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
         double lamOut = cIdLam.second[cIdLam.second.size() - 1];
         totLambda += lamOut - lamIn;
+
+        vtkPoints* pts = grid->GetCell(cellId)->GetPoints();
+
+        std::cout << "... pBeg = " << pBeg << " pEnd = " << pEnd << 
+                    " cellId " << cellId << " lambda = " << lamIn << ',' << lamOut << " points: ";
+        for (vtkIdType i = 0; i < pts->GetNumberOfPoints(); ++i) {
+            double* p = pts->GetPoint(i);
+            std::cout << '(' << p[0] << ',' << p[1] << ") "; 
+        }
+        std::cout << '\n';
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
                  numCellsPerBucket << "): pBeg = " << pBeg << " pEnd = " << pEnd <<
