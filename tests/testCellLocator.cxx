@@ -7,6 +7,14 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
+/**
+ * Create uniform VTK grid objects
+ * @param nx number of x cells
+ * @param ny number of y cells
+ * @param grid vtkUnstructured grid object (will be built)
+ * @param points vtkPoints object (will be built)
+ * @param coords vtkDoubleArray object (will be built)
+ */
 void createUniformGrid(int nx, int ny, 
                        vtkUnstructuredGrid* grid, vtkPoints* points, vtkDoubleArray* coords) {
 
@@ -53,6 +61,50 @@ void createUniformGrid(int nx, int ny,
         grid->InsertNextCell(VTK_QUAD, ptIds);
     }
     ptIds->Delete();
+
+}
+
+void testContainsPoint(int nx, int ny) {
+
+    double point[3];
+
+    vtkDoubleArray* coords = vtkDoubleArray::New();
+    vtkPoints* points = vtkPoints::New();
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+
+    createUniformGrid(nx, ny, grid, points, coords);
+
+    // create locator
+    vmtCellLocator* cloc = vmtCellLocator::New();
+    cloc->SetDataSet(grid);
+    cloc->SetNumberOfCellsPerBucket(10);
+    cloc->BuildLocator();
+    cloc->setPeriodicityLengthX(360.0);
+
+    // inside the first face
+    point[0] = 0.00001;
+    point[1] = -89.99999;
+    assert(cloc->containsPoint(0, point, 1.e-10));
+
+    // is it still inside if we move it by 360 to the left?
+    point[0] = 0.00001 - 360.0;
+    point[1] = -89.99999;
+    assert(cloc->containsPoint(0, point, 1.e-10));
+
+    // what about to the right?
+    point[0] = 0.00001 + 360.0;
+    point[1] = -89.99999;
+    assert(cloc->containsPoint(0, point, 1.e-10));
+
+    // expected to fail because we only support one periodicity length to the left and right
+    point[0] = 0.00001 + 2*360.0;
+    point[1] = -89.99999;
+    assert(!cloc->containsPoint(0, point, 1.e-10));
+
+    cloc->Delete();
+    grid->Delete();
+    points->Delete();
+    coords->Delete();
 
 }
 
@@ -339,6 +391,7 @@ int main(int argc, char** argv) {
     test1Quad(1);
     test1Quad(10);
     test1Quad(1000);
+    testContainsPoint(10, 5);
     testUniformLatLonGrid(10, 5, 1);
     testUniformLatLonGrid(10, 5, 2);
     testUniformLatLonGrid(10, 5, 5);
