@@ -7,6 +7,55 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
+void createUniformGrid(int nx, int ny, 
+                       vtkUnstructuredGrid* grid, vtkPoints* points, vtkDoubleArray* coords) {
+
+    double point[3];
+
+    int numCells = nx * ny;
+    int numPoints = 4 * numCells;
+    double dx = 360. / (double) nx;
+    double dy = 180. / (double) ny;
+
+    coords->SetNumberOfComponents(3);
+    coords->SetNumberOfTuples(numPoints);
+
+    int k = 0;
+    for (int i = 0; i < nx; ++i) {
+        double x0 = i*dx;
+        double x1 = x0 + dx;
+        for (int j = 0; j < ny; ++j) {
+            double y0 = -90.0 + j*dy;
+            double y1 = y0 + dy;
+            point[0] = x0; point[1] = y0; point[2] = 0.0;
+            coords->SetTuple(k*4 + 0, point);
+            point[0] = x1; point[1] = y0; point[2] = 0.0;
+            coords->SetTuple(k*4 + 1, point);
+            point[0] = x1; point[1] = y1; point[2] = 0.0;
+            coords->SetTuple(k*4 + 2, point);
+            point[0] = x0; point[1] = y1; point[2] = 0.0;
+            coords->SetTuple(k*4 + 3, point);
+            k++;
+        }
+    }
+
+    points->SetData(coords);
+
+    grid->SetPoints(points);
+    grid->Allocate(numCells, 1);
+    const vtkIdType nptsPerCell = 4;
+    vtkIdList* ptIds = vtkIdList::New();
+    ptIds->SetNumberOfIds(nptsPerCell);
+    for (size_t iCell = 0; iCell < numCells; ++iCell) {
+        for (size_t i = 0; i < nptsPerCell; ++i) {
+            ptIds->SetId(i, nptsPerCell*iCell + i);
+        }
+        grid->InsertNextCell(VTK_QUAD, ptIds);
+    }
+    ptIds->Delete();
+
+}
+
 void test1Quad(int numCellsPerBucket) {
 
     double point[3];
@@ -95,53 +144,11 @@ void test1Quad(int numCellsPerBucket) {
 
 void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
 
-    // target points
-    double point[3];
-
-    int numCells = nx * ny;
-    int numPoints = 4 * numCells;
-    double dx = 360. / (double) nx;
-    double dy = 180. / (double) ny;
-
     vtkDoubleArray* coords = vtkDoubleArray::New();
-    coords->SetNumberOfComponents(3);
-    coords->SetNumberOfTuples(numPoints);
-
-    int k = 0;
-    for (int i = 0; i < nx; ++i) {
-        double x0 = i*dx;
-        double x1 = x0 + dx;
-        for (int j = 0; j < ny; ++j) {
-            double y0 = -90.0 + j*dy;
-            double y1 = y0 + dy;
-            point[0] = x0; point[1] = y0; point[2] = 0.0;
-            coords->SetTuple(k*4 + 0, point);
-            point[0] = x1; point[1] = y0; point[2] = 0.0;
-            coords->SetTuple(k*4 + 1, point);
-            point[0] = x1; point[1] = y1; point[2] = 0.0;
-            coords->SetTuple(k*4 + 2, point);
-            point[0] = x0; point[1] = y1; point[2] = 0.0;
-            coords->SetTuple(k*4 + 3, point);
-            k++;
-        }
-    }
-
     vtkPoints* points = vtkPoints::New();
-    points->SetData(coords);
-
     vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
-    grid->SetPoints(points);
-    grid->Allocate(numCells, 1);
-    const vtkIdType nptsPerCell = 4;
-    vtkIdList* ptIds = vtkIdList::New();
-    ptIds->SetNumberOfIds(nptsPerCell);
-    for (size_t iCell = 0; iCell < numCells; ++iCell) {
-        for (size_t i = 0; i < nptsPerCell; ++i) {
-            ptIds->SetId(i, nptsPerCell*iCell + i);
-        }
-        grid->InsertNextCell(VTK_QUAD, ptIds);
-    }
-    ptIds->Delete();
+
+    createUniformGrid(nx, ny, grid, points, coords);
 
     // save the grid to file
     vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
