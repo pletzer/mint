@@ -145,7 +145,8 @@ public:
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
      * @param pEnd end point of the line
-     * @return list of (cellId, [lambda0, lambda1]) pairs
+     * @return list of (cellId, [lambda0, lambda1]) pairs, lambda0 = lambda1 when the line is not degenerate with the edge of a cell
+     * @note includes the start/end points
      */
     std::vector< std::pair<vtkIdType, Vec2> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);

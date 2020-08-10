@@ -204,7 +204,8 @@ std::vector< std::pair<vtkIdType, Vec2> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     Vec3 direction = pEnd - pBeg;
-    Vec3 p0 = pBeg;
+    double p0[] = {pBeg[0], pBeg[1], pBeg[2]};
+    double p1[] = {pEnd[0], pEnd[1], pEnd[2]};
 
     double lambdaInOut[2];
 
@@ -216,17 +217,19 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
     vtkIdList* cellIds = vtkIdList::New();
 
     std::vector<double> modPeriodX(1, 0.0);
+    // add periodicity coefficient if periodic
     if (this->periodicityLengthX > 0.) {
-        modPeriodX.push_back(-1.);
-        modPeriodX.push_back(+1.);
+        modPeriodX.push_back(-this->periodicityLengthX);
+        modPeriodX.push_back(+this->periodicityLengthX);
     }
 
     for (double modPx : modPeriodX) {
 
         p0[0] = pBeg[0] + modPx;
+        p1[0] = pEnd[0] + modPx;
 
         // collect the cell Ids intersected by the line  
-        this->FindCellsAlongLine(&pBeg[0], &pEnd[0], eps, cellIds);
+        this->FindCellsAlongLine(p0, p1, eps, cellIds);
 
         // iterate over the intersected cells
         for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
