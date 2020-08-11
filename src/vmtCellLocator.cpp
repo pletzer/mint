@@ -15,9 +15,14 @@ struct LambdaBegFunctor {
 
 
 vmtCellLocator::vmtCellLocator() {
+
     this->grid = NULL;
     this->points = NULL;
-    this->numBucketsX = 10;
+
+    this->numBucketsX = 5;
+    // will be determined in SetDataSet
+    this->numBucketsY = 1;
+
     double big = std::numeric_limits<double>::max();
     for (size_t i = 0; i < 3; ++i) {
         this->xmin[i] = big;
@@ -29,8 +34,10 @@ vmtCellLocator::vmtCellLocator() {
 
 void 
 vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
+
     this->grid = grid;
     this->points = grid->GetPoints();
+
     double* bounds = grid->GetBounds();
     this->xmin[0] = bounds[0];
     this->xmax[0] = bounds[1];
@@ -38,20 +45,17 @@ vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
     this->xmax[1] = bounds[3];
     this->xmin[2] = bounds[4];
     this->xmax[2] = bounds[5];
+
     // want the buckets to be larger than the cells
-    this->numBucketsX = std::max(1, int(0.1 * std::sqrt(grid->GetNumberOfCells())));
+    vtkIdType numCells = grid->GetNumberOfCells();
+    this->numBucketsY = std::max(1, static_cast<int>(numCells/(this->numBucketsX * 128)));
 }
 
 void 
 vmtCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 
-    vtkIdType numFaces = this->grid->GetNumberOfCells();
-
-    // number of buckets along one dimension (2D)
-    this->numBucketsX = (int) std::max(1.0, 
-                          std::sqrt((double) numFaces / (double) avgNumFacesPerBucket)
-                                  );
-
+    vtkIdType numCells = this->grid->GetNumberOfCells();
+    this->numBucketsY = std::max(1, static_cast<int>(numCells/(this->numBucketsX * avgNumFacesPerBucket)));
 }
 
 
@@ -61,8 +65,8 @@ vmtCellLocator::BuildLocator() {
     std::set<vtkIdType> empty;
     // attach an empty set of face Ids to each bucket
     for (int m = 0; m < this->numBucketsX; ++m) {
-        for (int n = 0; n < this->numBucketsX; ++n) {
-            int bucketId = m * this->numBucketsX + n;
+        for (int n = 0; n < this->numBucketsY; ++n) {
+            int bucketId = m * this->numBucketsY + n;
             // create empty bucket
             this->bucket2Faces.insert( std::pair< int, std::set<vtkIdType> >(bucketId, empty) );
         }
@@ -218,7 +222,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
         // iterate over the buckets
         for (int m = mLo; m <= mHi; ++m) {
             for (int n = nLo; n <= nHi; ++n) {
-                bucketId = m * numBucketsX + n;
+                bucketId = m * numBucketsY + n;
                 for (const vtkIdType& faceId : this->bucket2Faces.find(bucketId)->second) {
                     cellIds->InsertUniqueId(faceId);
 //                    std::cerr << "*** adding cell id " << faceId << 

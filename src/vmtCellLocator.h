@@ -143,6 +143,7 @@ private:
 
     // number of buckets in X and Y
     int numBucketsX;
+    int numBucketsY;
 
     // maps a bucket to a list of faces
     std::map<int, std::set<vtkIdType> > bucket2Faces;
@@ -169,14 +170,14 @@ private:
 
         // bucket coordinates
         int m = (int) std::floor(this->numBucketsX * x[0] + eps);
-        int n = (int) std::floor(this->numBucketsX * x[1] + eps);
+        int n = (int) std::floor(this->numBucketsY * x[1] + eps);
 
         // make sure the bucket coordinates fit in the domain
         m = std::max(0, std::min(this->numBucketsX - 1, m));
-        n = std::max(0, std::min(this->numBucketsX - 1, n));
+        n = std::max(0, std::min(this->numBucketsY - 1, n));
 
         // return flat array index
-        return m * this->numBucketsX + n;
+        return m * this->numBucketsY + n;
     }
 
     /**
@@ -186,8 +187,8 @@ private:
      * @param n index (output)
      */
     inline void getBucketIndices(int bucketId, int* m, int* n) const {
-        *m = bucketId / this->numBucketsX;
-        *n = bucketId % this->numBucketsX;
+        *m = bucketId / this->numBucketsY;
+        *n = bucketId % this->numBucketsY;
     }
 
     /**
