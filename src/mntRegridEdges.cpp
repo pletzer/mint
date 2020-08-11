@@ -494,7 +494,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug) {
+int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug) {
 
     // checks
     if (!(*self)->srcGrid) {
@@ -509,7 +509,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, int debug
     // build the locator
     (*self)->srcLoc->SetDataSet((*self)->srcGrid);
     (*self)->srcLoc->SetNumberOfCellsPerBucket(numCellsPerBucket);
-    (*self)->srcLoc->BuildLocator(); 
+    (*self)->srcLoc->BuildLocator();
+    (*self)->srcLoc->setPeriodicityLengthX(periodX);
 
     // compute the weights
     vtkIdList* dstPtIds = vtkIdList::New();

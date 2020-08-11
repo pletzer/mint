@@ -52,7 +52,7 @@ fi
 # compute the regridding weights
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
                                       -d "upstream.nc:physics" -D 1 \
-                                      -w weights.nc -N 128 -debug 2
+                                      -w weights.nc -N 128 -P 360. -debug 2 
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 4
