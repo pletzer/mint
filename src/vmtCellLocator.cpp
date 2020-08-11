@@ -18,8 +18,8 @@ vmtCellLocator::vmtCellLocator() {
 
     this->grid = NULL;
 
-    this->numBucketsX = 5;
     // will be determined in SetDataSet
+    this->numBucketsX = 1;
     this->numBucketsY = 1;
 
     double big = std::numeric_limits<double>::max();
@@ -46,6 +46,9 @@ vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
 
     // want the buckets to be larger than the cells
     vtkIdType numCells = grid->GetNumberOfCells();
+    if (numCells > 5) {
+        this->numBucketsX = 5; 
+    }
     this->numBucketsY = std::max(1, static_cast<int>(numCells/(this->numBucketsX * 128)));
 }
 
