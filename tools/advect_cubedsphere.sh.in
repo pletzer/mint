@@ -3,20 +3,13 @@
 export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
-#STREAM_FUNC="(sin((pi*(x-2*y))/360.)+sin((pi*(x+2*y))/360.))/2."
-#STREAM_FUNC="(cos((pi*(x-2*y))/360.)+cos((pi*(x+2*y))/360.))/2."
-#U="0*x+10."
-#V="0*x"
-#U="2*(cos(pi*(x-y)/360.)-cos(pi*(x+y)/360.))"
-#V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
-#
 # Bump stream function. The stream function here does not correspond to the u, v field
 STREAM_FUNC="sin(pi*(x-178.)/(185.-178.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.))*(heaviside(x-178.,1.)-heaviside(x-185,1.))/(185.-178.)"
-# stream function for the u, v field
-#STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
-U="100*((pi*cos((pi*(x-y))/180.))/180.-(pi*cos((pi*(x+y))/180.))/180.)/2."
-V="100*((pi*cos((pi*(x-y))/180.))/180.+(pi*cos((pi*(x+y))/180.))/180.)/2."
-NSTEPS="500"
+
+# u,v vector field that advects
+U="100*((pi*cos((pi*(x-y-43))/180.))/180.-(pi*cos((pi*(x+y-43))/180.))/180.)/2."
+V="100*((pi*cos((pi*(x-y-43))/180.))/180.+(pi*cos((pi*(x+y-43))/180.))/180.)/2."
+NSTEPS="100"
 DT=1
 
 

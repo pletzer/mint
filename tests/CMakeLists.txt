@@ -428,7 +428,7 @@ add_test(NAME regrid_upstream
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test" "-S" "1"
                  "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc:unit_test" "-D" "1"
                  "-o" "regrid_edges_output_upstream.vtk"
-                 "-N" "128"
+                 "-N" "128" "-P" "360"
                  "-debug" "2")
 set_tests_properties(regrid_upstream PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")

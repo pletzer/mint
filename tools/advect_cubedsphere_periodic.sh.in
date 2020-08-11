@@ -11,12 +11,12 @@ export LD_LIBRARY_PATH=$VTK_DIR/../..
 #V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
 #
 # Bump stream function. The stream function here does not correspond to the u, v field
-STREAM_FUNC="sin(pi*(x-178.)/(185.-178.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.))*(heaviside(x-178.,1.)-heaviside(x-185,1.))/(185.-178.)"
+STREAM_FUNC="sin(pi*(x-45.)/(55.-45.))*(heaviside(y+42,1.)-heaviside(y-23.,1.))*(heaviside(x-45.,1.)-heaviside(x-55,1.))/(55.-45.)"
 # stream function for the u, v field
 #STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
-U="100*cos(2*pi*x/360)"
-V="0*cos(2*pi*x/360)"
-NSTEPS="10"
+U="10*cos(pi*y/180)*(cos(2*pi*(x-y)/360)+cos(2*pi*(x+y)/360))"
+V="10*cos(pi*y/180)*(sin(2*pi*(x-y)/360)+sin(2*pi*(x+y)/360))"
+NSTEPS="100"
 DT=1
 
 
@@ -35,7 +35,7 @@ cp input_data.nc input_data_initial.nc
 
 # saving the grid in VTK file
 echo "saving grid in VTK file grid.vtk..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk -stream $STREAM_FUNC -u $U -v $V
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
