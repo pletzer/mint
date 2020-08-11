@@ -17,7 +17,6 @@ struct LambdaBegFunctor {
 vmtCellLocator::vmtCellLocator() {
 
     this->grid = NULL;
-    this->points = NULL;
 
     this->numBucketsX = 5;
     // will be determined in SetDataSet
@@ -36,7 +35,6 @@ void
 vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
 
     this->grid = grid;
-    this->points = grid->GetPoints();
 
     double* bounds = grid->GetBounds();
     this->xmin[0] = bounds[0];

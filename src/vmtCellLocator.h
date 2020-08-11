@@ -130,8 +130,6 @@ private:
 
     vtkUnstructuredGrid* grid;
 
-    vtkPoints* points;
-
     // domain range
     double xmin[3];
     double xmax[3];
@@ -214,11 +212,11 @@ private:
         vtkIdType* ptIds;
         vtkIdType npts;
         this->grid->GetCellPoints(faceId, npts, ptIds);
-
+        vtkPoints* points = this->grid->GetPoints();
         std::vector<Vec3> res(npts);
         for (size_t i = 0; i < npts; ++i) {
             vtkIdType idx = ptIds[i];
-            double* p = this->points->GetPoint(idx);
+            double* p = points->GetPoint(idx);
             res[i] = Vec3(p);
         }
 
