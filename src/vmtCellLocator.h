@@ -22,17 +22,7 @@ public:
     /**
      * Constructor
      */
-    vmtCellLocator() {
-        this->grid = NULL;
-        this->points = NULL;
-        this->numBucketsX = 10;
-        double big = std::numeric_limits<double>::max();
-        for (size_t i = 0; i < 3; ++i) {
-            this->xmin[i] = big;
-            this->xmax[i] = -big;
-        }
-        this->periodicityLengthX = 0.0;
-    }
+    vmtCellLocator();
 
     static vmtCellLocator* New() {
         return new vmtCellLocator();
@@ -53,34 +43,13 @@ public:
      * Set the grid
      * @param grid vtkUnstructuredGrid object
      */
-    void SetDataSet(vtkUnstructuredGrid* grid) {
-        this->grid = grid;
-        this->points = grid->GetPoints();
-        double* bounds = grid->GetBounds();
-        this->xmin[0] = bounds[0];
-        this->xmax[0] = bounds[1];
-        this->xmin[1] = bounds[2];
-        this->xmax[1] = bounds[3];
-        this->xmin[2] = bounds[4];
-        this->xmax[2] = bounds[5];
-        // want the buckets to be larger than the cells
-        this->numBucketsX = std::max(1, int(0.1 * std::sqrt(grid->GetNumberOfCells())));
-    }
+    void SetDataSet(vtkUnstructuredGrid* grid);
 
     /** 
      * Set average number of cells/faces per bucket
      * @param avgNumFacesPerBucket number
      */
-    void SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
-
-        vtkIdType numFaces = this->grid->GetNumberOfCells();
-
-        // number of buckets along one dimension (2D)
-        this->numBucketsX = (int) std::max(1.0, 
-                              std::sqrt((double) numFaces / (double) avgNumFacesPerBucket)
-                                      );
-
-    }
+    void SetNumberOfCellsPerBucket(int avgNumFacesPerBucket);
 
     /**
      * Build the locator
@@ -128,9 +97,7 @@ public:
      * Set the periodicity length in x
      * @param periodicityX length (0 means not periodic)
      */
-    void setPeriodicityLengthX(double periodicityX) {
-    	this->periodicityLengthX = periodicityX;
-    }
+    void setPeriodicityLengthX(double periodicityX);
 
     /**
      * Find all intersection points between line and the grid
@@ -154,18 +121,8 @@ public:
     /**
      * Print the bucket to face indices map
      */
-    void printBuckets() const {
-        for (const auto& b2f : this->bucket2Faces) {
-            int bucketId = b2f.first;
-            int m, n;
-            this->getBucketIndices(bucketId, &m, &n);
-            std::cout << "bucket " << bucketId << " (" << m << ',' << n << ") contains faces ";
-            for (const auto& faceId : b2f.second) {
-	        std::cout << faceId << ' ';
-            }
-            std::cout << '\n';
-        }
-    }
+    void printBuckets() const;
+
 
 protected:
 

@@ -13,6 +13,48 @@ struct LambdaBegFunctor {
     }
 };
 
+
+vmtCellLocator::vmtCellLocator() {
+    this->grid = NULL;
+    this->points = NULL;
+    this->numBucketsX = 10;
+    double big = std::numeric_limits<double>::max();
+    for (size_t i = 0; i < 3; ++i) {
+        this->xmin[i] = big;
+        this->xmax[i] = -big;
+    }
+    this->periodicityLengthX = 0.0;
+}
+
+
+void 
+vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
+    this->grid = grid;
+    this->points = grid->GetPoints();
+    double* bounds = grid->GetBounds();
+    this->xmin[0] = bounds[0];
+    this->xmax[0] = bounds[1];
+    this->xmin[1] = bounds[2];
+    this->xmax[1] = bounds[3];
+    this->xmin[2] = bounds[4];
+    this->xmax[2] = bounds[5];
+    // want the buckets to be larger than the cells
+    this->numBucketsX = std::max(1, int(0.1 * std::sqrt(grid->GetNumberOfCells())));
+}
+
+void 
+vmtCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
+
+    vtkIdType numFaces = this->grid->GetNumberOfCells();
+
+    // number of buckets along one dimension (2D)
+    this->numBucketsX = (int) std::max(1.0, 
+                          std::sqrt((double) numFaces / (double) avgNumFacesPerBucket)
+                                  );
+
+}
+
+
 void 
 vmtCellLocator::BuildLocator() {
 
@@ -40,6 +82,13 @@ vmtCellLocator::BuildLocator() {
     }
 
 }
+
+
+void 
+vmtCellLocator::setPeriodicityLengthX(double periodicityX) {
+    this->periodicityLengthX = periodicityX;
+}
+
 
 bool 
 vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
@@ -253,6 +302,22 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     return res;
 }
+
+
+void 
+vmtCellLocator::printBuckets() const {
+    for (const auto& b2f : this->bucket2Faces) {
+        int bucketId = b2f.first;
+        int m, n;
+        this->getBucketIndices(bucketId, &m, &n);
+        std::cout << "bucket " << bucketId << " (" << m << ',' << n << ") contains faces ";
+        for (const auto& faceId : b2f.second) {
+        std::cout << faceId << ' ';
+        }
+        std::cout << '\n';
+    }
+}
+
 
 std::vector<double>
 vmtCellLocator::collectIntersectionPoints(vtkIdType cellId, 
