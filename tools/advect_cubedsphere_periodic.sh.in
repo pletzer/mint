@@ -11,11 +11,9 @@ export LD_LIBRARY_PATH=$VTK_DIR/../..
 #V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
 #
 # Bump stream function. The stream function here does not correspond to the u, v field
-STREAM_FUNC="sin(pi*(x-45.)/(55.-45.))*(heaviside(y+42,1.)-heaviside(y-23.,1.))*(heaviside(x-45.,1.)-heaviside(x-55,1.))/(55.-45.)"
-# stream function for the u, v field
-#STREAM_FUNC="(power(1-power(y,2)/8100.,2)*(1-power(y,2)/2025.+power(sin((pi*x)/360.),2)))/2."
-U="10*cos(pi*y/180)*(cos(2*pi*(x-y)/360)+cos(2*pi*(x+y)/360))"
-V="10*cos(pi*y/180)*(sin(2*pi*(x-y)/360)+sin(2*pi*(x+y)/360))"
+STREAM_FUNC="sin(pi*(x-155.)/(167.-155.))*(heaviside(y+27.,1.)-heaviside(y-63.,1.))*(heaviside(x-155.,1.)-heaviside(x-167.,1.))/(167.-155.)"
+U="(100*2*pi/180)*cos(pi*y/180)*sin(pi*y/180)*sin(2*pi*x/360)**2"
+V="(100*pi/360)*cos(pi*y/180)**2*cos(2*pi*x/360)*sin(2*pi*x/360)"
 NSTEPS="100"
 DT=1
 
@@ -52,7 +50,7 @@ fi
 # compute the regridding weights
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
                                       -d "upstream.nc:physics" -D 1 \
-                                      -w weights.nc -N 128 -P 360. -debug 2 
+                                      -w weights.nc -N 128 -debug 2 -P 360
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 4
