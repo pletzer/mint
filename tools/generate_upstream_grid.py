@@ -142,7 +142,7 @@ vxy = numpy.zeros((numPoints*2,), numpy.float64)
 def tendency(xy, t):
     x = xy[:numPoints]
     y = xy[numPoints:]
-    vxy[:numPoints] = eval(args.velocity_x)
+    vxy[:numPoints] = eval("-(" + args.velocity_x + ")")
     vxy[numPoints:] = eval(args.velocity_y)
     return vxy
 
