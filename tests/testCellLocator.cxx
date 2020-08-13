@@ -422,6 +422,53 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
 
 }
 
+void testPeriodic(int nx, int ny) {
+
+    vtkDoubleArray* coords = vtkDoubleArray::New();
+    vtkPoints* points = vtkPoints::New();
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+
+    createUniformGrid(nx, ny, grid, points, coords);
+    std::cout << "testPeriodic: number of cells: " << grid->GetNumberOfCells() << '\n';
+
+    // create locator
+    vmtCellLocator* cloc = vmtCellLocator::New();
+    cloc->SetDataSet(grid);
+    cloc->BuildLocator();
+    cloc->setPeriodicityLengthX(360.);
+
+    double pBegPtr[] = {360.0, -30.0, 0.0};
+    double pEndPtr[] = {360.0,  30.0, 0.0};
+    Vec3 pBeg(pBegPtr);
+    Vec3 pEnd(pEndPtr);
+
+    vtkIdList* cellIds = vtkIdList::New();
+    cloc->FindCellsAlongLine(&pBeg[0], &pEnd[0], 1.e-10, cellIds);
+    std::cout << "testPeriodic: line " << pBeg << " -> " << pEnd << " intercepts cells:\n";
+    for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
+        std::cout << cellIds->GetId(i) << ' ';
+        if ((i + 1) % 10 == 0) std::cout << '\n';
+    }
+    std::cout << '\n';
+
+    std::vector< std::pair<vtkIdType, Vec2> > cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    double totLambda = 0.0;
+    for (auto& cIdLam : cellIdLambdas) {
+        vtkIdType cellId = cIdLam.first;
+        double lamIn = cIdLam.second[0];
+        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        std::cout << "... testPeriodic: cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
+        totLambda += lamOut - lamIn;
+    }
+
+    // clean up
+    cloc->Delete();
+    grid->Delete();
+    points->Delete();
+    coords->Delete();
+
+}
+
 
 int main(int argc, char** argv) {
 
@@ -435,6 +482,7 @@ int main(int argc, char** argv) {
     testUniformLatLonGrid(10, 5, 10);
     testUniformLatLonGrid(10, 5, 20);
     testUniformLatLonGrid(10, 5, 50);
+    testPeriodic(4, 3);
 
     return 0;
 }
