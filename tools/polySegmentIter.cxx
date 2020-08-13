@@ -30,6 +30,11 @@ int main(int argc, char** argv) {
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
 
+    if (help) {
+        args.help();
+        return 0;
+    }
+
     if (!success) {
         std::cout << help << '\n';
         // error
