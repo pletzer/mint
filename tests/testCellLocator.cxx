@@ -222,7 +222,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     double pEndPtr[] = {360.0, 90.0, 0.0};
     Vec3 pBeg(pBegPtr);
     Vec3 pEnd(pEndPtr);
-    std::vector< std::pair<vtkIdType, Vec2> > cellIdLambdas;
+    std::vector< std::pair<vtkIdType, Vec3> > cellIdLambdasPer;
     double totLambda;
 
     vtkIdList* cellIds = vtkIdList::New();
@@ -235,12 +235,12 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     std::cout << '\n';
 
     // across the domain
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (auto& cIdLam : cellIdLambdas) {
+    for (auto& cIdLam : cellIdLambdasPer) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         std::cout << "... cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
         totLambda += lamOut - lamIn;
     }
@@ -252,12 +252,12 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // the other way across the domain
     pBeg[0] = 360.0; pBeg[1] = -90.0;
     pEnd[0] = 0.0; pEnd[1] = 90.0;    
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         std::cout << "... cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
         totLambda += lamOut - lamIn;
     }
@@ -269,12 +269,12 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // along y edge of domain
     pBeg[0] = 0.0; pBeg[1] = -90.0;
     pEnd[0] = 0.0; pEnd[1] = 90.0;
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
@@ -285,11 +285,11 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // along x edge of domain
     pBeg[0] = 0.0; pBeg[1] = 90.0;
     pEnd[0] = 360.0; pEnd[1] = 90.0;
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
@@ -300,11 +300,11 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     // both points are just inside
     pBeg[0] = 0.001; pBeg[1] = -90.0;
     pEnd[0] = 0.001; pEnd[1] = +90.0;
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
@@ -316,11 +316,11 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pBeg[0] = -0.001; pBeg[1] = -90.0;
     pEnd[0] = -0.001; pEnd[1] = +90.0;
     cloc->setPeriodicityLengthX(360.0);
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
@@ -332,11 +332,11 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pBeg[0] = -0.001; pBeg[1] = -90.0;
     pEnd[0] = +0.001; pEnd[1] = +90.0;
     cloc->setPeriodicityLengthX(360.0);
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
@@ -348,11 +348,11 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pBeg[0] = -0.001; pBeg[1] = -90.0;
     pEnd[0] = +0.001; pEnd[1] = +90.0;
     cloc->setPeriodicityLengthX(360.0);
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
     }
     std::cout << "testUniformLatLonGrid(" << nx << ',' << ny <<  ',' <<
@@ -364,12 +364,12 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pBeg[0] = -10.0; pBeg[1] = -90.0;
     pEnd[0] = +10.0; pEnd[1] = +90.0;
     cloc->setPeriodicityLengthX(360.0);
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
 
         vtkPoints* pts = grid->GetCell(cellId)->GetPoints();
@@ -391,12 +391,12 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     pBeg[0] = -300.0; pBeg[1] = -90.0;
     pEnd[0] = +300.0; pEnd[1] = +90.0;
     cloc->setPeriodicityLengthX(360.0);
-    cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     totLambda = 0.0;
-    for (const auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdasPer) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
+        double lamOut = cIdLam.second[1];
         totLambda += lamOut - lamIn;
 
         vtkPoints* pts = grid->GetCell(cellId)->GetPoints();
@@ -451,13 +451,17 @@ void testPeriodic(int nx, int ny) {
     }
     std::cout << '\n';
 
-    std::vector< std::pair<vtkIdType, Vec2> > cellIdLambdas = cloc->findIntersectionsWithLine(pBeg, pEnd);
+    std::vector< std::pair<vtkIdType, Vec3> > 
+            cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     double totLambda = 0.0;
-    for (auto& cIdLam : cellIdLambdas) {
+    for (auto& cIdLam : cellIdLambdasPer) {
         vtkIdType cellId = cIdLam.first;
         double lamIn = cIdLam.second[0];
-        double lamOut = cIdLam.second[cIdLam.second.size() - 1];
-        std::cout << "... testPeriodic: cellId = " << cellId << " lambda = " << lamIn << " -> " << lamOut << '\n';
+        double lamOut = cIdLam.second[1];
+        double periodOffset = cIdLam.second[2];
+        std::cout << "... testPeriodic: cellId = " << cellId 
+                  << " lambda = " << lamIn << " -> " << lamOut 
+                  << " periodic offset = " << periodOffset << '\n';
         totLambda += lamOut - lamIn;
     }
 

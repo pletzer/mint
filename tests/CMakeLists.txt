@@ -556,6 +556,25 @@ set_tests_properties(polySegmentIter4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "integrated param coord = 1")
 
 
+add_test(NAME polySegmentIter5
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc:physics"
+                 "-p0" "360,-30" 
+                 "-p1" "360,30"
+                 "-N" "128")
+set_tests_properties(polySegmentIter5 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
+add_test(NAME polySegmentIter6
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc:physics"
+                 "-p0" "360,-30" 
+                 "-p1" "360,30"
+                 "-N" "128"
+                 "-P" "360")
+set_tests_properties(polySegmentIter5 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
 add_test(NAME regrid_axis
          COMMAND "testRegridAxis")
 set_tests_properties(regrid_axis PROPERTIES
