@@ -27,7 +27,7 @@ vmtCellLocator::vmtCellLocator() {
         this->xmin[i] = big;
         this->xmax[i] = -big;
     }
-    this->periodicityLengthX = 0.0;
+    this->modPeriodX.push_back(0.0);
 }
 
 
@@ -91,7 +91,14 @@ vmtCellLocator::BuildLocator() {
 
 void 
 vmtCellLocator::setPeriodicityLengthX(double periodicityX) {
-    this->periodicityLengthX = periodicityX;
+
+    this->modPeriodX.resize(0);
+    this->modPeriodX.push_back(0.0);
+    if (periodicityX > 0) {
+        this->modPeriodX.push_back(-periodicityX);
+        this->modPeriodX.push_back(+periodicityX);
+    }
+
 }
 
 
@@ -100,8 +107,9 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
     tol = std::abs(tol);
     bool res = true;
+    double adeltas0[3];
+    double adeltas1[3];
     double* val;
-    double adeltas[3];
     int k;
 
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
@@ -122,19 +130,20 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
         // add/substract periodicity length to minimize the distance between 
         // longitudes
-        adeltas[0] = std::abs(dx0 - this->periodicityLengthX);
-        adeltas[1] = std::abs(dx0);
-        adeltas[2] = std::abs(dx0 + this->periodicityLengthX);
-        val = std::min_element(adeltas, adeltas + 3);
-        k = (int) std::distance(adeltas, val);
-        dx0 += (k - 1) * this->periodicityLengthX;
+        size_t numPer = this->modPeriodX.size(); // either 1 or 3
+        for (size_t j = 0; j < numPer; ++j) {
+            // modPeriodX could be {0, -360, 360}
+            adeltas0[j] = std::abs(dx0 + this->modPeriodX[j]);
+            adeltas1[j] = std::abs(dx1 + this->modPeriodX[j]);
+        }
 
-        adeltas[0] = std::abs(dx1 - this->periodicityLengthX);
-        adeltas[1] = std::abs(dx1);
-        adeltas[2] = std::abs(dx1 + this->periodicityLengthX);
-        val = std::min_element(adeltas, adeltas + 3);
-        k = (int) std::distance(adeltas, val);
-        dx1 += (k - 1) * this->periodicityLengthX;
+        val = std::min_element(adeltas0, adeltas0 + numPer);
+        k = (int) std::distance(adeltas0, val);
+        dx0 += this->modPeriodX[k];
+
+        val = std::min_element(adeltas1, adeltas1 + numPer);
+        k = (int) std::distance(adeltas1, val);
+        dx1 += this->modPeriodX[k];
 
         double cross = dx0*dy1 - dy0*dx1;
         if (cross < -tol) {
@@ -253,14 +262,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     vtkIdList* cellIds = vtkIdList::New();
 
-    std::vector<double> modPeriodX(1, 0.0);
-    // add periodicity coefficient if periodic
-    if (this->periodicityLengthX > 0.) {
-        modPeriodX.push_back(-this->periodicityLengthX);
-        modPeriodX.push_back(+this->periodicityLengthX);
-    }
-
-    for (double modPx : modPeriodX) {
+    for (double modPx : this->modPeriodX) {
 
         p0[0] = pBeg[0] + modPx;
         p1[0] = pEnd[0] + modPx;

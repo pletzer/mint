@@ -96,6 +96,7 @@ public:
     /**
      * Set the periodicity length in x
      * @param periodicityX length (0 means not periodic)
+     * @note this can be set after calling BuildLocator
      */
     void setPeriodicityLengthX(double periodicityX);
 
@@ -135,6 +136,8 @@ private:
     double xmax[3];
 
     double weights[8];
+
+    std::vector<double> modPeriodX;
 
     // 0 if not periodic
     double periodicityLengthX;
