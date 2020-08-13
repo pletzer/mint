@@ -54,7 +54,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     Vec3 xia, xib;
     double dist2;
     double weights[8];
-    for (auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLam : cellIdLambdas) {
 
         vtkIdType cId = cIdLam.first;
 
