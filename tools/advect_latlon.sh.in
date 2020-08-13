@@ -3,21 +3,22 @@
 export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
-NX=4
-NY=3
-#STREAM_FUNC="(sin((pi*(x-2*y))/360.)+sin((pi*(x+2*y))/360.))/2."
-#STREAM_FUNC="(cos((pi*(x-2*y))/360.)+cos((pi*(x+2*y))/360.))/2."
-#STREAM_FUNC="sin(pi*(x-321.)/(331.-321.))*(heaviside(y-0.,1.)-heaviside(y-81.,1.))*(heaviside(x-300,1.)-heaviside(x-310,1.))/(331.-321.)"
-xlo="225"
-xhi="315."
-ylo="(-91.)"
-yhi="(+91.)"
-sfuncx="heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.)" #"sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
-sfuncy="heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.)" #"sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
-STREAM_FUNC="($sfuncx)*($sfuncy)"
-U="0*x+90."
+NX=36
+NY=18
+
+# the stream function defining the 1-form, a bump
+xlo="180."
+xhi="360."
+ylo="(-90.)"
+yhi="(+90.)"
+sfuncx="sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
+sfuncy="sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
+
+# the flow
+U="0*x+10."
 V="0*x"
-NSTEPS="5"
+
+NSTEPS="100"
 DT=1
 
 
