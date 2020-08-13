@@ -7,18 +7,23 @@ NX=36
 NY=18
 
 # the stream function defining the 1-form, a bump
-xlo="180."
-xhi="360."
-ylo="(-90.)"
-yhi="(+90.)"
+xlo="250."
+xhi="290."
+ylo="(-60.)"
+yhi="(+30.)"
+# want the stream function to be continuous in value
 sfuncx="sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
 sfuncy="sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
+STREAM_FUNC="($sfuncx)*($sfuncy)"
 
-# the flow
+# constant flow
 U="0*x+10."
 V="0*x"
+# stream function -sin(pi*x/180)*cos(pi*y/180)
+#U="10*sin(pi*x/180.)*sin(pi*y/180.)"
+#V="10*cos(pi*x/180.)*cos(pi*y/180.)"
 
-NSTEPS="100"
+NSTEPS="36"
 DT=1
 
 
@@ -48,6 +53,14 @@ if [ $? != 0 ]; then
     exit 3
 fi
 
+# saving the grid in VTK file. NOTE the -r option, which turns off regularization for the lat lon grid
+echo "saving grid in VTK file grid.vtk..."
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -r -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
+if [ $? != 0 ]; then
+    echo "ERROR when running ugrid_reader.py"
+    exit 4
+fi
+
 
 echo "generate edge data on upstream grid..."
 python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g upstream.nc:physics -d upstream_data.nc \
@@ -58,8 +71,7 @@ if [ $? != 0 ]; then
 fi
 
 # step in time
-NSTEPS1=$(expr $NSTEPS - 1)
-for step in $(seq -f "%05g" 0 $NSTEPS1); do
+for step in $(seq -f "%05g" 0 $NSTEPS); do
 
     echo "step $step"
 
@@ -74,17 +86,11 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
         exit 4
     fi
 
-    # saving the grid in VTK file. NOTE the -r option, which turns off regularization for the lat lon grid
-    #echo "saving grid in VTK file grid.vtk..."
-    #python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -r -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
-    #if [ $? != 0 ]; then
-    #    echo "ERROR when running ugrid_reader.py"
-    #    exit 2
-    #fi
-
+    # single level
+    mv grid_${step}_0.vtk grid_${step}.vtk
        
     # convert field saved cell by cell to edge field with unique edge Ids                               
-    python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i grid_${step}_0.vtk -v edge_integrated_velocity -o edge_${step}.vtk
+    python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i grid_${step}.vtk -v edge_integrated_velocity -o edge_${step}.vtk
     if [ $? != 0 ]; then
         echo "ERROR when converting cell-by-cell field to edge field with unique edge Ids"
         exit 5
@@ -94,7 +100,9 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     cp data_${step}.nc upstream_data.nc
 done
 
-
+echo "grid with initial stream function and velocity field are in grid.vtk"
+echo "grid with time dependent loop integrals are in grid_*.vtk"
+echo "floating edges with projections are in edges_*.vtk"
 
 
 
