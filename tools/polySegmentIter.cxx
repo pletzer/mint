@@ -26,6 +26,7 @@ int main(int argc, char** argv) {
     args.set("-p1", std::string("360., 0."), "lon,lat end point");
     args.set("-S", 1, "Set to zero to disable source grid regularization, -S 0 is required for uniform lon-lat grid");
     args.set("-N", 10, "Average number of cells per bucket");
+    args.set("-P", 0., "Periodicity length (leave 0 if non-preiodic)");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -84,6 +85,7 @@ int main(int argc, char** argv) {
     loc->SetDataSet(ugrid);
     loc->SetNumberOfCellsPerBucket(args.get<int>("-N"));
     loc->BuildLocator();
+    loc->setPeriodicityLengthX(args.get<double>("-P"));
 
     PolysegmentIter psi(ugrid, loc, &p0[0], &p1[0]);
     size_t numSegs = psi.getNumberOfSegments();
