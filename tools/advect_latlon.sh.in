@@ -7,27 +7,26 @@ NX=36
 NY=18
 
 # the stream function defining the 1-form, a bump
-xlo="250."
-xhi="290."
-ylo="(-60.)"
-yhi="(+30.)"
+xlo="171."
+xhi="221."
+ylo="(-21.)"
+yhi="(81.)"
 # want the stream function to be continuous in value
 sfuncx="sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
 sfuncy="sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
 STREAM_FUNC="($sfuncx)*($sfuncy)"
 
 # constant flow
-U="0*x+10."
-V="0*x"
+#U="0*x+10."
+#V="0*x"
 # stream function -sin(pi*x/180)*cos(pi*y/180)
-#U="10*sin(pi*x/180.)*sin(pi*y/180.)"
-#V="10*cos(pi*x/180.)*cos(pi*y/180.)"
+U="10*sin(pi*x/180.)*sin(pi*y/180.)*cos(pi*y/180.)"
+V="10*cos(pi*x/180.)*cos(pi*y/180.)**2"
 
 NSTEPS="36"
 DT=1
 
 
-# generate grid.nc:physics grid
 echo "generate lat lon grid..."
 python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o "grid.nc:physics"
 if [ $? != 0 ]; then
@@ -35,7 +34,6 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-# push the grid upstream grid
 echo "push the grid upstream..."
 python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g "grid.nc:physics" -o upstream.nc -t $DT
 if [ $? != 0 ]; then
@@ -43,11 +41,20 @@ if [ $? != 0 ]; then
     exit 2
 fi
 
+# turn off regularization
+echo "save the upstream grid..."
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i upstream.nc:physics -r -V upstream.vtk -stream $STREAM_FUNC -u $U -v $V
+if [ $? != 0 ]; then
+    echo "ERROR when running ugrid_reader.py"
+    exit 2
+fi
+
+
 # compute the regridding weights, tell the grid it is periodic
 echo "compute the regridding weights"
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s "upstream.nc:physics" -S 0 \
                                       -d "grid.nc:physics" -D 0 \
-                                      -w weights.nc -N 128 -debug 2 -P 360
+                                      -w weights.nc -N 128 -debug 2 #-P 360
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 3
