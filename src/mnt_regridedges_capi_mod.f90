@@ -283,21 +283,6 @@ module mnt_regridedges_capi_mod
       integer(c_int)                           :: mnt_regridedges_print   
     end function mnt_regridedges_print
 
-    function mnt_regridedges_applyCellEdge(obj, src_data, dst_data) &
-                                           bind(C, name='mnt_regridedges_applyCellEdge')
-      ! Apply weights to cell by cell edge field
-      ! @param obj instance of mntRegridEdges_t (opaque handle)
-      ! @param src_data edge field defined cell by cell on the source grid (array of size 4*num_src_cells)
-      ! @param dst_data edge field defined cell by cell on the destination grid (array of size 4*num_dst_cells)
-      ! @return 0 if successful
-      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
-      implicit none
-      type(c_ptr), intent(inout)               :: obj ! void**
-      real(c_double), intent(in)               :: src_data(*)
-      real(c_double), intent(out)              :: dst_data(*)
-      integer(c_int)                           :: mnt_regridedges_applyCellEdge
-    end function mnt_regridedges_applyCellEdge
-
     function mnt_regridedges_apply(obj, src_data, dst_data) &
                                    bind(C, name='mnt_regridedges_apply')
       ! Apply weights to unique cell Id edge field
