@@ -30,7 +30,8 @@ int main() {
 
     int num_cells_per_bucket = 1;
     int debug = 2;
-    ier = mnt_regridedges_build(&rg, num_cells_per_bucket, debug);
+    double periodX = 0.;
+    ier = mnt_regridedges_build(&rg, num_cells_per_bucket, periodX, debug);
     assert(ier == 0);
 
     ier = mnt_regridedges_print(&rg);
