@@ -745,7 +745,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     // the two faces). edgeMultiplicity tracks the number of adjacent faces. 
     std::vector<int> edgeMultiplicity(numDstEdges, 0);
 
-    // add the contributions from each cell overlaps
+    // add the contributions from each cell overlap
     for (size_t i = 0; i < (*self)->weights.size(); ++i) {
 
         vtkIdType dstCellId = (*self)->weightDstCellIds[i];
