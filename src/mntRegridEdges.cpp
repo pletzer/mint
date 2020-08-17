@@ -20,8 +20,8 @@
  * Compute the interpolation weight between a source cell edge and a destination line segment
  * @param srcXi0 start point of src edge
  * @param srcXi1 end point of the src edge
- * @param dstXi0 start point of target line
- * @param dstXi1 end point of target line
+ * @param xia start point of target line
+ * @param xib end point of target line
  * @return interpolation weight
  */
 double computeWeight(const double srcXi0[], const double srcXi1[],
@@ -40,7 +40,7 @@ double computeWeight(const double srcXi0[], const double srcXi1[],
         double x = 0.5*(srcXi0[d] + srcXi1[d]);
 
         // use Lagrange interpolation to evaluate the basis function integral for
-        // any for the 3 possible x values in {0, 0.5, 1}. This formula will make 
+        // any of the 3 possible x values in {0, 0.5, 1}. This formula will make 
         // it easier to extend the code to 3d
         double xm00 = x;
         double xm05 = x - 0.5;
