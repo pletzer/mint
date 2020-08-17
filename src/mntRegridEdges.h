@@ -28,12 +28,8 @@ struct RegridEdges_t {
 
     // interpolation weights and corresponding src/dst grid cell
     // indices and edges indices
-    std::vector<vtkIdType> weightDstCellIds;
-    std::vector<int> weightDstFaceEdgeIds;
-
-    std::vector<vtkIdType> weightSrcCellIds;
-    std::vector<int> weightSrcFaceEdgeIds;
-
+    std::vector<vtkIdType> weightDstEdgeIds;
+    std::vector<vtkIdType> weightSrcEdgeIds;
     std::vector<double> weights;
 
     size_t numPointsPerCell;
@@ -258,17 +254,6 @@ int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, size_t* n);
  */
 extern "C"
 int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* n);
-
-/**
- * Apply interpolation weights to cell by cell field, each cell having four independent edges
- * @param src_data edge centred data on the source grid 
- * @param dst_data edge centred data on the destination grid
- * @return error code (0 is OK)
- * @note edges go anticlockwise
- */
-extern "C"
-int mnt_regridedges_applyCellEdge(RegridEdges_t** self, 
-	                              const double src_data[], double dst_data[]);
 
 /**
  * Apply interpolation weights to edge field with unique edge Ids

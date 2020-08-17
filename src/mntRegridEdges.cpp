@@ -22,8 +22,8 @@
  * Compute the interpolation weight between a source cell edge and a destination line segment
  * @param srcXi0 start point of src edge
  * @param srcXi1 end point of the src edge
- * @param dstXi0 start point of target line
- * @param dstXi1 end point of target line
+ * @param xia start point of target line
+ * @param xib end point of target line
  * @return interpolation weight
  */
 double computeWeight(const double srcXi0[], const double srcXi1[],
@@ -42,7 +42,7 @@ double computeWeight(const double srcXi0[], const double srcXi1[],
         double x = 0.5*(srcXi0[d] + srcXi1[d]);
 
         // use Lagrange interpolation to evaluate the basis function integral for
-        // any for the 3 possible x values in {0, 0.5, 1}. This formula will make 
+        // any of the 3 possible x values in {0, 0.5, 1}. This formula will make 
         // it easier to extend the code to 3d
         double xm00 = x;
         double xm05 = x - 0.5;
@@ -496,6 +496,8 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
 extern "C"
 int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug) {
 
+    int ier;
+
     // checks
     if (!(*self)->srcGrid) {
         std::cerr << "mnt_regridedges_build: ERROR must set source grid!\n";
@@ -525,10 +527,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     // reserve some space for the weights and their cell/edge id arrays
     size_t n = numDstCells * (*self)->numEdgesPerCell * 20;
     (*self)->weights.reserve(n);
-    (*self)->weightSrcFaceEdgeIds.reserve(n);
-    (*self)->weightDstFaceEdgeIds.reserve(n);
-    (*self)->weightSrcCellIds.reserve(n);
-    (*self)->weightDstCellIds.reserve(n);
+    (*self)->weightDstEdgeIds.reserve(n);
+    (*self)->weightSrcEdgeIds.reserve(n);
 
     double* srcGridBounds = (*self)->srcGrid->GetBounds();
     double srcLonMin = srcGridBounds[mnt_grid_getLonIndex()];
@@ -619,12 +619,15 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                     weight *= coeff;
 
                     if (std::abs(weight) > 1.e-15) {
-                        // only store the weights if they non-zero
-                        (*self)->weights.push_back(weight);
-                        (*self)->weightSrcCellIds.push_back(srcCellId);
-                        (*self)->weightSrcFaceEdgeIds.push_back(srcEdgeIndex);
-                        (*self)->weightDstCellIds.push_back(dstCellId);
-                        (*self)->weightDstFaceEdgeIds.push_back(dstEdgeIndex);
+                        // only store the weights if they are non-zero
+                        // DO WE HAVE TO WORRY ABOUT THE SIGN?
+                        size_t srcEdgeId, dstEdgeId;
+                        int srcEdgeSign, dstEdgeSign;
+                        ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
+                        ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
+                        (*self)->weights.push_back(weight * dstEdgeSign * srcEdgeSign);
+                        (*self)->weightDstEdgeIds.push_back(dstEdgeId);
+                        (*self)->weightSrcEdgeIds.push_back(srcEdgeId);
                     }
                 }
 
@@ -713,36 +716,6 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* nPtr) {
 }
 
 extern "C"
-int mnt_regridedges_applyCellEdge(RegridEdges_t** self, 
-                                  const double src_data[], double dst_data[]) {
-
-    // initialize the data to zero
-    size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
-    size_t n = numDstCells * (*self)->numEdgesPerCell;
-    for (size_t i = 0; i < n; ++i) {
-        dst_data[i] = 0.0;
-    }
-
-    // add the contributions from each cell overlaps
-    for (size_t i = 0; i < (*self)->weights.size(); ++i) {
-
-        vtkIdType dstCellId = (*self)->weightDstCellIds[i];
-        vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
-        int dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
-        int srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
-
-        // index into the flat array
-        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstCellId;
-        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
-
-        dst_data[dstK] += (*self)->weights[i] * src_data[srcK];
-
-    }
-
-    return 0;
-}
-
-extern "C"
 int mnt_regridedges_apply(RegridEdges_t** self, 
                           const double src_data[], double dst_data[]) {
 
@@ -769,37 +742,10 @@ int mnt_regridedges_apply(RegridEdges_t** self,
         dst_data[i] = 0.0;
     }
 
-    // number of faces sharing the same edge. As a result of the multivaluedness of the longitudes,
-    // each of the edges is treated independently (the longitude values may be different as seen from
-    // the two faces). edgeMultiplicity tracks the number of adjacent faces. 
-    std::vector<int> edgeMultiplicity(numDstEdges, 0);
-
-    // add the contributions from each cell overlaps
     for (size_t i = 0; i < (*self)->weights.size(); ++i) {
-
-        vtkIdType dstCellId = (*self)->weightDstCellIds[i];
-        vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
-        int dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
-        int srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
-
-        size_t srcEdgeId, dstEdgeId;
-        int srcEdgeSign, dstEdgeSign;
-        ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
-        ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
-
-        dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
-
-        // up to 2 faces can own this edge
-        edgeMultiplicity[dstEdgeId] = std::min(2, edgeMultiplicity[dstEdgeId] + 1);
-    }
-
-    for (size_t i = 0; i < numDstEdges; ++i) {
-
-        // there has been cases where edgeMultiplicity[i] is zero and so we need to guard 
-        // against a division by zero. I would expect in this case dst_data[i] to be also 
-        // zero but this would need to be checked! (edgeMultiplicity[i] is zero if the dst 
-        // edge lies outside the src domain)
-        dst_data[i] /= std::max(1, edgeMultiplicity[i]);
+        vtkIdType dstEdgeId = (*self)->weightDstEdgeIds[i];
+        vtkIdType srcEdgeId = (*self)->weightSrcEdgeIds[i];
+        dst_data[dstEdgeId] += (*self)->weights[i]*src_data[srcEdgeId];
     }
 
     return 0;
@@ -834,35 +780,21 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
 
     // should check that numEdgesPerCell and (*self)->numEdgesPerCell match
 
-    int dstCellIdsId, srcCellIdsId, dstFaceEdgeIdsId, srcFaceEdgeIdsId, weightsId;
+    int dstEdgeIdsId, srcEdgeIdsId, weightsId;
 
-    ier = nc_inq_varid(ncid, "dst_cell_ids", &dstCellIdsId);
+    ier = nc_inq_varid(ncid, "dst_edge_ids", &dstEdgeIdsId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"dst_cell_ids\"!\n";
+        std::cerr << "ERROR: could not get ID for var \"dst_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 3;
     }
-    ier = nc_inq_varid(ncid, "src_cell_ids", &srcCellIdsId);
+    ier = nc_inq_varid(ncid, "src_edge_ids", &srcEdgeIdsId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"src_cell_ids\"!\n";
+        std::cerr << "ERROR: could not get ID for var \"src_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 4;
-    }
-    ier = nc_inq_varid(ncid, "dst_face_edge_ids", &dstFaceEdgeIdsId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"dst_face_edge_ids\"!\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 5;
-    }
-    ier = nc_inq_varid(ncid, "src_face_edge_ids", &srcFaceEdgeIdsId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"src_face_edge_ids\"!\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 6;
     }
     ier = nc_inq_varid(ncid, "weights", &weightsId);
     if (ier != NC_NOERR) {
@@ -873,10 +805,8 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
     }
 
     (*self)->weights.resize(numWeights);
-    (*self)->weightDstCellIds.resize(numWeights);
-    (*self)->weightSrcCellIds.resize(numWeights);
-    (*self)->weightDstFaceEdgeIds.resize(numWeights);
-    (*self)->weightSrcFaceEdgeIds.resize(numWeights);
+    (*self)->weightDstEdgeIds.resize(numWeights);
+    (*self)->weightSrcEdgeIds.resize(numWeights);
 
     // read
     ier = nc_get_var_double(ncid, weightsId, &((*self)->weights)[0]);
@@ -886,35 +816,20 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
         nc_close(ncid);
         return 8;
     }
-    ier = nc_get_var_longlong(ncid, dstCellIdsId, &((*self)->weightDstCellIds)[0]);
+    ier = nc_get_var_longlong(ncid, dstEdgeIdsId, &((*self)->weightDstEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not read var \"dst_cell_ids\"!\n";
+        std::cerr << "ERROR: could not read var \"dst_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 9;
     }
-    ier = nc_get_var_longlong(ncid, srcCellIdsId, &((*self)->weightSrcCellIds)[0]);
+    ier = nc_get_var_longlong(ncid, srcEdgeIdsId, &((*self)->weightSrcEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"src_cell_ids\"!\n";
+        std::cerr << "ERROR: could not get ID for var \"src_edge_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 10;
     }
-    ier = nc_get_var_int(ncid, dstFaceEdgeIdsId, &((*self)->weightDstFaceEdgeIds)[0]);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"dst_face_edge_ids\"!\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 11;
-    }
-    ier = nc_get_var_int(ncid, srcFaceEdgeIdsId, &((*self)->weightSrcFaceEdgeIds)[0]);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not get ID for var \"src_face_edge_ids\"!\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 12;
-    }
-
     ier = nc_close(ncid);    
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not close file \"" << filename << "\"!\n";
@@ -954,15 +869,6 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         return 2;
     }    
 
-    int numEdgesPerCellId;
-    ier = nc_def_dim(ncid, "num_edges_per_cell", (*self)->numEdgesPerCell, &numEdgesPerCellId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define dimension \"num_edges_per_cell\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 2;
-    }
-
     int numWeightsId;
     ier = nc_def_dim(ncid, "num_weights", (int) numWeights, &numWeightsId);
     if (ier != NC_NOERR) {
@@ -973,59 +879,24 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     }
 
     // create variables
-    int paramCoordsAxis[] = {numEdgesPerCellId, numSpaceDimsId};
     int numWeightsAxis[] = {numWeightsId};
 
-    int edgeParamCoordBegId, edgeParamCoordEndId;
-    ier = nc_def_var(ncid, "edge_param_coord_beg", NC_DOUBLE, 2, paramCoordsAxis, &edgeParamCoordBegId);
+    int dstEdgeIdsId;
+    ier = nc_def_var(ncid, "dst_edge_ids", NC_INT64, 1, numWeightsAxis, &dstEdgeIdsId);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"edge_param_coord_beg\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 3;
-    }
-    ier = nc_def_var(ncid, "edge_param_coord_end", NC_DOUBLE, 2, paramCoordsAxis, &edgeParamCoordEndId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"edge_param_coord_end\"! ier = " << ier << "\n";
+        std::cerr << "ERROR: could not define variable \"dst_edge_ids\"! ier = " << ier << "\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 3;
     }
 
-    int dstCellIdsId;
-    ier = nc_def_var(ncid, "dst_cell_ids", NC_INT64, 1, numWeightsAxis, &dstCellIdsId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"dst_cell_ids\"! ier = " << ier << "\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 3;
-    }
-
-    int srcCellIdsId;
-    ier = nc_def_var(ncid, "src_cell_ids", NC_INT64, 1, numWeightsAxis, &srcCellIdsId);
+    int srcEdgeIdsId;
+    ier = nc_def_var(ncid, "src_edge_ids", NC_INT64, 1, numWeightsAxis, &srcEdgeIdsId);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not define variable \"src_cell_ids\"!\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 4;
-    }
-
-    int dstFaceEdgeIdsId;
-    ier = nc_def_var(ncid, "dst_face_edge_ids", NC_INT, 1, numWeightsAxis, &dstFaceEdgeIdsId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"dst_face_edge_ids\"!\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 5;
-    }
-
-    int srcFaceEdgeIdsId;
-    ier = nc_def_var(ncid, "src_face_edge_ids", NC_INT, 1, numWeightsAxis, &srcFaceEdgeIdsId);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not define variable \"src_face_edge_ids\"!\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 6;
     }
 
     int weightsId;
@@ -1046,62 +917,19 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         return 8;
     }
 
-    double edgeParamCoordBegs[(*self)->numEdgesPerCell * 3];
-    double edgeParamCoordEnds[(*self)->numEdgesPerCell * 3];
-    double* xiBeg;
-    double* xiEnd;
-    for (int e = 0; e < (*self)->numEdgesPerCell; ++e) {
-        (*self)->edgeConnectivity.getParamCoords(e, &xiBeg, &xiEnd);
-        for (size_t j = 0; j < 3; ++j) { // always 3d
-            edgeParamCoordBegs[e*3 + j] = xiBeg[j];
-            edgeParamCoordEnds[e*3 + j] = xiEnd[j];
-        }
-    }
-
-    // write
-    ier = nc_put_var_double(ncid, edgeParamCoordBegId, edgeParamCoordBegs);
+    ier = nc_put_var_longlong(ncid, dstEdgeIdsId, &((*self)->weightDstEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"edge_param_coord_beg\"\n";
+        std::cerr << "ERROR: could not write variable \"dst_edge_ids\"\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 9;
     }
-
-    ier = nc_put_var_double(ncid, edgeParamCoordEndId, edgeParamCoordEnds);
+    ier = nc_put_var_longlong(ncid, srcEdgeIdsId, &((*self)->weightSrcEdgeIds)[0]);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"edge_param_coord_end\"\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 9;
-    }
-
-    ier = nc_put_var_longlong(ncid, dstCellIdsId, &((*self)->weightDstCellIds)[0]);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"dst_cell_ids\"\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 9;
-    }
-    ier = nc_put_var_longlong(ncid, srcCellIdsId, &((*self)->weightSrcCellIds)[0]);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"src_cell_ids\"\n";
+        std::cerr << "ERROR: could not write variable \"src_edge_ids\"\n";
         std::cerr << nc_strerror (ier);
         nc_close(ncid);
         return 10;
-    }
-    ier = nc_put_var_int(ncid, dstFaceEdgeIdsId, &((*self)->weightDstFaceEdgeIds)[0]);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"dst_face_edge_ids\"\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 10;
-    }
-    ier = nc_put_var_int(ncid, srcFaceEdgeIdsId, &((*self)->weightSrcFaceEdgeIds)[0]);
-    if (ier != NC_NOERR) {
-        std::cerr << "ERROR: could not write variable \"src_face_edge_ids\"\n";
-        std::cerr << nc_strerror (ier);
-        nc_close(ncid);
-        return 11;
     }
     ier = nc_put_var_double(ncid, weightsId, &((*self)->weights)[0]);
     if (ier != NC_NOERR) {
@@ -1153,24 +981,16 @@ int mnt_regridedges_getDstEdgePoints(RegridEdges_t** self, size_t cellId, int ie
 
 extern "C"
 int mnt_regridedges_print(RegridEdges_t** self) {
+
+    printf("dstEdgeId          srcEdgeId          weight\n");
     size_t numWeights = (*self)->weights.size();
-    std::cout << "edge to vertex connectivity:\n";
-    for (int faceEdgeId = 0; 
-         faceEdgeId < (*self)->edgeConnectivity.getNumberOfEdges(); 
-         ++faceEdgeId) {
-        int i0, i1;
-        (*self)->edgeConnectivity.getCellPointIds(faceEdgeId, &i0, &i1);
-        std::cout << "edge " << faceEdgeId << ": " << i0 << "->" << i1 << '\n';
-    }
-    std::cout << "Number of weights: " << numWeights << '\n';
-    printf("                 dst_cell  dst_face_edge     src_cell  src_face_edge       weight\n");
     for (size_t i = 0; i < numWeights; ++i) {
-    printf("%10ld       %8lld         %1d          %8lld         %1d   %15.5lg\n", 
-               i, 
-               (*self)->weightDstCellIds[i], (*self)->weightDstFaceEdgeIds[i], 
-               (*self)->weightSrcCellIds[i], (*self)->weightSrcFaceEdgeIds[i],
-               (*self)->weights[i]);
+        vtkIdType dstEdgeId = (*self)->weightDstEdgeIds[i];
+        vtkIdType srcEdgeId = (*self)->weightSrcEdgeIds[i];
+        double weight = (*self)->weights[i];
+        printf("%10lld      %10lld       %15.5lg\n", dstEdgeId, srcEdgeId, weight);
     }
+
     return 0;
 }
 
