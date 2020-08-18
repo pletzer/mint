@@ -20,6 +20,8 @@ parser.add_argument('-o', dest='output_file', default='',
                     help='Specify the output netcdf file containing the upstream coordinates and the velocity')
 parser.add_argument('-P', dest='periodicityLength', default=360., 
                     help='Periodicity length in x (set to zero if non-periodic)')
+parser.add_argument('-C', dest='clip', action='store_true', 
+                    help='Whether NOT to clip the latitudes in range [-90, 90]')
 args = parser.parse_args()
 
 if len(args.grid_file) == 0:
@@ -161,8 +163,9 @@ yUpstream = xyUpstream[1, numPoints:]
 #xUpstream += (xUpstream < 0.) * args.periodicityLength
 #xUpstream -= (xUpstream > args.periodicityLength) * args.periodicityLength
 
-# make sure the latitudes are within [-90, 90]
-numpy.clip(yUpstream, -90., 90., out=yUpstream)
+if not args.clip:
+	# make sure the latitudes are within [-90, 90]
+	numpy.clip(yUpstream, -90., 90., out=yUpstream)
 
 # save the new coordinates
 xVarUp = ncUp.createVariable(xNameUp, 'f8', (numPointsDimName,))

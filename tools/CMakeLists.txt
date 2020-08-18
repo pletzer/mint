@@ -5,6 +5,7 @@ include_directories(
 
 configure_file(advect_shock.sh.in advect_shock.sh @ONLY)
 configure_file(advect_latlon.sh.in advect_latlon.sh @ONLY)
+configure_file(advect_latlon_pole.sh.in advect_latlon_pole.sh @ONLY)
 configure_file(advect_cubedsphere.sh.in advect_cubedsphere.sh @ONLY)
 configure_file(advect_cubedsphere_periodic.sh.in advect_cubedsphere_periodic.sh @ONLY)
 configure_file(advect_cubedsphere2.sh.in advect_cubedsphere2.sh @ONLY)
