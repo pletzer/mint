@@ -42,7 +42,7 @@ double computeWeight(const double srcXi0[], const double srcXi1[],
         double x = 0.5*(srcXi0[d] + srcXi1[d]);
 
         // use Lagrange interpolation to evaluate the basis function integral for
-        // any for the 3 possible x values in {0, 0.5, 1}. This formula will make 
+        // any of the 3 possible x values in {0, 0.5, 1}. This formula will make 
         // it easier to extend the code to 3d
         double xm00 = x;
         double xm05 = x - 0.5;
@@ -710,36 +710,6 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* nPtr) {
     }
     int ier = mnt_grid_getNumberOfEdges(&((*self)->dstGridObj), nPtr);
     return ier;
-}
-
-extern "C"
-int mnt_regridedges_applyCellEdge(RegridEdges_t** self, 
-                                  const double src_data[], double dst_data[]) {
-
-    // initialize the data to zero
-    size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
-    size_t n = numDstCells * (*self)->numEdgesPerCell;
-    for (size_t i = 0; i < n; ++i) {
-        dst_data[i] = 0.0;
-    }
-
-    // add the contributions from each cell overlaps
-    for (size_t i = 0; i < (*self)->weights.size(); ++i) {
-
-        vtkIdType dstCellId = (*self)->weightDstCellIds[i];
-        vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
-        int dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
-        int srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
-
-        // index into the flat array
-        size_t dstK = dstEdgeIndex + (*self)->numEdgesPerCell * dstCellId;
-        size_t srcK = srcEdgeIndex + (*self)->numEdgesPerCell * srcCellId;
-
-        dst_data[dstK] += (*self)->weights[i] * src_data[srcK];
-
-    }
-
-    return 0;
 }
 
 extern "C"
