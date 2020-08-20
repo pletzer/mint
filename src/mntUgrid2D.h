@@ -175,28 +175,6 @@ void buildLocator(int avgNumFacesPerBucket);
  */
 std::set<size_t> findCellsAlongLine(const Vec3& point0,
                                     const Vec3& point1) const;
-/**
- * Set the cell nodes
- * @param cellId cell Id
- * @note use this prior to computing the parametric coordinates or interpolating 
- */
-void setCellPoints(size_t cellId);
-
-/**
- * Get the parametric coordinates of a point in a face/cell
- * @param point point
- * @param pcoords parametric coordinates (output)
- * @return true if the point is in the cell, false otherwise
- */
-bool getParamCoords(const Vec3& point, double pcoords[]);
-
-/**
- * Interpolate a point in cell
- * @param pcoords parametric coordinates
- * @param point point (output)
- */
-void interpolate(const Vec3& pcoords, double point[]);
-
 
 private:
 

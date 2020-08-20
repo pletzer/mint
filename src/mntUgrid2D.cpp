@@ -467,33 +467,6 @@ Ugrid2D::findCellsAlongLine(const Vec3& point0,
 }
 
 void
-Ugrid2D::setCellPoints(size_t cellId) {
-    std::vector<Vec3> nodes = this->getFacePointsRegularized(cellId);
-    for (size_t i = 0; i < nodes.size(); ++i) {
-        this->cellPoints->SetPoint(i, &nodes[i][0]);
-    }
-    this->cell->Initialize(nodes.size(), this->cellPoints);
-}
-
-bool
-Ugrid2D::getParamCoords(const Vec3& point, double pcoords[]) {
-    double closestPoint[3];
-    int subId;
-    double dist2;
-    double weights[8];
-    int inside = this->cell->EvaluatePosition((double*) &point[0], closestPoint, subId, pcoords, dist2, weights);
-    return (inside > 0); // 0 is outside, -1 numerical problem
-}
-
-void 
-Ugrid2D::interpolate(const Vec3& pcoords, double point[]) {
-    int subId = 0;
-    double weights[8]; // not used
-    this->cell->EvaluateLocation(subId, (double*) &pcoords[0], point, weights);
-}
-
-
-void
 Ugrid2D::dumpGridVtk(const std::string& filename) {
     std::ofstream f;
     f.open(filename);
