@@ -5,7 +5,6 @@ include_directories(
 )
 
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
-configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testNcAttributes.cpp testNcAttributes.cxx)
 configure_file(testNcDimensions.cpp testNcDimensions.cxx)
@@ -72,13 +71,6 @@ target_link_libraries(testVecMat
                       mint
                       ${VTK_LIBRARIES}
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
-
-add_executable(testUgridLocator testUgridLocator.cxx)
-target_link_libraries(testUgridLocator
-                    mint
-                    ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testNetcdf testNetcdf.cxx)
@@ -259,7 +251,6 @@ set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
 add_test(NAME vecMat COMMAND testVecMat)
-add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)
 add_test(NAME dimensions COMMAND testNcDimensions)

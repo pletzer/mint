@@ -57,32 +57,6 @@ Ugrid2D::getEdgePoints(size_t edgeId) const {
     return res;
 }
 
-bool 
-Ugrid2D::containsPoint(size_t faceId, const Vec3& point, double tol) const {
-
-    tol = std::abs(tol);
-    bool res = true;
-    double circ = 0;
-    std::vector<Vec3> vertices = getFacePointsRegularized(faceId);
-    for (size_t i0 = 0; i0 < 4; ++i0) {
-
-        size_t i1 = (i0 + 1) % 4;
-
-        // vector from point to the vertices
-        double d0[] = {point[0] - vertices[i0][0], point[1] - vertices[i0][1]};
-        double d1[] = {point[0] - vertices[i1][0], point[1] - vertices[i1][1]};
-
-        double cross = d0[0]*d1[1] - d0[1]*d1[0];
-
-        if (cross < -tol) {
-            // negative area
-            res = false;
-        }
-    }
-
-    return res;
-}
-
 void
 Ugrid2D::getRange(double xMin[], double xMax[]) const {
     for (size_t i = 0; i < NUM_SPACE_DIMS; ++i) {
@@ -431,19 +405,6 @@ Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
 
 }
 
-bool
-Ugrid2D::findCell(const Vec3& point, double tol, size_t* faceId) const {
-
-    int bucketId = this->getBucketId(point);
-    const std::vector<size_t>& faces = this->bucket2Faces.find(bucketId)->second;
-    for (const size_t& cId : faces) {
-        if (this->containsPoint(cId, point, tol)) {
-            *faceId = cId;
-            return true;
-        }
-    }
-    return false;
-}
 
 std::set<size_t> 
 Ugrid2D::findCellsAlongLine(const Vec3& point0,

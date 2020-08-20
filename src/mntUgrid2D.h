@@ -142,15 +142,6 @@ std::vector<Vec3> getEdgePointsRegularized(size_t edgeId) const;
 std::vector<Vec3> getFacePointsRegularized(size_t faceId) const;
 
 /**
- * Is point inside face?
- * @param faceId face Id
- * @param point point
- * @param tol tolerance
- * @return true/false
- */
-bool containsPoint(size_t faceId, const Vec3& point, double tol) const;
-
-/**
  * Get min/max range of the domain
  * @param xmin low point of the domain (output)
  * @param xmax high point of the domain (output)
@@ -175,15 +166,6 @@ std::vector<Vec3> getEdgePoints(size_t edgeId) const;
  * @param avgNumFacesPerBucket approximate number of faces per bucket
  */
 void buildLocator(int avgNumFacesPerBucket);
-
-/**
- * Find the cell that contains a point
- * @param point target point
- * @param tol tolerance
- * @param cellId cellId (output)
- * @return true if a cell was found, false otherwise
- */
-bool findCell(const Vec3& point, double tol, size_t* cellId) const;
 
 /**
  * Find all the cells that are intesected by a line
