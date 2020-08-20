@@ -99,8 +99,9 @@ gridVarOut = ncOut.createVariable(gridOutName, 'i4')
 
 # save Outstream grid
 for attrName in ncGridVar.ncattrs():
-    attrVal = getattr(ncGridVar, attrName)
-    setattr(gridVarOut, attrName, attrVal)
+    if attrName != "face_coordinates":
+        attrVal = getattr(ncGridVar, attrName)
+        setattr(gridVarOut, attrName, attrVal)
 
 # new coordinates
 xNameOut = 'xcart'
