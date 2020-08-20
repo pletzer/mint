@@ -3,43 +3,6 @@
 #include <cmath>
 #undef NDEBUG // turn on asserts
 
-void testLineGridIntersections(const Vec3& pBeg,
-                               const Vec3& pEnd) {
-
-    std::string file = "@CMAKE_SOURCE_DIR@/data/cs_4.nc";
-
-    Ugrid2D ug;
-
-    int ier = ug.load(file, "physics");
-    assert(ier == 0);
-
-    ug.buildLocator(10);
-
-    std::cout << "testLineGridIntersections: " << pBeg << " -> " << pEnd << '\n';
-
-    std::vector< std::pair<size_t, std::vector<double> > > 
-                      cIdlambdas = ug.findIntersectionsWithLine(pBeg, pEnd);
-
-    Vec3 u = pEnd - pBeg;
-
-    // check that all the lambda intervals add to one
-    double totLambda = 0;
-    printf("  cell      lambdaBeg       lambdaEnd\n");
-    for (const std::pair< size_t, std::vector<double> >& kv : cIdlambdas) {
-        size_t cellId = kv.first;
-        double lambdaBeg = kv.second[0];
-        double lambdaEnd = kv.second[1];
-        printf("%6ld     %10.6lf      %10.6lf\n", cellId, lambdaBeg, lambdaEnd);
-        totLambda += lambdaEnd - lambdaBeg;
-        // make sure the start and end points are inside the cell
-        Vec3 p0 = pBeg + lambdaBeg*u;
-        assert(ug.containsPoint(cellId, p0, 1.e-10));
-        Vec3 p1 = pBeg + lambdaEnd*u;
-        assert(ug.containsPoint(cellId, p1, 1.e-10));    
-    }
-    std::cout << "total integrated lambda: " << totLambda << '\n';
-    assert(std::abs(totLambda - 1.) < 1.e-10);
-}
 
 void testPointInside() {
 
@@ -267,44 +230,6 @@ int main() {
     p0[0] = 360.; p0[1] =  67.;
     p1[0] =   0.; p1[1] = -67.;
     testLine(p0, p1);
-
-    // because of the coarse cubed-sphere dicretization some paths may 
-    // fall out of the domain even when longitude is in [0, 360] and 
-    // latitude is in [-90, 90]. At some places 67 deg is the max latitude.
-
-    p0[0] = 360.; p0[1] =  67.;
-    p1[0] =   0.; p1[1] = -67.;
-    testLineGridIntersections(p0, p1);
-
-    p0[0] =  90.; p0[1] = -90.;
-    p1[0] =  90.; p1[1] = -90.;
-    testLineGridIntersections(p0, p1);    
-
-    p0[0] =  90.; p0[1] = -90.;
-    p1[0] = 270.; p1[1] =  90.;
-    testLineGridIntersections(p0, p1);    
-
-    p0[0] =  90.; p0[1] = -90.;
-    p1[0] =  90.; p1[1] =  90.;
-    testLineGridIntersections(p0, p1);    
-
-    p0[0] =  12.3; p0[1] = -67.;
-    p1[0] =  12.3; p1[1] =  67.;
-    testLineGridIntersections(p0, p1);    
-
-    p0[0] =   0.; p0[1] = -67.;
-    p1[0] = 360.; p1[1] =  67.;
-    testLineGridIntersections(p0, p1);
-
-    p0[0] =   0.; p0[1] = 0.;
-    p1[0] = 360.; p1[1] = 0.;
-    testLineGridIntersections(p0, p1);    
-
-    p0[0] =   0.; p0[1] = -67.;
-    testPoint(p0);
-    p1[0] =  10.; p1[1] = -50.;
-    testPoint(p1);
-    testLineGridIntersections(p0, p1);
 
     testPointInside();
     testPointOutside();

@@ -531,52 +531,6 @@ Ugrid2D::interpolate(const Vec3& pcoords, double point[]) {
     this->cell->EvaluateLocation(subId, (double*) &pcoords[0], point, weights);
 }
 
-std::vector< std::pair<size_t, std::vector<double> > >
-Ugrid2D::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
-
-    // store result
-    std::vector< std::pair<size_t, std::vector<double> > > res;
-
-    // linear parameter on entry and exit of the cell
-    std::pair<double, double> lamdas;
-
-    // collect the cells intersected by the line
-    std::set<size_t> cells = this->findCellsAlongLine(pBeg, pEnd);
-
-    // iterate over the intersected cells
-    for (const size_t& cellId : cells) {
-
-        std::vector<double> lambdas = this->collectIntersectionPoints(cellId, pBeg, pEnd);
-
-        if (lambdas.size() >= 2) {
-            // found entry/exit points so add
-            res.push_back( 
-                std::pair<size_t, std::vector<double> >(
-                     cellId, std::vector<double>{lambdas[0], lambdas[lambdas.size() - 1]}
-                                                       )
-                         );
-        }
-    }
-
-    // sort by starting lambda
-    std::sort(res.begin(), res.end(), LambdaBegFunctor());
-
-    // to avoid double counting, shift lambda entry to be always >= to 
-    // the preceding lambda exit and make sure lambda exit >= lambda entry
-    for (size_t i = 1; i < res.size(); ++i) {
-
-        double thisLambdaBeg = res[i].second[0];
-        double thisLambdaEnd = res[i].second[1];
-        double precedingLambdaEnd = res[i - 1].second[1];
-
-        thisLambdaBeg = std::min(thisLambdaEnd, std::max(thisLambdaBeg, precedingLambdaEnd));
-
-        // reset lambda entry
-        res[i].second[0] = thisLambdaBeg;
-    }
-
-    return res;
-}
 
 std::vector<double>
 Ugrid2D::collectIntersectionPoints(size_t cellId, 

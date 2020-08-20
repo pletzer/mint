@@ -215,16 +215,6 @@ bool getParamCoords(const Vec3& point, double pcoords[]);
  */
 void interpolate(const Vec3& pcoords, double point[]);
 
-/**
- * Find the intersections of the grid with a line
- * @param pBeg start point of the line
- * @param pEnd end point of the line
- * @return array of [faceId, (lambda0, lambda1)] elements where lambda{0,1} are the 
- *         start/end linear parameters of the line
- */
-std::vector< std::pair<size_t, std::vector<double> > >
-findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
-
 
 private:
 
@@ -259,8 +249,8 @@ private:
     vtkQuad* cell;
 
     int readConnectivityData(int ncid, int meshid, 
-		                     const std::string& role,
-		                     std::vector<size_t>& data);
+                             const std::string& role,
+                             std::vector<size_t>& data);
 
     int readPoints(int ncid, int meshid);
 
@@ -313,7 +303,7 @@ private:
      * @note expect either 0 (no intersection) or 2 values (intersection) to be returned.
      *       start/end points qualify as intersection if they fall into the cell
      */
-	std::vector<double> collectIntersectionPoints(size_t cellId, 
+    std::vector<double> collectIntersectionPoints(size_t cellId, 
                                                   const Vec3& pBeg,
                                                   const Vec3& pEnd);
 
