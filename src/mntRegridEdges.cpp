@@ -1093,35 +1093,6 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
 }
 
 extern "C"
-int mnt_regridedges_getSrcEdgePoints(RegridEdges_t** self, size_t cellId, int ie,
-                                     int* circSign, double p0[], double p1[]) {
-    vtkIdType cId = (vtkIdType) cellId;
-    int ier = mnt_grid_getPoints(&(*self)->srcGridObj, cId, ie, p0, p1);
-    
-    // orientation for loop integral is counterclockwise
-    // the first two edges are the direction of the contour
-    // integral, the last two are in opposite direction
-    *circSign = 1 - 2*(ie / 2); 
-
-    return ier;
-}
-
-extern "C"
-int mnt_regridedges_getDstEdgePoints(RegridEdges_t** self, size_t cellId, int ie,
-                                     int* circSign, double p0[], double p1[]) {
-
-    vtkIdType cId = (vtkIdType) cellId;
-    int ier = mnt_grid_getPoints(&(*self)->dstGridObj, cId, ie, p0, p1);
-    
-    // orientation for loop integral is counterclockwise
-    // the first two edges are the direction of the contour
-    // integral, the last two are in opposite direction
-    *circSign = 1 - 2*(ie / 2); 
-
-    return ier;
-}
-
-extern "C"
 int mnt_regridedges_print(RegridEdges_t** self) {
     size_t numWeights = (*self)->weights.size();
     std::cout << "edge to vertex connectivity:\n";

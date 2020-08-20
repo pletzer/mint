@@ -293,32 +293,6 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
                                 const char* fort_filename, int n);
 
 /**
- * Get the source grid edge sign and points
- * @param cellId source cell Id
- * @param ie edge index (running in the counterclockwise direction)
- * @param circSign orientation of the edge with respect to the counterclockwise direction
- * @param p0 start point of the edge, modulo 360 deg in longitude
- * @param p1 end point of the edge, modulo 360 deg in longitude
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_getSrcEdgePoints(RegridEdges_t** self, size_t cellId, int ie,
-                                     int* circSign, double p0[], double p1[]);
-
-/**
- * Get the destination grid edge sign and points
- * @param cellId destination cell Id
- * @param ie edge index (running in the counterclockwise direction)
- * @param circSign orientation of the edge with respect to the counterclockwise direction
- * @param p0 start point of the edge, modulo 360 deg in longitude
- * @param p1 end point of the edge, modulo 360 deg in longitude
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_getDstEdgePoints(RegridEdges_t** self, size_t cellId, int ier,
-                                     int* circSign, double p0[], double p1[]);
-
-/**
  * Print the weights
  * @return error code (0 is OK)
  */

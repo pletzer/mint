@@ -4,9 +4,9 @@ export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
 # Bump stream function. The stream function here does not correspond to the u, v field
-xlo="73.2"
+xlo="23.2"
 xhi="85.7"
-ylo="(-41.1)"
+ylo="(-21.1)"
 yhi="3.2"
 sfuncx="sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
 sfuncy="sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
