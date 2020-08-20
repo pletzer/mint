@@ -294,19 +294,6 @@ private:
         *n = bucketId % this->numBucketsX;
     }
 
-    /**
-     * Collect the intersection points between line and cell
-     * @param cellId cell Id
-     * @param pBeg start point of the line
-     * @param pEnd end point of the line
-     * @return array of line parameter coordinates in increasing order
-     * @note expect either 0 (no intersection) or 2 values (intersection) to be returned.
-     *       start/end points qualify as intersection if they fall into the cell
-     */
-    std::vector<double> collectIntersectionPoints(size_t cellId, 
-                                                  const Vec3& pBeg,
-                                                  const Vec3& pEnd);
-
 };
 
 #endif // MNT_UGRID_2D
