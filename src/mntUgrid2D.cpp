@@ -12,6 +12,11 @@
 #define LAT_INDEX 1
 #define ELV_INDEX 2
 
+#define X_INDEX 0
+#define Y_INDEX 1
+#define Z_INDEX 2
+
+
 struct LambdaBegFunctor {
     // compare two elements of the array
     bool operator()(const std::pair<size_t, std::vector<double> >& x, 
@@ -287,6 +292,16 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         else if (var_stdn == "latitude") {
             j = LAT_INDEX;
         }
+        else if (var_stdn == "x-coordinate in Cartesian system") {
+            j = X_INDEX;
+            this->isCartesian = true;
+        }
+        else if (var_stdn == "y-coordinate in Cartesian system") {
+            j = Y_INDEX;
+        }
+        else if (var_stdn == "z-coordinate in Cartesian system") {
+            j = Z_INDEX;
+        }
         else {
             std::cerr << "ERROR: unknown coordinate with standard_name \""
             << var_stdn << "\"\n";
@@ -304,6 +319,10 @@ std::vector<Vec3>
 Ugrid2D::getFacePointsRegularized(size_t faceId) const {
 
     std::vector<Vec3> res = this->getFacePoints(faceId);
+
+    if (this->isCartesian) {
+        return res;
+    }
 
     // regularize
     for (size_t i = 1; i < res.size(); ++i) {

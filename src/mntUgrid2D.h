@@ -23,6 +23,7 @@ public:
  * Constructor
  */
 Ugrid2D() {
+	this->isCartesian = false;
 }
 
 /**
@@ -183,6 +184,8 @@ private:
     int readPoints(int ncid, int meshid);
 
     void fixPeriodicity();
+
+    bool isCartesian;
 
 };
 
