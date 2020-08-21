@@ -197,11 +197,18 @@ class UgridReaderXYZ(ReaderBase):
             print('setting edge field "{}"'.format(vname))
             self.setEdgeField(vname, cData)
 
-
-
         nc.close()
 
-            
+    def getLonLat(self):
+        """
+        Get the longitudes and latitudes as separate arrays
+        @return lon and lat arrays of size (numCells, 4)
+        """
+        xyz = self.vtk['pointArray'].reshape((self.getNumberOfCells(), 4, 3))
+        rho = numpy.sqrt(xyz[..., 0]**2 + xyz[..., 1]**2)
+        lats = numpy.arctan2(xyz[..., 2], rho) * 180./numpy.pi
+        lons = numpy.arctan2(xyz[..., 1], xyz[..., 0]) * 180./numpy.pi
+        return lons, lats
 
 
 
