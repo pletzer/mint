@@ -261,6 +261,9 @@ add_test(NAME ugrid2D_1 COMMAND testUgrid2D
 add_test(NAME ugrid2D_2 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/output_UGRID.nc:Mesh2d"
                         "-vtk" "output_UGRID.vtk")
+add_test(NAME ugrid2D_xyz COMMAND testUgrid2D 
+                        "-s" "${CMAKE_SOURCE_DIR}/data/cs_4_xyz.nc:physics"
+                        "-vtk" "cs_4_xyz.vtk")
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
