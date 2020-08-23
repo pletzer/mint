@@ -11,7 +11,7 @@ void test1() {
     double q0[] = {1., -1.};
     double q1[] = {1., 2.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     Vec2 xi = lli.getSolution();
     assert(abs(xi[0] - 1./2.) < tol);
     assert(abs(xi[1] - 1./3.) < tol);
@@ -25,7 +25,7 @@ void test2() {
     double q0[] = {0., 0.};
     double q1[] = {1., 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
@@ -39,7 +39,7 @@ void test3() {
     double q0[] =   {0., 1.};
     double q1[] =   {1., 1.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(! lli.hasSolution(tol));
@@ -54,7 +54,7 @@ void testNoOverlap() {
     double q0[] =   {-2., 0.};
     double q1[] =   {-1., 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(! lli.hasSolution(tol));
@@ -69,7 +69,7 @@ void testNoOverlap2() {
     double q0[] =   {-2., 0.};
     double q1[] =   {-1., 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(! lli.hasSolution(tol));
@@ -84,7 +84,7 @@ void testPartialOverlap() {
     double q0[] =  {-2., 0.};
     double q1[] =  {0.5, 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
@@ -117,7 +117,7 @@ void testPartialOverlap2() {
     double q0[] =  {0.1, 0.};
     double q1[] =  {M_PI , 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(std::abs(det) < tol);
     assert(lli.hasSolution(tol));
@@ -149,7 +149,7 @@ void testPartialOverlap3() {
     double q0[] =   {0.1, 0.};
     double q1[] =   {M_PI , 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
@@ -181,7 +181,7 @@ void testQInsideP() {
     double q0[] =   {0.1, 0.};
     double q1[] =   {0.8, 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
@@ -212,7 +212,7 @@ void testPInsideQ() {
     double q0[] =   {0., 0.};
     double q1[] =   {1., 0.};
     LineLineIntersector lli;
-    lli.setPoints(p0, p1, q0, q1);
+    lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));

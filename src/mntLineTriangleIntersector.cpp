@@ -123,9 +123,9 @@ LineTriangleIntersector::computeBegEndParamCoords() {
         lamVals.push_back(1.0);
     }
 
-    llA.setPoints(&pxi0[0], &pxi1[0], qxi0, qxi1);
-    llB.setPoints(&pxi0[0], &pxi1[0], qxi1, qxi2);
-    llC.setPoints(&pxi0[0], &pxi1[0], qxi2, qxi0);
+    llA.setPoints(2, &pxi0[0], &pxi1[0], qxi0, qxi1);
+    llB.setPoints(2, &pxi0[0], &pxi1[0], qxi1, qxi2);
+    llC.setPoints(2, &pxi0[0], &pxi1[0], qxi2, qxi0);
 
     Vec2 sol;
 

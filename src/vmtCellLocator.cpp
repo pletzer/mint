@@ -363,7 +363,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
         double* p0 = &nodes[i0][0];
         double* p1 = &nodes[i1][0];
 
-        intersector.setPoints(&pBeg[0], &pEnd[0], &p0[0], &p1[0]);
+        intersector.setPoints(2, &pBeg[0], &pEnd[0], &p0[0], &p1[0]);
 
         if (! intersector.hasSolution(eps)) {
             // no solution, skip
