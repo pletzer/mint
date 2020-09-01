@@ -12,8 +12,8 @@
 
 int main() {
 
-    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics";
-    std::string dstFile = "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics";
+    std::string srcFile = "/Users/pletzera/mint-dev/data/tiny1x1.nc:physics";
+    std::string dstFile = "/Users/pletzera/mint-dev/data/tiny1x1.nc:physics";
 
 
     RegridEdges_t* rg;

@@ -3,19 +3,18 @@
 export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
+#STREAM_FUNC="(sin((pi*(x-2*y))/360.)+sin((pi*(x+2*y))/360.))/2."
+#STREAM_FUNC="(cos((pi*(x-2*y))/360.)+cos((pi*(x+2*y))/360.))/2."
+#U="0*x+10."
+#V="0*x"
+#U="2*(cos(pi*(x-y)/360.)-cos(pi*(x+y)/360.))"
+#V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
+#
 # Bump stream function. The stream function here does not correspond to the u, v field
-xlo="23.2"
-xhi="85.7"
-ylo="(-21.1)"
-yhi="3.2"
-sfuncx="sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
-sfuncy="sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
-STREAM_FUNC="($sfuncx)*($sfuncy)"
-
-# u,v vector field that advects
-U="100*cos(pi*y/180)*((pi*cos((pi*(x-y-43))/180.))/180.-(pi*cos((pi*(x+y-43))/180.))/180.)/2."
-V="100*cos(pi*y/180)*((pi*cos((pi*(x-y-43))/180.))/180.+(pi*cos((pi*(x+y-43))/180.))/180.)/2."
-NSTEPS="200"
+STREAM_FUNC="sin(pi*(x-155.)/(167.-155.))*(heaviside(y+27.,1.)-heaviside(y-63.,1.))*(heaviside(x-155.,1.)-heaviside(x-167.,1.))/(167.-155.)"
+U="(100*2*pi/180)*cos(pi*y/180)*sin(pi*y/180)*sin(2*pi*x/360)**2"
+V="(100*pi/360)*cos(pi*y/180)**2*cos(2*pi*x/360)*sin(2*pi*x/360)"
+NSTEPS="100"
 DT=1
 
 
@@ -34,7 +33,7 @@ cp input_data.nc input_data_initial.nc
 
 # saving the grid in VTK file
 echo "saving grid in VTK file grid.vtk..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk -stream $STREAM_FUNC -u $U -v $V
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
@@ -51,7 +50,7 @@ fi
 # compute the regridding weights
 @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
                                       -d "upstream.nc:physics" -D 1 \
-                                      -w weights.nc -N 128 -debug 2 -P 360.
+                                      -w weights.nc -N 128 -debug 2 -P 360
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
     exit 4

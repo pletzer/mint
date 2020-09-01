@@ -217,10 +217,12 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
 /**
  * Build the regridder
  * @param numCellsPerBucket average number of cells per bucket
+ * @param periodX periodicity length (set to 0 if non-periodic)
+ * @param debug 0=no debug info, 1=print debug info, 2=save bad edges in VTK file
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket);
+int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug);
 
 /**
  * Get number of source grid cells
@@ -258,17 +260,6 @@ extern "C"
 int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* n);
 
 /**
- * Apply interpolation weights to cell by cell field, each cell having four independent edges
- * @param src_data edge centred data on the source grid 
- * @param dst_data edge centred data on the destination grid
- * @return error code (0 is OK)
- * @note edges go anticlockwise
- */
-extern "C"
-int mnt_regridedges_applyCellEdge(RegridEdges_t** self, 
-	                              const double src_data[], double dst_data[]);
-
-/**
  * Apply interpolation weights to edge field with unique edge Ids
  * @param src_data edge centred data on the source grid
  * @param numDstEdges number of destination grid edges
@@ -300,32 +291,6 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
 extern "C"
 int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
                                 const char* fort_filename, int n);
-
-/**
- * Get the source grid edge sign and points
- * @param cellId source cell Id
- * @param ie edge index (running in the counterclockwise direction)
- * @param circSign orientation of the edge with respect to the counterclockwise direction
- * @param p0 start point of the edge, modulo 360 deg in longitude
- * @param p1 end point of the edge, modulo 360 deg in longitude
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_getSrcEdgePoints(RegridEdges_t** self, size_t cellId, int ie,
-                                     int* circSign, double p0[], double p1[]);
-
-/**
- * Get the destination grid edge sign and points
- * @param cellId destination cell Id
- * @param ie edge index (running in the counterclockwise direction)
- * @param circSign orientation of the edge with respect to the counterclockwise direction
- * @param p0 start point of the edge, modulo 360 deg in longitude
- * @param p1 end point of the edge, modulo 360 deg in longitude
- * @return error code (0 is OK)
- */
-extern "C"
-int mnt_regridedges_getDstEdgePoints(RegridEdges_t** self, size_t cellId, int ier,
-                                     int* circSign, double p0[], double p1[]);
 
 /**
  * Print the weights

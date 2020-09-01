@@ -3,6 +3,7 @@
 
 #include "mntMatMxN.h"
 #include "mntVecN.h"
+#include <iostream>
 
 struct LineLineIntersector {
 
@@ -13,25 +14,64 @@ struct LineLineIntersector {
     }
 
     /**
-     * Set points 
+     * Set points
+     * @param ndim either 2 (2D) or 3 (3D), 
      * @param p0 starting point of first line
      * @param p1 end point of first line
      * @param q0 starting point of second line
      * @param q1 end point of second line
      */
-    void setPoints(const double p0[], 
-                   const double p1[], 
-                   const double q0[], 
-                   const double q1[]) {
-        for (size_t i = 0; i < 2; ++i) {
-            this->p0[i] = p0[i];
-            this->p1[i] = p1[i];
-            this->q0[i] = q0[i];
-            this->q1[i] = q1[i];
-            this->rhs[i] = q0[i] - p0[i];
-            this->mat(i, 0) = p1[i] - p0[i];
-            this->mat(i, 1) = q0[i] - q1[i];
+    void setPoints(int ndim, const double p0[], const double p1[], 
+                   const double q0[], const double q1[]) {
+
+        if (ndim == 2) {
+            // lines are embedded in 2D
+            for (size_t i = 0; i < 2; ++i) {
+                this->p0[i] = p0[i];
+                this->p1[i] = p1[i];
+                this->q0[i] = q0[i];
+                this->q1[i] = q1[i];
+            }
         }
+        else if (ndim == 3) {
+            // lines are embedded in 3D. Apply pseudo-inverse
+            // method to reduce the problem to 2x2. 
+            // A . x = b
+            // (A^t . A) . x = A^t . b
+            // p0 <- { (p1 - p0) . p0, (q0 - q1) . p0}
+            // p1 <- { (p1 - p0) . p1, (q0 - q1) . p1}
+            // q0 <- { (p1 - p0) . q0, (q0 - q1) . q0}
+            // q1 <- { (p1 - p0) . q1, (q0 - q1) . q1}
+            Vec3 p0v(p0);
+            Vec3 p1v(p1);
+            Vec3 q0v(q0);
+            Vec3 q1v(q1);
+
+            Vec3 u = p1v - p0v;
+            Vec3 v = q1v - q0v;
+
+            this->p0[0] = dot(u, p0v);
+            this->p0[1] = -dot(v, p0v);
+
+            this->p1[0] = dot(u, p1v);
+            this->p1[1] = -dot(v, p1v);
+
+            this->q0[0] = dot(u, q0v);
+            this->q0[1] = -dot(v, q0v);
+
+            this->q1[0] = dot(u, q1v);
+            this->q1[1] = -dot(v, q1v);
+        }
+        else {
+            std::cerr << "ERROR: ndim should be 2 or 3!\n";
+        }
+
+        for (size_t i = 0; i < 2; ++i) {
+            this->rhs[i] = this->q0[i] - this->p0[i];
+            this->mat(i, 0) = this->p1[i] - this->p0[i];
+            this->mat(i, 1) = this->q0[i] - this->q1[i];
+        }
+
         this->invMatTimesDet(0, 0) = this->mat(1, 1);
         this->invMatTimesDet(1, 1) = this->mat(0, 0);
         this->invMatTimesDet(0, 1) = -this->mat(0, 1);

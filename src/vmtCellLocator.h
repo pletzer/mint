@@ -22,17 +22,7 @@ public:
     /**
      * Constructor
      */
-    vmtCellLocator() {
-        this->grid = NULL;
-        this->points = NULL;
-        this->numBucketsX = 10;
-        double big = std::numeric_limits<double>::max();
-        for (size_t i = 0; i < 3; ++i) {
-            this->xmin[i] = big;
-            this->xmax[i] = -big;
-        }
-        this->periodicityLengthX = 0.0;
-    }
+    vmtCellLocator();
 
     static vmtCellLocator* New() {
         return new vmtCellLocator();
@@ -53,34 +43,13 @@ public:
      * Set the grid
      * @param grid vtkUnstructuredGrid object
      */
-    void SetDataSet(vtkUnstructuredGrid* grid) {
-        this->grid = grid;
-        this->points = grid->GetPoints();
-        double* bounds = grid->GetBounds();
-        this->xmin[0] = bounds[0];
-        this->xmax[0] = bounds[1];
-        this->xmin[1] = bounds[2];
-        this->xmax[1] = bounds[3];
-        this->xmin[2] = bounds[4];
-        this->xmax[2] = bounds[5];
-        // want the buckets to be larger than the cells
-        this->numBucketsX = std::max(1, int(0.1 * std::sqrt(grid->GetNumberOfCells())));
-    }
+    void SetDataSet(vtkUnstructuredGrid* grid);
 
     /** 
      * Set average number of cells/faces per bucket
      * @param avgNumFacesPerBucket number
      */
-    void SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
-
-        vtkIdType numFaces = this->grid->GetNumberOfCells();
-
-        // number of buckets along one dimension (2D)
-        this->numBucketsX = (int) std::max(1.0, 
-                              std::sqrt((double) numFaces / (double) avgNumFacesPerBucket)
-                                      );
-
-    }
+    void SetNumberOfCellsPerBucket(int avgNumFacesPerBucket);
 
     /**
      * Build the locator
@@ -97,15 +66,6 @@ public:
      * @return cell Id if found, < 0 otherwise
      */
     vtkIdType FindCell(const double point[3], double tol2, vtkGenericCell *cell, double pcoords[3], double *weights);
-
-    /**
-     * Find cell given a target point
-     * @param point target
-     * @param tol2 tolerance
-     * @return cell Id if found, < 0 otherwise
-     */
-    vtkIdType quickFindCell(const Vec3& point, double tol2);
-
 
     /**
      * Find all the cells intersected by line
@@ -136,18 +96,19 @@ public:
     /**
      * Set the periodicity length in x
      * @param periodicityX length (0 means not periodic)
+     * @note this can be set after calling BuildLocator
      */
-    void setPeriodicityLengthX(double periodicityX) {
-    	this->periodicityLengthX = periodicityX;
-    }
+    void setPeriodicityLengthX(double periodicityX);
 
     /**
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
      * @param pEnd end point of the line
-     * @return list of (cellId, [lambda0, lambda1]) pairs
+     * @return list of (cellId, [lambda0, lambda1, periodOffset]) pairs
+     * @note lambda0/lambda1 are the linear parametric coordiates of the entry/exit points into/from the cell
+     * @note periodOffset is the periodic offset to add to pBeg[0] and pEnd[0]
      */
-    std::vector< std::pair<vtkIdType, Vec2> >
+    std::vector< std::pair<vtkIdType, Vec3> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**
@@ -162,18 +123,8 @@ public:
     /**
      * Print the bucket to face indices map
      */
-    void printBuckets() const {
-        for (const auto& b2f : this->bucket2Faces) {
-            int bucketId = b2f.first;
-            int m, n;
-            this->getBucketIndices(bucketId, &m, &n);
-            std::cout << "bucket " << bucketId << " (" << m << ',' << n << ") contains faces ";
-            for (const auto& faceId : b2f.second) {
-	        std::cout << faceId << ' ';
-            }
-            std::cout << '\n';
-        }
-    }
+    void printBuckets() const;
+
 
 protected:
 
@@ -181,19 +132,20 @@ private:
 
     vtkUnstructuredGrid* grid;
 
-    vtkPoints* points;
-
     // domain range
     double xmin[3];
     double xmax[3];
 
     double weights[8];
 
+    std::vector<double> modPeriodX;
+
     // 0 if not periodic
     double periodicityLengthX;
 
     // number of buckets in X and Y
     int numBucketsX;
+    int numBucketsY;
 
     // maps a bucket to a list of faces
     std::map<int, std::set<vtkIdType> > bucket2Faces;
@@ -220,14 +172,14 @@ private:
 
         // bucket coordinates
         int m = (int) std::floor(this->numBucketsX * x[0] + eps);
-        int n = (int) std::floor(this->numBucketsX * x[1] + eps);
+        int n = (int) std::floor(this->numBucketsY * x[1] + eps);
 
         // make sure the bucket coordinates fit in the domain
         m = std::max(0, std::min(this->numBucketsX - 1, m));
-        n = std::max(0, std::min(this->numBucketsX - 1, n));
+        n = std::max(0, std::min(this->numBucketsY - 1, n));
 
         // return flat array index
-        return m * this->numBucketsX + n;
+        return m * this->numBucketsY + n;
     }
 
     /**
@@ -237,8 +189,8 @@ private:
      * @param n index (output)
      */
     inline void getBucketIndices(int bucketId, int* m, int* n) const {
-        *m = bucketId / this->numBucketsX;
-        *n = bucketId % this->numBucketsX;
+        *m = bucketId / this->numBucketsY;
+        *n = bucketId % this->numBucketsY;
     }
 
     /**
@@ -264,11 +216,11 @@ private:
         vtkIdType* ptIds;
         vtkIdType npts;
         this->grid->GetCellPoints(faceId, npts, ptIds);
-
+        vtkPoints* points = this->grid->GetPoints();
         std::vector<Vec3> res(npts);
         for (size_t i = 0; i < npts; ++i) {
             vtkIdType idx = ptIds[i];
-            double* p = this->points->GetPoint(idx);
+            double* p = points->GetPoint(idx);
             res[i] = Vec3(p);
         }
 

@@ -24,7 +24,6 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     // small tolerances 
     this->eps = 10 * std::numeric_limits<double>::epsilon();
     this->eps100 = 100. * this->eps;
-    this->tol = 1.e-3; // to determine if a point is inside a cell
 
     this->xPeriodicity = periodicityLength;
 
@@ -39,9 +38,9 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
 
     Vec3 dp = p1 - p0;
 
-    std::vector< std::pair<vtkIdType, Vec2> > cellIdLambdas = this->locator->findIntersectionsWithLine(p0, p1);
+    std::vector< std::pair<vtkIdType, Vec3> > cellIdLambdasPeriod = this->locator->findIntersectionsWithLine(p0, p1);
 
-    // arrays of cell Ids, start/end t values, start/end xi param coords, and 
+    // arrays of cell Ids, start/end "t" values, start/end "xi" param coords, and 
     // duplicity coefficients for each subsegment
     this->segCellIds.resize(0);
     this->segTas.resize(0);
@@ -55,15 +54,18 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     Vec3 xia, xib;
     double dist2;
     double weights[8];
-    for (auto& cIdLam : cellIdLambdas) {
+    for (const auto& cIdLamP : cellIdLambdasPeriod) {
 
-        vtkIdType cId = cIdLam.first;
+        vtkIdType cId = cIdLamP.first;
 
-        double ta = cIdLam.second[0];
-        double tb = cIdLam.second[1];
+        double ta = cIdLamP.second[0];
+        double tb = cIdLamP.second[1];
+        double periodOffset = cIdLamP.second[2];
 
         Vec3 pa = p0 + dp*ta;
         Vec3 pb = p0 + dp*tb;
+        pa[0] += periodOffset;
+        pb[0] += periodOffset;
 
         // compute the cell parametric coords
         vtkCell* cell = this->grid->GetCell(cId);
@@ -79,7 +81,6 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
         this->segCoeffs.push_back(1.0);
     }
 
-
     // assign coefficients that account for duplicity, ie segments 
     // that are shared between two cells. Output is this->segCoeffs
     this->__assignCoefficientsToSegments();
@@ -87,7 +88,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->numSegs = this->segCellIds.size();
 
     // compute the total, integrated linear param coord
-    // should amoount to 1 is the target is entirely 
+    // should amoount to 1 if the target is entirely 
     // contained within the source grid
     this->totalT = 0.0;
     for (size_t i = 0; i < this->numSegs; ++i) {
@@ -179,6 +180,7 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     std::vector<Vec3> sXias = this->segXias;
     std::vector<Vec3> sXibs = this->segXibs;
     std::vector<double> sCoeffs = this->segCoeffs;
+
     this->segCellIds.resize(0);
     this->segTas.resize(0);
     this->segTbs.resize(0);

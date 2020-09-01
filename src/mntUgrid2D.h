@@ -23,20 +23,13 @@ public:
  * Constructor
  */
 Ugrid2D() {
-
-    this->cellPoints = vtkPoints::New();
-    this->cellPoints->SetDataTypeToDouble();
-    this->cellPoints->SetNumberOfPoints(4); // 2d quad
-
-    this->cell = vtkQuad::New();
+	this->isCartesian = false;
 }
 
 /**
  * Destructor
  */
 ~Ugrid2D() {
-    this->cell->Delete();
-    this->cellPoints->Delete();
 }
 
 
@@ -142,15 +135,6 @@ std::vector<Vec3> getEdgePointsRegularized(size_t edgeId) const;
 std::vector<Vec3> getFacePointsRegularized(size_t faceId) const;
 
 /**
- * Is point inside face?
- * @param faceId face Id
- * @param point point
- * @param tol tolerance
- * @return true/false
- */
-bool containsPoint(size_t faceId, const Vec3& point, double tol) const;
-
-/**
  * Get min/max range of the domain
  * @param xmin low point of the domain (output)
  * @param xmax high point of the domain (output)
@@ -169,61 +153,6 @@ std::vector<Vec3> getFacePoints(size_t faceId) const;
  * @return array of points
  */
 std::vector<Vec3> getEdgePoints(size_t edgeId) const;
-
-/**
- * Build 2d locator
- * @param avgNumFacesPerBucket approximate number of faces per bucket
- */
-void buildLocator(int avgNumFacesPerBucket);
-
-/**
- * Find the cell that contains a point
- * @param point target point
- * @param tol tolerance
- * @param cellId cellId (output)
- * @return true if a cell was found, false otherwise
- */
-bool findCell(const Vec3& point, double tol, size_t* cellId) const;
-
-/**
- * Find all the cells that are intesected by a line
- * @param point0 start point of the line
- * @param point1 end point of the line
- * @return array of cell Ids
- */
-std::set<size_t> findCellsAlongLine(const Vec3& point0,
-                                    const Vec3& point1) const;
-/**
- * Set the cell nodes
- * @param cellId cell Id
- * @note use this prior to computing the parametric coordinates or interpolating 
- */
-void setCellPoints(size_t cellId);
-
-/**
- * Get the parametric coordinates of a point in a face/cell
- * @param point point
- * @param pcoords parametric coordinates (output)
- * @return true if the point is in the cell, false otherwise
- */
-bool getParamCoords(const Vec3& point, double pcoords[]);
-
-/**
- * Interpolate a point in cell
- * @param pcoords parametric coordinates
- * @param point point (output)
- */
-void interpolate(const Vec3& pcoords, double point[]);
-
-/**
- * Find the intersections of the grid with a line
- * @param pBeg start point of the line
- * @param pEnd end point of the line
- * @return array of [faceId, (lambda0, lambda1)] elements where lambda{0,1} are the 
- *         start/end linear parameters of the line
- */
-std::vector< std::pair<size_t, std::vector<double> > >
-findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
 
 private:
@@ -248,74 +177,15 @@ private:
     // edge to node connectivity
     std::vector<size_t> edge2Points;
 
-    // number of buckets along each direction
-    int numBucketsX;
-
-    // maps a bucket to a list of faces
-    std::map<int, std::vector<size_t> > bucket2Faces;
-
-    // for interpolation
-    vtkPoints* cellPoints;
-    vtkQuad* cell;
-
     int readConnectivityData(int ncid, int meshid, 
-		                     const std::string& role,
-		                     std::vector<size_t>& data);
+                             const std::string& role,
+                             std::vector<size_t>& data);
 
     int readPoints(int ncid, int meshid);
 
     void fixPeriodicity();
 
-    /**
-     * Get the flat array index of a bucket containing a given point
-     * @param point point
-     * @return index
-     * @note assumes there is thickness in the domain
-     *       will return index ven if the point is outside the domain
-     */
-    inline int getBucketId(const Vec3& point) const {
-
-        // required to make sure std::floor does not return the 
-        // next integer below if we're close to an integer
-        const double eps = 10 * std::numeric_limits<double>::epsilon();
-
-        Vec3 x = (point - this->xmin) / (this->xmax - this->xmin); // must have some thickness!
-
-        // bucket coordinates
-        int m = (int) std::floor( this->numBucketsX * x[0] + eps);
-        int n = (int) std::floor( this->numBucketsX * x[1] + eps);
-
-        // make sure the bucket coordinates fit in the domain
-        m = std::max(0, std::min(this->numBucketsX - 1, m));
-        n = std::max(0, std::min(this->numBucketsX - 1, n));
-
-        // return flat array index
-        return m * this->numBucketsX + n;
-    }
-
-    /**
-     * Get the bucket index coordinates
-     * @param bucketId flat bucket Id
-     * @param m index (output)
-     * @param n index (output)
-     */
-     inline void getBucketIndices(int bucketId, int* m, int* n) const {
-        *m = bucketId / this->numBucketsX;
-        *n = bucketId % this->numBucketsX;
-    }
-
-    /**
-     * Collect the intersection points between line and cell
-     * @param cellId cell Id
-     * @param pBeg start point of the line
-     * @param pEnd end point of the line
-     * @return array of line parameter coordinates in increasing order
-     * @note expect either 0 (no intersection) or 2 values (intersection) to be returned.
-     *       start/end points qualify as intersection if they fall into the cell
-     */
-	std::vector<double> collectIntersectionPoints(size_t cellId, 
-                                                  const Vec3& pBeg,
-                                                  const Vec3& pEnd);
+    bool isCartesian;
 
 };
 

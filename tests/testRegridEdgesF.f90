@@ -8,12 +8,12 @@ program test
     implicit none
     type(c_ptr)                  :: prsr
     type(c_ptr)                  :: crg
-    integer                      :: num_cells_per_bucket, ier, nargs, nargs1, i
+    integer                      :: num_cells_per_bucket, ier, nargs, nargs1, i, debug
     character(len=1), allocatable                    :: args(:)
     character(len=mnt_string_size)                   :: argv_full
     character(len=1), dimension(mnt_string_size)     :: src_filename, dst_filename, output_filename
     character(len=mnt_string_size)                   :: src_filename_f, dst_filename_f, output_filename_f
-
+    real(8)                                          :: periodx
 
     nargs = command_argument_count()
     nargs1 = nargs + 1
@@ -72,7 +72,9 @@ program test
     if(ier /= 0) print*,'ERROR after loaddst ier = ', ier
 
     num_cells_per_bucket = 8
-    ier = mnt_regridedges_build(crg, num_cells_per_bucket)
+    periodx = 0._8
+    debug = 1
+    ier = mnt_regridedges_build(crg, num_cells_per_bucket, periodx, debug)
     if(ier /= 0) print*,'ERROR ier = after build', ier
     
     ier = mnt_regridedges_dumpWeights(crg, output_filename_f, len_trim(output_filename_f))
