@@ -212,7 +212,7 @@ module mnt_regridedges_capi_mod
       ! Build locator object
       ! @param obj instance of mntRegridEdges_t (opaque handle)
       ! @param num_cells_per_bucket number of cells per bucket
-      ! @param periodx periiod in longitudes (0 if non-periodic)
+      ! @param periodx period in longitudes (0 if non-periodic)
       ! @param debug 0=no debug info, 1=print debug info, 2=save bad edges in VTK file
       ! @return 0 if successful
       use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
