@@ -2,6 +2,7 @@
 #include <map>
 #include <set>
 #include <mntVecN.h>
+#include <vtkVersion.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
@@ -213,7 +214,12 @@ private:
      */
     inline std::vector<Vec3> getFacePoints(vtkIdType faceId) const {
 
+#if(VTK_MAJOR_VERSION >= 8 && VTK_MINOR_VERSION == 90)
+        // Paraview 5.8.5, may need to make this more general
         const vtkIdType* ptIds;
+#else
+        vtkIdType* ptIds;
+#endif
         vtkIdType npts;
         this->grid->GetCellPoints(faceId, npts, ptIds);
         vtkPoints* points = this->grid->GetPoints();
