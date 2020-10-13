@@ -32,16 +32,41 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 
 
 set(DEBUG_CMAKE TRUE)
-
 #
 # Find VTK
 #
-# allow the user to set the variables manually
-set(VTK_DIR "" CACHE PATH "The directory containing VTKConfig.cmake")
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
-message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
-message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
+if (VTK_INCLUDE_DIR AND VTK_LIBRARY_DIR AND VTK_VERSION)
+    # allow the user to set the VTK libraries and include file location manually
+    set(VTK_INCLUDE_DIR "" CACHE PATH "The directory containing the VTK include files")
+    set(VTK_LIBRARY_DIR "" CACHE PATH "The directory containing the VTK library files")
+    set(VTK_VERSION "" CACHE STRING "The VTK version, will search for libraries vtkIOCore-VTK_VERSION")
+    set(VTK_LIBRARIES
+        vtkIOCore-${VTK_VERSION}
+        vtkIOLegacy-${VTK_VERSION}
+        vtkCommonComputationalGeometry-${VTK_VERSION}
+        vtkCommonExecutionModel-${VTK_VERSION}
+        vtkCommonDataModel-${VTK_VERSION}
+        vtkCommonTransforms-${VTK_VERSION}
+        vtkCommonMisc-${VTK_VERSION}
+        vtkCommonMath-${VTK_VERSION}
+        vtkCommonSystem-${VTK_VERSION}
+        vtkCommonCore-${VTK_VERSION}
+        vtksys-${VTK_VERSION}
+        )
+    include_directories(${VTK_INCLUDE_DIR})
+    link_directories(${VTK_LIBRARY_DIR})
+    message(STATUS "User specified VTK location")
+    message(STATUS "VTK include dir: ${VTK_INCLUDE_DIR}")
+    message(STATUS "VTK library dir: ${VTK_LIBRARY_DIR}")
+    message(STATUS "VTK version: ${VTK_VERSION}")
+else ()
+    # let MINT search for the location of VTK
+    set(VTK_DIR "" CACHE PATH "The directory containing VTKConfig.cmake")
+    find_package(VTK REQUIRED)
+    include(${VTK_USE_FILE})
+    message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
+    message(STATUS "VTK library dirs: ${VTK_LIBRARY_DIRS}")
+endif()
 
 # allow the user to set the variables manually
 set(NETCDF_INCLUDE_DIR "" CACHE PATH "Directory containing the netCDF include files")

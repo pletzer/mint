@@ -213,7 +213,7 @@ private:
      */
     inline std::vector<Vec3> getFacePoints(vtkIdType faceId) const {
 
-        vtkIdType* ptIds;
+        const vtkIdType* ptIds;
         vtkIdType npts;
         this->grid->GetCellPoints(faceId, npts, ptIds);
         vtkPoints* points = this->grid->GetPoints();

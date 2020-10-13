@@ -14,7 +14,7 @@ QuadEdgeIter::QuadEdgeIter() {
     // edges always to point in the positive direction
     for (int edgeId = 0; edgeId < cell->GetNumberOfEdges(); ++edgeId) {
 
-        int* i01 = this->cell->GetEdgeArray(edgeId);
+        const vtkIdType* i01 = this->cell->GetEdgeArray(edgeId);
         int i0 = i01[0];
         int i1 = i01[1];
 
