@@ -124,18 +124,6 @@ struct LineLineIntersector {
 
 
     /**
-     * Get the begin/end points of overlap
-     * @return pair of points
-     */
-    const std::pair< Vec2, Vec2 > getBegEndPoints() const {
-        Vec2 dp = this->p1 - this->p0;
-        std::pair< Vec2, Vec2 > p(this->p0 + this->lamBeg*dp, 
-                                  this->p0 + this->lamEnd*dp);
-        return p;
-    }
-
-
-    /**
      * Get the begin/end parametric coordinates of overlap
      * @return pair
      */

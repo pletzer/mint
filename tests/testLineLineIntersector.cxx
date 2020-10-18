@@ -171,9 +171,11 @@ void testPartialOverlap() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > p = lli.getBegEndPoints();
-    Vec2 pa = p.first;
-    Vec2 pb = p.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 dp10;
     Vec2 dpap0;
@@ -203,9 +205,11 @@ void testPartialOverlap_3DOffset() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > p = lli.getBegEndPoints();
-    Vec2 pa = p.first;
-    Vec2 pb = p.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 dp10;
     Vec2 dpap0;
@@ -236,9 +240,11 @@ void testPartialOverlap2() {
     double det = lli.getDet();
     assert(std::abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > p = lli.getBegEndPoints();
-    Vec2 pa = p.first;
-    Vec2 pb = p.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 dp10;
     Vec2 dpaq0;
@@ -268,9 +274,11 @@ void testPartialOverlap2_3DOffset() {
     double det = lli.getDet();
     assert(std::abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > p = lli.getBegEndPoints();
-    Vec2 pa = p.first;
-    Vec2 pb = p.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 dp10;
     Vec2 dpaq0;
@@ -300,9 +308,11 @@ void testPartialOverlap3() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > pab = lli.getBegEndPoints();
-    Vec2 pa = pab.first;
-    Vec2 pb = pab.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 u;
     Vec2 dpap0;
@@ -331,9 +341,11 @@ void testPartialOverlap3_3DOffset() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > pab = lli.getBegEndPoints();
-    Vec2 pa = pab.first;
-    Vec2 pb = pab.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 u;
     Vec2 dpap0;
@@ -363,9 +375,11 @@ void testQInsideP() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > pab = lli.getBegEndPoints();
-    Vec2 pa = pab.first;
-    Vec2 pb = pab.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 u;
     Vec2 dp10;
@@ -394,9 +408,11 @@ void testQInsideP_3DOffset() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > pab = lli.getBegEndPoints();
-    Vec2 pa = pab.first;
-    Vec2 pb = pab.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 u;
     Vec2 dp10;
@@ -425,9 +441,11 @@ void testPInsideQ() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > pab = lli.getBegEndPoints();
-    Vec2 pa = pab.first;
-    Vec2 pb = pab.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 u;
     Vec2 dp10;
@@ -456,9 +474,11 @@ void testPInsideQ_3DOffset() {
     double det = lli.getDet();
     assert(abs(det) < tol);
     assert(lli.hasSolution(tol));
-    std::pair< Vec2, Vec2 > pab = lli.getBegEndPoints();
-    Vec2 pa = pab.first;
-    Vec2 pb = pab.second;
+    std::pair< double, double > p = lli.getBegEndParamCoords();
+    double lamA = p.first;
+    double lamB = p.second;
+    Vec2 pa = (1. - lamA)*Vec2(p0) + lamA*Vec2(p1);
+    Vec2 pb = (1. - lamB)*Vec2(p0) + lamB*Vec2(p1);
 
     Vec2 u;
     Vec2 dp10;
