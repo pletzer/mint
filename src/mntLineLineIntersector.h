@@ -66,18 +66,19 @@ struct LineLineIntersector {
             std::cerr << "ERROR: ndim should be 2 or 3!\n";
         }
 
+        Mat2x2 mat;
         for (size_t i = 0; i < 2; ++i) {
             this->rhs[i] = this->q0[i] - this->p0[i];
-            this->mat(i, 0) = this->p1[i] - this->p0[i];
-            this->mat(i, 1) = this->q0[i] - this->q1[i];
+            mat(i, 0) = this->p1[i] - this->p0[i];
+            mat(i, 1) = this->q0[i] - this->q1[i];
         }
 
-        this->invMatTimesDet(0, 0) = this->mat(1, 1);
-        this->invMatTimesDet(1, 1) = this->mat(0, 0);
-        this->invMatTimesDet(0, 1) = -this->mat(0, 1);
-        this->invMatTimesDet(1, 0) = -this->mat(1, 0);
+        this->invMatTimesDet(0, 0) = mat(1, 1);
+        this->invMatTimesDet(1, 1) = mat(0, 0);
+        this->invMatTimesDet(0, 1) = -mat(0, 1);
+        this->invMatTimesDet(1, 0) = -mat(1, 0);
         this->solTimesDet = dot(this->invMatTimesDet, this->rhs);
-        this->det = this->mat(0, 0)*this->mat(1, 1) - this->mat(0, 1)*this->mat(1, 0);
+        this->det = mat(0, 0)*mat(1, 1) - mat(0, 1)*mat(1, 0);
     }
 
     /**
@@ -165,7 +166,6 @@ struct LineLineIntersector {
         return res; 
     }
 
-    Mat2x2 mat;
     Mat2x2 invMatTimesDet;
 
     Vec2 invMatTimesDetDotRhs;
