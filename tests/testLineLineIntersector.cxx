@@ -511,14 +511,14 @@ int main(int argc, char** argv) {
     test1_3d();
     test1_3DOffset();
     test2_3DOffset();
-    //test3_3DOffset(); FAILS
+    //test3_3DOffset(); // FAILS
     testNoOverlap_3DOffset();
     testNoOverlap2_3DOffset();
-    //testPartialOverlap_3DOffset(); FAILS
-    //testPartialOverlap2_3DOffset(); FAILS
-    //testPartialOverlap3_3DOffset(); FAILS
+    testPartialOverlap_3DOffset();
+    testPartialOverlap2_3DOffset();
+    testPartialOverlap3_3DOffset();
     testQInsideP_3DOffset();
-    //testPInsideQ_3DOffset(); FAILS
+    testPInsideQ_3DOffset();
 
     return 0;
 }
