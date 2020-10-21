@@ -80,8 +80,8 @@ struct LineLineIntersector {
         double qy = this->q0[1];
         double qz = this->q0[2];
 
-        this->solTimesDet[0] = (pz*vy - qz*vy + qy*vz - py*vz)*wx + (qz*vx + px*vz - qx*vz - pz*vx)*wy + (py*vx - qy*vx - px*vy + qx*vy)*wz;
-        this->solTimesDet[1] = (pz*uy - qz*uy + qy*uz - py*uz)*wx + (qz*ux + px*uz - qx*uz - pz*ux)*wy + (py*ux - qy*ux - px*uy + qx*uy)*wz;
+        this->solTimesDet[0] = ((pz - qz)*vy + (qy - py)*vz)*wx + ((qz - pz)*vx + (px - qx)*vz)*wy + ((py - qy)*vx + (qx - px)*vy)*wz;
+        this->solTimesDet[1] = ((pz - qz)*uy + (qy - py)*uz)*wx + ((qz - pz)*ux + (px - qx)*uz)*wy + ((py - qy)*ux + (qx - px)*uy)*wz;
     }
 
     /**
