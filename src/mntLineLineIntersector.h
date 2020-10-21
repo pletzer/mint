@@ -24,7 +24,7 @@ struct LineLineIntersector {
     void setPoints(int ndim, const double p0[], const double p1[], 
                    const double q0[], const double q1[]) {
 
-        // start with filling for the 2D case
+        // start with filling the vectors for the 2D case
         double ux = p1[0] - p0[0];
         double uy = p1[1] - p0[1];
         double uz = 0.;
@@ -67,7 +67,6 @@ struct LineLineIntersector {
             this->p1[2] = p1[2];
             this->q0[2] = q0[2];
             this->q1[2] = q1[2];
-
         }
 
         this->det = (uy*vz - uz*vy)*wx + (uz*vx - ux*vz)*wy + (ux*vy - uy*vx)*wz;
@@ -80,8 +79,14 @@ struct LineLineIntersector {
         double qy = this->q0[1];
         double qz = this->q0[2];
 
-        this->solTimesDet[0] = ((pz - qz)*vy + (qy - py)*vz)*wx + ((qz - pz)*vx + (px - qx)*vz)*wy + ((py - qy)*vx + (qx - px)*vy)*wz;
-        this->solTimesDet[1] = ((pz - qz)*uy + (qy - py)*uz)*wx + ((qz - pz)*ux + (px - qx)*uz)*wy + ((py - qy)*ux + (qx - px)*uy)*wz;
+        double dx = px - qx;
+        double dy = py - qy;
+        double dz = pz - qz;
+
+        this->solTimesDet[0] = (dz*vy - dy*vz)*wx + (dx*vz + dz*vx)*wy + (dy*vx - dx*vy)*wz;
+        this->solTimesDet[1] = (dz*uy - dy*uz)*wx + (dx*uz + dz*ux)*wy + (dy*ux - dx*uy)*wz;
+        // we don't need to know the value of the solution in the direction perpendicular 
+        // to u and v, so no this->solTimesDet[2]
     }
 
     /**

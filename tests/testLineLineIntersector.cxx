@@ -296,10 +296,10 @@ void testPartialOverlap2_3DOffset() {
 
 void testPartialOverlap3() {
     double tol = 1.e-10;
-    double p0[] =   {1., 0.}; //{M_PI /2., 0.};
+    double p0[] =   {M_PI /2., 0.};
     double p1[] =   {0., 0.};
-    double q0[] =   {0., 0.}; // {0.1, 0.};
-    double q1[] =   {2., 0.}; // {M_PI , 0.};
+    double q0[] =   {0.1, 0.};
+    double q1[] =   {M_PI , 0.};
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
