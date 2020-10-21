@@ -13,6 +13,7 @@ void test1() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     Vec2 xi = lli.getSolution();
+    std::cout << "test1: xi = " << xi << '\n';
     assert(abs(xi[0] - 1./2.) < tol);
     assert(abs(xi[1] - 1./3.) < tol);
 }
@@ -85,6 +86,7 @@ void test3() {
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
+    std::cout << "test3: det = " << det << '\n';
     assert(! lli.hasSolution(tol));
 }
 
@@ -160,7 +162,6 @@ void testNoOverlap2_3DOffset() {
 }
 
 void testPartialOverlap() {
-    // no solution
     double tol = 1.e-10;
     double p0[] = {0., 0.};
     double p1[] =  {M_PI /2., 0.};
@@ -194,7 +195,6 @@ void testPartialOverlap() {
 }
 
 void testPartialOverlap_3DOffset() {
-    // no solution
     double tol = 1.e-10;
     double p0[] =  {0., 0., 0.};
     double p1[] =  {M_PI /2., 0., 0.};
@@ -229,7 +229,6 @@ void testPartialOverlap_3DOffset() {
 
 
 void testPartialOverlap2() {
-    // no solution
     double tol = 1.e-10;
     double p0[] =  {0., 0.};
     double p1[] =  {M_PI /2., 0.};
@@ -263,7 +262,6 @@ void testPartialOverlap2() {
 }
 
 void testPartialOverlap2_3DOffset() {
-    // no solution
     double tol = 1.e-10;
     double p0[] =  {0., 0., 0.};
     double p1[] =  {M_PI /2., 0., 0.};
@@ -297,16 +295,16 @@ void testPartialOverlap2_3DOffset() {
 }
 
 void testPartialOverlap3() {
-    // no solution
     double tol = 1.e-10;
-    double p0[] =   {M_PI /2., 0.};
+    double p0[] =   {1., 0.}; //{M_PI /2., 0.};
     double p1[] =   {0., 0.};
-    double q0[] =   {0.1, 0.};
-    double q1[] =   {M_PI , 0.};
+    double q0[] =   {0., 0.}; // {0.1, 0.};
+    double q1[] =   {2., 0.}; // {M_PI , 0.};
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
+    std::cerr << "testPartialOverlap3: det = " << det << '\n';
     assert(lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
