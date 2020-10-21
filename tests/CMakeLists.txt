@@ -5,7 +5,6 @@ include_directories(
 )
 
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
-configure_file(testUgridLocator.cpp testUgridLocator.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testNcAttributes.cpp testNcAttributes.cxx)
 configure_file(testNcDimensions.cpp testNcDimensions.cxx)
@@ -72,13 +71,6 @@ target_link_libraries(testVecMat
                       mint
                       ${VTK_LIBRARIES}
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
-
-add_executable(testUgridLocator testUgridLocator.cxx)
-target_link_libraries(testUgridLocator
-                    mint
-                    ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testNetcdf testNetcdf.cxx)
@@ -259,7 +251,6 @@ set_tests_properties(regridEdgesF PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR")
 
 add_test(NAME vecMat COMMAND testVecMat)
-add_test(NAME ugridLocator COMMAND testUgridLocator)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)
 add_test(NAME dimensions COMMAND testNcDimensions)
@@ -270,6 +261,9 @@ add_test(NAME ugrid2D_1 COMMAND testUgrid2D
 add_test(NAME ugrid2D_2 COMMAND testUgrid2D 
                         "-s" "${CMAKE_SOURCE_DIR}/data/output_UGRID.nc:Mesh2d"
                         "-vtk" "output_UGRID.vtk")
+add_test(NAME ugrid2D_xyz COMMAND testUgrid2D 
+                        "-s" "${CMAKE_SOURCE_DIR}/data/cs_4_xyz.nc:physics"
+                        "-vtk" "cs_4_xyz.vtk")
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
@@ -328,7 +322,7 @@ add_test(NAME regridedges_axes
             "-v" "u1@${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
             "-O" "regridedges_axes.nc"
             "-o" "regridedges_axes.vtk")
-# we do not expect conseervation
+# we do not expect conservation
 #set_tests_properties(regridedges_axes PROPERTIES
 #                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
@@ -423,6 +417,16 @@ add_test(NAME regrid_edgesUgrid16To16
 set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
+add_test(NAME regrid_upstream
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test" "-S" "1"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc:unit_test" "-D" "1"
+                 "-o" "regrid_edges_output_upstream.vtk"
+                 "-N" "128" "-P" "360"
+                 "-debug" "2")
+set_tests_properties(regrid_upstream PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
+
 add_test(NAME regrid_nan
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc:physics" "-S" "1"
@@ -509,6 +513,61 @@ add_test(NAME flux_line_3pts
 set_tests_properties(flux_line_3pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 
+add_test(NAME polySegmentIter1
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+                 "-p0" "264.5516205224688520,78.7115408475241338"
+                 "-p1" "260.0320543712643939,81.4423909253333420"
+                 "-N" "128")
+set_tests_properties(polySegmentIter1 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
+# this case touches the north pole so maybe ok to lose conservation
+#add_test(NAME polySegmentIter2
+#         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+#                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+#                 "-p0" "278.6826289904774967,87.1548675645703099"
+#                 "-p1" "230.0564621638624203,90.0000000000000000")
+#set_tests_properties(polySegmentIter2 PROPERTIES
+#                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
+add_test(NAME polySegmentIter3
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+                 "-p0" "134.2695194548424524,67.4474784907345395"
+                 "-p1" "129.1629029515314357,65.6845621777749642"
+                 "-N" "128")
+set_tests_properties(polySegmentIter3 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
+add_test(NAME polySegmentIter4
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+                 "-p0" "309.1629029515316347,-65.6845621777749500" 
+                 "-p1" "314.2695194548423387,-67.4474784907345111"
+                 "-N" "128")
+set_tests_properties(polySegmentIter4 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
+
+add_test(NAME polySegmentIter5
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc:physics"
+                 "-p0" "360,-30" 
+                 "-p1" "360,30"
+                 "-N" "128")
+set_tests_properties(polySegmentIter5 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
+
+add_test(NAME polySegmentIter6
+         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc:physics"
+                 "-p0" "360,-30" 
+                 "-p1" "360,30"
+                 "-N" "128"
+                 "-P" "360")
+set_tests_properties(polySegmentIter5 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "integrated param coord = 1")
 
 add_test(NAME regrid_axis
          COMMAND "testRegridAxis")

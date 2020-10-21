@@ -12,6 +12,11 @@
 #define LAT_INDEX 1
 #define ELV_INDEX 2
 
+#define X_INDEX 0
+#define Y_INDEX 1
+#define Z_INDEX 2
+
+
 struct LambdaBegFunctor {
     // compare two elements of the array
     bool operator()(const std::pair<size_t, std::vector<double> >& x, 
@@ -54,32 +59,6 @@ Ugrid2D::getEdgePoints(size_t edgeId) const {
         // add
         res.push_back(Vec3(p));
     }
-    return res;
-}
-
-bool 
-Ugrid2D::containsPoint(size_t faceId, const Vec3& point, double tol) const {
-
-    tol = std::abs(tol);
-    bool res = true;
-    double circ = 0;
-    std::vector<Vec3> vertices = getFacePointsRegularized(faceId);
-    for (size_t i0 = 0; i0 < 4; ++i0) {
-
-        size_t i1 = (i0 + 1) % 4;
-
-        // vector from point to the vertices
-        double d0[] = {point[0] - vertices[i0][0], point[1] - vertices[i0][1]};
-        double d1[] = {point[0] - vertices[i1][0], point[1] - vertices[i1][1]};
-
-        double cross = d0[0]*d1[1] - d0[1]*d1[0];
-
-        if (cross < -tol) {
-            // negative area
-            res = false;
-        }
-    }
-
     return res;
 }
 
@@ -313,6 +292,16 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         else if (var_stdn == "latitude") {
             j = LAT_INDEX;
         }
+        else if (var_stdn == "x-coordinate in Cartesian system") {
+            j = X_INDEX;
+            this->isCartesian = true;
+        }
+        else if (var_stdn == "y-coordinate in Cartesian system") {
+            j = Y_INDEX;
+        }
+        else if (var_stdn == "z-coordinate in Cartesian system") {
+            j = Z_INDEX;
+        }
         else {
             std::cerr << "ERROR: unknown coordinate with standard_name \""
             << var_stdn << "\"\n";
@@ -330,6 +319,10 @@ std::vector<Vec3>
 Ugrid2D::getFacePointsRegularized(size_t faceId) const {
 
     std::vector<Vec3> res = this->getFacePoints(faceId);
+
+    if (this->isCartesian) {
+        return res;
+    }
 
     // regularize
     for (size_t i = 1; i < res.size(); ++i) {
@@ -402,264 +395,6 @@ Ugrid2D::getEdgePointsRegularized(size_t edgeId) const {
 
     return res;
 }
-
-void 
-Ugrid2D::buildLocator(int avgNumFacesPerBucket) {
-
-
-    // number of buckets along one dimension (2D)
-    this->numBucketsX = (int) std::max(1.0, 
-                              std::sqrt((double) this->getNumberOfFaces() / (double) avgNumFacesPerBucket)
-                                      );
-
-    // attach an empty array of face Ids to each bucket
-    for (int m = 0; m < numBucketsX; ++m) {
-        for (int n = 0; n < numBucketsX; ++n) {
-            int bucketId = m * numBucketsX + n;
-            this->bucket2Faces.insert( std::pair< int, std::vector<size_t> >(bucketId, std::vector<size_t>()));
-        }
-    }
-
-    // assign each face to one or more buckets depending on where the face's nodes fall
-    for (size_t faceId = 0; faceId < this->getNumberOfFaces(); ++faceId) {
-        std::vector<Vec3> nodes = getFacePointsRegularized(faceId);
-        for (const Vec3& p : nodes) {
-            int bucketId = this->getBucketId(p);
-            this->bucket2Faces[bucketId].push_back(faceId);
-        }
-    }
-
-}
-
-bool
-Ugrid2D::findCell(const Vec3& point, double tol, size_t* faceId) const {
-
-    int bucketId = this->getBucketId(point);
-    const std::vector<size_t>& faces = this->bucket2Faces.find(bucketId)->second;
-    for (const size_t& cId : faces) {
-        if (this->containsPoint(cId, point, tol)) {
-            *faceId = cId;
-            return true;
-        }
-    }
-    return false;
-}
-
-std::set<size_t> 
-Ugrid2D::findCellsAlongLine(const Vec3& point0,
-                            const Vec3& point1) const {
-
-    std::set<size_t> res;
-    int begM, endM, begN, endN, bucketId, begBucketId, endBucketId;
-
-    // choose the number of sections heuristically. Too few and we'll end up adding too many
-    // cells. No point in having more sections than the number of buckets
-    this->getBucketIndices(this->getBucketId(point0), &begM, &begN);
-    this->getBucketIndices(this->getBucketId(point1), &endM, &endN);
-
-    int mLo = std::min(begM, endM);
-    int mHi = std::max(begM, endM);
-    int nLo = std::min(begN, endN);
-    int nHi = std::max(begN, endN);
-
-    // dm and dn are positive
-    int dm = mHi - mLo + 1;
-    int dn = nHi - nLo + 1;
-
-    // want more segments when the line is 45 deg. Want more segments when 
-    // the points are far apart.
-    size_t nSections = std::max(1, std::min(dn, dm));
-    Vec3 du = point1 - point0;
-    du /= (double) nSections;
-
-    for (size_t iSection = 0; iSection < nSections; ++iSection) {
-
-        // start/nd points of the segment
-        Vec3 p0 = point0 + (double) iSection * du;
-        Vec3 p1 = p0 + du;
-    
-        // get the start bucket
-        begBucketId = this->getBucketId(p0);
-        this->getBucketIndices(begBucketId, &begM, &begN);
-
-        // get end bucket
-        endBucketId = this->getBucketId(p1);
-        this->getBucketIndices(endBucketId, &endM, &endN);
-
-        mLo = std::min(begM, endM);
-        mHi = std::max(begM, endM);
-        nLo = std::min(begN, endN);
-        nHi = std::max(begN, endN);
-
-        // iterate over the buckets
-        for (int m = mLo; m <= mHi; ++m) {
-            for (int n = nLo; n <= nHi; ++n) {
-                bucketId = m * numBucketsX + n;
-                for (const size_t& faceId : this->bucket2Faces.find(bucketId)->second) {
-                    res.insert(faceId);
-                }
-            }
-        }
-    }
-
-    return res;
-}
-
-void
-Ugrid2D::setCellPoints(size_t cellId) {
-    std::vector<Vec3> nodes = this->getFacePointsRegularized(cellId);
-    for (size_t i = 0; i < nodes.size(); ++i) {
-        this->cellPoints->SetPoint(i, &nodes[i][0]);
-    }
-    this->cell->Initialize(nodes.size(), this->cellPoints);
-}
-
-bool
-Ugrid2D::getParamCoords(const Vec3& point, double pcoords[]) {
-    double closestPoint[3];
-    int subId;
-    double dist2;
-    double weights[8];
-    int inside = this->cell->EvaluatePosition((double*) &point[0], closestPoint, subId, pcoords, dist2, weights);
-    return (inside > 0); // 0 is outside, -1 numerical problem
-}
-
-void 
-Ugrid2D::interpolate(const Vec3& pcoords, double point[]) {
-    int subId = 0;
-    double weights[8]; // not used
-    this->cell->EvaluateLocation(subId, (double*) &pcoords[0], point, weights);
-}
-
-std::vector< std::pair<size_t, std::vector<double> > >
-Ugrid2D::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
-
-    // store result
-    std::vector< std::pair<size_t, std::vector<double> > > res;
-
-    // linear parameter on entry and exit of the cell
-    std::pair<double, double> lamdas;
-
-    // collect the cells intersected by the line
-    std::set<size_t> cells = this->findCellsAlongLine(pBeg, pEnd);
-
-    // iterate over the intersected cells
-    for (const size_t& cellId : cells) {
-
-        std::vector<double> lambdas = this->collectIntersectionPoints(cellId, pBeg, pEnd);
-
-        if (lambdas.size() >= 2) {
-            // found entry/exit points so add
-            res.push_back( 
-                std::pair<size_t, std::vector<double> >(
-                     cellId, std::vector<double>{lambdas[0], lambdas[lambdas.size() - 1]}
-                                                       )
-                         );
-        }
-    }
-
-    // sort by starting lambda
-    std::sort(res.begin(), res.end(), LambdaBegFunctor());
-
-    // to avoid double counting, shift lambda entry to be always >= to 
-    // the preceding lambda exit and make sure lambda exit >= lambda entry
-    for (size_t i = 1; i < res.size(); ++i) {
-
-        double thisLambdaBeg = res[i].second[0];
-        double thisLambdaEnd = res[i].second[1];
-        double precedingLambdaEnd = res[i - 1].second[1];
-
-        thisLambdaBeg = std::min(thisLambdaEnd, std::max(thisLambdaBeg, precedingLambdaEnd));
-
-        // reset lambda entry
-        res[i].second[0] = thisLambdaBeg;
-    }
-
-    return res;
-}
-
-std::vector<double>
-Ugrid2D::collectIntersectionPoints(size_t cellId, 
-                                   const Vec3& pBeg,
-                                   const Vec3& pEnd) {
-
-    std::vector<double> lambdas;
-    // expect two values
-    lambdas.reserve(2);
-
-    const double eps = 10 * std::numeric_limits<double>::epsilon();
-    const double eps100 = 100*eps;
-
-    // cell nodes with 360 deg added/subtracted
-    std::vector<Vec3> nodes = this->getFacePointsRegularized(cellId);
-
-    // computes the intersection point of two lines
-    LineLineIntersector intersector;
-
-    // is the starting point inside the cell?
-    if (this->containsPoint(cellId, pBeg, eps)) {
-        lambdas.push_back(0.);
-    }
-
-    // iterate over the cell's edges
-    const int numQuadNodes = 4;
-    for (int edgeIndex = 0; edgeIndex < numQuadNodes; ++edgeIndex) {
-
-        int j0 = edgeIndex;
-        int j1 = (j0 + 1) % numQuadNodes;
-
-        // swap the edges for edges 2 and 3
-        if (edgeIndex >= 2) {
-            int tmp = j0;
-            j0 = j1;
-            j1 = tmp;
-        }
-
-        // compute the intersection point
-        intersector.setPoints(&pBeg[0], &pEnd[0], &nodes[j0][0], &nodes[j1][0]);
-
-        if (! intersector.hasSolution(eps)) {
-            // no solution, skip
-            continue;
-        }
-
-        // we have a solution but it could be degenerate
-        if (std::abs(intersector.getDet()) > eps) {
-
-            // normal intersection, 1 solution
-            Vec2 sol = intersector.getSolution();
-            double lambRay = sol[0];
-            double lambEdg = sol[1];
-
-            // is it valid? Intersection must be within (p0, p1) and (q0, q1)
-            if (lambRay >= (0. - eps100) && lambRay <= (1. + eps100)  && 
-                lambEdg >= (0. - eps100) && lambEdg <= (1. + eps100)) {
-                // add to list
-                lambdas.push_back(lambRay);
-            }
-        }
-        else {
-            // det is almost zero
-            // looks like the two lines (p0, p1) and (q0, q1) are overlapping
-            // add the starting/ending points
-            const std::pair<double, double>& sol = intersector.getBegEndParamCoords();
-            // add start/end linear param coord along line
-            lambdas.push_back(sol.first);
-            lambdas.push_back(sol.second);
-        }
-    }
-
-    // is the end point inside the cell?
-    if (this->containsPoint(cellId, pEnd, eps)) {
-        lambdas.push_back(1.);
-    }
-
-    // order the lambdas
-    std::sort(lambdas.begin(), lambdas.end());
-
-    return lambdas;
-}
-
 
 void
 Ugrid2D::dumpGridVtk(const std::string& filename) {

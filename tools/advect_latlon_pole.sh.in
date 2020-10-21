@@ -3,24 +3,36 @@
 export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
-# Bump stream function. The stream function here does not correspond to the u, v field
-xlo="23.2"
-xhi="85.7"
-ylo="(-21.1)"
-yhi="3.2"
+NX=36
+NY=18
+
+# the stream function defining the 1-form, a bump
+xlo="70."
+xhi="110."
+ylo="(-70.)"
+yhi="(-30.)"
+# want the stream function to be continuous in value
 sfuncx="sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
 sfuncy="sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
 STREAM_FUNC="($sfuncx)*($sfuncy)"
 
-# u,v vector field that advects
-U="100*cos(pi*y/180)*((pi*cos((pi*(x-y-43))/180.))/180.-(pi*cos((pi*(x+y-43))/180.))/180.)/2."
-V="100*cos(pi*y/180)*((pi*cos((pi*(x-y-43))/180.))/180.+(pi*cos((pi*(x+y-43))/180.))/180.)/2."
-NSTEPS="200"
+# constant flow
+#U="0*x+10."
+#V="0*x"
+# stream function -sin(pi*x/180)*cos(pi*y/180)
+U="(-10*sin(pi*y/180.)*cos(pi*x/180.))"
+V="(10*sin(pi*x/180.))"
+
+NSTEPS="72"
 DT=1
 
 
-# get the grid
-cp @CMAKE_SOURCE_DIR@/data/cs_16.nc grid.nc
+echo "generate lat lon grid..."
+python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o "grid.nc:physics"
+if [ $? != 0 ]; then
+    echo "ERROR when running generate_latlon_ugrid.py"
+    exit 1
+fi
 
 echo "add edge field from stream function..."
 python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g grid.nc:physics -d input_data.nc \
@@ -40,9 +52,9 @@ if [ $? != 0 ]; then
     exit 2
 fi
 
-# push the grid upstream grid
+# push the grid upstream grid, -C to prevent clipping
 echo "pushing the grid upstream..."
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -C -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
 if [ $? != 0 ]; then
     echo "ERROR when running generate_upstream_grid.py"
     exit 3
@@ -66,8 +78,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     ncdump input_data.nc | grep -i nan
 
     # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
-                                          -d upstream.nc:physics -D 1 \
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
+                                          -d upstream.nc:physics -D 0 \
                                           -W weights.nc \
                                           -v edge_integrated_velocity@input_data.nc \
                                           -o upstream_${step}.vtk -O data_${step}.nc
@@ -89,4 +101,9 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     # save the data for this time step
     cp data_${step}.nc input_data.nc
 done
+
+
+
+
+
 

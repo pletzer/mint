@@ -3,81 +3,118 @@
 export DYLD_LIBRARY_PATH=$VTK_DIR/../..
 export LD_LIBRARY_PATH=$VTK_DIR/../..
 
-NX=100
-NY=50
-#STREAM_FUNC="(sin((pi*(x-2*y))/360.)+sin((pi*(x+2*y))/360.))/2."
-#STREAM_FUNC="(cos((pi*(x-2*y))/360.)+cos((pi*(x+2*y))/360.))/2."
-STREAM_FUNC="sin(pi*(x-169.)/(201.-169.))*(heaviside(y-9.,1.)-heaviside(y-81.,1.))*(heaviside(x-169.,1.)-heaviside(x-201,1.))/(201.-169.)"
+NX=36
+NY=18
+
+# the stream function defining the 1-form, a bump
+xlo="171."
+xhi="221."
+ylo="(-21.)"
+yhi="(81.)"
+# want the stream function to be continuous in value
+sfuncx="sin(pi*(x-$xhi)/($xhi-$xlo))*(heaviside(x-$xlo,1.)-heaviside(x-$xhi,1.))"
+sfuncy="sin(pi*(y-$ylo)/($yhi-$ylo))*(heaviside(y-$ylo,1.)-heaviside(y-$yhi,1.))"
+STREAM_FUNC="($sfuncx)*($sfuncy)"
+
+# constant flow
 #U="0*x+10."
 #V="0*x"
-U="5*2*(cos(pi*(x-2*y)/360.)-cos(pi*(x+2*y)/360.))"
-V="5*1*(cos(pi*(x-2*y)/360.)+cos(pi*(x+2*y)/360.))"
-NSTEPS=100
+# stream function -sin(pi*x/180)*cos(pi*y/180)
+U="10*sin(pi*x/180.)*sin(pi*y/180.)*cos(pi*y/180.)"
+V="10*cos(pi*x/180.)*cos(pi*y/180.)**2"
+
+NSTEPS="36"
 DT=1
 
 
-# generate grid.nc:physics with edge_integrated_velocity
-echo "generating lat lon grid..."
-python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o grid.nc:physics
+echo "generate lat lon grid..."
+python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o "grid.nc:physics"
 if [ $? != 0 ]; then
     echo "ERROR when running generate_latlon_ugrid.py"
     exit 1
 fi
 
-# saving the grid in VTK file. NOTE the -r option, which turns off regularization for the lat lon grid
-echo "saving grid..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -r -V grid.vtk -stream $STREAM_FUNC -u $U -v $V
+echo "push the grid upstream..."
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g "grid.nc:physics" -o upstream.nc -t $DT
+if [ $? != 0 ]; then
+    echo "ERROR when running generate_upstream_grid.py"
+    exit 2
+fi
+
+# turn off regularization
+echo "save the upstream grid..."
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i upstream.nc:physics -r -V upstream.vtk -stream $STREAM_FUNC -u $U -v $V
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
 fi
 
-# push the grid upstream grid
-echo "pushing the grid upstream..."
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
+
+# compute the regridding weights, tell the grid it is periodic
+echo "compute the regridding weights"
+@CMAKE_BINARY_DIR@/tools/regrid_edges -s "upstream.nc:physics" -S 0 \
+                                      -d "grid.nc:physics" -D 0 \
+                                      -w weights.nc -N 128 -debug 2 #-P 360
 if [ $? != 0 ]; then
-    echo "ERROR when running generate_upstream_grid.py"
+    echo "ERROR when computing the regridding weights"
     exit 3
 fi
 
-# compute the regridding weights
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
-                                      -d "upstream.nc:physics" -D 0 \
-                                      -w weights.nc
+# saving the grid in VTK file. NOTE the -r option, which turns off regularization for the lat lon grid
+echo "saving grid in VTK file grid.vtk..."
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -r -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
 if [ $? != 0 ]; then
-    echo "ERROR when computing the regridding weights"
+    echo "ERROR when running ugrid_reader.py"
     exit 4
 fi
 
 
-# copy the edge data
-cp grid.nc input_data.nc
+echo "generate edge data on upstream grid..."
+python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g upstream.nc:physics -d upstream_data.nc \
+       -n edge_integrated_velocity -s $STREAM_FUNC
+if [ $? != 0 ]; then
+    echo "ERROR when running generate_edge_field.py"
+    exit 3
+fi
 
 # step in time
-NSTEPS1=$(expr $NSTEPS - 1)
-for step in $(seq -f "%05g" 0 $NSTEPS1); do
+for step in $(seq -f "%05g" 0 $NSTEPS); do
 
     echo "step $step"
 
-    # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics \
-                                          -d upstream.nc:physics \
+    # regrid from upstream to grid
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s upstream.nc:physics -S 0 \
+                                          -d grid.nc:physics -D 0 \
                                           -W weights.nc \
-                                          -v edge_integrated_velocity@input_data.nc \
-                                          -o upstream_${step}.vtk -O data_${step}.nc:physics
+                                          -v edge_integrated_velocity@upstream_data.nc \
+                                          -o grid_${step}.vtk -O data_${step}.nc
     if [ $? != 0 ]; then
         echo "ERROR when applying the regridding weights"
-        exit 5
+        exit 4
     fi
+
+    # single level
+    mv grid_${step}_0.vtk grid_${step}.vtk
        
-    # convert from field saved cell by cell to edge field with unique edge Ids                               
-    python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
+    # convert field saved cell by cell to edge field with unique edge Ids                               
+    python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i grid_${step}.vtk -v edge_integrated_velocity -o edge_${step}.vtk
     if [ $? != 0 ]; then
-        echo "ERROR when converting filed cell-by-cell to edge field with unique edge Ids"
-        exit 6
+        echo "ERROR when converting cell-by-cell field to edge field with unique edge Ids"
+        exit 5
     fi
 
     # save the data for this time step
-    cp data_${step}.nc input_data.nc
+    cp data_${step}.nc upstream_data.nc
 done
+
+echo "grid with initial stream function and velocity field are in grid.vtk"
+echo "grid with time dependent loop integrals are in grid_*.vtk"
+echo "floating edges with projections are in edges_*.vtk"
+
+
+
+
+
+
+
 

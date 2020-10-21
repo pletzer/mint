@@ -3,14 +3,62 @@
 #include <vtkPoints.h>
 #include <vtkCell.h>
 #include <mntLineLineIntersector.h>
+#include <algorithm>
 
 struct LambdaBegFunctor {
     // compare two elements of the array
-    bool operator()(const std::pair<vtkIdType, Vec2>& x, 
-                    const std::pair<vtkIdType, Vec2>& y) {
+    bool operator()(const std::pair<vtkIdType, Vec3>& x, 
+                    const std::pair<vtkIdType, Vec3>& y) {
         return (x.second[0] < y.second[0]);
     }
 };
+
+
+vmtCellLocator::vmtCellLocator() {
+
+    this->grid = NULL;
+
+    // will be determined in SetDataSet
+    this->numBucketsX = 1;
+    this->numBucketsY = 1;
+
+    double big = std::numeric_limits<double>::max();
+    for (size_t i = 0; i < 3; ++i) {
+        this->xmin[i] = big;
+        this->xmax[i] = -big;
+    }
+    this->modPeriodX.push_back(0.0);
+}
+
+
+void 
+vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
+
+    this->grid = grid;
+
+    double* bounds = grid->GetBounds();
+    this->xmin[0] = bounds[0];
+    this->xmax[0] = bounds[1];
+    this->xmin[1] = bounds[2];
+    this->xmax[1] = bounds[3];
+    this->xmin[2] = bounds[4];
+    this->xmax[2] = bounds[5];
+
+    // want the buckets to be larger than the cells
+    vtkIdType numCells = grid->GetNumberOfCells();
+    if (numCells > 5) {
+        this->numBucketsX = 5; 
+    }
+    this->numBucketsY = std::max(1, static_cast<int>(numCells/(this->numBucketsX * 128)));
+}
+
+void 
+vmtCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
+
+    vtkIdType numCells = this->grid->GetNumberOfCells();
+    this->numBucketsY = std::max(1, static_cast<int>(numCells/(this->numBucketsX * avgNumFacesPerBucket)));
+}
+
 
 void 
 vmtCellLocator::BuildLocator() {
@@ -18,14 +66,15 @@ vmtCellLocator::BuildLocator() {
     std::set<vtkIdType> empty;
     // attach an empty set of face Ids to each bucket
     for (int m = 0; m < this->numBucketsX; ++m) {
-        for (int n = 0; n < this->numBucketsX; ++n) {
-            int bucketId = m * this->numBucketsX + n;
+        for (int n = 0; n < this->numBucketsY; ++n) {
+            int bucketId = m * this->numBucketsY + n;
             // create empty bucket
             this->bucket2Faces.insert( std::pair< int, std::set<vtkIdType> >(bucketId, empty) );
         }
     }
 
     // assign each face to one or more buckets depending on where the face's nodes fall
+    // WARNING: this could fail if the buckets are much smaller than some cells!
     vtkIdType numFaces = this->grid->GetNumberOfCells();
     for (vtkIdType faceId = 0; faceId < numFaces; ++faceId) {
         std::vector<Vec3> nodes = getFacePoints(faceId);
@@ -39,11 +88,29 @@ vmtCellLocator::BuildLocator() {
 
 }
 
+
+void 
+vmtCellLocator::setPeriodicityLengthX(double periodicityX) {
+
+    this->modPeriodX.resize(0);
+    this->modPeriodX.push_back(0.0);
+    if (periodicityX > 0) {
+        this->modPeriodX.push_back(-periodicityX);
+        this->modPeriodX.push_back(+periodicityX);
+    }
+
+}
+
+
 bool 
 vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
 
     tol = std::abs(tol);
     bool res = true;
+    double adeltas0[3];
+    double adeltas1[3];
+    double* val;
+    int k;
 
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     size_t npts = nodes.size();
@@ -56,11 +123,29 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
         double* p1 = &nodes[i1][0];
 
         // vector from point to the vertices
-        double d0[] = {point[0] - p0[0], point[1] - p0[1]};
-        double d1[] = {point[0] - p1[0], point[1] - p1[1]};
+        double dx0 = point[0] - p0[0];
+        double dx1 = point[0] - p1[0];
+        double dy0 = point[1] - p0[1];
+        double dy1 = point[1] - p1[1];
 
-        double cross = d0[0]*d1[1] - d0[1]*d1[0];
+        // add/substract periodicity length to minimize the distance between 
+        // longitudes
+        size_t numPer = this->modPeriodX.size(); // either 1 or 3
+        for (size_t j = 0; j < numPer; ++j) {
+            // modPeriodX could be {0, -360, 360}
+            adeltas0[j] = std::abs(dx0 + this->modPeriodX[j]);
+            adeltas1[j] = std::abs(dx1 + this->modPeriodX[j]);
+        }
 
+        val = std::min_element(adeltas0, adeltas0 + numPer);
+        k = (int) std::distance(adeltas0, val);
+        dx0 += this->modPeriodX[k];
+
+        val = std::min_element(adeltas1, adeltas1 + numPer);
+        k = (int) std::distance(adeltas1, val);
+        dx1 += this->modPeriodX[k];
+
+        double cross = dx0*dy1 - dy0*dx1;
         if (cross < -tol) {
             // negative area
             res = false;
@@ -92,23 +177,6 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
     // failed to find cell
     return -1;
 
-}
-
-
-vtkIdType
-vmtCellLocator::quickFindCell(const Vec3& point, double tol) {
-
-    int bucketId = this->getBucketId(&point[0]);
-
-    const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
-    for (const vtkIdType& cId : faces) {
-        if (this->containsPoint(cId, &point[0], tol)) {
-            return cId;
-        }
-    }
-
-    // failed to find cell
-    return -1;
 }
 
 
@@ -164,9 +232,12 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
         // iterate over the buckets
         for (int m = mLo; m <= mHi; ++m) {
             for (int n = nLo; n <= nHi; ++n) {
-                bucketId = m * numBucketsX + n;
+                bucketId = m * numBucketsY + n;
                 for (const vtkIdType& faceId : this->bucket2Faces.find(bucketId)->second) {
                     cellIds->InsertUniqueId(faceId);
+//                    std::cerr << "*** adding cell id " << faceId << 
+//                                 " m, mLo, mHi = " << m << ',' << mLo << ',' << mHi << 
+//                                 " n, nLo, nHi = " << n << ',' << nLo << ',' << nHi << '\n';
                 }
             }
         }
@@ -175,53 +246,50 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 }
 
 
-std::vector< std::pair<vtkIdType, Vec2> >
+std::vector< std::pair<vtkIdType, Vec3> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
-	Vec3 direction = pEnd - pBeg;
-	Vec3 p0 = pBeg;
+    Vec3 direction = pEnd - pBeg;
+    double p0[] = {pBeg[0], pBeg[1], pBeg[2]};
+    double p1[] = {pEnd[0], pEnd[1], pEnd[2]};
 
-    double lambdaInOut[2];
+    double lambdaInOutPeriod[3];
 
     // store result
-    std::vector< std::pair<vtkIdType, Vec2> > res;
+    std::vector< std::pair<vtkIdType, Vec3> > res;
 
     const double eps = 10 * std::numeric_limits<double>::epsilon();
 
-    vtkIdList* cells = vtkIdList::New();
+    vtkIdList* cellIds = vtkIdList::New();
 
-    std::vector<double> modPeriodX(1, 0.0);
-    if (this->periodicityLengthX > 0.) {
-        modPeriodX.push_back(-1.);
-        modPeriodX.push_back(+1.);
-    }
-
-    for (double modPx : modPeriodX) {
+    for (double modPx : this->modPeriodX) {
 
         p0[0] = pBeg[0] + modPx;
+        p1[0] = pEnd[0] + modPx;
 
         // collect the cell Ids intersected by the line  
-        this->FindCellsAlongLine(&pBeg[0], &pEnd[0], eps, cells);
+        this->FindCellsAlongLine(p0, p1, eps, cellIds);
 
         // iterate over the intersected cells
-        for (vtkIdType i = 0; i < cells->GetNumberOfIds(); ++i) {
+        for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
-    	   vtkIdType cellId = cells->GetId(i);
+           vtkIdType cellId = cellIds->GetId(i);
 
             std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
 
             if (lambdas.size() >= 2) {
 
-                lambdaInOut[0] = lambdas[0];
-                lambdaInOut[1] = lambdas[lambdas.size() - 1];
+                lambdaInOutPeriod[0] = lambdas[0];
+                lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
+                lambdaInOutPeriod[2] = modPx;
 
                 // found entry/exit points so add
-                res.push_back(  std::pair<vtkIdType, Vec2>( cellId, Vec2(lambdaInOut) )  );
+                res.push_back(  std::pair<vtkIdType, Vec3>( cellId, Vec3(lambdaInOutPeriod) )  );
             }
         }
     }
 
-    cells->Delete();
+    cellIds->Delete();
 
     // sort by starting lambda
     std::sort(res.begin(), res.end(), LambdaBegFunctor());
@@ -243,12 +311,28 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
     return res;
 }
 
+
+void 
+vmtCellLocator::printBuckets() const {
+    for (const auto& b2f : this->bucket2Faces) {
+        int bucketId = b2f.first;
+        int m, n;
+        this->getBucketIndices(bucketId, &m, &n);
+        std::cout << "bucket " << bucketId << " (" << m << ',' << n << ") contains faces ";
+        for (const auto& faceId : b2f.second) {
+        std::cout << faceId << ' ';
+        }
+        std::cout << '\n';
+    }
+}
+
+
 std::vector<double>
 vmtCellLocator::collectIntersectionPoints(vtkIdType cellId, 
                                           const Vec3& pBeg,
                                           const Vec3& direction) {
 
-	Vec3 pEnd = pBeg + direction;
+    Vec3 pEnd = pBeg + direction;
 
     std::vector<double> lambdas;
     // expect two values
@@ -273,13 +357,13 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
     size_t i0, i1;
     for (i0 = 0; i0 < npts; ++i0) {
 
-    	i1 = (i0 + 1) % npts;
+        i1 = (i0 + 1) % npts;
 
         // compute the intersection point
         double* p0 = &nodes[i0][0];
         double* p1 = &nodes[i1][0];
 
-        intersector.setPoints(&pBeg[0], &pEnd[0], &p0[0], &p1[0]);
+        intersector.setPoints(2, &pBeg[0], &pEnd[0], &p0[0], &p1[0]);
 
         if (! intersector.hasSolution(eps)) {
             // no solution, skip
