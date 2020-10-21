@@ -70,7 +70,7 @@ struct LineLineIntersector {
 
         }
 
-        this->det = (uz*vy*wx - uy*vz*wx - uz*vx*wy + ux*vz*wy + uy*vx*wz - ux*vy*wz);
+        this->det = (uy*vz - uz*vy)*wx + (uz*vx - ux*vz)*wy + (ux*vy - uy*vx)*wz;
 
         double px = this->p0[0];
         double py = this->p0[1];
@@ -80,8 +80,8 @@ struct LineLineIntersector {
         double qy = this->q0[1];
         double qz = this->q0[2];
 
-        this->solTimesDet[0] = -((pz*vy*wx - qz*vy*wx - py*vz*wx + qy*vz*wx - pz*vx*wy + qz*vx*wy + px*vz*wy - qx*vz*wy + py*vx*wz - qy*vx*wz - px*vy*wz + qx*vy*wz));
-        this->solTimesDet[1] = -((pz*uy*wx - qz*uy*wx - py*uz*wx + qy*uz*wx - pz*ux*wy + qz*ux*wy + px*uz*wy - qx*uz*wy + py*ux*wz - qy*ux*wz - px*uy*wz + qx*uy*wz));
+        this->solTimesDet[0] = (pz*vy - qz*vy + qy*vz - py*vz)*wx + (qz*vx + px*vz - qx*vz - pz*vx)*wy + (py*vx - qy*vx - px*vy + qx*vy)*wz;
+        this->solTimesDet[1] = (pz*uy - qz*uy + qy*uz - py*uz)*wx + (qz*ux + px*uz - qx*uz - pz*ux)*wy + (py*ux - qy*ux - px*uy + qx*uy)*wz;
     }
 
     /**
