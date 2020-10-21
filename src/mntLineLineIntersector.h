@@ -24,60 +24,69 @@ struct LineLineIntersector {
     void setPoints(int ndim, const double p0[], const double p1[], 
                    const double q0[], const double q1[]) {
 
-        if (ndim == 2) {
-            // lines are embedded in 2D
-            for (size_t i = 0; i < 2; ++i) {
-                this->p0[i] = p0[i];
-                this->p1[i] = p1[i];
-                this->q0[i] = q0[i];
-                this->q1[i] = q1[i];
-            }
-        }
-        else if (ndim == 3) {
-            // lines are embedded in 3D. Apply pseudo-inverse
-            // method to reduce the problem to 2x2. 
-            // A . x = b
-            // (A^t . A) . x = A^t . b
-            // p0 <- { (p1 - p0) . p0, (q0 - q1) . p0}
-            // p1 <- { (p1 - p0) . p1, (q0 - q1) . p1}
-            // q0 <- { (p1 - p0) . q0, (q0 - q1) . q0}
-            // q1 <- { (p1 - p0) . q1, (q0 - q1) . q1}
-            Vec3 p0v(p0);
-            Vec3 p1v(p1);
-            Vec3 q0v(q0);
-            Vec3 q1v(q1);
+        // start with filling the vectors for the 2D case
+        double ux = p1[0] - p0[0];
+        double uy = p1[1] - p0[1];
+        double uz = 0.;
 
-            Vec3 u = p1v - p0v;
-            Vec3 v = q1v - q0v;
+        double vx = q1[0] - q0[0];
+        double vy = q1[1] - q0[1];
+        double vz = 0.;
 
-            this->p0[0] = dot(u, p0v);
-            this->p0[1] = -dot(v, p0v);
+        double wx = 0.;
+        double wy = 0.;
+        double wz = 1.;
 
-            this->p1[0] = dot(u, p1v);
-            this->p1[1] = -dot(v, p1v);
+        this->p0[0] = p0[0];
+        this->p0[1] = p0[1];
+        this->p0[2] = 0.;
 
-            this->q0[0] = dot(u, q0v);
-            this->q0[1] = -dot(v, q0v);
+        this->p1[0] = p1[0];
+        this->p1[1] = p1[1];
+        this->p1[2] = 0.;
 
-            this->q1[0] = dot(u, q1v);
-            this->q1[1] = -dot(v, q1v);
-        }
-        else {
-            std::cerr << "ERROR: ndim should be 2 or 3!\n";
-        }
+        this->q0[0] = q0[0];
+        this->q0[1] = q0[1];
+        this->q0[2] = 0.;
 
-        for (size_t i = 0; i < 2; ++i) {
-            this->rhs[i] = this->q0[i] - this->p0[i];
-            this->mat(i, 0) = this->p1[i] - this->p0[i];
-            this->mat(i, 1) = this->q0[i] - this->q1[i];
+        this->q1[0] = q1[0];
+        this->q1[1] = q1[1];
+        this->q1[2] = 0.;
+
+        if (ndim == 3) {
+
+            uz = p1[2] - p0[2];
+            vz = q1[2] - q0[2];
+
+            // w is perpendicular to both u and v (w = u x v)
+            wx = uy*vz - uz*vy;
+            wy = uz*vx - ux*vz;
+            wz = ux*vy - uy*vx;
+
+            this->p0[2] = p0[2];
+            this->p1[2] = p1[2];
+            this->q0[2] = q0[2];
+            this->q1[2] = q1[2];
         }
 
-        this->invMatTimesDet(0, 0) = this->mat(1, 1);
-        this->invMatTimesDet(1, 1) = this->mat(0, 0);
-        this->invMatTimesDet(0, 1) = -this->mat(0, 1);
-        this->invMatTimesDet(1, 0) = -this->mat(1, 0);
-        this->solTimesDet = dot(this->invMatTimesDet, this->rhs);
-        this->det = this->mat(0, 0)*this->mat(1, 1) - this->mat(0, 1)*this->mat(1, 0);
+        this->det = (uy*vz - uz*vy)*wx + (uz*vx - ux*vz)*wy + (ux*vy - uy*vx)*wz;
+
+        double px = this->p0[0];
+        double py = this->p0[1];
+        double pz = this->p0[2];
+
+        double qx = this->q0[0];
+        double qy = this->q0[1];
+        double qz = this->q0[2];
+
+        double dx = px - qx;
+        double dy = py - qy;
+        double dz = pz - qz;
+
+        this->solTimesDet[0] = (dz*vy - dy*vz)*wx + (dx*vz + dz*vx)*wy + (dy*vx - dx*vy)*wz;
+        this->solTimesDet[1] = (dz*uy - dy*uz)*wx + (dx*uz + dz*ux)*wy + (dy*ux - dx*uy)*wz;
+        // we don't need to know the value of the solution in the direction perpendicular 
+        // to u and v, so no this->solTimesDet[2]
     }
 
     /**
@@ -104,7 +113,9 @@ struct LineLineIntersector {
      * Compute the begin/end parametric coordinates
     */
     void computeBegEndParamCoords() {
-        const Vec2 dp = this->p1 - this->p0;
+
+        const Vec3 dp = this->p1 - this->p0;
+
         double dp2 = dot(dp, dp);
         // lambda @ q0
         double lm0 = dot(this->q0 - this->p0, dp)/dp2;
@@ -120,18 +131,6 @@ struct LineLineIntersector {
             this->lamBeg = lbeg;
             this->lamEnd = lend;
         }
-    }
-
-
-    /**
-     * Get the begin/end points of overlap
-     * @return pair of points
-     */
-    const std::pair< Vec2, Vec2 > getBegEndPoints() const {
-        Vec2 dp = this->p1 - this->p0;
-        std::pair< Vec2, Vec2 > p(this->p0 + this->lamBeg*dp, 
-                                  this->p0 + this->lamEnd*dp);
-        return p;
     }
 
 
@@ -177,16 +176,12 @@ struct LineLineIntersector {
         return res; 
     }
 
-    Mat2x2 mat;
-    Mat2x2 invMatTimesDet;
-
-    Vec2 invMatTimesDetDotRhs;
-    Vec2 rhs;
     Vec2 solTimesDet;
-    Vec2 p0;
-    Vec2 p1;
-    Vec2 q0;
-    Vec2 q1;
+
+    Vec3 p0;
+    Vec3 p1;
+    Vec3 q0;
+    Vec3 q1;
 
     double lamBeg;
     double lamEnd;
