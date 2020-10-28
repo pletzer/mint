@@ -150,13 +150,16 @@ struct LineLineIntersector {
             return true;
 
         if (std::abs(dot(this->solTimesDet, this->solTimesDet)) < tol) {
+            // the two lines are on top of each other
 
             // determinant is zero, p1 - p0 and q1 - q0 are parallel
             this->computeBegEndParamCoords();
 
-            if (std::abs(this->lamEnd - this->lamBeg) > tol)
+            if (std::abs(this->lamEnd - this->lamBeg) > tol) {
                 // there is overlap
                 return true;
+            }
+
         }
 
         return false;
