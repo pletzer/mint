@@ -4,6 +4,7 @@
 #include "mntMatMxN.h"
 #include "mntVecN.h"
 #include <iostream>
+#include <algorithm> // swap()
 
 struct LineLineIntersector {
 
@@ -114,22 +115,17 @@ struct LineLineIntersector {
     */
     void computeBegEndParamCoords() {
 
-        const Vec3 dp = this->p1 - this->p0;
-
-        double dp2 = dot(dp, dp);
+        const Vec3 u = this->p1 - this->p0;
+        double uSquare = dot(u, u);
         // lambda @ q0
-        double lm0 = dot(this->q0 - this->p0, dp)/dp2;
+        double lm0 = dot(this->q0 - this->p0, u)/uSquare;
         // lambda @ q1
-        double lm1 = dot(this->q1 - this->p0, dp)/dp2;
-
+        double lm1 = dot(this->q1 - this->p0, u)/uSquare;
+        // make sure lambda is in [0, 1]
         this->lamBeg = std::min(std::max(lm0, 0.0), 1.0);
-        this->lamEnd = std::max(std::min(lm1, 1.0), 0.0);
+        this->lamEnd = std::min(std::max(lm1, 0.0), 1.0);
         if (this->lamEnd < this->lamBeg) {
-            // switch
-            double lbeg = this->lamEnd;
-            double lend = this->lamBeg;
-            this->lamBeg = lbeg;
-            this->lamEnd = lend;
+            std::swap(this->lamEnd, this->lamBeg);
         }
     }
 
@@ -154,11 +150,12 @@ struct LineLineIntersector {
             return true;
 
         if (std::abs(dot(this->solTimesDet, this->solTimesDet)) < tol) {
-            // determinant is zero, p1 - p0 and q1 - q0 are on
-            // the same ray
+
+            // determinant is zero, p1 - p0 and q1 - q0 are parallel
             this->computeBegEndParamCoords();
 
             if (std::abs(this->lamEnd - this->lamBeg) > tol)
+                // there is overlap
                 return true;
         }
 
