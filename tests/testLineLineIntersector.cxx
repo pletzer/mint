@@ -105,6 +105,50 @@ void test3_3DOffset() {
     assert(! lli.hasSolution(tol));
 }
 
+void test3_crossAt0() {
+    // 
+    double tol = 1.e-10;
+    double p0[] =   {0., 0., 0.};
+    double p1[] =   {1., 0., 0.};
+    double q0[] =   {0., 0., 0.};
+    double q1[] =   {1., 1., 0.1};
+    LineLineIntersector lli;
+    lli.setPoints(3, p0, p1, q0, q1);
+    double det = lli.getDet();
+    std::cerr << "test3_crossAt0: det = " << det << '\n';
+    assert(abs(det) > tol);
+    assert(lli.hasSolution(tol));
+}
+
+void test3_touchMiddle() {
+    // 
+    double tol = 1.e-10;
+    double p0[] =   {0., 0., 0.};
+    double p1[] =   {1., 0., 0.};
+    double q1[] =   {0.5, 0., 0.};
+    double q0[] =   {1., 1., 0.1};
+    LineLineIntersector lli;
+    lli.setPoints(3, p0, p1, q0, q1);
+    double det = lli.getDet();
+    std::cerr << "test3_touchMiddle: det = " << det << '\n';
+    assert(abs(det) > tol);
+    assert(lli.hasSolution(tol));
+}
+
+void test3_noTouchMiddle() {
+    // 
+    double tol = 1.e-10;
+    double p0[] =   {0., 0., 0.};
+    double p1[] =   {1., 0., 0.};
+    double q1[] =   {0.5, 0., -0.1};
+    double q0[] =   {1., 1., 0.1};
+    LineLineIntersector lli;
+    lli.setPoints(3, p0, p1, q0, q1);
+    double det = lli.getDet();
+    std::cerr << "test3_noTouchMiddle: det = " << det << '\n';
+    assert(abs(det) > tol);
+    assert(lli.hasSolution(tol));
+}
 
 void testNoOverlap() {
     // no solution
@@ -518,6 +562,9 @@ int main(int argc, char** argv) {
     test1_3DOffset();
     test2_3DOffset();
     test3_3DOffset();
+    test3_crossAt0();
+    test3_touchMiddle();
+    test3_noTouchMiddle();
     testNoOverlap_3DOffset();
     testNoOverlap2_3DOffset();
     testPartialOverlap_3DOffset();
