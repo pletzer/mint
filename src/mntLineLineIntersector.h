@@ -124,6 +124,7 @@ struct LineLineIntersector {
         // make sure lambda is in [0, 1]
         this->lamBeg = std::min(std::max(lm0, 0.0), 1.0);
         this->lamEnd = std::min(std::max(lm1, 0.0), 1.0);
+        this->lamBegRaw = lm0;
         if (this->lamEnd < this->lamBeg) {
             std::swap(this->lamEnd, this->lamBeg);
         }
@@ -156,8 +157,15 @@ struct LineLineIntersector {
             this->computeBegEndParamCoords();
 
             if (std::abs(this->lamEnd - this->lamBeg) > tol) {
-                // there is overlap
-                return true;
+                // the two lines overlap
+
+                // compute the distance
+                Vec3 p2q = this->q0 - ((1.0 - this->lamBegRaw)*this->p0 + this->lamBegRaw*this->p1);
+                double dist = sqrt(dot(p2q, p2q));
+                if (dist < tol) {
+                    // the lines are touching
+                    return true;
+                }
             }
 
         }
@@ -185,6 +193,7 @@ struct LineLineIntersector {
 
     double lamBeg;
     double lamEnd;
+    double lamBegRaw;
     double det;
 
 };

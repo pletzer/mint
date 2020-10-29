@@ -72,7 +72,7 @@ void test2_3DOffset() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
-    assert(lli.hasSolution(tol));
+    assert(! lli.hasSolution(tol));
 }
 
 void test3() {
@@ -101,9 +101,8 @@ void test3_3DOffset() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
-    // though separated by a constant distance, the lines are on top of each other
-    // and we count this as a solution
-    assert(lli.hasSolution(tol));
+    // no solution as the two lines run parallel without ever touch each other
+    assert(! lli.hasSolution(tol));
 }
 
 
@@ -206,7 +205,8 @@ void testPartialOverlap_3DOffset() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
-    assert(lli.hasSolution(tol));
+    // lines don't touch
+    assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
     double lamB = p.second;
@@ -273,7 +273,8 @@ void testPartialOverlap2_3DOffset() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(std::abs(det) < tol);
-    assert(lli.hasSolution(tol));
+    // lines don't touch
+    assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
     double lamB = p.second;
@@ -340,7 +341,8 @@ void testPartialOverlap3_3DOffset() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
-    assert(lli.hasSolution(tol));
+    // lines don't touch
+    assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
     double lamB = p.second;
@@ -407,7 +409,8 @@ void testQInsideP_3DOffset() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
-    assert(lli.hasSolution(tol));
+    // lines don't touch
+    assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
     double lamB = p.second;
@@ -473,7 +476,8 @@ void testPInsideQ_3DOffset() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     assert(abs(det) < tol);
-    assert(lli.hasSolution(tol));
+    // lines don't touch
+    assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
     double lamB = p.second;
@@ -513,7 +517,7 @@ int main(int argc, char** argv) {
     test1_3d();
     test1_3DOffset();
     test2_3DOffset();
-    test3_3DOffset(); // FAILS
+    test3_3DOffset();
     testNoOverlap_3DOffset();
     testNoOverlap2_3DOffset();
     testPartialOverlap_3DOffset();
