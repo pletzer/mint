@@ -110,6 +110,8 @@ include_directories(
 message(STATUS "NetCDF include dir: ${NETCDF_INCLUDE_DIR}")
 message(STATUS "NetCDF libraries: ${NETCDF_LIBRARIES}")
 
+find_package(Doxygen)
+
 enable_testing()
 
 add_subdirectory(src)
