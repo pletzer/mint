@@ -1,3 +1,4 @@
+
 #include <vector>
 #include <map>
 #include <string>
@@ -14,6 +15,8 @@
 #define MNT_REGRID_EDGES
 
 /**
+ * @brief Edge-centred field regridding
+ *
  * A class to compute the regridding weights of an edge-centred field
  */
 
@@ -97,11 +100,7 @@ struct RegridEdges_t {
 };
 
 /**
- * @brief Constructor
- *
- * @details
  * Constructs a regridding object for edge centred fields. 
- *
  * @param self instance of the regridding object
  * @return error code (0 is OK)
  */
