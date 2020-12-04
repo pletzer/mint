@@ -97,7 +97,12 @@ struct RegridEdges_t {
 };
 
 /**
- * Constructor
+ * @brief Constructor
+ *
+ * @details
+ * Constructs a regridding object for edge centred fields. 
+ *
+ * @param self instance of the regridding object
  * @return error code (0 is OK)
  */
 extern "C"
@@ -207,6 +212,7 @@ int mnt_regridedges_nextSlice(RegridEdges_t** self);
 
 /** 
  * Load field from 2D UGRID file
+ * @param self this instance
  * @param fort_filename file name (does not require termination character)
  * @param nFilenameLength length of filename string (excluding '\0' if present)
  * @param field_name name of the field
@@ -315,7 +321,6 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* n);
  * Apply interpolation weights to edge field with unique edge Ids
  * @param self this instance
  * @param src_data edge centred data on the source grid
- * @param numDstEdges number of destination grid edges
  * @param dst_data edge centred data on the destination grid
  * @return error code (0 is OK)
  * @note edges go anticlockwise
