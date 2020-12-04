@@ -19,46 +19,80 @@
 
 struct RegridEdges_t {
 
-    // pointers to the src/dst unstructured grid
+    /** pointer to the source VTK unstructured grid */
     vtkUnstructuredGrid* srcGrid;
+
+    /** pointer to the destination VTK unstructured grid */
     vtkUnstructuredGrid* dstGrid;
 
-    // cell locator (octree-based) for fast cell search
+    /** cell locator (octree-based) for fast cell search */
     vmtCellLocator* srcLoc;
 
-    // interpolation weights and corresponding src/dst grid cell
-    // indices and edges indices
-    std::vector<vtkIdType> weightDstCellIds;
-    std::vector<int> weightDstFaceEdgeIds;
-
-    std::vector<vtkIdType> weightSrcCellIds;
-    std::vector<int> weightSrcFaceEdgeIds;
-
+    /** interpolation weights */
     std::vector<double> weights;
 
+    /** destination cell Ids of the weights */
+    std::vector<vtkIdType> weightDstCellIds;
+
+    /** destination face indices of the weights */
+    std::vector<int> weightDstFaceEdgeIds;
+
+    /** source cell Ids of the weights */
+    std::vector<vtkIdType> weightSrcCellIds;
+
+    /** source face indices of the weights */
+    std::vector<int> weightSrcFaceEdgeIds;
+
+    /** number of points per cell */
     size_t numPointsPerCell;
+
+    /** number of edges per cell */
     size_t numEdgesPerCell;
 
-    Grid_t* srcGridObj;
+    /** destination grid object */
     Grid_t* dstGridObj;
 
+    /** source grid object */
+    Grid_t* srcGridObj;
+
+    /** edge connectivity iterator */
     QuadEdgeIter edgeConnectivity;
 
+    /** number of dimensions */
     int ndims;
-    std::vector<size_t> startIndices;
+
+    /** netcdf dimnension names */
     std::vector<std::string> dimNames;
 
-
+    /** netcdf file source data reader */
     NcFieldRead_t* srcReader;
-    int srcNcid, srcVarid;
+
+    /** netcdf source file Id */
+    int srcNcid;
+
+    /** netcdf variable Id */
+    int srcVarid;
+
+    /** netcdf source data dimensions */
     std::vector<size_t> srcDims;
+
+    /** netcdf source data counts */
     std::vector<size_t> srcCounts;
 
+    /** netcdf destination data writer */
     NcFieldWrite_t* dstWriter;
+
+    /** netcdf destination data dimensions */
     std::vector<size_t> dstDims;
+
+    /** netcdf destination data counts */
     std::vector<size_t> dstCounts;
 
+    /** multi-array iterator */
     MultiArrayIter_t* mai;
+
+    /** start indices for multi-array iterator */
+    std::vector<size_t> startIndices;
 
 };
 
