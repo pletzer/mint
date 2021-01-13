@@ -100,7 +100,7 @@ struct RegridEdges_t {
 };
 
 /**
- * Constructs a regridding object for edge centred fields. 
+ * Constructs a regridding object for edge centred fields
  * @param self instance of the regridding object
  * @return error code (0 is OK)
  */
