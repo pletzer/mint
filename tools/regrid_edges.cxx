@@ -331,18 +331,16 @@ int main(int argc, char** argv) {
 
         std::vector<double> loop_integrals;
         std::vector<double> dstCellByCellData;
-        if (vtkOutputFile.size() > 0) {
 
-            // allocate
-            loop_integrals.resize(numDstCells);
-            dstCellByCellData.resize(numDstCells * NUM_EDGES_PER_CELL);
+        // allocate
+        loop_integrals.resize(numDstCells);
+        dstCellByCellData.resize(numDstCells * NUM_EDGES_PER_CELL);
 
-            // attach field to grid so we can save the data to file
-            mnt_grid_attach(&rg->dstGridObj, vname.c_str(), NUM_EDGES_PER_CELL, &dstCellByCellData[0]);
+        // attach field to grid so we can save the data to file
+        mnt_grid_attach(&rg->dstGridObj, vname.c_str(), NUM_EDGES_PER_CELL, &dstCellByCellData[0]);
 
-            std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
-            mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
-        }
+        std::string loop_integral_varname = std::string("loop_integrals_of_") + vname;
+        mnt_grid_attach(&rg->dstGridObj, loop_integral_varname.c_str(), 1, &loop_integrals[0]);
 
         //
         // iterate over the axes other than edge. ASSUMES num edges is the last dimension!!!
