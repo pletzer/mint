@@ -13,11 +13,10 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 You will need to have:
 
- * Python (tested with 2.7.14 and 3.6.6)
- * numpy (tested with 1.14.2 and 1.15.4)
  * netCDF4 (tested with 1.3.1 and 1.4.0)
  * VTK with python bindings enabled (tested with 8.1.0 and 8.1.1)
-
+ * Python (optional)
+ * numpy (optional)
 
  * C++ compiler (e.g. g++ 6.4)
  * Fortran compiler (e.g gfortran 6.4)
@@ -46,54 +45,47 @@ FC=mpif90 CXX=mpicxx cmake ..; make -j 8
 make test
 ```
 
-## Example how to regrid from lat-lon to a cubed-sphere grid
+## API Documentation
 
-In directory `tools/`:
-```
-cd ../tools
-```
+This is useful if you would like to call MINT from C, Python or Fortran:
 
- 1. Generate lat-lon grid of Unified Model NetCDF flavour
- ```
- python latlon.py -nlon 100 -nlat 60 -o um100x60.nc
- ```
+https://pletzer.github.io/mint/html/
 
- 2. Convert the destination grid to VTK file format
- ```
- python ugrid_reader.py -i ../data/cs_16.nc:physics -V cs_16.vtk
- ```
+## Examples
 
- 3. Read the source grid, generate edge data and save the result as a VTK file
- ```
- python latlon_reader.py -i um100x60.nc -stream "sin(2*pi*x/360.)*cos(pi*y/180.)" -V um100x60.vtk
- ```
- Note: this sets the stream function where x, y are the longitude, respectively, latitudes in degrees. 
- The vector field integral on edges is the difference of stream function values between the edge vertices.
+Set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT_SRC_DIR=..`).
 
-The figure below shows a detail of the source (red) and destination (green) grids.
-![alt Source (red) and destination (green) grids](https://raw.githubusercontent.com/pletzer/mint/master/figures/srcAndDstGrids.png)
-
-
- 4. Regrid the above field from the UM source grid to a cubed-sphere and save the result in a VTK file
+ 1. Compute the interpolation weights from a lat-lon grid to the cubed sphere:
  ```
- python regrid_edges.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs_16.vtk -o regrid_edges.vtk
- ```
- or, alternatively, the C++ version:
- ```
- ../build/tools/regrid_edges -s um100x60.vtk -v "edge_integrated_velocity" -d cs_16.vtk -o regrid_edges.vtk
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+                      -w weights.nc
  ```
 
+ 2. Regrid field "edge_integrated_velocity" from lat-lon to cubed-sphere by loading the previously generated weights:
+ ```
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+                      -v edge_integrated_velocity -W weights.nc -o edge_integrated_velocity.vtk
+ ```
 
- The above should print very small values, indicating that the loop integrals are nearly zero for each cell, and thus satisfying Stokes' theorem.
+ 3. Compute the weights and regrid in one step:
+ ```
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+                      -v edge_integrated_velocity -W -o edge_integrated_velocity.vtk
+ ```
 
-It is important to note that treating the the edge field as a nodal field, i.e. applying bilinear regridding 
-does not produce zero loop integrals:
-```
-python regrid_verts.py -s um100x60.vtk -v "edge_integrated_velocity" -d cs_16.vtk -o regrid_verts.vtk
-```
+ 4. Regrid a time dependent field with elevation:
+ ```
+./tools/regrid_edges -s $MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc:mesh2d -S 0 \
+                     -d $MINT_SRC_DIR//data/c24_u_integrated.nc:physics -D 1 \
+                     -v u@$MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc \
+                     -O regridedges_xyzt.nc -o regridedges_xyzt.vtk
 
-Error of bilinear regridding:
-![alt Error of bilinear regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_vertsError.png)
+ ```
+
+## Conservation error
 
 Error of mimetic regridding:
 ![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
