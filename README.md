@@ -13,11 +13,10 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 You will need to have:
 
- * Python (tested with 2.7.14 and 3.6.6)
- * numpy (tested with 1.14.2 and 1.15.4)
  * netCDF4 (tested with 1.3.1 and 1.4.0)
  * VTK with python bindings enabled (tested with 8.1.0 and 8.1.1)
-
+ * Python (optional)
+ * numpy (optional)
 
  * C++ compiler (e.g. g++ 6.4)
  * Fortran compiler (e.g gfortran 6.4)
@@ -45,6 +44,30 @@ FC=mpif90 CXX=mpicxx cmake ..; make -j 8
 ```
 make test
 ```
+
+## API Documentation
+
+This is useful if you would like to call MINT from C, Python or Fortran:
+
+https://pletzer.github.io/mint/html/
+
+## Examples
+
+Set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT_SRC_DIR=..`).
+
+ 1. Regridding from a lat-lon grid to the cubed sphere, computing the weights only:
+ ```
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+                      -w weights.nc
+ ```
+
+ 2. Regrid field "edge_integrated_velocity" from lat-lon to cubed-sphere by loading the previously generated weights:
+ ```
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+                      -v edge_integrated_velocity -W weights.nc -o test.vtk
+ ```
 
 ## Example how to regrid from lat-lon to a cubed-sphere grid
 
