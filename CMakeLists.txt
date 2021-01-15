@@ -28,6 +28,9 @@ enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
+configure_file("${CMAKE_SOURCE_DIR}/setup.py.in" "${CMAKE_BINARY_DIR}/setup.py")
+configure_file("${CMAKE_SOURCE_DIR}/mint/regrid_edges.py.in" "${CMAKE_BINARY_DIR}/mint/regrid_edges.py")
+
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 
 
@@ -129,8 +132,6 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
-
-enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(tests)
