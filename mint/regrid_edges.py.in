@@ -1,8 +1,10 @@
 from ctypes import c_void_p, c_double, c_int, byref, CDLL
 import sys
 
+__version__ = "@VERSION@"
+
 # open the shared library
-mintlib = CDLL('@CMAKE_INSTALL_PREFIX@/lib/libmint.@CMAKE_SHARED_LIBRARY_SUFFIX@')
+mintlib = CDLL('@CMAKE_INSTALL_PREFIX@/lib/libmint@CMAKE_SHARED_LIBRARY_SUFFIX@')
 
 # method signatures
 mintlib.mnt_regridedges_new.argtypes = (byref(c_void_p),)
