@@ -1,4 +1,6 @@
+# -*- python -*-
 import setuptools
+import glob
 
 setuptools.setup(
     name="mint", # Replace with your own username
@@ -6,11 +8,20 @@ setuptools.setup(
     author_email="alexander@gokliya.net",
     description="Mimetic INterpolation on the sphere",
     url="https://github.com/pletzer/mint",
-    packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: ISC License",
         "Operating System :: OS Independent",
     ],
+    packages=['mint'],
+    ext_modules = [setuptools.Extension('mint', # name of the shared library
+                   glob.glob('@CMAKE_SOURCE_DIR@/src/*.cpp'),
+                   define_macros=[],
+                   include_dirs=['@CMAKE_SOURCE_DIR@/src/', 
+                                 '@VTK_DIR@/include', 
+                                 '@NETCDF_INCLUDE_DIR@'],
+                   libraries=[],
+                   library_dirs=['@VTK_DIR@/../..'],
+                   ),],
     python_requires='>=3.6',
 )

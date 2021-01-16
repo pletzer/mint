@@ -1,3 +1,5 @@
+# -*- python -*- 
+
 from ctypes import c_void_p, c_double, c_int, byref, CDLL
 import sys
 
