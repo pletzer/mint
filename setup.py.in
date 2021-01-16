@@ -2,6 +2,10 @@
 import setuptools
 import glob
 
+cpp_11_arg = '-std=gnu++11'
+if '@CMAKE_CXX_COMPILER_ID@' == 'MSVC':
+    cpp_11_arg = '/std:c11'
+
 setuptools.setup(
     name="mint", # Replace with your own username
     version="@VERSION@",
@@ -17,11 +21,10 @@ setuptools.setup(
     ext_modules = [setuptools.Extension('mint', # name of the shared library
                    glob.glob('@CMAKE_SOURCE_DIR@/src/*.cpp'),
                    define_macros=[],
-                   include_dirs=['@CMAKE_SOURCE_DIR@/src/', 
-                                 '@VTK_DIR@/include', 
-                                 '@NETCDF_INCLUDE_DIR@'],
+                   include_dirs=['@CMAKE_SOURCE_DIR@/src/',],
                    libraries=[],
-                   library_dirs=['@VTK_DIR@/../..'],
+                   library_dirs=[],
+                   extra_compile_args=[cpp_11_arg,],
                    ),],
-    python_requires='>=3.6',
+    install_requires=['numpy', 'netCDF4', 'vtk', ],
 )

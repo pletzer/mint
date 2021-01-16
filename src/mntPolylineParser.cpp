@@ -13,7 +13,7 @@ PolylineParser::parsePosition(const std::string& posStr) const {
         // convert substring to number
         double number = std::atof( posStr.substr(posBeg, posEnd - posBeg).c_str() );
         res[i] = number;
-        if (posEnd == std::string::npos && i < (int)(this->ndims) - 1) {
+        if (posEnd == std::string::npos && i < (this->ndims) - 1) {
             std::cerr << "Warning: missing comma in \"" << posStr << "\"\n";
             break;
         }
