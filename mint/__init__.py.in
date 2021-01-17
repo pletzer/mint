@@ -5,5 +5,9 @@ from pathlib import Path
 
 __version__ = "@VERSION@"
 
+"""
 # open shared library
-MINTLIB = CDLL(Path('@CMAKE_INSTALL_PREFIX@/lib/libmint@CMAKE_SHARED_LIBRARY_SUFFIX@'))
+MINTLIB = None
+while not MINTLIB:
+    MINTLIB = CDLL(Path(__path__ + '/../mint'))
+"""
