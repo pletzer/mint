@@ -169,7 +169,7 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
     for (const vtkIdType& cId : faces) {
         if (this->containsPoint(cId, point, tol)) {
             vtkCell* quad = this->grid->GetCell(cId);
-            int inside = quad->EvaluatePosition((double*) point, closestPoint, subId, pcoords, dist2, weights);
+            quad->EvaluatePosition((double*) point, closestPoint, subId, pcoords, dist2, weights);
             return cId;
         }
     }

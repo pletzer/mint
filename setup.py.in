@@ -21,10 +21,10 @@ setuptools.setup(
     ext_modules = [setuptools.Extension('mint', # name of the shared library
                    glob.glob('@CMAKE_SOURCE_DIR@/src/*.cpp'),
                    define_macros=[],
-                   include_dirs=['@CMAKE_SOURCE_DIR@/src/',],
+                   include_dirs=['@CMAKE_SOURCE_DIR@/src/', glob.glob('@VTK_DIR@/../../../include/vtk-*')[0]],
                    libraries=[],
                    library_dirs=[],
                    extra_compile_args=[cpp_11_arg,],
                    ),],
-    install_requires=['numpy', 'netCDF4', 'vtk', ],
+    install_requires=['numpy',],
 )

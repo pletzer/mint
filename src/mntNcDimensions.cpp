@@ -27,7 +27,7 @@ int mnt_ncdimensions_read(NcDimensions_t** self, int ncid, int varid) {
   ier =  nc_inq_vardimid(ncid, varid, dimIds);
   if (ier != NC_NOERR) return ier;
 
-  for (size_t i = 0; i < ndims; ++i) {
+  for (int i = 0; i < ndims; ++i) {
     ier = nc_inq_dimlen(ncid, dimIds[i], &(*self)->dims[i]);
   }
 

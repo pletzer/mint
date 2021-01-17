@@ -1,67 +1,28 @@
 #ifndef MNT_DOTS
 #define MNT_DOTS
 
-#include <mntMat2x2.h>
-#include <mntMat2x3.h>
-#include <mntMat3x2.h>
-#include <mntMat3x3.h>
+#include <mntMatMxN.h>
 #include <mntVecN.h>
 
 /**
- * Function that compute the dot product and the transpose
+ * Functions that compute the dot product and the transpose
  */
 
-template<class T> 
-Matrix2x2<T> dot(const Matrix2x2<T> &a, const Matrix2x2<T> &b);
+template<int M, int N, int K, class T>
+MatMxN<M, K, T> dot(const MatMxN<M, N, T> &a, const MatMxN<N, K, T> &b);
 
-template<class T> 
-Vector2<T> dot(const Matrix2x2<T> &a, const Vector2<T> &b);
+template<int M, int N, class T>
+VecN<M, T> dot(const MatMxN<M, N, T> &a, const VecN<N, T> &b);
 
-template<class T> 
-Vector2<T> dot(const Vector2<T> &b, const Matrix2x2<T> &a);
+template<int M, int N, class T>
+VecN<N, T> dot(const VecN<M, T> &b, const MatMxN<M, N, T> &a);
 
-
-template<class T> 
-Matrix2x2<T> dot(const Matrix2x3<T> &a, const Matrix3x2<T> &b);
-
-template<class T> 
-Vector2<T> dot(const Matrix2x3<T> &a, const Vector3<T> &b);
-
-template<class T> 
-Vector3<T> dot(const Vector2<T> &b, const Matrix2x3<T> &a);
-
-
-template<class T> 
-Matrix2x2<T> dot(const Matrix3x2<T> &a, const Matrix2x3<T> &b);
-
-template<class T> 
-Vector3<T> dot(const Matrix3x2<T> &a, const Vector2<T> &b);
-
-template<class T> 
-Vector2<T> dot(const Vector3<T> &b, const Matrix3x2<T> &a);
-
-
-template<class T> 
-Matrix3x3<T> dot(const Matrix3x3<T> &a, const Matrix3x3<T> &b);
-
-template<class T> 
-Vector3<T> dot(const Matrix3x3<T> &a, const Vector3<T> &b);
-
-template<class T> 
-Vector3<T> dot(const Vector3<T> &b, const Matrix3x3<T> &a);
+template<int M, class T>
+T dot(const VecN<M, T> &a, const VecN<M, T> &b);
 
 ////////////////////////////////////////////////////////////////
 
-template<class T>
-Matrix2x2<T> transpose(const Matrix2x2<T> &a);
-
-template<class T>
-Matrix3x2<T> transpose(const Matrix2x3<T> &a);
-
-template<class T>
-Matrix2x3<T> transpose(const Matrix3x2<T> &a);
-
-template<class T>
-Matrix3x3<T> transpose(const Matrix3x3<T> &a);
+template<int M, int N, class T>
+MatMxN<N, M, T> transpose(const MatMxN<M, N, T> &a);
 
 #endif /* MNT_DOTS */

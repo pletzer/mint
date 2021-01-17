@@ -5,7 +5,7 @@ QuadEdgeIter::QuadEdgeIter() {
 
     // create a VTK QUAD cell and extract the edge to node connectivity
     this->cell = vtkQuad::New(); // 2d
-    for (size_t i = 0; i < cell->GetNumberOfPoints(); ++i) {
+    for (vtkIdType i = 0; i < cell->GetNumberOfPoints(); ++i) {
         this->cell->GetPointIds()->SetId(i, i);
     }
 

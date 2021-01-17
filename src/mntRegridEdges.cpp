@@ -519,7 +519,6 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     double dstEdgePt1[] = {0., 0., 0.};
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
 
-    size_t numSrcCells = (*self)->srcGrid->GetNumberOfCells();
     size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // reserve some space for the weights and their cell/edge id arrays
@@ -529,10 +528,6 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     (*self)->weightDstFaceEdgeIds.reserve(n);
     (*self)->weightSrcCellIds.reserve(n);
     (*self)->weightDstCellIds.reserve(n);
-
-    double* srcGridBounds = (*self)->srcGrid->GetBounds();
-    double srcLonMin = srcGridBounds[mnt_grid_getLonIndex()];
-    
 
     vtkPoints* badSegmentsPoints = NULL;
     vtkUnstructuredGrid* badSegmentsGrid = NULL;
@@ -551,13 +546,12 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
 
     // iterate over the dst grid cells
     int numBadSegments = 0;
-    for (vtkIdType dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+    for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
 
         // get this cell vertex Ids
         (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
 
         vtkCell* dstCell = (*self)->dstGrid->GetCell(dstCellId);
-        int numEdges = dstCell->GetNumberOfEdges();
 
         // iterate over the four edges of each dst cell
         for (int dstEdgeIndex = 0; dstEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
@@ -589,7 +583,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                 const double coeff = polySegIter.getCoefficient();
 
                 if (debug == 3) {
-                    printf("%12lld %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
+                    printf("%12zu %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
                         dstCellId, dstEdgeIndex, 
                         dstEdgePt0[0], dstEdgePt0[1], 
                         dstEdgePt1[0], dstEdgePt1[1], 
@@ -599,9 +593,6 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                         polySegIter.getIntegratedParamCoord());
                 }
 
-                // create pair (dstCellId, srcCellId)
-                std::pair<vtkIdType, vtkIdType> k = std::pair<vtkIdType, vtkIdType>(dstCellId, 
-                                                                                    srcCellId);
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
                 double* srcCellParamCoords = srcCell->GetParametricCoords();
 
@@ -636,7 +627,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
             if (debug > 0) {
                 double totalT = polySegIter.getIntegratedParamCoord();
                 if (std::abs(totalT - 1.0) > 1.e-10) {
-                    printf("Warning: [%d] total t of segment: %lf != 1 (diff=%lg) dst cell %lld points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
+                    printf("Warning: [%d] total t of segment: %lf != 1 (diff=%lg) dst cell %zu points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)\n",
                        numBadSegments, totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
                     numBadSegments++;
 
@@ -1020,7 +1011,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     double edgeParamCoordEnds[(*self)->numEdgesPerCell * 3];
     double* xiBeg;
     double* xiEnd;
-    for (int e = 0; e < (*self)->numEdgesPerCell; ++e) {
+    for (size_t e = 0; e < (*self)->numEdgesPerCell; ++e) {
         (*self)->edgeConnectivity.getParamCoords(e, &xiBeg, &xiEnd);
         for (size_t j = 0; j < 3; ++j) { // always 3d
             edgeParamCoordBegs[e*3 + j] = xiBeg[j];
