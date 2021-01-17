@@ -486,6 +486,9 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
     // fetch the node Ids of this edge
     vtkIdType nodeIds[2];
     int ier = mnt_grid_getNodeIds(self, cellId, edgeIndex, nodeIds);
+    if (ier != 0) {
+        return 1;
+    }
 
     // iterate over the edges of this face until we find the edge
     // that has vertices nodeIds (but not necessarily in the same

@@ -1,7 +1,45 @@
 # -*- python -*-
 import setuptools
+from pathlib import Path
+import os
 import glob
 
+# dependencies
+try:
+    import vtk
+    VTK_VERSION = f'{vtk.VTK_MAJOR_VERSION}.{vtk.VTK_MINOR_VERSION}'
+    VTK_INCLUDE_DIR = Path(vtk.__path__[0] + f'/../../../../include/vtk-{VTK_VERSION}')
+    VTK_LIBRARIES_DIR = Path(vtk.__path__[0] + '/../../../../lib')
+    VTK_LIBRARIES = [f'{lib}-{VTK_VERSION}' for lib in ('vtkIOCore', 
+                                                        'vtkIOLegacy', 
+                                                        'vtkCommonExecutionModel', 
+                                                        'vtkCommonDataModel', 
+                                                        'vtkCommonTransforms',
+                                                        'vtkCommonMisc',
+                                                        'vtkCommonMath',
+                                                        'vtkCommonSystem',
+                                                        'vtkCommonCore',
+                                                        'vtksys')]
+except:
+    raise RuntimeError('ERROR: "import vtk", must have vtk installed')
+try:
+    import netCDF4
+    NETCDF_INCLUDE_DIR = Path(netCDF4.__path__[0] + '/../../../../include')
+    NETCDF_LIBRARIES_DIR = Path(netCDF4.__path__[0] + '/../../../../lib')
+    NETCDF_LIBRARIES = ['netcdf', 'hdf5']
+except:
+    raise RuntimeError('ERROR: "import netCDF4", must have netcdf4 installed')
+
+print(f'VTK_VERSION          = {VTK_VERSION}')
+print(f'VTK_INCLUDE_DIR      = {VTK_INCLUDE_DIR}')
+print(f'VTK_LIBRARIES_DIR    = {VTK_LIBRARIES_DIR}')
+print(f'VTK_LIBRARIES        = {VTK_LIBRARIES}')
+print(f'NETCDF_INCLUDE_DIR   = {NETCDF_INCLUDE_DIR}')
+print(f'NETCDF_LIBRARIES_DIR = {NETCDF_LIBRARIES_DIR}')
+print(f'NETCDF_LIBRARIES     = {NETCDF_LIBRARIES}')
+
+
+# C++ 11 flag
 cpp_11_arg = '-std=gnu++11'
 if '@CMAKE_CXX_COMPILER_ID@' == 'MSVC':
     cpp_11_arg = '/std:c11'
@@ -15,16 +53,17 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: ISC License",
-        "Operating System :: OS Independent",
     ],
     packages=['mint'],
     ext_modules = [setuptools.Extension('mint', # name of the shared library
-                   glob.glob('@CMAKE_SOURCE_DIR@/src/*.cpp'),
+                   sources=glob.glob('@CMAKE_SOURCE_DIR@/src/*.cpp'),
                    define_macros=[],
-                   include_dirs=['@CMAKE_SOURCE_DIR@/src/', glob.glob('@VTK_DIR@/../../../include/vtk-*')[0]],
-                   libraries=[],
-                   library_dirs=[],
+                   include_dirs=['@CMAKE_SOURCE_DIR@/src/',
+                                 VTK_INCLUDE_DIR,
+                                 NETCDF_INCLUDE_DIR],
+                   libraries=VTK_LIBRARIES + NETCDF_LIBRARIES,
+                   library_dirs=[vtk.__path__, ],
                    extra_compile_args=[cpp_11_arg,],
                    ),],
-    install_requires=['numpy',],
+    install_requires=['numpy', 'vtk>=8.1.0', 'netcdf4', 'tbb'],
 )

@@ -29,7 +29,8 @@ set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
 configure_file("${CMAKE_SOURCE_DIR}/setup.py.in" "${CMAKE_BINARY_DIR}/setup.py")
-configure_file("${CMAKE_SOURCE_DIR}/mint/regrid_edges.py.in" "${CMAKE_BINARY_DIR}/mint/regrid_edges.py")
+configure_file("${CMAKE_SOURCE_DIR}/mint/__init__.py.in" "${CMAKE_BINARY_DIR}/mint/__init__.py")
+file(COPY "${CMAKE_SOURCE_DIR}/mint/regrid_edges.py" DESTINATION "${CMAKE_BINARY_DIR}/mint")
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 

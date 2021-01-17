@@ -1,0 +1,9 @@
+# -*- python -*- 
+
+from ctypes import CDLL
+from pathlib import Path
+
+__version__ = "@VERSION@"
+
+# open shared library
+MINTLIB = CDLL(Path('@CMAKE_INSTALL_PREFIX@/lib/libmint@CMAKE_SHARED_LIBRARY_SUFFIX@'))
