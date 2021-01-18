@@ -1,5 +1,6 @@
-from ctypes import c_void_p, c_double, c_int, byref, POINTER, c_char_p
+from ctypes import c_void_p, c_double, c_int, byref, POINTER, c_char_p, c_size_t
 from . import LIB
+import numpy
 
 def error_handler(filename, methodname, ier):
     raise RuntimeError(f'ERROR ier={ier} after calling {methodname} in {filename}!')
@@ -88,6 +89,37 @@ class RegridEdges(object):
             error_handler('regrid_edges.py', 'loadDstGrid', ier)
 
 
+    def getNumSrcEdges(self):
+        """
+        Get the number of unique edges of the source grid.
+
+        :returns number
+        """
+        LIB.mnt_regridedges_getNumSrcEdges.argtypes = [POINTER(c_void_p)]
+        LIB.mnt_regridedges_getNumSrcEdges.restype = c_size_t
+        n = c_size_t()
+        ier = LIB.mnt_regridedges_getNumSrcEdges(self.regrid_obj, byref(n))
+        if ier:
+            error_handler('regrid_edges.py', 'getNumSrcEdges', ier)
+        return n.value
+
+
+    def getNumDstEdges(self):
+        """
+        Get the number of unique edges of the destination grid.
+
+        :returns number
+        """
+        LIB.mnt_regridedges_getNumDstEdges.argtypes = [POINTER(c_void_p)]
+        LIB.mnt_regridedges_getNumDstEdges.restype = c_size_t
+        n = c_size_t()
+        ier = LIB.mnt_regridedges_getNumDstEdges(self.regrid_obj, byref(n))
+        if ier:
+            error_handler('regrid_edges.py', 'getNumDstEdges', ier)
+        return n.value
+
+
+
     def build(self, numCellsPerBucket, periodX, debug):
         """
         Build the regridder and compute the regridding weights
@@ -136,7 +168,7 @@ class RegridEdges(object):
         LIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p), 
                                               numpy.ctypeslib.ndpointer(dtype=numpy.float64), 
                                               numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
-        ier = LIB.mnt_regridedges_apply(srcdata, dstdata)
+        ier = LIB.mnt_regridedges_apply(self.regrid_obj, srcdata, dstdata)
         if ier:
             error_handler('regrid_edges.py', 'apply', ier)
 
