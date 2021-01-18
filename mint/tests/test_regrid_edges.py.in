@@ -1,0 +1,19 @@
+from mint import RegridEdges
+
+rg = RegridEdges()
+
+# src is lon-lat grid
+rg.setSrcGridFlags(0, 0)
+rg.loadSrcGrid('@CMAKE_SOURCE_DIR@/data/latlon4x2.nc:latlon')
+
+# dst is cubed-sphere
+rg.setSrcGridFlags(1, 1)
+rg.loadDstGrid('@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics')
+
+rg.build(128, 360., debug=2)
+
+rg.dumpWeights('test_regrid_edges_py.nc')
+
+
+
+

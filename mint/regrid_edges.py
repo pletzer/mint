@@ -69,7 +69,8 @@ class RegridEdges(object):
         :param filename: string in the format filename:meshname
         """
         LIB.mnt_regridedges_loadSrcGrid.argtypes = [POINTER(c_void_p), c_char_p, c_int]
-        ier = LIB.mnt_regridedges_loadSrcGrid(self.regrid_obj, filename, len(filename))
+        fn = filename.encode('utf-8')
+        ier = LIB.mnt_regridedges_loadSrcGrid(self.regrid_obj, fn, len(fn))
         if ier:
             error_handler('regrid_edges.py', 'loadSrcGrid', ier)
 
@@ -81,7 +82,8 @@ class RegridEdges(object):
         :param filename: string in the format filename:meshname
         """
         LIB.mnt_regridedges_loadDstGrid.argtypes = [POINTER(c_void_p), c_char_p, c_int]
-        ier = LIB.mnt_regridedges_loadDstGrid(self.regrid_obj, filename, len(filename))
+        fn = filename.encode('utf-8')
+        ier = LIB.mnt_regridedges_loadDstGrid(self.regrid_obj, fn, len(fn))
         if ier:
             error_handler('regrid_edges.py', 'loadDstGrid', ier)
 
@@ -106,7 +108,8 @@ class RegridEdges(object):
         :param filename: file name
         """
         LIB.mnt_regridedges_dumpWeights.argtypes = [POINTER(c_void_p), c_char_p, c_int]
-        ier = LIB.mnt_regridedges_dumpWeights(self.regrid_obj, filename, len(filename))
+        fn = filename.encode('utf-8')
+        ier = LIB.mnt_regridedges_dumpWeights(self.regrid_obj, fn, len(fn))
         if ier:
             error_handler('regrid_edges.py', 'dumpWeights', ier)
 
@@ -117,7 +120,8 @@ class RegridEdges(object):
         :param filename: file name
         """
         LIB.mnt_regridedges_loadWeights.argtypes = [POINTER(c_void_p), c_char_p, c_int]
-        ier = LIB.mnt_regridedges_loadWeights(self.regrid_obj, filename, len(filename))
+        fn = filename.encode('utf-8')
+        ier = LIB.mnt_regridedges_loadWeights(self.regrid_obj, fn, len(fn))
         if ier:
             error_handler('regrid_edges.py', 'loadWeights', ier)
 
