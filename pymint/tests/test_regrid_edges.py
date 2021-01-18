@@ -73,7 +73,7 @@ def test_apply_weights(data_dir):
 if __name__ == '__main__':
 
     data_dir = Path('./data')
-    if len(sys.argv) >= 1:
+    if len(sys.argv) >= 2:
         data_dir = Path(sys.argv[1])
 
     test_compute_weights(data_dir)

@@ -11,21 +11,40 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 ## Prerequisites
 
-You will need to have:
+You will need for the python module:
 
- * netCDF4 (tested with 1.3.1 and 1.4.0)
- * VTK with python bindings enabled (tested with 8.1.0 and 8.1.1)
- * Python (optional)
- * numpy (optional)
+ * C++ compiler with C++ 11 support
+ * netcdf4
+ * vtk
+ * numpy
 
- * C++ compiler (e.g. g++ 6.4)
+We recommend to install the above packages with Anaconda.
+
+For building the library and the tools
+
+ * C++ compiler with C++ 11 support
  * Fortran compiler (e.g gfortran 6.4)
  * NetCDF library
+ * Doxygen
 
 
- We recommend to install Python and related packages using Anaconda.
+## How to build the python mint module
+
+```
+python setup.py install 
+```
+
+Check that you can import the mint module
+```
+python -c "import mint"
+```
+
+To run a quick test type
+```
+python pymint/tests/test_regrid_edges.py
+```
  
-## How to build MINT
+## How to build the MINT library
 
 ```
 mkdir build
