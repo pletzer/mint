@@ -1,0 +1,19 @@
+# -*- python -*- 
+
+from ctypes import CDLL
+from pathlib import Path
+import glob
+
+__version__ = "@VERSION@"
+
+# open shared library
+LIB = None
+for libfile in Path(__path__[0] + '/..').glob('mint.cpython*'):
+    LIB = CDLL(libfile)
+    if LIB:
+        break
+
+__all__ = [LIB, 'regrid_edges']
+
+from .regrid_edges import RegridEdges
+

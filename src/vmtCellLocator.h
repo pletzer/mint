@@ -224,7 +224,7 @@ private:
         this->grid->GetCellPoints(faceId, npts, ptIds);
         vtkPoints* points = this->grid->GetPoints();
         std::vector<Vec3> res(npts);
-        for (size_t i = 0; i < npts; ++i) {
+        for (vtkIdType i = 0; i < npts; ++i) {
             vtkIdType idx = ptIds[i];
             double* p = points->GetPoint(idx);
             res[i] = Vec3(p);

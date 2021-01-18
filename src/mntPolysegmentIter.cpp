@@ -69,8 +69,8 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
 
         // compute the cell parametric coords
         vtkCell* cell = this->grid->GetCell(cId);
-        int ina = cell->EvaluatePosition(&pa[0], closestPoint, subId, &xia[0], dist2, weights);
-        int inb = cell->EvaluatePosition(&pb[0], closestPoint, subId, &xib[0], dist2, weights);
+        cell->EvaluatePosition(&pa[0], closestPoint, subId, &xia[0], dist2, weights);
+        cell->EvaluatePosition(&pb[0], closestPoint, subId, &xib[0], dist2, weights);
 
         // fill in
         this->segCellIds.push_back(cId);

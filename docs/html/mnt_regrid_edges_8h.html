@@ -102,10 +102,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:ae1a9e7ace439d7b5b7b34f52f868bb81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="mnt_regrid_edges_8h.html#ae1a9e7ace439d7b5b7b34f52f868bb81">More...</a><br /></td></tr>
 <tr class="separator:ae1a9e7ace439d7b5b7b34f52f868bb81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9031e75918b12c10ecd99ce090370bcd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a9031e75918b12c10ecd99ce090370bcd">mnt_regridedges_setSrcGridFlags</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int fixLonAcrossDateline, int averageLonAtPole)</td></tr>
-<tr class="memdesc:a9031e75918b12c10ecd99ce090370bcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set source grid flags.  <a href="mnt_regrid_edges_8h.html#a9031e75918b12c10ecd99ce090370bcd">More...</a><br /></td></tr>
+<tr class="memdesc:a9031e75918b12c10ecd99ce090370bcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the source grid flags.  <a href="mnt_regrid_edges_8h.html#a9031e75918b12c10ecd99ce090370bcd">More...</a><br /></td></tr>
 <tr class="separator:a9031e75918b12c10ecd99ce090370bcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a349cdf4e7518aec1c3c3c34cdcf7cb0f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a349cdf4e7518aec1c3c3c34cdcf7cb0f">mnt_regridedges_setDstGridFlags</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int fixLonAcrossDateline, int averageLonAtPole)</td></tr>
-<tr class="memdesc:a349cdf4e7518aec1c3c3c34cdcf7cb0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set destination grid flags.  <a href="mnt_regrid_edges_8h.html#a349cdf4e7518aec1c3c3c34cdcf7cb0f">More...</a><br /></td></tr>
+<tr class="memdesc:a349cdf4e7518aec1c3c3c34cdcf7cb0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the destination grid flags.  <a href="mnt_regrid_edges_8h.html#a349cdf4e7518aec1c3c3c34cdcf7cb0f">More...</a><br /></td></tr>
 <tr class="separator:a349cdf4e7518aec1c3c3c34cdcf7cb0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abeb406415cdc28a6b822a3a9e3ecd51e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#abeb406415cdc28a6b822a3a9e3ecd51e">mnt_regridedges_dumpSrcGridVtk</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength)</td></tr>
 <tr class="memdesc:abeb406415cdc28a6b822a3a9e3ecd51e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the source grid to a VTK file.  <a href="mnt_regrid_edges_8h.html#abeb406415cdc28a6b822a3a9e3ecd51e">More...</a><br /></td></tr>
@@ -138,7 +138,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a0fde26cd02f3816735b2330322fda880"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a destination grid from a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#a0fde26cd02f3816735b2330322fda880">More...</a><br /></td></tr>
 <tr class="separator:a0fde26cd02f3816735b2330322fda880"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a224f40b7b61bbde232176ecf5e9a09aa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a224f40b7b61bbde232176ecf5e9a09aa">mnt_regridedges_build</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int numCellsPerBucket, double periodX, int debug)</td></tr>
-<tr class="memdesc:a224f40b7b61bbde232176ecf5e9a09aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the regridder.  <a href="mnt_regrid_edges_8h.html#a224f40b7b61bbde232176ecf5e9a09aa">More...</a><br /></td></tr>
+<tr class="memdesc:a224f40b7b61bbde232176ecf5e9a09aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the regridder and compute the regridding weights.  <a href="mnt_regrid_edges_8h.html#a224f40b7b61bbde232176ecf5e9a09aa">More...</a><br /></td></tr>
 <tr class="separator:a224f40b7b61bbde232176ecf5e9a09aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43a7f8d584115aadc8ab0da2ced27d7a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a43a7f8d584115aadc8ab0da2ced27d7a">mnt_regridedges_getNumSrcCells</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, size_t *n)</td></tr>
 <tr class="memdesc:a43a7f8d584115aadc8ab0da2ced27d7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of the source grid cells.  <a href="mnt_regrid_edges_8h.html#a43a7f8d584115aadc8ab0da2ced27d7a">More...</a><br /></td></tr>
@@ -253,8 +253,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Build the regridder. </p>
-<p>This will compute the gridding weights </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Build the regridder and compute the regridding weights. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
     <tr><td class="paramname">numCellsPerBucket</td><td>average number of cells per bucket </td></tr>
@@ -1193,7 +1193,7 @@ Supplying the length of the filename string allows one to call this function fro
       </table>
 </div><div class="memdoc">
 
-<p>Set destination grid flags. </p>
+<p>Set the destination grid flags. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
@@ -1239,7 +1239,7 @@ Supplying the length of the filename string allows one to call this function fro
       </table>
 </div><div class="memdoc">
 
-<p>Set source grid flags. </p>
+<p>Set the source grid flags. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>

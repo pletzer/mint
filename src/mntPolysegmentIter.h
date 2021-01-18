@@ -122,7 +122,6 @@ private:
 
     double eps;
     double eps100;
-    double tol;
     double totalT;
 
     // either 360, 2*pi or 0 (if not periodic)

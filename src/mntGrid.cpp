@@ -260,15 +260,11 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     // copy 
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
     (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
-    // reference
-    const std::vector<double>& points = ugrid.getPoints();
 
     size_t ncells = ugrid.getNumberOfFaces();
     size_t nedges = ugrid.getNumberOfEdges();
     size_t npoints = ugrid.getNumberOfPoints();
     size_t numVertsPerCell = 4;
-    size_t numEdgesPerCell = 4;
-    size_t numVertsPerEdge = 2;
 
     // get the face to edge connectivity from the file
     (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
@@ -319,7 +315,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             double avgLon = 0;
             int poleNodeIdx = -1;
             int count = 0;
-            for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+            for (size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
 
                 size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
                 double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
@@ -361,7 +357,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 else if (avgLon < lonMin) {
                     offsetLon = 360.0;
                 }
-                for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+                for (size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
                     (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] += offsetLon;
                 }
             }
@@ -490,6 +486,9 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
     // fetch the node Ids of this edge
     vtkIdType nodeIds[2];
     int ier = mnt_grid_getNodeIds(self, cellId, edgeIndex, nodeIds);
+    if (ier != 0) {
+        return 1;
+    }
 
     // iterate over the edges of this face until we find the edge
     // that has vertices nodeIds (but not necessarily in the same

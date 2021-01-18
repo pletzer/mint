@@ -116,7 +116,7 @@ extern "C"
 int mnt_regridedges_del(RegridEdges_t** self);
 
 /**
- * Set source grid flags
+ * Set the source grid flags
  * @param self instance of the regridding object
  * @param fixLonAcrossDateline set this to 1 if a periodicty length (360) should be added/subtracted to nodes in order to make each cell as compact as possible
  * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the cell's longitudes
@@ -127,7 +127,7 @@ extern "C"
 int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole);
 
 /**
- * Set destination grid flags
+ * Set the destination grid flags
  * @param self instance of the regridding object
  * @param fixLonAcrossDateline set this to 1 if a periodicty length (360) should be added/subtracted to nodes in order to make each cell as compact as possible
  * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the cell's longitudes
@@ -285,7 +285,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
                                 const char* fort_filename, int n);
 
 /**
- * Build the regridder. This will compute the gridding weights
+ * Build the regridder and compute the regridding weights
  * @param self instance of the regridding object
  * @param numCellsPerBucket average number of cells per bucket
  * @param periodX periodicity length (set to 0 if non-periodic)
