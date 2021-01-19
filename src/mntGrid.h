@@ -64,23 +64,8 @@ int mnt_grid_new(Grid_t** self);
 extern "C"
 int mnt_grid_del(Grid_t** self);
 
-extern "C"
-inline int mnt_grid_getLonIndex() {
-    return LON_INDEX;
-}
-
-extern "C"
-inline int mnt_grid_getLatIndex() {
-    return LAT_INDEX;
-}
-
-extern "C"
-inline int mnt_grid_getElvIndex() {
-    return ELV_INDEX;
-}
-
 /**
- * Set grid flags
+ * Set the grid flags
  * @param self instance of Grid_t
  * @param fixLonAcrossDateline set this to 1 if periodicty length should be added/subtracted to nodes in order to make the cell as compact as possible
  * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the node cell node's longitudes
@@ -90,32 +75,32 @@ extern "C"
 int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole);
 
 /**
- * Set the points array pointer
+ * Set the pointer to the array of points
  * @param self instance of Grid_t
  * @param nVertsPerCell number of vertices per cell
  * @param ncells number of cells
- * @param points flat array of size 4*ncells*3
+ * @param points flat array of size 4*ncells*3 (4 points per cell, each point has three coordinates)
  * @return error code (0 = OK)
  * @note the caller is responsible for managing the memory of the points array, which
- *       is expected to exist until the grid object is destroyed.
+ *       is expected to exist until the grid object is destroyed
  */
 extern "C"
 int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
 
 /**
- * Attach data
+ * Attach data to the grid
  * @param self instance of Grid_t
  * @param varname data field name
  * @param nDataPerCell number of components per cell
  * @param points flat array of size ncells*nDataPerCell
  * @return error code (0 = OK)
- * @note this object does own the data, caller is responsible for cleaning the data
+ * @note the grid DOES NOT own the data - the caller is repsonsible for cleaning the data
  */
 extern "C"
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]);
 
 /**
- * Compute ans store the edge arc lengths
+ * Compute and store the arc length for each edge of the grid 
  * @param self instance of Grid_t
  * @return error code (0 = OK)
  */
@@ -125,27 +110,30 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self);
 /**
  * Get the VTK unstructured grid
  * @param self instance of Grid_t
+ * @param grid_ptr address of vtlUnstructuredGrid object
  * @return error code (0 = OK)
  */
 extern "C"
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
 
 /**
- * Load grid from a 2D Ugrid file
+ * Load a grid from a 2D Ugrid file
  * @param self instance of Grid_t
  * @param fileAndMeshName column separated file and mesh name (e.g. cs_4.nc:physics)
  * @return error code (0 = OK)
- * @note user should invoke mnt_grid_del to free memory
+ * @note user should invoke mnt_grid_del to free memory when disposing of the grid
+ * @note call mnt_grid_new prior to this call
  */
 extern "C"
 int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName);
 
 /**
- * Load grid from a VTK file
+ * Load a grid from a VTK file
  * @param self instance of Grid_t
- * @param filename file name
+ * @param filename '\0' terminated file name
  * @return error code (0 = OK)
- * @note user should invoke mnt_grid_del to free memory
+ * @note user should invoke mnt_grid_del to free memory when disposing of the grid
+ * @note call mnt_grid_new prior to this call
  */
 extern "C"
 int mnt_grid_load(Grid_t** self, const char* filename);
@@ -153,7 +141,7 @@ int mnt_grid_load(Grid_t** self, const char* filename);
 /**
  * Dump the grid to a VTK file
  * @param self instance of Grid_t
- * @param filename file name
+ * @param filename '\0' terminated file name
  * @return error code (0 = OK)
  */
 extern "C"
