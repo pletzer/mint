@@ -112,12 +112,12 @@ class Grid(object):
         :returns an edge index, sign pair
         """
         LIB.mnt_grid_getEdgeId.argtypes = [POINTER(c_void_p), c_longlong, c_int, POINTER(c_size_t), POINTER(c_int)]
-        edgeIndex = c_size_t()
-        sign = c_int()
-        ier = LIB.mnt_grid_getEdgeId(self.obj, cellId, edgeIndex, byref(edgeIndex), byref(sign))
+        edgeId = c_size_t()
+        edgeSign = c_int()
+        ier = LIB.mnt_grid_getEdgeId(self.obj, cellId, edgeIndex, byref(edgeId), byref(edgeSign))
         if ier:
             error_handler(FILE, 'getEdgeId', ier)
-        return (edgeIndex.value, sign.value)
+        return (edgeId.value, edgeSign.value)
 
 
     def getNodeIds(self, cellId, edgeIndex):
@@ -128,7 +128,7 @@ class Grid(object):
         :param edgeIndex: edge index of the cell (0...3)
         :returns two node indices
         """
-        LIB.mnt_grid_getNodeIds.argtypes = [POINTER(c_void_p), c_long_long, c_int, POINTER(c_size_t)]
+        LIB.mnt_grid_getNodeIds.argtypes = [POINTER(c_void_p), c_longlong, c_int, POINTER(c_size_t)]
         nodeIds = (c_size_t*2)()
         ier = LIB.mnt_grid_getNodeIds(self.obj, cellId, edgeIndex, nodeIds)
         if ier:
@@ -141,13 +141,14 @@ class Grid(object):
         Attach data to the grid.
 
         :param varname: field name
-        :param data: numpy array of size (num_edges_per_cell, ncells, ndims)
+        :param data: numpy array of size (ncells, num_edges_per_cell, ndims)
         """
         ndims = data.shape[-1]
         ncells = self.getNumberOfCells()
         nEdgesPerCell = 4 # self.getNumEdgesPerCell()
         nDataPerCell = nEdgesPerCell * ndims
-        LIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int, numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
+        LIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int, 
+                                        numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
         ier = LIB.mnt_grid_attach(self.obj, varname.encode('utf-8'), nDataPerCell, data)
         if ier:
             error_handler(FILE, 'attach', ier)

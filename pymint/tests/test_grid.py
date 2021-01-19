@@ -37,12 +37,26 @@ def test_load_grid():
 def test_load_from_ugrid_file(data_dir):
 
     gr = Grid()
+
     gr.setFlags(1, 1)
+
     filename = str(data_dir / Path('cs_4.nc'))
     gr.loadFrom2DUgrid(f'{filename}:physics')
+
     nedges = gr.getNumberOfEdges()
     print(f'nedges = {nedges}')
     assert nedges == 192
+
+    ncells = gr.getNumberOfCells()
+    for icell in range(ncells):
+        for iedge in range(4):
+            edgeId, edgeSign = gr.getEdgeId(icell, iedge)
+            nodeIds = gr.getNodeIds(icell, iedge)
+            print(f'cell {icell} edge {iedge}: edgeId = {edgeId}, {edgeSign} nodeIds = {nodeIds}')
+
+    # attaching a 3 components field to the grid
+    data = numpy.array(range(ncells*4*3), numpy.float64)
+    gr.attach('myData', data)
 
 
 if __name__ == '__main__':
