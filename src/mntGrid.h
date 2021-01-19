@@ -75,7 +75,7 @@ extern "C"
 int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole);
 
 /**
- * Set the pointer to the array of points
+ * Set the pointer to an array of points
  * @param self instance of Grid_t
  * @param nVertsPerCell number of vertices per cell
  * @param ncells number of cells
