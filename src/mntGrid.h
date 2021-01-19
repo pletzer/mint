@@ -203,10 +203,11 @@ extern "C"
 int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells);
 
 /**
- * Get the number of cells
+ * Get the number of edges
  * @param self instance of Grid_t
- * @param numCells number of edges (output)
+ * @param numEdges number of edges (output)
  * @return error code (0 = OK)
+ * @note this will currently return 0 unless the grid was loaded from a UGRID 2D file
  */
 extern "C"
 int mnt_grid_getNumberOfEdges(Grid_t** self, size_t* numEdges);

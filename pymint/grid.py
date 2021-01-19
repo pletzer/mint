@@ -1,4 +1,4 @@
-from ctypes import c_void_p, c_double, c_int, byref, POINTER, c_char_p, c_size_t
+from ctypes import c_void_p, c_double, c_int, byref, POINTER, c_char_p, c_size_t, c_longlong
 from . import LIB
 import numpy
 
@@ -55,7 +55,7 @@ class Grid(object):
         :param fileAndMeshName: string in the format filename:meshname
         """
         LIB.mnt_grid_loadFrom2DUgrid.argtypes = [POINTER(c_void_p), c_char_p]
-        fm = filename.encode('utf-8')
+        fm = fileAndMeshName.encode('utf-8')
         ier = LIB.mnt_grid_loadFrom2DUgrid(self.obj, fm)
         if ier:
             error_handler(FILE, 'loadFrom2DUgrid', ier)
@@ -92,12 +92,12 @@ class Grid(object):
         """
         Set the points coordinates
 
-        :param points: numpy contiguous array of shape (num_verts_per_cell, ncells, 3)
+        :param points: numpy contiguous array of shape (ncells, num_verts_per_cell, 3)
         """
-        num_verts_per_cell, ncells, ndim = points.shape
+        ncells, num_verts_per_cell, ndim = points.shape
         if ndim != 3:
             raise RuntimeError(f'ERROR: points.shape[2] should be 3, got {ndim}!')
-        LIB.mnt_grid_setPointsPtr.argtypes = [POINTER(c_void_p), c_int, c_long_long, 
+        LIB.mnt_grid_setPointsPtr.argtypes = [POINTER(c_void_p), c_int, c_longlong, 
                                               numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
         ier = LIB.mnt_grid_setPointsPtr(self.obj, num_verts_per_cell, ncells, points)
         if ier:
@@ -111,7 +111,7 @@ class Grid(object):
         :param edgeIndex: edge index of the cell (0...3)
         :returns an edge index, sign pair
         """
-        LIB.mnt_grid_getEdgeId.argtypes = [POINTER(c_void_p), c_long_long, c_int, POINTER(c_size_t), POINTER(c_int)]
+        LIB.mnt_grid_getEdgeId.argtypes = [POINTER(c_void_p), c_longlong, c_int, POINTER(c_size_t), POINTER(c_int)]
         edgeIndex = c_size_t()
         sign = c_int()
         ier = LIB.mnt_grid_getEdgeId(self.obj, cellId, edgeIndex, byref(edgeIndex), byref(sign))
@@ -159,7 +159,7 @@ class Grid(object):
 
         :returns number
         """
-        LIB.mnt_grid_getNumberOfCells.argtypes [POINTER(c_void_p), POINTER(c_size_t)]
+        LIB.mnt_grid_getNumberOfCells.argtypes = [POINTER(c_void_p), POINTER(c_size_t)]
         n = c_size_t()
         ier = LIB.mnt_grid_getNumberOfCells(self.obj, byref(n))
         if ier:
@@ -174,7 +174,6 @@ class Grid(object):
         :returns number
         """
         LIB.mnt_grid_getNumberOfEdges.argtypes = [POINTER(c_void_p)]
-        LIB.mnt_grid_getNumNumberOfEdges.restype = c_size_t
         n = c_size_t()
         ier = LIB.mnt_grid_getNumberOfEdges(self.obj, byref(n))
         if ier:
