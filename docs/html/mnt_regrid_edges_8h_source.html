@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.18"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MINT: /Users/pletzera/mint-master/src/mntRegridEdges.h Source File</title>
+<title>MINT: /Users/pletzera/mint-dev/src/mntRegridEdges.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -76,7 +76,7 @@ $(function() {
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;vtkUnstructuredGrid.h&gt;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;vmtCellLocator.h&gt;</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;mntGrid.h&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="mnt_grid_8h.html">mntGrid.h</a>&gt;</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;mntQuadEdgeIter.h&gt;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;mntNcAttributes.h&gt;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;mntNcFieldRead.h&gt;</span></div>
@@ -108,9 +108,9 @@ $(function() {
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
 <div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="struct_regrid_edges__t.html#aea8670122debf91f57ee0b808ba02ba8">   53</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="struct_regrid_edges__t.html#aea8670122debf91f57ee0b808ba02ba8">numEdgesPerCell</a>;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
-<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="struct_regrid_edges__t.html#ad403456e7e5bed6f1b069497640fbfa8">   56</a></span>&#160;    Grid_t* <a class="code" href="struct_regrid_edges__t.html#ad403456e7e5bed6f1b069497640fbfa8">dstGridObj</a>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="struct_regrid_edges__t.html#ad403456e7e5bed6f1b069497640fbfa8">   56</a></span>&#160;    <a class="code" href="struct_grid__t.html">Grid_t</a>* <a class="code" href="struct_regrid_edges__t.html#ad403456e7e5bed6f1b069497640fbfa8">dstGridObj</a>;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="struct_regrid_edges__t.html#a5034fe93bbd035c9848196a311319164">   59</a></span>&#160;    Grid_t* <a class="code" href="struct_regrid_edges__t.html#a5034fe93bbd035c9848196a311319164">srcGridObj</a>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="struct_regrid_edges__t.html#a5034fe93bbd035c9848196a311319164">   59</a></span>&#160;    <a class="code" href="struct_grid__t.html">Grid_t</a>* <a class="code" href="struct_regrid_edges__t.html#a5034fe93bbd035c9848196a311319164">srcGridObj</a>;</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
 <div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="struct_regrid_edges__t.html#a79f0c713ad5b1252c8fe4325c14adf0a">   62</a></span>&#160;    QuadEdgeIter <a class="code" href="struct_regrid_edges__t.html#a79f0c713ad5b1252c8fe4325c14adf0a">edgeConnectivity</a>;</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
@@ -248,6 +248,7 @@ $(function() {
 <div class="ttc" id="amnt_regrid_edges_8h_html_a89db9fdb674d4f3ea530b7e3315a6769"><div class="ttname"><a href="mnt_regrid_edges_8h.html#a89db9fdb674d4f3ea530b7e3315a6769">mnt_regridedges_dumpWeights</a></div><div class="ttdeci">int mnt_regridedges_dumpWeights(RegridEdges_t **self, const char *fort_filename, int n)</div><div class="ttdoc">Dump the weights to file.</div></div>
 <div class="ttc" id="amnt_regrid_edges_8h_html_a6aa0e0c2090f53488bf61052ed2c6189"><div class="ttname"><a href="mnt_regrid_edges_8h.html#a6aa0e0c2090f53488bf61052ed2c6189">mnt_regridedges_getNumDstCells</a></div><div class="ttdeci">int mnt_regridedges_getNumDstCells(RegridEdges_t **self, size_t *n)</div><div class="ttdoc">Get the number of the destination grid cells.</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html_a8c05b898ed503957c5d59f1c0765fd3a"><div class="ttname"><a href="struct_regrid_edges__t.html#a8c05b898ed503957c5d59f1c0765fd3a">RegridEdges_t::srcCounts</a></div><div class="ttdeci">std::vector&lt; size_t &gt; srcCounts</div><div class="ttdoc">netcdf source data counts</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:83</div></div>
+<div class="ttc" id="astruct_grid__t_html"><div class="ttname"><a href="struct_grid__t.html">Grid_t</a></div><div class="ttdef"><b>Definition:</b> mntGrid.h:17</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html"><div class="ttname"><a href="struct_regrid_edges__t.html">RegridEdges_t</a></div><div class="ttdoc">Edge-centred field regridding.</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:23</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html_adb49d44d15cc5635458ea721ecaae584"><div class="ttname"><a href="struct_regrid_edges__t.html#adb49d44d15cc5635458ea721ecaae584">RegridEdges_t::weightSrcFaceEdgeIds</a></div><div class="ttdeci">std::vector&lt; int &gt; weightSrcFaceEdgeIds</div><div class="ttdoc">source face indices of the weights</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:47</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html_ad403456e7e5bed6f1b069497640fbfa8"><div class="ttname"><a href="struct_regrid_edges__t.html#ad403456e7e5bed6f1b069497640fbfa8">RegridEdges_t::dstGridObj</a></div><div class="ttdeci">Grid_t * dstGridObj</div><div class="ttdoc">destination grid object</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:56</div></div>
@@ -258,6 +259,7 @@ $(function() {
 <div class="ttc" id="amnt_regrid_edges_8h_html_a45cb532cad223ffb8b565c8884bc6f82"><div class="ttname"><a href="mnt_regrid_edges_8h.html#a45cb532cad223ffb8b565c8884bc6f82">mnt_regridedges_dumpDstGridVtk</a></div><div class="ttdeci">int mnt_regridedges_dumpDstGridVtk(RegridEdges_t **self, const char *fort_filename, int nFilenameLength)</div><div class="ttdoc">Dump the destination grid to a VTK file.</div></div>
 <div class="ttc" id="amnt_regrid_edges_8h_html_a349cdf4e7518aec1c3c3c34cdcf7cb0f"><div class="ttname"><a href="mnt_regrid_edges_8h.html#a349cdf4e7518aec1c3c3c34cdcf7cb0f">mnt_regridedges_setDstGridFlags</a></div><div class="ttdeci">int mnt_regridedges_setDstGridFlags(RegridEdges_t **self, int fixLonAcrossDateline, int averageLonAtPole)</div><div class="ttdoc">Set the destination grid flags.</div></div>
 <div class="ttc" id="amnt_regrid_edges_8h_html_abeb406415cdc28a6b822a3a9e3ecd51e"><div class="ttname"><a href="mnt_regrid_edges_8h.html#abeb406415cdc28a6b822a3a9e3ecd51e">mnt_regridedges_dumpSrcGridVtk</a></div><div class="ttdeci">int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t **self, const char *fort_filename, int nFilenameLength)</div><div class="ttdoc">Dump the source grid to a VTK file.</div></div>
+<div class="ttc" id="amnt_grid_8h_html"><div class="ttname"><a href="mnt_grid_8h.html">mntGrid.h</a></div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html_a79f0c713ad5b1252c8fe4325c14adf0a"><div class="ttname"><a href="struct_regrid_edges__t.html#a79f0c713ad5b1252c8fe4325c14adf0a">RegridEdges_t::edgeConnectivity</a></div><div class="ttdeci">QuadEdgeIter edgeConnectivity</div><div class="ttdoc">edge connectivity iterator</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:62</div></div>
 <div class="ttc" id="amnt_regrid_edges_8h_html_a08aede904801745efb0d3c1a1778fd55"><div class="ttname"><a href="mnt_regrid_edges_8h.html#a08aede904801745efb0d3c1a1778fd55">mnt_regridedges_loadSrcGrid</a></div><div class="ttdeci">int mnt_regridedges_loadSrcGrid(RegridEdges_t **self, const char *fort_filename, int n)</div><div class="ttdoc">Load a source grid from a 2D UGRID file.</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html_a5034fe93bbd035c9848196a311319164"><div class="ttname"><a href="struct_regrid_edges__t.html#a5034fe93bbd035c9848196a311319164">RegridEdges_t::srcGridObj</a></div><div class="ttdeci">Grid_t * srcGridObj</div><div class="ttdoc">source grid object</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:59</div></div>

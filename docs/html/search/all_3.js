@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['ndims_36',['ndims',['../struct_regrid_edges__t.html#a426e8cc710d3d79ac227e0a1ac6c01df',1,'RegridEdges_t']]],
-  ['numedgespercell_37',['numEdgesPerCell',['../struct_regrid_edges__t.html#aea8670122debf91f57ee0b808ba02ba8',1,'RegridEdges_t']]],
-  ['numpointspercell_38',['numPointsPerCell',['../struct_regrid_edges__t.html#ab57955cd6895b223b544e7ab9eb38c38',1,'RegridEdges_t']]]
+  ['faceedgeconnectivity_13',['faceEdgeConnectivity',['../struct_grid__t.html#a977cb3a9366c4cebe4ce41c2c7a0cfeb',1,'Grid_t']]],
+  ['facenodeconnectivity_14',['faceNodeConnectivity',['../struct_grid__t.html#abcb62ff893e51c4d7f22fd98561ea901',1,'Grid_t']]],
+  ['fixlonacrossdateline_15',['fixLonAcrossDateline',['../struct_grid__t.html#aeb59ebe43895a220aa26444eadb6cdec',1,'Grid_t']]]
 ];
