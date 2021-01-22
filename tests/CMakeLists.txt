@@ -146,6 +146,13 @@ target_link_libraries(testPolysegmentIter
                       ${VTK_LIBRARIES}
 )
 
+add_executable(testPolylineIntegral testPolylineIntegral.cxx)
+target_link_libraries(testPolylineIntegral
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
@@ -270,6 +277,7 @@ add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
+add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME exprParser COMMAND testExprParser)

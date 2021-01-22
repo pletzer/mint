@@ -39,7 +39,7 @@ struct PolylineIntegral_t {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_Polylineintegral_new(PolylineIntegral_t** self);
+int mnt_polylineintegral_new(PolylineIntegral_t** self);
 
 /**
  * Destructor
@@ -47,7 +47,7 @@ int mnt_Polylineintegral_new(PolylineIntegral_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_Polylineintegral_del(PolylineIntegral_t** self);
+int mnt_polylineintegral_del(PolylineIntegral_t** self);
 
 /**
  * Set the grid
@@ -56,7 +56,7 @@ int mnt_Polylineintegral_del(PolylineIntegral_t** self);
  * @return error code (0 = OK)
  */
 extern "C"
-int mnt_Polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
+int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
 
 /**
  * Set the target Polyline 
@@ -66,7 +66,7 @@ int mnt_Polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
  * @return error code (0 = OK)
  */
 extern "C"
-int mnt_Polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, const double xyz[]);
+int mnt_polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, const double xyz[]);
 
 /** 
  * Build the interpolation
@@ -74,7 +74,7 @@ int mnt_Polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, con
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_Polylineintegral_build(PolylineIntegral_t** self);
+int mnt_polylineintegral_build(PolylineIntegral_t** self);
 
 /** 
  * Get the integral of the field along the line
@@ -84,7 +84,7 @@ int mnt_Polylineintegral_build(PolylineIntegral_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_Polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[], double& result);
+int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[], double* result);
 
 
 #endif // MNT_POLY_LINE_INTEGRAL

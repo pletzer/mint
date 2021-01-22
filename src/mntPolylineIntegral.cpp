@@ -3,7 +3,7 @@
 #include <iostream>
 
 extern "C"
-int mnt_Polylineintegral_new(PolylineIntegral_t** self) {
+int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     
     *self = new PolylineIntegral_t();
     (*self)->grid = NULL;
@@ -12,7 +12,7 @@ int mnt_Polylineintegral_new(PolylineIntegral_t** self) {
 }
 
 extern "C"
-int mnt_Polylineintegral_del(PolylineIntegral_t** self) {
+int mnt_polylineintegral_del(PolylineIntegral_t** self) {
     int ier = 0;
 
     // destroy everything here
@@ -22,13 +22,13 @@ int mnt_Polylineintegral_del(PolylineIntegral_t** self) {
 }
 
 extern "C"
-int mnt_Polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
+int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
     (*self)->grid = grid;
     return 0;
 }
 
 extern "C"
-int mnt_Polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, const double xyz[]) {
+int mnt_polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, const double xyz[]) {
     (*self)->lineXYZ.resize(3 * npoints);
     // copy the line
     for (auto i = 0; i < npoints*3; ++i) {
@@ -38,7 +38,7 @@ int mnt_Polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, con
 }
 
 extern "C"
-int mnt_Polylineintegral_build(PolylineIntegral_t** self) {
+int mnt_polylineintegral_build(PolylineIntegral_t** self) {
 
     if ((*self)->lineXYZ.size() == 0) {
         std::cerr << "ERROR: need to call setPolyline before calling build\n";
@@ -122,9 +122,9 @@ int mnt_Polylineintegral_build(PolylineIntegral_t** self) {
 }
 
 extern "C"
-int mnt_Polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[], double& result) {
+int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[], double* result) {
 
-    result = 0;
+    *result = 0;
     for (auto it = (*self)->weights.cbegin(); it != (*self)->weights.cend(); ++it) {
 
         // get the cell Id
@@ -137,7 +137,7 @@ int mnt_Polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
         double wght = it->second;
 
         // add the contibution
-        result += wght * data[cellId*4 + edgeIndex];
+        *result += wght * data[cellId*4 + edgeIndex];
     }
 
     return 0;

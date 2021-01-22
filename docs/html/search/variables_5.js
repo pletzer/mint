@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['mai_171',['mai',['../struct_regrid_edges__t.html#a220f7afb513fb3f5fc8e2562822fe1e1',1,'RegridEdges_t']]]
+  ['linexyz_188',['lineXYZ',['../struct_polyline_integral__t.html#a0a99da6b21c04cc8c77f1702759eca02',1,'PolylineIntegral_t']]]
 ];
