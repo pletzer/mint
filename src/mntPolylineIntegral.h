@@ -5,11 +5,6 @@
 #include <vtkUnstructuredGrid.h>
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
-#include <mntQuadEdgeIter.h>
-#include <mntNcAttributes.h>
-#include <mntNcFieldRead.h>
-#include <mntNcFieldWrite.h>
-#include <mntMultiArrayIter.h>
 
 #ifndef MNT_Polyline_INTEGRAL
 #define MNT_Polyline_INTEGRAL
@@ -17,7 +12,7 @@
 /**
  * @brief Edge-centred field regridding
  *
- * A class to compute the regridding weights of an edge-centred field
+ * A class to compute flux integrals along a broken (poly-) line 
  */
 
 struct PolylineIntegral_t {
@@ -34,8 +29,8 @@ struct PolylineIntegral_t {
 };
 
 /**
- * Constructs a regridding object for edge centred fields
- * @param self instance of the regridding object
+ * Constructs a polyline integral object
+ * @param self instance of the polyline integral object
  * @return error code (0 is OK)
  */
 extern "C"
@@ -51,7 +46,7 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self);
 
 /**
  * Set the grid
- * @param self instance of the regridding object'
+ * @param self instance of the polyline integral object'
  * @param grid instance of Grid_t
  * @return error code (0 = OK)
  */
@@ -59,10 +54,10 @@ extern "C"
 int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
 
 /**
- * Set the target Polyline 
- * @param self instance of the regridding object
+ * Set the target polyline 
+ * @param self instance of the polyline integral object
  * @param npoints number of points
- * @param xyz flat array of xyz coordinates
+ * @param xyz flat array size npoints * 3 containing the xyz coordinates
  * @return error code (0 = OK)
  */
 extern "C"
@@ -70,7 +65,7 @@ int mnt_polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, con
 
 /** 
  * Build the interpolation
- * @param self instance of the regridding object
+ * @param self instance of the polyline integral object
  * @return error code (0 is OK)
  */
 extern "C"
@@ -78,9 +73,13 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self);
 
 /** 
  * Get the integral of the field along the line
- * @param self instance of the regridding object
- * @param data the field values integrated over the grid's edges
- * @param result line integral of the filled over the Polyline
+ * @param self instance of the polyline integral object
+ * @param data the edge integrated field values. 
+ *        This array is expected to be dimensioned ncells * 4 (4 edges per cell). Each data value
+ *        is a scalar representing the integral of the field over the edge. The directions of the 
+ *        edge are (0, 0) -> (1, 0), (1, 0) -> (1, 1), (0, 1) -> (1, 1) and (0, 0) -> (0, 1) in
+ *        parametric space
+ * @param result line integral of the field over the polyline
  * @return error code (0 is OK)
  */
 extern "C"
