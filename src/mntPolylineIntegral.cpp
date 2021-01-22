@@ -85,10 +85,6 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self) {
             // get the cell Id to which this sub-segment belongs to
             vtkIdType cellId = polyseg.getCellId();
 
-            // get the start/end 1D parameter values for this sub-segment
-            double ta = polyseg.getBegLineParamCoord();
-            double tb = polyseg.getEndLineParamCoord();
-
             // get the cell parametric start/end values for the sub-segment
             const Vec3& xia = polyseg.getBegCellParamCoord();
             const Vec3& xib = polyseg.getEndCellParamCoord();

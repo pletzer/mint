@@ -6,7 +6,7 @@
 #include <iostream>
 
 double potential(const double p[]) {
-    return p[0]*p[1]*p[1];
+    return p[1];
 }
 
 void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[])) {
@@ -80,7 +80,10 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
 
     double totalFlux;
     ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0], &totalFlux);
-    std::cout << "testCartesian: total flux = " << totalFlux << '\n';
+    double totalFluxExact = potential(&xyz[0*3]) - potential(&xyz[0*3]);
+    std::cout << "testCartesian: total flux = " << totalFlux << " exact: " << totalFluxExact << 
+                 " error: " << totalFlux - totalFluxExact << '\n';
+    assert(std::abs(totalFlux - totalFluxExact) < 1.e-10);
 
     ier = mnt_polylineintegral_del(&pli);
     assert(ier == 0);

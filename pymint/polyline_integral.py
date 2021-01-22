@@ -28,7 +28,7 @@ class PolylineIntegral(object):
         Regrid edge field destructor
         """
         LIB.mnt_polylineintegral_del.argtypes = [POINTER(c_void_p)]
-        ier = LIB.mnt_grid_del(self.obj)
+        ier = LIB.mnt_polylineintegral_del(self.obj)
         if ier: 
             error_handler(FILE, '__del__', ier)
 
@@ -39,8 +39,8 @@ class PolylineIntegral(object):
 
         :param grid: instance of Grid
         """
-        LIB.mnt_grid_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
-        ier = LIB.mnt_grid_setGrid(self.obj, grid.ptr)
+        LIB.mnt_polylineintegral_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
+        ier = LIB.mnt_polylineintegral_setGrid(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
@@ -51,9 +51,9 @@ class PolylineIntegral(object):
 
         :param xyz: numpy array with npoints rows and 3 columns
         """
-        LIB.mnt_grid_setPolyline.argtypes = [POINTER(c_void_p), c_int,
+        LIB.mnt_polylineintegral_setPolyline.argtypes = [POINTER(c_void_p), c_int,
                                              numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
-        ier = LIB.mnt_grid_setPolyline(self.obj, xyz.shape[0], xyz)
+        ier = LIB.mnt_polylineintegral_setPolyline(self.obj, xyz.shape[0], xyz)
         if ier:
             error_handler(FILE, 'setPolyline', ier)
 
@@ -71,11 +71,11 @@ class PolylineIntegral(object):
                      (0, 0) -> (0, 1) in parametric space
         :returns the line/flux integral
         """
-        LIB.mnt_grid_getIntegral.argtypes = [POINTER(c_void_p),
+        LIB.mnt_polylineintegral_getIntegral.argtypes = [POINTER(c_void_p),
                                              numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
-        LIB.mnt_grid_getIntegral.restype = c_double
+        LIB.mnt_polylineintegral_getIntegral.restype = c_double
         res = c_double()
-        ier = LIB.mnt_grid_getIntegral(self.obj, data, byref(res))
+        ier = LIB.mnt_polylineintegral_getIntegral(self.obj, data, byref(res))
         if ier:
             error_handler(FILE, 'getIntegral', ier)
         return res.value
