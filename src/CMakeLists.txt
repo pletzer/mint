@@ -28,6 +28,7 @@ set(LIB_FILES
   mntNcDimensions.cpp
   mntMultiArrayIter.cpp
   mntRegridAxis.cpp
+  mntPolylineIntegral.cpp
   mnt_ncfieldread_capi_mod.f90
   mnt_ncfieldwrite_capi_mod.f90
   mnt_celllocator_capi_mod.f90
@@ -59,6 +60,7 @@ set(HEADER_FILES
   mntNcDimensions.h
   mntMultiArrayIter.h
   mntRegridAxis.h
+  mntPolylineIntegral.h
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h
