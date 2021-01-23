@@ -120,7 +120,7 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
 
 int main(int argc, char** argv) {
 
-    testCartesian(4, 3, potential);
+    testCartesian(3, 2, potential);
 
     return 0;
 }

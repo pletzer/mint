@@ -113,7 +113,10 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self) {
                 std::cout << "cellId: " << cellId << " edgeIndex: " << edgeIndex << " weight: " << ws[edgeIndex] << '\n';
 #endif
                 (*self)->weights.insert(std::pair< std::pair<vtkIdType, int>, double>(cIdE, ws[edgeIndex]));
-            }            
+            }
+
+            // increment the iterator
+            polyseg.next();       
         }
     }
 
