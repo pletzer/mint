@@ -71,12 +71,12 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
             // north edge
             p0 = (const double*) &verts[4*3*k + 3*2 ];
             p1 = (const double*) &verts[4*3*k + 3*3 ];
-            data[4*k + 0] = potentialFunc(p1) - potentialFunc(p0);
+            data[4*k + 2] = potentialFunc(p1) - potentialFunc(p0);
 
             // west edge
             p0 = (const double*) &verts[4*3*k + 3*3 ];
             p1 = (const double*) &verts[4*3*k + 3*0 ];
-            data[4*k + 1] = potentialFunc(p1) - potentialFunc(p0);
+            data[4*k + 3] = potentialFunc(p1) - potentialFunc(p0);
 
             // increment the cell index
             k++;
@@ -106,7 +106,10 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
 
     double totalFlux;
     ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0], &totalFlux);
-    double totalFluxExact = potential(&xyz[0*3]) - potential(&xyz[0*3]);
+
+    // exact flux is the difference of potential between end and starting points
+    double totalFluxExact = potential(&xyz[(npoints - 1)*3]) - potential(&xyz[0*3]);
+
     std::cout << "testCartesian: total flux = " << totalFlux << " exact: " << totalFluxExact << 
                  " error: " << totalFlux - totalFluxExact << '\n';
     assert(std::abs(totalFlux - totalFluxExact) < 1.e-10);
