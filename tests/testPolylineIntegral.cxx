@@ -6,6 +6,7 @@
 #include <iostream>
 
 double potential(const double p[]) {
+    // y
     return p[1];
 }
 
@@ -17,11 +18,16 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
 
-    std::vector<double> verts(4*nx*ny*3); // number of cells times 4 nodes * 3 coordinates
-    std::vector<double> data(4*nx*ny); // number of cells times 4 edges
+    std::vector<double> verts(4*nx*ny*3); // number of cells * 4 nodes * 3 coordinates
+    std::vector<double> data(4*nx*ny); // number of cells * 4 edges
     double dx = 1.0/double(nx);
     double dy = 1.0/double(ny);
+
+    // build the grid, which is made of independent quad cells. For each of the cells we
+    // set the edge field values
     size_t k = 0;
+    const double* p0;
+    const double* p1;
     for (size_t i = 0; i < nx; ++i) {
 
         double x0 = 0. + dx*i;
@@ -32,27 +38,47 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
             double y0 = 0. + dy*j;
             double y1 = y0 + dy;
 
-            verts[4*k + 0 ] = x0;
-            verts[4*k + 1 ] = y0;
-            verts[4*k + 2 ] = 0.;
+            // set the vertices. Note 3d even when the quads are in the plane.
+            verts[4*3*k + 0 ] = x0;
+            verts[4*3*k + 1 ] = y0;
+            verts[4*3*k + 2 ] = 0.;
 
-            verts[4*k + 3 ] = x1;
-            verts[4*k + 4 ] = y0;
-            verts[4*k + 5 ] = 0.;
+            verts[4*3*k + 3 ] = x1;
+            verts[4*3*k + 4 ] = y0;
+            verts[4*3*k + 5 ] = 0.;
 
-            verts[4*k + 6 ] = x1;
-            verts[4*k + 7 ] = y1;
-            verts[4*k + 8 ] = 0.;
+            verts[4*3*k + 6 ] = x1;
+            verts[4*3*k + 7 ] = y1;
+            verts[4*3*k + 8 ] = 0.;
 
-            verts[4*k + 9 ] = x0;
-            verts[4*k + 10] = y1;
-            verts[4*k + 11] = 0.;
+            verts[4*3*k + 9 ] = x0;
+            verts[4*3*k + 10] = y1;
+            verts[4*3*k + 11] = 0.;
 
-            data[4*k + 0] = potentialFunc((const double*) &verts[4*k + 3 ]) - potentialFunc((const double*) &verts[4*k + 0 ]);
-            data[4*k + 1] = potentialFunc((const double*) &verts[4*k + 6 ]) - potentialFunc((const double*) &verts[4*k + 3 ]);
-            data[4*k + 2] = potentialFunc((const double*) &verts[4*k + 6 ]) - potentialFunc((const double*) &verts[4*k + 9 ]);
-            data[4*k + 3] = potentialFunc((const double*) &verts[4*k + 9 ]) - potentialFunc((const double*) &verts[4*k + 0 ]);
+            // set the edge integrals, just a difference of potential
 
+            // south edge
+            p0 = (const double*) &verts[4*3*k + 3*0 ];
+            p1 = (const double*) &verts[4*3*k + 3*1 ];
+            data[4*k + 0] = potentialFunc(p1) - potentialFunc(p0);
+
+
+            // east edge
+            p0 = (const double*) &verts[4*3*k + 3*2 ];
+            p1 = (const double*) &verts[4*3*k + 3*1 ];
+            data[4*k + 1] = potentialFunc(p1) - potentialFunc(p0);
+
+            // north edge
+            p0 = (const double*) &verts[4*3*k + 3*2 ];
+            p1 = (const double*) &verts[4*3*k + 3*3 ];
+            data[4*k + 0] = potentialFunc(p1) - potentialFunc(p0);
+
+            // west edge
+            p0 = (const double*) &verts[4*3*k + 3*3 ];
+            p1 = (const double*) &verts[4*3*k + 3*0 ];
+            data[4*k + 1] = potentialFunc(p1) - potentialFunc(p0);
+
+            // increment the cell index
             k++;
         }
     }
@@ -94,7 +120,7 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
 
 int main(int argc, char** argv) {
 
-    testCartesian(10, 11, potential);
+    testCartesian(4, 3, potential);
 
     return 0;
 }

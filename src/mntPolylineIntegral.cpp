@@ -2,6 +2,8 @@
 #include <mntPolysegmentIter.h>
 #include <iostream>
 
+#define DEBUG
+
 extern "C"
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     
@@ -107,6 +109,9 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self) {
             std::pair<vtkIdType, int> cIdE;
             for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
                 cIdE = std::pair<vtkIdType, int>(cellId, edgeIndex);
+#ifdef DEBUG
+                std::cout << "cellId: " << cellId << " edgeIndex: " << edgeIndex << " weight: " << ws[edgeIndex] << '\n';
+#endif
                 (*self)->weights.insert(std::pair< std::pair<vtkIdType, int>, double>(cIdE, ws[edgeIndex]));
             }            
         }
