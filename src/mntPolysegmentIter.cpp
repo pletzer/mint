@@ -200,9 +200,9 @@ PolysegmentIter::__assignCoefficientsToSegments() {
         }
     }
 
-    // reduce contribution for overlapping segments. If two 
-    // segments overlap then the coefficient of first segment
-    // is set to 1.0 - overlap/(tb - ta). Assumes overlap 
+    // reduce contribution for the overlapping segments. If two 
+    // segments overlap then the coefficient of the first segment
+    // is set to 1.0 - overlap/(tb - ta). Assumes the overlap 
     // can only happen for pairs of segment
     n = this->segCellIds.size(); // changed after removing zero length sub-segments
     // iterate over sub-segment pairs

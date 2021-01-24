@@ -8,7 +8,7 @@
 double potential(const double p[]) {
     const double x = p[0];
     const double y = p[1];
-    return y;
+    return y*(2*x + 1);
 }
 
 void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[])) {
@@ -57,6 +57,14 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
             verts[4*3*k + 11] = 0.;
 
             // set the edge integrals, just a difference of potential
+            // notre the orientation of the edges
+            //      2
+            //  3 -->---2
+            //  |       |
+            //  ^ 3     ^ 1
+            //  |       |
+            //  0 -->---1
+            //      0
 
             // south edge
             p0 = (const double*) &verts[4*3*k + 3*0 ];

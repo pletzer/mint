@@ -2,7 +2,7 @@
 #include <mntPolysegmentIter.h>
 #include <iostream>
 
-#define DEBUG
+//#define DEBUG
 
 extern "C"
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
@@ -96,14 +96,21 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self) {
             double coeff = polyseg.getCoefficient();
 
             // 2D because our cells are quads
-            std::vector<double> dxi({xib[0] - xia[0], xib[1] - xia[1]});
-            std::vector<double> xiMid({0.5*(xia[0] + xib[0]), 0.5*(xia[1] + xib[1])});
+            double dxi[] = {xib[0] - xia[0], xib[1] - xia[1]};
+            double xiMid[] = {0.5*(xia[0] + xib[0]), 0.5*(xia[1] + xib[1])};
 
-            // compute the 4 weight contributions from each cell edge
-            double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
-                           + dxi[1] * (0.0 + xiMid[0]) * coeff,
-                           - dxi[0] * (0.0 + xiMid[1]) * coeff,
-                           - dxi[1] * (1.0 - xiMid[0]) * coeff};
+            // compute the 4 weight contributions from each cell edge. Note: the edges 
+            // are assumed to be positive in xi[0] and xi[1]
+            //
+            //  +-2->
+            //  ^   ^
+            //  3   1
+            //  +-0->
+            //
+            double ws[] = {dxi[0] * (1.0 - xiMid[1]) * coeff,
+                           dxi[1] * (0.0 + xiMid[0]) * coeff,
+                           dxi[0] * (0.0 + xiMid[1]) * coeff,
+                           dxi[1] * (1.0 - xiMid[0]) * coeff};
 
             // store the weights for this sub-segment
             std::pair<vtkIdType, int> cIdE;
@@ -112,7 +119,9 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self) {
 #ifdef DEBUG
                 std::cout << "cellId: " << cellId << " edgeIndex: " << edgeIndex << " weight: " << ws[edgeIndex] << '\n';
 #endif
-                (*self)->weights.insert(std::pair< std::pair<vtkIdType, int>, double>(cIdE, ws[edgeIndex]));
+                // increment the weight. note the default value is 0 ofr numeric values
+                std::pair<vtkIdType, int> ce(cellId, edgeIndex);
+                (*self)->weights[ce] += ws[edgeIndex];
             }
 
             // increment the iterator

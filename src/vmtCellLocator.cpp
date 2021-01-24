@@ -320,7 +320,7 @@ vmtCellLocator::printBuckets() const {
         this->getBucketIndices(bucketId, &m, &n);
         std::cout << "bucket " << bucketId << " (" << m << ',' << n << ") contains faces ";
         for (const auto& faceId : b2f.second) {
-        std::cout << faceId << ' ';
+            std::cout << faceId << ' ';
         }
         std::cout << '\n';
     }
@@ -388,7 +388,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
         else {
             // det is almost zero
             // looks like the two lines (p0, p1) and (q0, q1) are overlapping
-            // add the starting/ending points
+            // add the starting/end points
             const std::pair<double, double>& sol = intersector.getBegEndParamCoords();
             // add start/end linear param coord along line
             lambdas.push_back(sol.first);
