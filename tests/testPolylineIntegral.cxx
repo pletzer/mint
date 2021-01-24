@@ -6,8 +6,9 @@
 #include <iostream>
 
 double potential(const double p[]) {
-    // y
-    return p[1];
+    const double x = p[0];
+    const double y = p[1];
+    return y;
 }
 
 void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[])) {
@@ -64,18 +65,18 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
 
 
             // east edge
-            p0 = (const double*) &verts[4*3*k + 3*2 ];
-            p1 = (const double*) &verts[4*3*k + 3*1 ];
+            p0 = (const double*) &verts[4*3*k + 3*1 ];
+            p1 = (const double*) &verts[4*3*k + 3*2 ];
             data[4*k + 1] = potentialFunc(p1) - potentialFunc(p0);
 
             // north edge
-            p0 = (const double*) &verts[4*3*k + 3*2 ];
-            p1 = (const double*) &verts[4*3*k + 3*3 ];
+            p0 = (const double*) &verts[4*3*k + 3*3 ];
+            p1 = (const double*) &verts[4*3*k + 3*2 ];
             data[4*k + 2] = potentialFunc(p1) - potentialFunc(p0);
 
             // west edge
-            p0 = (const double*) &verts[4*3*k + 3*3 ];
-            p1 = (const double*) &verts[4*3*k + 3*0 ];
+            p0 = (const double*) &verts[4*3*k + 3*0 ];
+            p1 = (const double*) &verts[4*3*k + 3*3 ];
             data[4*k + 3] = potentialFunc(p1) - potentialFunc(p0);
 
             // increment the cell index

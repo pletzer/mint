@@ -142,7 +142,8 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
 
         // add the contibution
 #ifdef DEBUG
-        std::cout << "adding weight = " << wght << " * edge integral = " << data[cellId*4 + edgeIndex] << " to the flux\n";
+        std::cout << "adding weight = " << wght << " * edge integral = " << data[cellId*4 + edgeIndex] << " to the flux (" << 
+                     *result << " so far) for cellId = " << cellId << " edgeIndex = " << edgeIndex << "\n";
 #endif
         *result += wght * data[cellId*4 + edgeIndex];
     }
