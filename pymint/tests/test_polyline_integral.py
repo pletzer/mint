@@ -12,7 +12,7 @@ def potentialFunc(p):
 
 def test_simple():
 
-    # create the grid
+    # create the grid and the edge data
     gr = Grid()
 
     nx, ny = 3, 2
@@ -58,9 +58,10 @@ def test_simple():
     gr.setPoints(points)
 
 
-    # create the polyline through which the flux will be integrated
     pli = PolylineIntegral()
     pli.setGrid(gr)
+
+    # create the polyline through which the flux will be integrated
     xyz = numpy.array([(0., 0., 0.),
                        (1., 0., 0.),
                        (1., 1., 0.),
@@ -70,8 +71,9 @@ def test_simple():
     pli.build()
 
     flux = pli.getIntegral(data)
-    print(f'total flux: {flux:.3f}')
-    assert abs(flux - 2.0) < 1.e-10
+    exactFlux = potentialFunc(xyz[-1, :]) - potentialFunc(xyz[0, :])
+    print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
+    assert abs(flux - exactFlux) < 1.e-10
 
 
 if __name__ == '__main__':
