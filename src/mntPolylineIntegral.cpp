@@ -2,7 +2,7 @@
 #include <mntPolysegmentIter.h>
 #include <iostream>
 
-//#define DEBUG
+#define DEBUG
 
 extern "C"
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
@@ -149,13 +149,16 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
         // get the weight
         double wght = it->second;
 
-        // add the contibution
+        // add the contribution
 #ifdef DEBUG
         std::cout << "adding weight = " << wght << " * edge integral = " << data[cellId*4 + edgeIndex] << " to the flux (" << 
                      *result << " so far) for cellId = " << cellId << " edgeIndex = " << edgeIndex << "\n";
 #endif
         *result += wght * data[cellId*4 + edgeIndex];
     }
+#ifdef DEBUG
+    std::cout << "total flux = " << *result << '\n';
+#endif
 
     return 0;
 }

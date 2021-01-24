@@ -5,32 +5,69 @@ import sys
 from pathlib import Path
 
 
+def potentialFunc(p):
+    x, y = p[:2]
+    return x + 2*y
+
+
 def test_simple():
 
     # create the grid
     gr = Grid()
 
-    # 2 cells
-    points = numpy.array([(0., 0., 0.),
-                          (1., 0., 0.),
-                          (1., 1., 0.),
-                          (0., 1., 0.),
-                          (1., 0., 0.),
-                          (2., 0., 0.),
-                          (2., 1., 0.),
-                          (1., 1., 0.)]).reshape(2, 4, 3)
+    nx, ny = 3, 2
+    points = numpy.zeros((nx*ny, 4, 3), numpy.float64)
+    data = numpy.zeros((nx*ny, 4))
+    dx = 1.0 / float(nx)
+    dy = 1.0 / float(ny)
+    k = 0
+    for i in range(nx):
+        x0 = i*dx
+        x1 = x0 + dx
+        for j in range(ny):
+            y0 = j*dx
+            y1 = y0 + dy
+
+            # node indexing
+            #  3-->--2
+            #  |     |
+            #  ^     ^
+            #  |     |
+            #  0-->--1
+            points[k, 0, :] = x0, y0, 0.
+            points[k, 1, :] = x1, y0, 0.
+            points[k, 2, :] = x1, y1, 0.
+            points[k, 3, :] = x0, y1, 0.
+
+            # edge indexing
+            #     2
+            #  +-->--+
+            #  |     |
+            # 3^     ^1
+            #  |     |
+            #  +-->--+
+            #     0
+            data[k, 0] = potentialFunc(points[k, 1, :]) - potentialFunc(points[k, 0, :])
+            data[k, 1] = potentialFunc(points[k, 2, :]) - potentialFunc(points[k, 1, :])
+            data[k, 2] = potentialFunc(points[k, 2, :]) - potentialFunc(points[k, 3, :])
+            data[k, 3] = potentialFunc(points[k, 3, :]) - potentialFunc(points[k, 0, :])
+
+            # increment the cell counter
+            k += 1
+
     gr.setPoints(points)
 
+
+    # create the polyline through which the flux will be integrated
     pli = PolylineIntegral()
     pli.setGrid(gr)
     xyz = numpy.array([(0., 0., 0.),
-    	               (2., 0., 0.),
-    	               (2., 1., 0.),
-    	               (0., 1., 0.)])
+                       (1., 0., 0.),
+                       (1., 1., 0.),
+                       (0., 1., 0.)])
     pli.setPolyline(xyz)
 
-    data = numpy.array([(1., 2., 1., 2.), 
-    	                (1., 2., 1., 2.)])
+    pli.build()
 
     flux = pli.getIntegral(data)
     print(f'total flux: {flux:.3f}')

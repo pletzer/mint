@@ -58,6 +58,16 @@ class PolylineIntegral(object):
             error_handler(FILE, 'setPolyline', ier)
 
 
+    def build(self):
+        """
+        Build the flux calculator
+        """
+        LIB.mnt_polylineintegral_build.argtypes = [POINTER(c_void_p)]
+        ier = LIB.mnt_polylineintegral_build(self.obj)
+        if ier:
+            error_handler(FILE, 'build', ier)
+
+
     def getIntegral(self, data):
         """
         Get the flux integral over the polyline
@@ -73,7 +83,6 @@ class PolylineIntegral(object):
         """
         LIB.mnt_polylineintegral_getIntegral.argtypes = [POINTER(c_void_p),
                                              numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
-        LIB.mnt_polylineintegral_getIntegral.restype = c_double
         res = c_double()
         ier = LIB.mnt_polylineintegral_getIntegral(self.obj, data, byref(res))
         if ier:
