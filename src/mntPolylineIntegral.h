@@ -44,32 +44,16 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self);
 extern "C"
 int mnt_polylineintegral_del(PolylineIntegral_t** self);
 
-/**
- * Set the grid
- * @param self instance of the polyline integral object'
- * @param grid instance of Grid_t
- * @return error code (0 = OK)
- */
-extern "C"
-int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
-
-/**
- * Set the target polyline 
- * @param self instance of the polyline integral object
- * @param npoints number of points
- * @param xyz flat array size npoints * 3 containing the xyz coordinates
- * @return error code (0 = OK)
- */
-extern "C"
-int mnt_polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, const double xyz[]);
-
 /** 
  * Build the interpolation
  * @param self instance of the polyline integral object
+ * @param grid instance of Grid_t
+ * @param npoints number of points
+ * @param xyz flat array size npoints * 3 containing the xyz coordinates
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_polylineintegral_build(PolylineIntegral_t** self);
+int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[]);
 
 /** 
  * Get the integral of the field along the line

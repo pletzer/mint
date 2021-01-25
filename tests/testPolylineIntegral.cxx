@@ -99,18 +99,13 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
     ier = mnt_polylineintegral_new(&pli);
     assert(ier == 0);
 
-    ier = mnt_polylineintegral_setGrid(&pli, grd);
-    assert(ier == 0);
-
+    // set the (open) contour to integrate the flux over
     const int npoints = 4;
     std::vector<double> xyz({0., 0., 0.,
                              1., 0., 0.,
                              1., 1., 0.,
                              0., 1., 0.});
-    ier = mnt_polylineintegral_setPolyline(&pli, npoints, (const double*) &xyz[0]);
-    assert(ier == 0);
-
-    ier = mnt_polylineintegral_build(&pli);
+    ier = mnt_polylineintegral_build(&pli, grd, npoints, (const double*) &xyz[0]);
     assert(ier == 0);
 
     double totalFlux;

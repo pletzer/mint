@@ -33,37 +33,16 @@ class PolylineIntegral(object):
             error_handler(FILE, '__del__', ier)
 
 
-    def setGrid(self, grid):
-        """
-        Set the grid
-
-        :param grid: instance of Grid
-        """
-        LIB.mnt_polylineintegral_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
-        ier = LIB.mnt_polylineintegral_setGrid(self.obj, grid.ptr)
-        if ier:
-            error_handler(FILE, 'setGrid', ier)
-
-
-    def setPolyline(self, xyz):
-        """
-        Set the target polyline
-
-        :param xyz: numpy array with npoints rows and 3 columns
-        """
-        LIB.mnt_polylineintegral_setPolyline.argtypes = [POINTER(c_void_p), c_int,
-                                             numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
-        ier = LIB.mnt_polylineintegral_setPolyline(self.obj, xyz.shape[0], xyz)
-        if ier:
-            error_handler(FILE, 'setPolyline', ier)
-
-
-    def build(self):
+    def build(self, grid, xyz):
         """
         Build the flux calculator
+
+        :param grid: instance of Grid
+        :param xyz: numpy array with npoints rows and 3 columns
         """
-        LIB.mnt_polylineintegral_build.argtypes = [POINTER(c_void_p)]
-        ier = LIB.mnt_polylineintegral_build(self.obj)
+        LIB.mnt_polylineintegral_build.argtypes = [POINTER(c_void_p), c_void_p, 
+                                                   c_int, numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
+        ier = LIB.mnt_polylineintegral_build(self.obj, grid.ptr, xyz.shape[0], xyz)
         if ier:
             error_handler(FILE, 'build', ier)
 

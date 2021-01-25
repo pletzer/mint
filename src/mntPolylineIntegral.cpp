@@ -2,7 +2,7 @@
 #include <mntPolysegmentIter.h>
 #include <iostream>
 
-#define DEBUG
+//#define DEBUG
 
 extern "C"
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
@@ -23,55 +23,34 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
     return ier;
 }
 
-extern "C"
-int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
-    (*self)->grid = grid;
-    return 0;
-}
 
 extern "C"
-int mnt_polylineintegral_setPolyline(PolylineIntegral_t** self, int npoints, const double xyz[]) {
-    (*self)->lineXYZ.resize(3 * npoints);
-    // copy the line
-    for (auto i = 0; i < npoints*3; ++i) {
-        (*self)->lineXYZ[i] = xyz[i]; // copy
-    }
-    return 0;
-}
+int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[]) {
 
-extern "C"
-int mnt_polylineintegral_build(PolylineIntegral_t** self) {
 
-    if ((*self)->lineXYZ.size() == 0) {
-        std::cerr << "ERROR: need to call setPolyline before calling build\n";
+    if (npoints <= 0) {
+        std::cerr << "Warning: need at least one point\n";
         return 1;
     }
 
-    if (!(*self)->grid) {
-        std::cerr << "ERROR: need to call setGrid before calling build\n";
-        return 2;
-    }
-
-    vtkUnstructuredGrid* vgrid = (*self)->grid->grid;
+    // VTK grid
+    vtkUnstructuredGrid* vgrid = grid->grid;
 
     // build the cell locator
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(vgrid);
     loc->BuildLocator();
 
-    // number of points/vertices (3D)
-    size_t npts = (*self)->lineXYZ.size() / 3;
-
     // iterate over the Polyline segments
-    for (size_t ip0 = 0; ip0 < npts - 1; ++ip0) {
+    for (int ip0 = 0; ip0 < npoints - 1; ++ip0) {
 
         // get the starting point
         size_t k0 = 3*ip0;
-        double p0[] = {(*self)->lineXYZ[k0 + 0], (*self)->lineXYZ[k0 + 1], (*self)->lineXYZ[k0 + 2]};
+        double p0[] = {xyz[k0 + 0], xyz[k0 + 1], xyz[k0 + 2]};
 
         // get the end point
         size_t k1 = k0 + 3;        
-        double p1[] = {(*self)->lineXYZ[k1 + 0], (*self)->lineXYZ[k1 + 1], (*self)->lineXYZ[k1 + 2]};
+        double p1[] = {xyz[k1 + 0], xyz[k1 + 1], xyz[k1 + 2]};
 
         // build the polysegment iterator. This breaks segment p0 -> p1 into 
         // smaller segments, each being entirely contained within grid cells

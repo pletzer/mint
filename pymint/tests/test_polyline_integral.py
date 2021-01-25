@@ -25,7 +25,7 @@ def test_simple():
         x0 = i*dx
         x1 = x0 + dx
         for j in range(ny):
-            y0 = j*dx
+            y0 = j*dy
             y1 = y0 + dy
 
             # node indexing
@@ -56,19 +56,17 @@ def test_simple():
             k += 1
 
     gr.setPoints(points)
+    gr.dump('test_polyline_integral.vtk')
 
 
     pli = PolylineIntegral()
-    pli.setGrid(gr)
 
     # create the polyline through which the flux will be integrated
     xyz = numpy.array([(0., 0., 0.),
                        (1., 0., 0.),
                        (1., 1., 0.),
                        (0., 1., 0.)])
-    pli.setPolyline(xyz)
-
-    pli.build()
+    pli.build(gr, xyz)
 
     flux = pli.getIntegral(data)
     exactFlux = potentialFunc(xyz[-1, :]) - potentialFunc(xyz[0, :])
