@@ -37,6 +37,7 @@ set(LIB_FILES
   mnt_multiarrayiter_capi_mod.f90
   mnt_ncdimensions_capi_mod.f90
   mnt_ncattributes_capi_mod.f90
+  mntWeights.cpp
 )
 
 set(HEADER_FILES
@@ -64,6 +65,7 @@ set(HEADER_FILES
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h
+  mntWeights.h
 )
 
 add_library(mint ${LIB_FILES})

@@ -1,10 +1,9 @@
 #include <GrExprParser.h>
 #include <GrExprAdaptor.h>
 #include <mntGrid.h>
-#include <mntPolysegmentIter.h>
+#include <mntPolylineIntegral.h>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
-#include <vmtCellLocator.h>
 #include <vtkCellData.h>
 #include <string>
 #include <iostream>
@@ -48,9 +47,16 @@ int main(int argc, char** argv) {
         // hold the line cooridnates
         Vec* xs = xExpr.eval();
         Vec* ys = yExpr.eval();
+        size_t npts = (*xs).size();
+        std::vector<double> xyz(npts * 3); //3D
 
-        for (size_t i = 0; i < (*xs).size(); ++i) {
-            std::cout << i << " x = " << (*xs)[i] << ", " << " y = " << (*ys)[i] << '\n';
+        for (size_t i = 0; i < npts; ++i) {
+        	double x = (*xs)[i];
+        	double y = (*ys)[i];
+        	xyz[3*i + 0] = x;
+        	xyz[3*i + 1] = y;
+        	xyz[3*i + 2] = 0.; 
+            std::cout << i << " x = " << x << ", " << " y = " << y << '\n';
         }
 
         std::string srcFile = args.get<std::string>("-i");
@@ -87,73 +93,22 @@ int main(int argc, char** argv) {
         }
         double* srcData = (double*) aa->GetVoidPointer(0);
 
-        // build locator
-        vmtCellLocator* loc = vmtCellLocator::New();
-        loc->SetDataSet(grid);
-        loc->BuildLocator();
+        // create the flux calculator object
+        PolylineIntegral_t* fluxCalc = NULL;
+        mnt_polylineintegral_new(&fluxCalc);
+        ier = mnt_polylineintegral_build(&fluxCalc, srcGrid, (int) npts, &xyz[0]);
+        if (ier != 0) {
+        	std::cerr << "ERROR: after calling mnt_lineintegral_build ier = " << ier << '\n';
+        }
 
         double flux = 0.0;
-
-        // iterate over segments
-        for (size_t ip0 = 0; ip0 < ts.size() - 1; ++ip0) {
-
-            double p0[] = {(*xs)[ip0], (*ys)[ip0], 0.};
-
-            size_t ip1 = ip0 + 1;
-            double p1[] = {(*xs)[ip1], (*ys)[ip1], 0.};
-
-            PolysegmentIter polyseg(grid, loc, p0, p1);
-
-            size_t numSubSegs = polyseg.getNumberOfSegments();
-            polyseg.reset();
-
-            // iterate over the sub-segments 
-            for (size_t i = 0; i < numSubSegs; ++i) {
-
-                vtkIdType cellId = polyseg.getCellId();
-
-                double ta = polyseg.getBegLineParamCoord();
-                double tb = polyseg.getEndLineParamCoord();
-                const Vec3& xia = polyseg.getBegCellParamCoord();
-                const Vec3& xib = polyseg.getEndCellParamCoord();
-                double coeff = polyseg.getCoefficient();
-
-                std::vector<double> dxi({xib[0] - xia[0], xib[1] - xia[1]});
-                std::vector<double> xiMid({0.5*(xia[0] + xib[0]), 0.5*(xia[1] + xib[1])});
-
-                // compute the weight contributions from each src edge
-                double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
-                               + dxi[1] * (0.0 + xiMid[0]) * coeff,
-                               - dxi[0] * (0.0 + xiMid[1]) * coeff,
-                               - dxi[1] * (1.0 - xiMid[0]) * coeff};
-
-                // project
-                const size_t numEdges = 4;
-                for (size_t j = 0; j < numEdges; ++j) {
-                    flux += ws[j]*srcData[cellId*numEdges + j];
-                }
-
-                //std::cout << "cell " << cellId << " t = " << ta  << " -> " << tb << 
-                //            " xi = " << xia[0] << ',' << xia[1] << " -> " << xib[0] << ',' << xib[1] << 
-                //            " coeff = " << coeff << '\n';
-
-                polyseg.next();
-            }
-
-            double tTotal = polyseg.getIntegratedParamCoord();
-            if (std::abs(tTotal - 1.0) > 1.e-10) {
-                std::cerr << "Warning: total t of segment " << ip0
-                          << " != 1 (diff=" << tTotal - 1.0 << ")\n";
-            }
-
-        }
+        ier = mnt_polylineintegral_getIntegral(&fluxCalc, (const double*) srcData, &flux);
 
         printf("Flux across the line: %5.18f\n", flux);
 
         // cleanup
+        mnt_polylineintegral_del(&fluxCalc);
         mnt_grid_del(&srcGrid);
-        loc->Delete();
-
 
     }
     else if (help) {
