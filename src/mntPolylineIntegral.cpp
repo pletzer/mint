@@ -86,10 +86,10 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
             //  3   1
             //  +-0->
             //
-            double ws[] = {dxi[0] * (1.0 - xiMid[1]) * coeff,
-                           dxi[1] * (0.0 + xiMid[0]) * coeff,
-                           dxi[0] * (0.0 + xiMid[1]) * coeff,
-                           dxi[1] * (1.0 - xiMid[0]) * coeff};
+            double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
+                           + dxi[1] * (0.0 + xiMid[0]) * coeff,
+                           - dxi[0] * (0.0 + xiMid[1]) * coeff,
+                           - dxi[1] * (1.0 - xiMid[0]) * coeff};
 
             // store the weights for this sub-segment
             std::pair<vtkIdType, int> cIdE;
