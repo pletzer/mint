@@ -9,7 +9,6 @@ extern "C"
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     
     *self = new PolylineIntegral_t();
-    (*self)->grid = NULL;
 
     return 0;
 }
@@ -38,8 +37,9 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
         xi0_xi1 = QUAD_COUNTERCLOCKWISE_EDGE_DIRECTION;
     }
 
-    // VTK grid
-    vtkUnstructuredGrid* vgrid = grid->grid;
+    // get VTK grid
+    vtkUnstructuredGrid* vgrid = NULL;
+    mnt_grid_get(&grid, &vgrid);
 
     // build the cell locator
     vmtCellLocator* loc = vmtCellLocator::New();
