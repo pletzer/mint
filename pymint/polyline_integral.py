@@ -33,16 +33,22 @@ class PolylineIntegral(object):
             error_handler(FILE, '__del__', ier)
 
 
-    def build(self, grid, xyz):
+    def build(self, grid, xyz, counterclock):
         """
         Build the flux calculator
 
         :param grid: instance of Grid
         :param xyz: numpy array with npoints rows and 3 columns
+        :param counterclock: orientation of the edges in the cell (false=positive in xi)
         """
         LIB.mnt_polylineintegral_build.argtypes = [POINTER(c_void_p), c_void_p, 
-                                                   c_int, numpy.ctypeslib.ndpointer(dtype=numpy.float64)]
-        ier = LIB.mnt_polylineintegral_build(self.obj, grid.ptr, xyz.shape[0], xyz)
+                                                   c_int, 
+                                                   numpy.ctypeslib.ndpointer(dtype=numpy.float64),
+                                                   c_int]
+        cc = 0
+        if counterclock:
+            cc = 1
+        ier = LIB.mnt_polylineintegral_build(self.obj, grid.ptr, xyz.shape[0], xyz, cc)
         if ier:
             error_handler(FILE, 'build', ier)
 

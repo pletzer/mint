@@ -80,7 +80,6 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
             double coeff = polyseg.getCoefficient();
 
             // store the weights for this sub-segment
-            std::pair<vtkIdType, int> cIdE;
             for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
 
                 // starting point of the cell edge in parameter space
