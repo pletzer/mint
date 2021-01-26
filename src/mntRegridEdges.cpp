@@ -563,7 +563,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                     
                     // compute the interpolation weight
                     double weight = computeWeight(&srcCellParamCoords[is0*3], 
-                                                  &srcCellParamCoords[is1*3], xia, xib);
+                                                  &srcCellParamCoords[is1*3], 
+                                                  xia, xib);
 
                     // coeff accounts for the duplicity in the case where segments are shared between cells
                     weight *= coeff;

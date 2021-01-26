@@ -50,10 +50,11 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self);
  * @param grid instance of Grid_t
  * @param npoints number of points
  * @param xyz flat array size npoints * 3 containing the xyz coordinates
+ * @param counterclock 1 if the edges go counterclockwise, 0 if they positive in the xi direction
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[]);
+int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[], int counterclock);
 
 /** 
  * Get the integral of the field along the line

@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
     args.set("-xline", std::string("180./4. + 0.2*180.*cos(5*pi*t/3. - 0.2)/pi"), "Parametric x coordinate (lon in [rad]) expression of 0 <= t <= 1");
     args.set("-yline", std::string("180./4. + 0.2*180.*sin(5*pi*t/3. - 0.2)/pi"), "Parametric y coordinate (lat in [rad]) expression of 0 <= t <= 1");
     args.set("-nline", 2, "Number of points defining the line (>= 2)");
+    args.set("-counter", false, "Whether the edge values correspond to edges oriented in counterclockwise direction");
 
 
     bool success = args.parse(argc, argv);
@@ -51,11 +52,11 @@ int main(int argc, char** argv) {
         std::vector<double> xyz(npts * 3); //3D
 
         for (size_t i = 0; i < npts; ++i) {
-        	double x = (*xs)[i];
-        	double y = (*ys)[i];
-        	xyz[3*i + 0] = x;
-        	xyz[3*i + 1] = y;
-        	xyz[3*i + 2] = 0.; 
+            double x = (*xs)[i];
+            double y = (*ys)[i];
+            xyz[3*i + 0] = x;
+            xyz[3*i + 1] = y;
+            xyz[3*i + 2] = 0.; 
             std::cout << i << " x = " << x << ", " << " y = " << y << '\n';
         }
 
@@ -96,9 +97,14 @@ int main(int argc, char** argv) {
         // create the flux calculator object
         PolylineIntegral_t* fluxCalc = NULL;
         mnt_polylineintegral_new(&fluxCalc);
-        ier = mnt_polylineintegral_build(&fluxCalc, srcGrid, (int) npts, &xyz[0]);
+        int counterclock = 0;
+        if (args.get<bool>("-counter")) {
+          std::cout << "Warning: edge values are assumed to be stored in counterclockwise direction\n";
+          counterclock = 1;
+        }
+        ier = mnt_polylineintegral_build(&fluxCalc, srcGrid, (int) npts, &xyz[0], counterclock);
         if (ier != 0) {
-        	std::cerr << "ERROR: after calling mnt_lineintegral_build ier = " << ier << '\n';
+            std::cerr << "ERROR: after calling mnt_lineintegral_build ier = " << ier << '\n';
         }
 
         double flux = 0.0;

@@ -1,5 +1,6 @@
 #include <mntPolylineIntegral.h>
 #include <mntPolysegmentIter.h>
+#include <mntWeights.h>
 #include <iostream>
 
 //#define DEBUG
@@ -25,12 +26,16 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
 
 
 extern "C"
-int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[]) {
-
+int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[], int counterclock) {
 
     if (npoints <= 0) {
         std::cerr << "Warning: need at least one point\n";
         return 1;
+    }
+
+    const double* xi0_xi1 = QUAD_POSITIVEXI_EDGE_DIRECTION;
+    if (counterclock > 0) {
+        xi0_xi1 = QUAD_COUNTERCLOCKWISE_EDGE_DIRECTION;
     }
 
     // VTK grid
@@ -74,33 +79,23 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
             // runs along a cell edge)
             double coeff = polyseg.getCoefficient();
 
-            // 2D because our cells are quads
-            double dxi[] = {xib[0] - xia[0], xib[1] - xia[1]};
-            double xiMid[] = {0.5*(xia[0] + xib[0]), 0.5*(xia[1] + xib[1])};
-
-            // compute the 4 weight contributions from each cell edge. Note: the edges 
-            // are assumed to be positive in xi[0] and xi[1]
-            //
-            //  +-2->
-            //  ^   ^
-            //  3   1
-            //  +-0->
-            //
-            double ws[] = {+ dxi[0] * (1.0 - xiMid[1]) * coeff,
-                           + dxi[1] * (0.0 + xiMid[0]) * coeff,
-                           - dxi[0] * (0.0 + xiMid[1]) * coeff,
-                           - dxi[1] * (1.0 - xiMid[0]) * coeff};
-
             // store the weights for this sub-segment
             std::pair<vtkIdType, int> cIdE;
             for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
-                cIdE = std::pair<vtkIdType, int>(cellId, edgeIndex);
+
+                // starting point of the cell edge in parameter space
+                const double* xi0 = &xi0_xi1[6*edgeIndex];
+
+                // end point of the cell edge in parameter space
+                const double* xi1 = &xi0_xi1[6*edgeIndex + 3];
+
+                double weight = computeWeight(xi0, xi1, xia, xib);
 #ifdef DEBUG
-                std::cout << "cellId: " << cellId << " edgeIndex: " << edgeIndex << " weight: " << ws[edgeIndex] << '\n';
+                std::cout << "cellId: " << cellId << " edgeIndex: " << edgeIndex << " weight: " << weight << '\n';
 #endif
-                // increment the weight. note the default value is 0 ofr numeric values
+                // increment the weight. note the default value is 0 for numeric values
                 std::pair<vtkIdType, int> ce(cellId, edgeIndex);
-                (*self)->weights[ce] += ws[edgeIndex];
+                (*self)->weights[ce] += weight * coeff;
             }
 
             // increment the iterator

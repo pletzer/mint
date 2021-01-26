@@ -516,7 +516,8 @@ add_test(NAME flux_line_2pts
                  "-v" "edge_integrated_velocity"
                  "-nline" "2"
                  "-xline" "0.0 + 360.*t"
-                 "-yline" "-88. + 176.*t")
+                 "-yline" "-88. + 176.*t"
+                 "-counter")
 set_tests_properties(flux_line_2pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 set_tests_properties(flux_line_2pts PROPERTIES
@@ -528,7 +529,8 @@ add_test(NAME flux_line_3pts
                  "-v" "edge_integrated_velocity"
                  "-nline" "3"
                  "-xline" "0.0 + 360.*t"
-                 "-yline" "-88. + 176.*t")
+                 "-yline" "-88. + 176.*t"
+                 "-counter")
 set_tests_properties(flux_line_3pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 set_tests_properties(flux_line_3pts PROPERTIES
