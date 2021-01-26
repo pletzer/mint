@@ -13,8 +13,9 @@ for libfile in Path(__path__[0] + '/..').glob('mint.cpython*'):
     if LIB:
         break
 
-__all__ = [LIB, 'regrid_edges', 'grid']
+__all__ = [LIB, 'regrid_edges', 'grid', 'polylin_integral']
 
 from .regrid_edges import RegridEdges
 from .grid import Grid
+from .polyline_integral import PolylineIntegral
 

@@ -28,6 +28,7 @@ set(LIB_FILES
   mntNcDimensions.cpp
   mntMultiArrayIter.cpp
   mntRegridAxis.cpp
+  mntPolylineIntegral.cpp
   mnt_ncfieldread_capi_mod.f90
   mnt_ncfieldwrite_capi_mod.f90
   mnt_celllocator_capi_mod.f90
@@ -36,6 +37,7 @@ set(LIB_FILES
   mnt_multiarrayiter_capi_mod.f90
   mnt_ncdimensions_capi_mod.f90
   mnt_ncattributes_capi_mod.f90
+  mntWeights.cpp
 )
 
 set(HEADER_FILES
@@ -59,9 +61,11 @@ set(HEADER_FILES
   mntNcDimensions.h
   mntMultiArrayIter.h
   mntRegridAxis.h
+  mntPolylineIntegral.h
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h
+  mntWeights.h
 )
 
 add_library(mint ${LIB_FILES})

@@ -825,7 +825,8 @@ WARN_LOGFILE           =
 
 INPUT                  = @CMAKE_SOURCE_DIR@/src/mntRegridEdges.h \
                          @CMAKE_SOURCE_DIR@/src/mnt_regridedges_capi_mod.f90 \
-                         @CMAKE_SOURCE_DIR@/src/mntGrid.h
+                         @CMAKE_SOURCE_DIR@/src/mntGrid.h \
+                         @CMAKE_SOURCE_DIR@/src/mntPolylineIntegral.h
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

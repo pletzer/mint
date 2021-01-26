@@ -15,8 +15,10 @@ class Grid(object):
         Regrid edge field constructor.
         """
 
-        self.obj = byref(c_void_p())
+        self.ptr = c_void_p()
+        self.obj = byref(self.ptr)
 
+        LIB.mnt_grid_new.argtypes = [POINTER(c_void_p)]
         ier = LIB.mnt_grid_new(self.obj)
         if ier: 
             error_handler(FILE, '__init__', ier)
@@ -26,6 +28,7 @@ class Grid(object):
         """
         Regrid edge field destructor.
         """
+        LIB.mnt_grid_del.argtypes = [POINTER(c_void_p)]
         ier = LIB.mnt_grid_del(self.obj)
         if ier: 
             error_handler(FILE, '__del__', ier)
@@ -180,7 +183,4 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'getNumberOfEdges', ier)
         return n.value
-
-
-
 

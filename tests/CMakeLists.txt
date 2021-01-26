@@ -146,6 +146,13 @@ target_link_libraries(testPolysegmentIter
                       ${VTK_LIBRARIES}
 )
 
+add_executable(testPolylineIntegral testPolylineIntegral.cxx)
+target_link_libraries(testPolylineIntegral
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
@@ -270,6 +277,7 @@ add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
+add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME exprParser COMMAND testExprParser)
@@ -508,9 +516,12 @@ add_test(NAME flux_line_2pts
                  "-v" "edge_integrated_velocity"
                  "-nline" "2"
                  "-xline" "0.0 + 360.*t"
-                 "-yline" "-88. + 176.*t")
+                 "-yline" "-88. + 176.*t"
+                 "-counter")
 set_tests_properties(flux_line_2pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
+set_tests_properties(flux_line_2pts PROPERTIES
+          PASS_REGULAR_EXPRESSION "Flux across the line: -0.05413054946986")
 
 add_test(NAME flux_line_3pts
          COMMAND "${CMAKE_BINARY_DIR}/tools/flux" 
@@ -518,9 +529,12 @@ add_test(NAME flux_line_3pts
                  "-v" "edge_integrated_velocity"
                  "-nline" "3"
                  "-xline" "0.0 + 360.*t"
-                 "-yline" "-88. + 176.*t")
+                 "-yline" "-88. + 176.*t"
+                 "-counter")
 set_tests_properties(flux_line_3pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
+set_tests_properties(flux_line_3pts PROPERTIES
+          PASS_REGULAR_EXPRESSION "Flux across the line: -0.05413054946986")
 
 add_test(NAME polySegmentIter1
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 

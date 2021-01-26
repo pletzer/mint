@@ -2,6 +2,7 @@
 #include <mntPolysegmentIter.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
+#include <mntWeights.h>
 
 #include <netcdf.h>
 
@@ -16,48 +17,6 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkPoints.h>
-
-
-/**
- * Compute the interpolation weight between a source cell edge and a destination line segment
- * @param srcXi0 start point of src edge
- * @param srcXi1 end point of the src edge
- * @param dstXi0 start point of target line
- * @param dstXi1 end point of target line
- * @return interpolation weight
- */
-double computeWeight(const double srcXi0[], const double srcXi1[],
-                     const Vec3& xia, const Vec3& xib) {
-
-    double weight = 1.0;
-
-    Vec3 dxi = xib - xia;
-    Vec3 xiMid = 0.5*(xia + xib);
-    
-    for (size_t d = 0; d < 2; ++d) { // 2d 
-
-        double xiM = xiMid[d];
-
-        // mid point of edge in parameter space
-        double x = 0.5*(srcXi0[d] + srcXi1[d]);
-
-        // use Lagrange interpolation to evaluate the basis function integral for
-        // any of the 3 possible x values in {0, 0.5, 1}. This formula will make 
-        // it easier to extend the code to 3d
-        double xm00 = x;
-        double xm05 = x - 0.5;
-        double xm10 = x - 1.0;
-        double lag00 = + 2 * xm05 * xm10;
-        double lag05 = - 4 * xm00 * xm10;
-        double lag10 = + 2 * xm00 * xm05;
-
-        // taking the abs value because the correct the sign for edges that 
-        // run from top to bottom or right to left.
-        weight *= (1.0 - xiM)*lag00 + dxi[d]*lag05 + xiM*lag10;
-    }
-
-    return weight;
-}
 
 
 extern "C"
@@ -604,7 +563,8 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                     
                     // compute the interpolation weight
                     double weight = computeWeight(&srcCellParamCoords[is0*3], 
-                                                  &srcCellParamCoords[is1*3], xia, xib);
+                                                  &srcCellParamCoords[is1*3], 
+                                                  xia, xib);
 
                     // coeff accounts for the duplicity in the case where segments are shared between cells
                     weight *= coeff;
