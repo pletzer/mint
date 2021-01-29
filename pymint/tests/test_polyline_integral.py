@@ -66,7 +66,9 @@ def test_simple():
                        (1., 0., 0.),
                        (1., 1., 0.),
                        (0., 1., 0.)])
-    pli.build(gr, xyz, counterclock=False)
+
+    # no periodicity in x
+    pli.build(gr, xyz, counterclock=False, periodX=0.0)
 
     flux = pli.getIntegral(data)
     exactFlux = potentialFunc(xyz[-1, :]) - potentialFunc(xyz[0, :])

@@ -46,11 +46,13 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self);
  *        [1,0]->[1,1], [1,1]->[0,1] and [0,1]->[0,0,]). Set counterclock = 0 if 
  *        the edges are oriented [0,0,]->[1,0], [1,0], [1,1], [0, 1]->[1,1] and 
  *        [0,0]->[0,1]
+ * @param periodX periodicity length (0. if not periodic)
  * @return error code (0 is OK)
  */
 extern "C"
 int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, 
-	                           int npoints, const double xyz[], int counterclock);
+                               int npoints, const double xyz[], int counterclock,
+                               double periodX);
 
 /** 
  * Get the integral of the field along the line

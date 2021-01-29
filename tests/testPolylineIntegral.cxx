@@ -106,7 +106,10 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
                              1., 1., 0.,
                              0., 1., 0.});
     int counterclock = 0;
-    ier = mnt_polylineintegral_build(&pli, grd, npoints, (const double*) &xyz[0], counterclock);
+    double periodX = 0;
+    ier = mnt_polylineintegral_build(&pli, grd, npoints, 
+                                     (const double*) &xyz[0], 
+                                     counterclock, periodX);
     assert(ier == 0);
 
     double totalFlux;

@@ -25,7 +25,9 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
 
 
 extern "C"
-int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[], int counterclock) {
+int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[], int counterclock, double periodX) {
+
+    int ier = 0;
 
     if (npoints <= 0) {
         std::cerr << "Warning: need at least one point\n";
@@ -59,7 +61,7 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
 
         // build the polysegment iterator. This breaks segment p0 -> p1 into 
         // smaller segments, each being entirely contained within grid cells
-        PolysegmentIter polyseg(vgrid, loc, p0, p1);
+        PolysegmentIter polyseg(vgrid, loc, p0, p1, periodX);
 
         // number of sub-segments
         size_t numSubSegs = polyseg.getNumberOfSegments();
@@ -100,11 +102,20 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
             // increment the iterator
             polyseg.next();       
         }
+
+        // check if the line segment is fully accounted for
+        double tTotal = polyseg.getIntegratedParamCoord();
+        const double tol = 1.e-10;
+        if (std::abs(tTotal - 1.0) > tol) {
+            std::cout << "Warning: total integrated length for segment " << ip0 << " is " << tTotal << " != 1 (diff=" << tTotal - 1. << ")\n";
+            ier++;
+        }
+
     }
 
     loc->Delete();
 
-    return 0;
+    return ier;
 }
 
 extern "C"

@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
     args.set("-yline", std::string("180./4. + 0.2*180.*sin(5*pi*t/3. - 0.2)/pi"), "Parametric y coordinate (lat in [rad]) expression of 0 <= t <= 1");
     args.set("-nline", 2, "Number of points defining the line (>= 2)");
     args.set("-counter", false, "Whether the edge values correspond to edges oriented in counterclockwise direction");
+    args.set("-P", 0.0, "Periodicity length of x (0 if not periodic)");
 
 
     bool success = args.parse(argc, argv);
@@ -102,7 +103,9 @@ int main(int argc, char** argv) {
           std::cout << "Warning: edge values are assumed to be stored in counterclockwise direction\n";
           counterclock = 1;
         }
-        ier = mnt_polylineintegral_build(&fluxCalc, srcGrid, (int) npts, &xyz[0], counterclock);
+        double periodX = args.get<double>("-P");
+        ier = mnt_polylineintegral_build(&fluxCalc, srcGrid, (int) npts, &xyz[0], 
+                                         counterclock, periodX);
         if (ier != 0) {
             std::cerr << "ERROR: after calling mnt_lineintegral_build ier = " << ier << '\n';
         }
