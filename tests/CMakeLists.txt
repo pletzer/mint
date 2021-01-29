@@ -476,6 +476,8 @@ add_test(NAME line_proj1
                  "-verbose")
 set_tests_properties(line_proj1 PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total integrated length for segment")
+set_tests_properties(line_proj1 PROPERTIES
+                     PASS_REGULAR_EXPRESSION "total flux is: 0.19183049")
 
 add_test(NAME line_proj_inside
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
@@ -487,6 +489,8 @@ add_test(NAME line_proj_inside
                  "-verbose")
 set_tests_properties(line_proj_inside PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total integrated length for segment")
+set_tests_properties(line_proj_inside PROPERTIES
+                     PASS_REGULAR_EXPRESSION "total flux is: -0.1834971653")
 
 add_test(NAME line_proj_partially_outside
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
@@ -498,6 +502,8 @@ add_test(NAME line_proj_partially_outside
                  "-verbose")
 set_tests_properties(line_proj_partially_outside PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total integrated length for segment")
+set_tests_properties(line_proj_partially_outside PROPERTIES
+                     PASS_REGULAR_EXPRESSION "total flux is: 0.2001638320")
 
 add_test(NAME line_proj_outside
          COMMAND "${CMAKE_BINARY_DIR}/tools/line_proj" 
@@ -509,6 +515,8 @@ add_test(NAME line_proj_outside
                  "-verbose")
 set_tests_properties(line_proj_outside PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total integrated length for segment")
+set_tests_properties(line_proj_outside PROPERTIES
+                     PASS_REGULAR_EXPRESSION "total flux is: -0.18349716535")
 
 add_test(NAME flux_line_2pts
          COMMAND "${CMAKE_BINARY_DIR}/tools/flux" 
