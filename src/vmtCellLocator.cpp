@@ -90,13 +90,13 @@ vmtCellLocator::BuildLocator() {
 
 
 void 
-vmtCellLocator::setPeriodicityLengthX(double periodicityX) {
+vmtCellLocator::setPeriodicityLengthX(double periodX) {
 
     this->modPeriodX.resize(0);
     this->modPeriodX.push_back(0.0);
-    if (periodicityX > 0) {
-        this->modPeriodX.push_back(-periodicityX);
-        this->modPeriodX.push_back(+periodicityX);
+    if (periodX > 0) {
+        this->modPeriodX.push_back(-periodX);
+        this->modPeriodX.push_back(+periodX);
     }
 
 }

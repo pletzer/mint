@@ -96,18 +96,18 @@ public:
 
     /**
      * Set the periodicity length in x
-     * @param periodicityX length (0 means not periodic)
+     * @param periodX length (0 means not periodic)
      * @note this can be set after calling BuildLocator
      */
-    void setPeriodicityLengthX(double periodicityX);
+    void setPeriodicityLengthX(double periodX);
 
     /**
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
      * @param pEnd end point of the line
-     * @return list of (cellId, [lambda0, lambda1, periodOffset]) pairs
+     * @return list of (cellId, [lambda0, lambda1, periodXOffset]) pairs
      * @note lambda0/lambda1 are the linear parametric coordiates of the entry/exit points into/from the cell
-     * @note periodOffset is the periodic offset to add to pBeg[0] and pEnd[0]
+     * @note periodXOffset is the periodic offset to add to pBeg[0] and pEnd[0]
      */
     std::vector< std::pair<vtkIdType, Vec3> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
@@ -142,7 +142,7 @@ private:
     std::vector<double> modPeriodX;
 
     // 0 if not periodic
-    double periodicityLengthX;
+    double periodX;
 
     // number of buckets in X and Y
     int numBucketsX;
