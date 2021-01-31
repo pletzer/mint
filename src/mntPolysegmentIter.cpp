@@ -19,13 +19,13 @@ struct TCmpFunctor {
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
                                  vmtCellLocator* locator, 
                                  const double p0In[], const double p1In[],
-                                 double periodicityLength) {
+                                 double periodX) {
 
     // small tolerances 
     this->eps = 10 * std::numeric_limits<double>::epsilon();
     this->eps100 = 100. * this->eps;
 
-    this->xPeriodicity = periodicityLength;
+    this->periodX = periodX;
 
     // set the grid and the grid locator
     this->grid = grid;
@@ -222,18 +222,18 @@ void
 PolysegmentIter::__makePeriodic(Vec3& v) {
 
     // fix start/end points if they fall outside the domain and the domain is periodic
-    if (this->xPeriodicity > 0.) {
+    if (this->periodX > 0.) {
         double xmin = this->grid->GetBounds()[0];
         double xmax = this->grid->GetBounds()[1];
         if (v[0] < xmin) {
-            std::cerr << "Warning: adding periodicity length " << this->xPeriodicity << 
+            std::cerr << "Warning: adding x periodicity length " << this->periodX << 
                          " to point " << v << "\n";
-            v[0] += this->xPeriodicity;
+            v[0] += this->periodX;
         }
         else if (v[0] > xmax) {
-            std::cerr << "Warning: subtracting periodicity length " << this->xPeriodicity << 
+            std::cerr << "Warning: subtracting x periodicity length " << this->periodX << 
                          " from point " << v << "\n";
-            v[0] -= this->xPeriodicity;
+            v[0] -= this->periodX;
         }
     }
 

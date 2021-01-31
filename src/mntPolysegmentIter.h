@@ -18,11 +18,11 @@ public:
      * @param locator vtkCellLocator instance attached to the above grid
      * @param p0 start point
      * @param p1 end point
-     * @param periodicityLength length of the x periodic domain size (0 = non-periodic)
+     * @param periodX length of the x periodic domain size (0 = non-periodic)
      */
     PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator, 
                     const double p0[], const double p1[], 
-                    double periodicityLength=0.0);
+                    double periodX=0.0);
 
     /**
      * Get the integrated linear parametric coordinates
@@ -125,7 +125,7 @@ private:
     double totalT;
 
     // either 360, 2*pi or 0 (if not periodic)
-    double xPeriodicity;
+    double periodX;
 
     size_t index;
     size_t numSegs;

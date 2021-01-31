@@ -12,25 +12,25 @@
 
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge distances
- * @param period periodicity length
+ * @param periodX periodicity length in x
  * @param lonBase base/reference longitude
  * @param lon longitude
  * @return corrected longitude
  */
 inline
-double fixLongitude(double period, double lonBase, double lon) {
+double fixLongitude(double periodX, double lonBase, double lon) {
     
     double diffLon = lon - lonBase;
 
-    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - period),
+    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX),
                                              std::abs(diffLon), 
-                                             std::abs(diffLon + period)};
+                                             std::abs(diffLon + periodX)};
 
     std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), diffLonMinusZeroPlus.end());
     int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
 
     // fix the longitude
-    return lon + (indexMin - 1)*period;
+    return lon + (indexMin - 1)*periodX;
 }
 
 extern "C" 
