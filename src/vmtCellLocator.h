@@ -141,9 +141,6 @@ private:
 
     std::vector<double> modPeriodX;
 
-    // 0 if not periodic
-    double periodX;
-
     // number of buckets in X and Y
     int numBucketsX;
     int numBucketsY;
