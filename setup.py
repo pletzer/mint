@@ -69,16 +69,22 @@ print(f'C++11 flag           : {cpp11_flag}')
 
 
 setuptools.setup(
-    name="mint", # Replace with your own username
+    name="mintregrid",
     version=VERSION,
-    author_email="alexander@gokliya.net",
+    author="Alexander Pletzer",
+    author_email="alexander.pletzer@nesi.org.nz",
     description="Mimetic INterpolation on the sphere",
+    long_description="""
+Interpolates or regrids an edge centred field from a source grid to either a destination grid or a target element. The 
+interpolation is mimetic in the sense that line integrals are conserved from source to destination grids, i.e. Stokes'
+theorem is statisfied to near machine precision.
+    """,
+    long_description_content_type="text/x-rst",
     url="https://github.com/pletzer/mint",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: ISC License",
     ],
-    packages=['mint'],
+    packages=['mintregrid'],
     ext_modules = [setuptools.Extension('mint', # name of the shared library
                    sources=glob.glob('src/*.cpp'),
                    define_macros=[],
@@ -89,6 +95,7 @@ setuptools.setup(
                    library_dirs=[vtk.__path__[0]],
                    extra_compile_args=[cpp11_flag,],
                    ),],
-    package_dir={'mint': 'pymint'},
+    include_package_data=True,
+    package_dir={'mintregrid': 'pymint'},
     install_requires=['numpy', 'vtk>=8.1.0', 'netcdf4', 'tbb'],
 )

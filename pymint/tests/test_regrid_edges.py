@@ -1,4 +1,4 @@
-from mint import RegridEdges
+from mintregrid import RegridEdges
 import numpy
 import sys
 from pathlib import Path
