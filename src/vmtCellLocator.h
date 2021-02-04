@@ -211,7 +211,7 @@ private:
      */
     inline std::vector<Vec3> getFacePoints(vtkIdType faceId) const {
 
-#if(VTK_MAJOR_VERSION >= 8 && VTK_MINOR_VERSION == 90)
+#if( (VTK_MAJOR_VERSION == 8 && VTK_MINOR_VERSION == 90) || (VTK_MAJOR_VERSION >= 9) )
         // Paraview 5.8.5, may need to make this more general
         const vtkIdType* ptIds;
 #else

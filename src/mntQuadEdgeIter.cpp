@@ -15,7 +15,7 @@ QuadEdgeIter::QuadEdgeIter() {
     // edges always to point in the positive direction
     for (int edgeId = 0; edgeId < cell->GetNumberOfEdges(); ++edgeId) {
 
-#if(VTK_MAJOR_VERSION == 8 && VTK_MINOR_VERSION == 90)
+#if(VTK_MAJOR_VERSION == 8 && VTK_MINOR_VERSION == 90 || (VTK_MAJOR_VERSION >= 9) )
         // Paraview 5.8.5, may need to make this more general
         const vtkIdType* i01 = this->cell->GetEdgeArray(edgeId);
 #else
