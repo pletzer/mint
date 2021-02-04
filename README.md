@@ -28,15 +28,26 @@ For building the library and the tools
  * Doxygen
 
 
-## How to build the python mint module
+## How to build the python mintregrid module
 
+The MINT python interface (mintregrid) requires VTK, netCDF and the tbb libraries to 
+be installed. This is most easily done in a conda environment:
+```
+conda create -n mintenv python=3.7
+condat activate mintenv
+conda install vtk=8.2.0
+conda install libnetcdf
+conda install tbb-devel
+```
+
+In the top MINT directory then type
 ```
 python setup.py install 
 ```
 
 Check that you can import the mint module
 ```
-python -c "import mint"
+python -c "import mintregrid"
 ```
 
 To run a quick test type
@@ -58,8 +69,7 @@ You can specify the compiler with
 FC=mpif90 CXX=mpicxx cmake ..; make -j 8
 ```
 
-## Checking that the build was sucessful
-
+You can check that the build was successful by typing
 ```
 make test
 ```
