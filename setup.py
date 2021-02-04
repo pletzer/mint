@@ -4,6 +4,17 @@ from pathlib import Path
 import os
 import glob
 import re
+import sys
+
+
+def getVtk():
+    inc_dir = Path(sys.exec_prefix) / Path('include')
+    vtk_version = list(inc_dir.glob('vtk-*'))[-1].name
+    vtk_version = re.sub(r'vtk-', '', vtk_version)
+    return {'VTK_VERSION': vtk_version,
+            'VTK_INCLUDE_DIR': str( Path(sys.exec_prefix) / Path('include') / Path(f'vtk-{vtk_version}') ),
+            'VTK_LIBRARIES_DIR': str( Path(sys.exec_prefix) / Path('lib') )}
+
 
 # extract the version number from the version.txt file
 with open("version.txt") as f:
@@ -17,38 +28,34 @@ with open("pymint/__init__.py.in") as fi:
     with open("pymint/__init__.py", 'w') as fo:
         fo.write(init_file)
 
+# 
+# VTK installation. Location  can be set by the user via environment variables, if
+# desired. Otherwise will infer form a typical pip/conda installation
 #
-# check the dependencies
+vtk_libraries = ('vtkCommonComputationalGeometry', 'vtkIOCore', 
+                 'vtkIOLegacy', 'vtkCommonExecutionModel', 'vtkCommonDataModel', 
+                 'vtkCommonTransforms', 'vtkCommonMisc', 'vtkCommonMath', 'vtkCommonSystem',
+                 'vtkCommonCore', 'vtksys')
+
+VTK_VERSION = os.getenv('VTK_VERSION')
+VTK_INCLUDE_DIR = os.getenv('VTK_INCLUDE_DIR')
+VTK_LIBRARIES_DIR = os.getenv('VTK_LIBRARIES_DIR')
+if not (VTK_VERSION and VTK_INCLUDE_DIR and VTK_LIBRARIES_DIR):
+    lib = getVtk()
+    VTK_VERSION = lib['VTK_VERSION']
+    VTK_INCLUDE_DIR = lib['VTK_INCLUDE_DIR']
+    VTK_LIBRARIES_DIR = lib['VTK_LIBRARIES_DIR']
+VTK_LIBRARIES = [f'{lib}-{VTK_VERSION}' for lib in vtk_libraries]
+
 #
-
-# VTK
-try:
-    import vtk
-    VTK_VERSION = f'{vtk.VTK_MAJOR_VERSION}.{vtk.VTK_MINOR_VERSION}'
-    VTK_INCLUDE_DIR = Path(vtk.__path__[0] + f'/../../../../include/vtk-{VTK_VERSION}')
-    VTK_LIBRARIES_DIR = Path(vtk.__path__[0] + '/../../../../lib')
-    VTK_LIBRARIES = [f'{lib}-{VTK_VERSION}' for lib in ('vtkCommonComputationalGeometry',
-                                                        'vtkIOCore', 
-                                                        'vtkIOLegacy', 
-                                                        'vtkCommonExecutionModel', 
-                                                        'vtkCommonDataModel', 
-                                                        'vtkCommonTransforms',
-                                                        'vtkCommonMisc',
-                                                        'vtkCommonMath',
-                                                        'vtkCommonSystem',
-                                                        'vtkCommonCore',
-                                                        'vtksys')]
-except:
-    raise RuntimeError('ERROR: "import vtk", must have vtk installed!')
-
-# netCDF
-try:
-    import netCDF4
-    NETCDF_INCLUDE_DIR = Path(netCDF4.__path__[0] + '/../../../../include')
-    NETCDF_LIBRARIES_DIR = Path(netCDF4.__path__[0] + '/../../../../lib')
-    NETCDF_LIBRARIES = ['netcdf', 'hdf5']
-except:
-    raise RuntimeError('ERROR: "import netCDF4", must have netcdf4 installed!')
+# netCDF installation. 
+#
+NETCDF_INCLUDE_DIR = os.getenv('NETCDF_INCLUDE_DIR')
+NETCDF_LIBRARIES_DIR = os.getenv('NETCDF_LIBRARIES_DIR')
+if not (NETCDF_INCLUDE_DIR and NETCDF_LIBRARIES_DIR):
+    NETCDF_INCLUDE_DIR = str( Path(sys.exec_prefix) / Path('include') )
+    NETCDF_LIBRARIES_DIR = str( Path(sys.exec_prefix) / Path('lib') )
+NETCDF_LIBRARIES = ['netcdf', 'hdf5']
 
 # C++ 11 flag
 cpp11_flag = '-std=c++11'
@@ -92,7 +99,7 @@ theorem is statisfied to near machine precision.
                                  VTK_INCLUDE_DIR,
                                  NETCDF_INCLUDE_DIR],
                    libraries=VTK_LIBRARIES + NETCDF_LIBRARIES,
-                   library_dirs=[vtk.__path__[0]],
+                   library_dirs=[VTK_INCLUDE_DIR, NETCDF_LIBRARIES_DIR],
                    extra_compile_args=[cpp11_flag,],
                    ),],
     include_package_data=True,
