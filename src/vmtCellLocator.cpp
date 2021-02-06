@@ -5,6 +5,32 @@
 #include <mntLineLineIntersector.h>
 #include <algorithm>
 
+bool isPointInQuad(const double point[], std::vector<Vec3>& nodes, double tol) {
+
+    bool res = true;
+    size_t npts = nodes.size();
+
+    for (size_t i0 = 0; i0 < npts; ++i0) {
+
+        size_t i1 = (i0 + 1) % npts;
+
+        double* p0 = &nodes[i0][0];
+        double* p1 = &nodes[i1][0];
+
+        // vector from point to the vertices
+        double dx0 = p0[0] - point[0];
+        double dx1 = p1[0] - point[0];
+        double dy0 = p0[1] - point[1];
+        double dy1 = p1[1] - point[1];
+
+        double cross = dx0*dy1 - dy0*dx1;
+
+        res &= (cross > -tol);
+    }
+
+    return res;
+}
+
 struct LambdaBegFunctor {
     // compare two elements of the array
     bool operator()(const std::pair<vtkIdType, Vec3>& x, 
@@ -105,54 +131,71 @@ vmtCellLocator::setPeriodicityLengthX(double periodX) {
 bool 
 vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
 
+    bool res = false;
     tol = std::abs(tol);
-    bool res = true;
-    double adeltas0[3];
-    double adeltas1[3];
-    double* val;
-    int k;
-
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
-    size_t npts = nodes.size();
+    Vec3 targetPoint(point);
 
-    for (size_t i0 = 0; i0 < npts; ++i0) {
-
-        size_t i1 = (i0 + 1) % npts;
-
-        double* p0 = &nodes[i0][0];
-        double* p1 = &nodes[i1][0];
-
-        // vector from point to the vertices
-        double dx0 = point[0] - p0[0];
-        double dx1 = point[0] - p1[0];
-        double dy0 = point[1] - p0[1];
-        double dy1 = point[1] - p1[1];
-
-        // add/substract periodicity length to minimize the distance between 
-        // longitudes
-        size_t numPer = this->modPeriodX.size(); // either 1 or 3
-        for (size_t j = 0; j < numPer; ++j) {
-            // modPeriodX could be {0, -360, 360}
-            adeltas0[j] = std::abs(dx0 + this->modPeriodX[j]);
-            adeltas1[j] = std::abs(dx1 + this->modPeriodX[j]);
-        }
-
-        val = std::min_element(adeltas0, adeltas0 + numPer);
-        k = (int) std::distance(adeltas0, val);
-        dx0 += this->modPeriodX[k];
-
-        val = std::min_element(adeltas1, adeltas1 + numPer);
-        k = (int) std::distance(adeltas1, val);
-        dx1 += this->modPeriodX[k];
-
-        double cross = dx0*dy1 - dy0*dx1;
-        if (cross < -tol) {
-            // negative area
-            res = false;
-        }
+    // add/substract periodicity length to minimize the distance between 
+    // longitudes
+    size_t numPer = this->modPeriodX.size(); // either 1 or 3
+    for (size_t j = 0; j < numPer; ++j) {
+        // add periodicity length
+        targetPoint[0] += this->modPeriodX[j];
+        res |= isPointInQuad(&targetPoint[0], nodes, tol);
+        targetPoint[0] -= this->modPeriodX[j];
     }
 
     return res;
+
+
+
+    // double adeltas0[3];
+    // double adeltas1[3];
+    // double* val;
+    // int k;
+
+    // std::vector<Vec3> nodes = this->getFacePoints(faceId);
+    // size_t npts = nodes.size();
+
+    // for (size_t i0 = 0; i0 < npts; ++i0) {
+
+    //     size_t i1 = (i0 + 1) % npts;
+
+    //     double* p0 = &nodes[i0][0];
+    //     double* p1 = &nodes[i1][0];
+
+    //     // vector from point to the vertices
+    //     double dx0 = point[0] - p0[0];
+    //     double dx1 = point[0] - p1[0];
+    //     double dy0 = point[1] - p0[1];
+    //     double dy1 = point[1] - p1[1];
+
+    //     // add/substract periodicity length to minimize the distance between 
+    //     // longitudes
+    //     size_t numPer = this->modPeriodX.size(); // either 1 or 3
+    //     for (size_t j = 0; j < numPer; ++j) {
+    //         // modPeriodX could be {0, -360, 360}
+    //         adeltas0[j] = std::abs(dx0 + this->modPeriodX[j]);
+    //         adeltas1[j] = std::abs(dx1 + this->modPeriodX[j]);
+    //     }
+
+    //     val = std::min_element(adeltas0, adeltas0 + numPer);
+    //     k = (int) std::distance(adeltas0, val);
+    //     dx0 += this->modPeriodX[k];
+
+    //     val = std::min_element(adeltas1, adeltas1 + numPer);
+    //     k = (int) std::distance(adeltas1, val);
+    //     dx1 += this->modPeriodX[k];
+
+    //     double cross = dx0*dy1 - dy0*dx1;
+    //     if (cross < -tol) {
+    //         // negative area
+    //         res = false;
+    //     }
+    // }
+
+    // return res;
 }
 
 
