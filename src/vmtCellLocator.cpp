@@ -5,31 +5,37 @@
 #include <mntLineLineIntersector.h>
 #include <algorithm>
 
-bool isPointInQuad(const double point[], std::vector<Vec3>& nodes, double tol) {
+
+bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, double tol) {
 
     bool res = true;
+
+    // nuber of points in the quad
     size_t npts = nodes.size();
 
+    // iterate over the edges of the quad
     for (size_t i0 = 0; i0 < npts; ++i0) {
 
         size_t i1 = (i0 + 1) % npts;
 
+        // starting/end points of the edge
         double* p0 = &nodes[i0][0];
         double* p1 = &nodes[i1][0];
 
-        // vector from point to the vertices
-        double dx0 = p0[0] - point[0];
-        double dx1 = p1[0] - point[0];
-        double dy0 = p0[1] - point[1];
-        double dy1 = p1[1] - point[1];
+        // vectors from point to the vertices
+        double dx0 = p0[0] - targetPoint[0];
+        double dx1 = p1[0] - targetPoint[0];
+        double dy0 = p0[1] - targetPoint[1];
+        double dy1 = p1[1] - targetPoint[1];
 
+        // area is positive if point is inside the quad
         double cross = dx0*dy1 - dy0*dx1;
-
         res &= (cross > -tol);
     }
 
     return res;
 }
+
 
 struct LambdaBegFunctor {
     // compare two elements of the array
@@ -141,7 +147,7 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
     for (auto periodX : this->modPeriodX) {
         // add periodicity length
         targetPoint[0] += periodX;
-        res |= isPointInQuad(&targetPoint[0], nodes, tol);
+        res |= isPointInQuad(targetPoint, nodes, tol);
         targetPoint[0] -= periodX;
     }
 
