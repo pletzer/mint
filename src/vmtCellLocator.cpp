@@ -6,7 +6,7 @@
 #include <algorithm>
 
 
-bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, double tol) {
+inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, double tol) {
 
     bool res = true;
 
@@ -144,10 +144,13 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
     // add/substract periodicity length to minimize the distance between 
     // longitudes
-    for (auto periodX : this->modPeriodX) {
+    for (const auto& periodX : this->modPeriodX) {
         // add periodicity length
         targetPoint[0] += periodX;
+        // point is inside the quad if res is positive for any
+        // periodicity lengths
         res |= isPointInQuad(targetPoint, nodes, tol);
+        // back to normal
         targetPoint[0] -= periodX;
     }
 
