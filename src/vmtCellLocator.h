@@ -109,7 +109,7 @@ public:
      * @note lambda0/lambda1 are the linear parametric coordiates of the entry/exit points into/from the cell
      * @note periodXOffset is the periodic offset to add to pBeg[0] and pEnd[0]
      */
-    std::vector< std::pair<vtkIdType, Vec3> >
+    std::vector< std::pair<vtkIdType, Vec4> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**

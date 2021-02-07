@@ -222,7 +222,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     double pEndPtr[] = {360.0, 90.0, 0.0};
     Vec3 pBeg(pBegPtr);
     Vec3 pEnd(pEndPtr);
-    std::vector< std::pair<vtkIdType, Vec3> > cellIdLambdasPer;
+    std::vector< std::pair<vtkIdType, Vec4> > cellIdLambdasPer;
     double totLambda;
 
     vtkIdList* cellIds = vtkIdList::New();
@@ -451,7 +451,7 @@ void testPeriodic(int nx, int ny) {
     }
     std::cout << '\n';
 
-    std::vector< std::pair<vtkIdType, Vec3> > 
+    std::vector< std::pair<vtkIdType, Vec4> > 
             cellIdLambdasPer = cloc->findIntersectionsWithLine(pBeg, pEnd);
     double totLambda = 0.0;
     for (auto& cIdLam : cellIdLambdasPer) {

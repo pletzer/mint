@@ -39,8 +39,8 @@ inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, dou
 
 struct LambdaBegFunctor {
     // compare two elements of the array
-    bool operator()(const std::pair<vtkIdType, Vec3>& x, 
-                    const std::pair<vtkIdType, Vec3>& y) {
+    bool operator()(const std::pair<vtkIdType, Vec4>& x, 
+                    const std::pair<vtkIdType, Vec4>& y) {
         return (x.second[0] < y.second[0]);
     }
 };
@@ -261,17 +261,17 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 }
 
 
-std::vector< std::pair<vtkIdType, Vec3> >
+std::vector< std::pair<vtkIdType, Vec4> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     Vec3 direction = pEnd - pBeg;
     double p0[] = {pBeg[0], pBeg[1], pBeg[2]};
     double p1[] = {pEnd[0], pEnd[1], pEnd[2]};
 
-    double lambdaInOutPeriod[3];
+    double lambdaInOutPeriod[4];
 
     // store result
-    std::vector< std::pair<vtkIdType, Vec3> > res;
+    std::vector< std::pair<vtkIdType, Vec4> > res;
 
     const double eps = 10 * std::numeric_limits<double>::epsilon();
 
@@ -297,9 +297,10 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
                 lambdaInOutPeriod[0] = lambdas[0];
                 lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
                 lambdaInOutPeriod[2] = modPx;
+                lambdaInOutPeriod[3] = 0.;
 
                 // found entry/exit points so add
-                res.push_back(  std::pair<vtkIdType, Vec3>( cellId, Vec3(lambdaInOutPeriod) )  );
+                res.push_back(  std::pair<vtkIdType, Vec4>( cellId, Vec4(lambdaInOutPeriod) )  );
             }
         }
     }
