@@ -141,17 +141,33 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
     tol = std::abs(tol);
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     Vec3 targetPoint(point);
+    double lamMid = this->grid->GetCenter()[0];
 
     // add/substract periodicity length to minimize the distance between 
     // longitudes
     for (const auto& periodX : this->modPeriodX) {
+
+        // store the original values
+        double lon = targetPoint[0];
+        double lat = targetPoint[1];
+
         // add periodicity length
         targetPoint[0] += periodX;
         // point is inside the quad if res is positive for any
         // periodicity lengths
         res |= isPointInQuad(targetPoint, nodes, tol);
+
+        // maybe folding across pole?
+        double sgn = targetPoint[0] >= lamMid? 1: -1;
+        if (std::abs(lat) > 90) {
+            targetPoint[0] -= sgn * 180.;
+            targetPoint[1] = sgn * 180 - lat;
+            res |= isPointInQuad(targetPoint, nodes, tol);
+        }
+
         // back to normal
-        targetPoint[0] -= periodX;
+        targetPoint[0] = lon;
+        targetPoint[1] = lat;
     }
 
     return res;
@@ -237,9 +253,6 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
                 bucketId = m * numBucketsY + n;
                 for (const vtkIdType& faceId : this->bucket2Faces.find(bucketId)->second) {
                     cellIds->InsertUniqueId(faceId);
-//                    std::cerr << "*** adding cell id " << faceId << 
-//                                 " m, mLo, mHi = " << m << ',' << mLo << ',' << mHi << 
-//                                 " n, nLo, nHi = " << n << ',' << nLo << ',' << nHi << '\n';
                 }
             }
         }
