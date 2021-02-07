@@ -268,7 +268,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
     double p0[] = {pBeg[0], pBeg[1], pBeg[2]};
     double p1[] = {pEnd[0], pEnd[1], pEnd[2]};
 
-    double lambdaInOutPeriod[4];
+    Vec4 lambdaInOutPeriod;
 
     // store result
     std::vector< std::pair<vtkIdType, Vec4> > res;
@@ -300,7 +300,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
                 lambdaInOutPeriod[3] = 0.;
 
                 // found entry/exit points so add
-                res.push_back(  std::pair<vtkIdType, Vec4>( cellId, Vec4(lambdaInOutPeriod) )  );
+                res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
             }
         }
     }
