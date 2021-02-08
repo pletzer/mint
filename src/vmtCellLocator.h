@@ -153,6 +153,18 @@ private:
 
 
     /**
+     * Adjust the longitude and latitude to account for the folding at the pole
+     * @param point lon, lat in input and transformed lon, lat on output
+     */
+    inline void foldAtPole(double point[]) const {
+        double sgnLambda = point[0] - this->lambdaMid >= 0? 1.: -1.;
+        double sgnTheta = point[1] >= 0? 1.: -1.;
+        point[0] -= sgnLambda*180.;
+        point[1] = sgnTheta*180 - point[1];
+    }
+
+
+    /**
      * Get the flat array index of a bucket containing a given point
      * @param point point
      * @return index

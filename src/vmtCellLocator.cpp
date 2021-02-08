@@ -160,15 +160,13 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
         res |= isPointInQuad(targetPoint, nodes, tol);
 
         // maybe folding across pole?
-        double sgnLambda = targetPoint[0] >= this->lambdaMid? 1.: -1.;
-        double sgnTheta = targetPoint[1] >= 0? 1.: -1.;
         if (std::abs(targetPoint[1]) > 90) {
-            targetPoint[0] -= sgnLambda * 180.;
-            targetPoint[1] = sgnTheta * 180 - lat;
+            // map the point back to our domain
+            this->foldAtPole(&targetPoint[0]);
             res |= isPointInQuad(targetPoint, nodes, tol);
         }
 
-        // back to normal
+        // back to the original values
         targetPoint[0] = lon;
         targetPoint[1] = lat;
     }
@@ -310,18 +308,12 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
         // try with pole folding
         double poleFolding = 0;
         if (std::abs(p0[1]) > 90.) {
-            double sgnLambda = p0[0] - this->lambdaMid >= 0? 1.: -1.;
-            double sgnTheta = p0[1] >= 0? 1.: -1.;
-            p0[0] -= sgnLambda*180.;
-            p0[1] = sgnTheta*180 - p0[1];
-            poleFolding += 10;
+            this->foldAtPole(p0);
+            poleFolding += 10; // mark this fold for point 0
         }
         if (std::abs(p1[1]) > 90.) {
-            double sgnLambda = p1[0] - this->lambdaMid >= 0? 1.: -1.;
-            double sgnTheta = p1[1] >= 0? 1.: -1.;
-            p1[0] -= sgnLambda*180.;
-            p1[1] = sgnTheta*180 - p1[1];
-            poleFolding += 100;
+            this->foldAtPole(p1);
+            poleFolding += 100; // mark this fold for point 1
         }
 
         if (poleFolding != 0) {
