@@ -76,6 +76,8 @@ vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
     this->xmin[2] = bounds[4];
     this->xmax[2] = bounds[5];
 
+    this->lambdaMid = 0.5*(this->xmin[0] + this->xmax[0]);
+
     // want the buckets to be larger than the cells
     vtkIdType numCells = grid->GetNumberOfCells();
     if (numCells > 5) {
@@ -158,10 +160,11 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
         res |= isPointInQuad(targetPoint, nodes, tol);
 
         // maybe folding across pole?
-        double sgn = targetPoint[0] >= lamMid? 1: -1;
-        if (std::abs(lat) > 90) {
-            targetPoint[0] -= sgn * 180.;
-            targetPoint[1] = sgn * 180 - lat;
+        double sgnLambda = targetPoint[0] >= this->lambdaMid? 1.: -1.;
+        double sgnTheta = targetPoint[1] >= 0? 1.: -1.;
+        if (std::abs(targetPoint[1]) > 90) {
+            targetPoint[0] -= sgnLambda * 180.;
+            targetPoint[1] = sgnTheta * 180 - lat;
             res |= isPointInQuad(targetPoint, nodes, tol);
         }
 
@@ -297,12 +300,51 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
                 lambdaInOutPeriod[0] = lambdas[0];
                 lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
                 lambdaInOutPeriod[2] = modPx;
-                lambdaInOutPeriod[3] = 0.;
+                lambdaInOutPeriod[3] = 0.; // no pole folding
 
                 // found entry/exit points so add
                 res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
             }
         }
+
+        // try with pole folding
+        double poleFolding = 0;
+        if (std::abs(p0[1]) > 90.) {
+            double sgnLambda = p0[0] - this->lambdaMid >= 0? 1.: -1.;
+            double sgnTheta = p0[1] >= 0? 1.: -1.;
+            p0[0] -= sgnLambda*180.;
+            p0[1] = sgnTheta*180 - p0[1];
+            poleFolding += 10;
+        }
+        if (std::abs(p1[1]) > 90.) {
+            double sgnLambda = p1[0] - this->lambdaMid >= 0? 1.: -1.;
+            double sgnTheta = p1[1] >= 0? 1.: -1.;
+            p1[0] -= sgnLambda*180.;
+            p1[1] = sgnTheta*180 - p1[1];
+            poleFolding += 100;
+        }
+
+        if (poleFolding != 0) {
+            // pole folding detected
+            for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
+
+               vtkIdType cellId = cellIds->GetId(i);
+
+                std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+
+                if (lambdas.size() >= 2) {
+
+                    lambdaInOutPeriod[0] = lambdas[0];
+                    lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
+                    lambdaInOutPeriod[2] = modPx;
+                    lambdaInOutPeriod[3] = poleFolding; // pole folding: 10 for p0, 100 for p1 and 110 for p0 and p1
+
+                    // found entry/exit points so add
+                    res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
+                }
+            }
+        }
+
     }
 
     cellIds->Delete();

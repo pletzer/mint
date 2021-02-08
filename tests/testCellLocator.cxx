@@ -564,17 +564,17 @@ void testFolding(int nx, int ny) {
 
 int main(int argc, char** argv) {
 
-    test1Quad(1);
-    test1Quad(10);
-    test1Quad(1000);
-    testContainsPoint(10, 5);
-    testUniformLatLonGrid(10, 5, 1);
-    testUniformLatLonGrid(10, 5, 2);
-    testUniformLatLonGrid(10, 5, 5);
-    testUniformLatLonGrid(10, 5, 10);
-    testUniformLatLonGrid(10, 5, 20);
-    testUniformLatLonGrid(10, 5, 50);
-    testPeriodic(4, 3);
+    // test1Quad(1);
+    // test1Quad(10);
+    // test1Quad(1000);
+    // testContainsPoint(10, 5);
+    // testUniformLatLonGrid(10, 5, 1);
+    // testUniformLatLonGrid(10, 5, 2);
+    // testUniformLatLonGrid(10, 5, 5);
+    // testUniformLatLonGrid(10, 5, 10);
+    // testUniformLatLonGrid(10, 5, 20);
+    // testUniformLatLonGrid(10, 5, 50);
+    // testPeriodic(4, 3);
     testFolding(4, 3);
 
     return 0;

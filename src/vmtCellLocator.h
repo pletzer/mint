@@ -133,6 +133,9 @@ private:
 
     vtkUnstructuredGrid* grid;
 
+    // mid point of the longitudes
+    double lambdaMid;
+
     // domain range
     double xmin[3];
     double xmax[3];
