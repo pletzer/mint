@@ -1,10 +1,13 @@
+import pytest
 from mintregrid import RegridEdges
 import numpy
 import sys
 from pathlib import Path
 
 
-def test_compute_weights(data_dir):
+def test_compute_weights():
+
+    data_dir = Path(__file__).absolute().parent / '../../data'
 
     # create a regridder
     rg = RegridEdges()
@@ -38,7 +41,9 @@ def test_compute_weights(data_dir):
     rg.dumpWeights('test_regrid_edges_py.nc')
 
 
-def test_apply_weights(data_dir):
+def test_apply_weights():
+
+    data_dir = Path(__file__).absolute().parent / '../../data'
     
     # create a regridder
     rg = RegridEdges()
@@ -72,11 +77,7 @@ def test_apply_weights(data_dir):
 
 if __name__ == '__main__':
 
-    data_dir = Path('./data')
-    if len(sys.argv) >= 2:
-        data_dir = Path(sys.argv[1])
-
-    test_compute_weights(data_dir)
-    test_apply_weights(data_dir)
+    test_compute_weights()
+    test_apply_weights()
 
 

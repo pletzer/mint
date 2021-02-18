@@ -33,11 +33,8 @@ For building the library and the tools
 The MINT python interface (mintregrid) requires VTK, netCDF and the tbb libraries to 
 be installed. This is most easily done in a conda environment:
 ```
-conda create -n mintenv python=3.7
+conda create -n mintenv python=3.7 vtk=8.2.0 libnetcdf tbb-devel pytest
 conda activate mintenv
-conda install vtk=8.2.0
-conda install libnetcdf
-conda install tbb-devel
 ```
 
 In the top MINT directory then type
@@ -50,12 +47,12 @@ Check that you can import the mint module
 python -c "import mintregrid"
 ```
 
-To run a quick test type
+To run tests type
 ```
-python pymint/tests/test_regrid_edges.py
+pytest
 ```
  
-## How to build the MINT library
+## How to build the MINT library so you can call it from your program (Fortran or C/C++)
 
 ```
 mkdir build
@@ -116,7 +113,8 @@ Set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT
 
 ## Conservation error
 
-Error of mimetic regridding:
+The plot below shows the error of mimetic regridding error obtained by computing the 
+closed line integral for each cell. 
 ![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
 
 
