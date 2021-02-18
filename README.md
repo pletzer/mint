@@ -34,7 +34,7 @@ The MINT python interface (mintregrid) requires VTK, netCDF and the tbb librarie
 be installed. This is most easily done in a conda environment:
 ```
 conda create -n mintenv python=3.7
-condat activate mintenv
+conda activate mintenv
 conda install vtk=8.2.0
 conda install libnetcdf
 conda install tbb-devel
