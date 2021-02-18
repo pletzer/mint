@@ -20,7 +20,7 @@ def test_compute_weights(data_dir):
 
     # dst is cubed-sphere. Cells at the poles need to be fixed to
     # make them as compact as possible. Use flags 1, 1
-    rg.setSrcGridFlags(1, 1)
+    rg.setDstGridFlags(1, 1)
 
     # dst grid file
     dst_file = str(data_dir / Path('cs_4.nc'))
@@ -48,7 +48,7 @@ def test_apply_weights(data_dir):
     rg.loadSrcGrid(f'{data_dir}/latlon4x2.nc:latlon')
 
     # dst is cubed-sphere
-    rg.setSrcGridFlags(1, 1)
+    rg.setDstGridFlags(1, 1)
     rg.loadDstGrid(f'{data_dir}/cs_4.nc:physics')
 
     # load the weights 
