@@ -60,8 +60,8 @@ int main(int argc, char** argv) {
         averageLonAtPole = 0;
         std::cout << "info: no regularization applied to grid\n";
     }
-    ier = mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole);
-
+    const int degrees = 1; // for the time being
+    ier = mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
 
     vtkUnstructuredGrid* ugrid;
     ier = mnt_grid_get(&grd, &ugrid);

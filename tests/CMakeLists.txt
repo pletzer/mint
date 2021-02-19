@@ -12,6 +12,8 @@ configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
+configure_file(testPolysegmentIter2.cpp testPolysegmentIter2.cxx)
+configure_file(testFindCellsAlongLine.cpp testFindCellsAlongLine.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
 configure_file(test_ncattributes.f90.in test_ncattributes.f90)
@@ -146,6 +148,21 @@ target_link_libraries(testPolysegmentIter
                       ${VTK_LIBRARIES}
 )
 
+add_executable(testPolysegmentIter2 testPolysegmentIter2.cxx)
+target_link_libraries(testPolysegmentIter2
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testFindCellsAlongLine testFindCellsAlongLine.cxx)
+target_link_libraries(testFindCellsAlongLine
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+
 add_executable(testPolylineIntegral testPolylineIntegral.cxx)
 target_link_libraries(testPolylineIntegral
                       mint
@@ -277,6 +294,8 @@ add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
+add_test(NAME polysegmentIter2 COMMAND testPolysegmentIter2)
+add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
