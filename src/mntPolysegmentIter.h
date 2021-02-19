@@ -15,7 +15,7 @@ public:
     /**
      * Constructor
      * @param grid instance of vtkUnstructuredGrid
-     * @param locator vtkCellLocator instance attached to the above grid
+     * @param locator vmtCellLocator instance attached to the above grid
      * @param p0 start point
      * @param p1 end point
      * @param periodX length of the x periodic domain size (0 = non-periodic)
