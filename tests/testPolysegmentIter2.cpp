@@ -15,7 +15,8 @@ void test(const std::string& filename, size_t npoints, const double points[]) {
     ier = mnt_grid_new(&grid);
     assert(ier == 0);
 
-    ier = mnt_grid_setFlags(&grid, 1, 1);
+    // fix for cubed-sphere, radians
+    ier = mnt_grid_setFlags(&grid, 1, 1, 0);
     assert(ier == 0);
 
     ier = mnt_grid_loadFrom2DUgrid(&grid, filename.c_str());
@@ -51,6 +52,11 @@ void test(const std::string& filename, size_t npoints, const double points[]) {
             psi.next();
         }
         std::cout << "num segments = " << numSegs << " integrated param coord = " << psi.getIntegratedParamCoord() << '\n';
+        if (std::abs(psi.getIntegratedParamCoord() - 1.0) >= 1.e-10) {
+            char outname[] = "polysegmentIter2.vtk";
+            std::cout << "saving grid in file " << outname << '\n';
+            ier = mnt_grid_dump(&grid, outname);
+        }
         assert(std::abs(psi.getIntegratedParamCoord() - 1.0) < 1.e-10);
     }
 
@@ -63,17 +69,18 @@ int main(int argc, char** argv) {
 
     const double eps = 1.73654365e-10;
 
-    // {
-    //     const double points[] = {    0., 1., 0.,
-    //                              2*M_PI, 1., 0.};
-    //     test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
-    // }
+    // the following fails because of the bending near the pole
     // {
     //     const double points[] = {    0., 1.4, 0.,
     //                              2*M_PI, 1.4, 0.};
     //     test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
     // }
 
+    {
+        const double points[] = {    0., 1., 0.,
+                                 2*M_PI, 1., 0.};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
     {
         const double points[] = {M_PI/2.              , 0.-eps, 0.,
                                  M_PI/2. + 2.*M_PI/16., 0.+eps, 0.};

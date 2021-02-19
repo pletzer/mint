@@ -81,14 +81,16 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 extern "C"
 int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
 
-    return mnt_grid_setFlags( &(*self)->srcGridObj, fixLonAcrossDateline, averageLonAtPole );
+    const int degrees = 1; // for the time being
+    return mnt_grid_setFlags( &(*self)->srcGridObj, fixLonAcrossDateline, averageLonAtPole, degrees );
 
 }
 
 extern "C"
 int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
 
-    return mnt_grid_setFlags( &(*self)->dstGridObj, fixLonAcrossDateline, averageLonAtPole );
+    const int degrees = 1; // for the time being
+    return mnt_grid_setFlags( &(*self)->dstGridObj, fixLonAcrossDateline, averageLonAtPole, degrees );
 
 }
 

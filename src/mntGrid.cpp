@@ -45,6 +45,7 @@ int mnt_grid_new(Grid_t** self) {
 
     (*self)->fixLonAcrossDateline = true;
     (*self)->averageLonAtPole = true;
+    (*self)->periodX = 360.0; // if in radians, only used if the above switches are set
 
     return 0;
 }
@@ -70,7 +71,7 @@ int mnt_grid_del(Grid_t** self) {
 }
 
 extern "C"
-int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
+int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole, int degrees) {
 
     (*self)->fixLonAcrossDateline = true;
     if (fixLonAcrossDateline == 0) {
@@ -80,6 +81,12 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
     (*self)->averageLonAtPole = true;
     if (averageLonAtPole == 0) {
         (*self)->averageLonAtPole = false;
+    }
+
+    (*self)->periodX = 360;
+    if (degrees == 0) {
+      // lon-lat are in radians
+      (*self)->periodX = 2 * M_PI;
     }
 
     return 0;
@@ -322,10 +329,11 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 double lat = ugrid.getPoint(k)[LAT_INDEX];
 
                 if ((*self)->fixLonAcrossDateline) {
-                    lon = fixLongitude(360.0, lonBase, lon);
+                    lon = fixLongitude((*self)->periodX, lonBase, lon);
                 }
 
-                if (std::abs(lat) == 90.0) {
+                if (std::abs(lat) == 0.25*(*self)->periodX) {
+                    // at the pole
                     poleNodeIdx  = nodeIdx;
                 }
                 else {

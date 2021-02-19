@@ -45,6 +45,8 @@ struct Grid_t {
     bool fixLonAcrossDateline;
     bool averageLonAtPole;
 
+    double periodX;
+
 };
 
 
@@ -67,12 +69,13 @@ int mnt_grid_del(Grid_t** self);
 /**
  * Set the grid flags
  * @param self instance of Grid_t
- * @param fixLonAcrossDateline set this to 1 if periodicty length should be added/subtracted to nodes in order to make the cell as compact as possible
- * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the node cell node's longitudes
+ * @param fixLonAcrossDateline set this to 0 if periodicty length should NOT be added/subtracted to nodes in order to make the cell as compact as possible
+ * @param averageLonAtPole set this to 0 if longitudes at the poles should NOT take the average value of the node cell node's longitudes
+ * @param degrees set this to 0 if the coordinates are in radians
  * @return error code (0 = OK)
  */
 extern "C"
-int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole);
+int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole, int degrees);
 
 /**
  * Set the pointer to an array of points
