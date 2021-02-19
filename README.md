@@ -47,7 +47,7 @@ Check that you can import the mint module
 python -c "import mintregrid"
 ```
 
-To run tests type
+To run the tests type
 ```
 pytest
 ```
@@ -71,15 +71,9 @@ You can check that the build was successful by typing
 make test
 ```
 
-## API Documentation
+### Binary tools
 
-This is useful if you would like to call MINT from C, Python or Fortran:
-
-https://pletzer.github.io/mint/html/
-
-## Examples
-
-Set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT_SRC_DIR=..`).
+The above CMake build will compile a number of tools. To run the tools, set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT_SRC_DIR=..`).
 
  1. Compute the interpolation weights from a lat-lon grid to the cubed sphere:
  ```
@@ -111,17 +105,18 @@ Set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT
 
  ```
 
+
+## API Documentation
+
+This is useful if you would like to call MINT from C, Python or Fortran:
+
+https://pletzer.github.io/mint/html/
+
+
 ## Conservation error
 
 The plot below shows the error of mimetic regridding error obtained by computing the 
 closed line integral for each cell. 
 ![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
-
-
-
-
-
-
-
 
 
