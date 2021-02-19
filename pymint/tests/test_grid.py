@@ -1,3 +1,4 @@
+import pytest
 from mintregrid import Grid
 import numpy
 import sys
@@ -34,7 +35,9 @@ def test_load_grid():
     assert ncells == 2
 
 
-def test_load_from_ugrid_file(data_dir):
+def test_load_from_ugrid_file():
+
+    data_dir = Path(__file__).absolute().parent / '../../data'
 
     gr = Grid()
 
@@ -58,15 +61,9 @@ def test_load_from_ugrid_file(data_dir):
     data = numpy.array(range(ncells*4*3), numpy.float64)
     gr.attach('myData', data)
 
-
 if __name__ == '__main__':
-
-    data_dir = Path('./data')
-    if len(sys.argv) >= 2:
-        data_dir = Path(sys.argv[1])
 
     test_create_grid()
     test_load_grid()
-    test_load_from_ugrid_file(data_dir)
-
+    test_load_from_ugrid_file()
 

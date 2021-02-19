@@ -77,10 +77,6 @@ def test_simple():
 
 if __name__ == '__main__':
 
-    data_dir = Path('./data')
-    if len(sys.argv) >= 2:
-        data_dir = Path(sys.argv[1])
-
     test_simple()
 
 
