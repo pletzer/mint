@@ -15,6 +15,9 @@ void test(const std::string& filename, size_t npoints, const double points[]) {
     ier = mnt_grid_new(&grid);
     assert(ier == 0);
 
+    ier = mnt_grid_setFlags(&grid, 1, 1);
+    assert(ier == 0);
+
     ier = mnt_grid_loadFrom2DUgrid(&grid, filename.c_str());
     assert(ier == 0);
 
@@ -25,13 +28,13 @@ void test(const std::string& filename, size_t npoints, const double points[]) {
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(ugrid);
     loc->BuildLocator();
-
+    // loc->setPeriodicityLengthX(2*M_PI);
     assert(npoints > 1);
 
     for (size_t ipoint = 0; ipoint < npoints - 1; ++ipoint) {
         const double* p0 = &points[3*(ipoint + 0)];
         const double* p1 = &points[3*(ipoint + 1)];
-        PolysegmentIter psi(ugrid, loc, p0, p1);
+        PolysegmentIter psi(ugrid, loc, p0, p1, 2*M_PI);
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
         for (size_t i = 0; i < numSegs; ++i) {
@@ -60,9 +63,71 @@ int main(int argc, char** argv) {
 
     const double eps = 1.73654365e-10;
 
+    // {
+    //     const double points[] = {    0., 1., 0.,
+    //                              2*M_PI, 1., 0.};
+    //     test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    // }
+    // {
+    //     const double points[] = {    0., 1.4, 0.,
+    //                              2*M_PI, 1.4, 0.};
+    //     test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    // }
+
     {
         const double points[] = {M_PI/2.              , 0.-eps, 0.,
                                  M_PI/2. + 2.*M_PI/16., 0.+eps, 0.};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {0., 1.1, 0.,
+                                 1., 1.1, 0.};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {0., 0.1, 0.,
+                                 2., 0.1, 0.};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {0., 1.1, 0.,
+                                 2., 1.1, 0.};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {0., 1., 0.,
+                                 0., -1., 0.,
+                                 2*M_PI, -1., 0.};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 3, points);
+    }
+    {
+        const double points[] = {3.9269908169872414, -0.6154797086703874, 0.0,
+                                 3.5342917352885173, -0.7458526607730738, 0.0};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {3.5342917352885173, 0.7458526607730737, 0.0,
+                                 3.9269908169872414, 0.6154797086703873, 0.0};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {0.7853981633974483, -1.04089353704597, 0.0,
+                                 0.3926990816987242, -0.7458526607730738, 0.0};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {-0.0, -1.1780972450961724, 0.0,
+                                 0.7853981633974483, -1.04089353704597, 0.0};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {0.0, 1.1780972450961724, 0.0,
+                                 0.7853981633974483, 1.04089353704597, 0.0};
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    }
+    {
+        const double points[] = {3.9269908169872414, 1.04089353704597, 0.0,
+                                 3.141592653589793, 1.1780972450961724, 0.0};
         test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
     }
 
