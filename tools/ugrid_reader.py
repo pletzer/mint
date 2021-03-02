@@ -110,7 +110,7 @@ class UgridReader(ReaderBase):
             if regularization and numpy.any(numpy.fabs(alts < quarterPeriodicity) < 1.e-6):
                 # there is a latitude at the pole. The longitude is not well 
                 # defined in this case - we can set it to any value. For 
-                # esthetical reason it't good to set it to the average 
+                # esthetical reason it's good to set it to the average 
                 # of the longitudes
                 i = numpy.argmax(alts - quarterPeriodicity)
                 # compute the average lon value, excluding this one

@@ -33,11 +33,8 @@ For building the library and the tools
 The MINT python interface (python-mint) requires VTK, netCDF and the tbb libraries to 
 be installed. This is most easily done in a conda environment:
 ```
-conda create -n mintenv python=3.7
-condat activate mintenv
-conda install vtk=8.2.0
-conda install libnetcdf
-conda install tbb-devel
+conda create -n mintenv python=3.7 vtk=8.2.0 libnetcdf tbb-devel pytest
+conda activate mintenv
 ```
 
 In the top MINT directory then type
@@ -50,12 +47,12 @@ Check that you can import the mint module
 python -c "import mint"
 ```
 
-To run a quick test type
+To run the tests type
 ```
-python pymint/tests/test_regrid_edges.py
+pytest
 ```
  
-## How to build the MINT library
+## How to build the MINT library so you can call it from your program (Fortran or C/C++)
 
 ```
 mkdir build
@@ -74,15 +71,9 @@ You can check that the build was successful by typing
 make test
 ```
 
-## API Documentation
+### Binary tools
 
-This is useful if you would like to call MINT from C, Python or Fortran:
-
-https://pletzer.github.io/mint/html/
-
-## Examples
-
-Set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT_SRC_DIR=..`).
+The above CMake build will compile a number of tools. To run the tools, set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT_SRC_DIR=..`).
 
  1. Compute the interpolation weights from a lat-lon grid to the cubed sphere:
  ```
@@ -114,16 +105,18 @@ Set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT
 
  ```
 
+
+## API Documentation
+
+This is useful if you would like to call MINT from C, Python or Fortran:
+
+https://pletzer.github.io/mint/html/
+
+
 ## Conservation error
 
-Error of mimetic regridding:
+The plot below shows the error of mimetic regridding error obtained by computing the 
+closed line integral for each cell. 
 ![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
-
-
-
-
-
-
-
 
 

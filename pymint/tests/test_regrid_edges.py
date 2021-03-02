@@ -1,10 +1,13 @@
+import pytest
 from mint import RegridEdges
 import numpy
 import sys
 from pathlib import Path
 
 
-def test_compute_weights(data_dir):
+def test_compute_weights():
+
+    data_dir = Path(__file__).absolute().parent / '../../data'
 
     # create a regridder
     rg = RegridEdges()
@@ -20,7 +23,7 @@ def test_compute_weights(data_dir):
 
     # dst is cubed-sphere. Cells at the poles need to be fixed to
     # make them as compact as possible. Use flags 1, 1
-    rg.setSrcGridFlags(1, 1)
+    rg.setDstGridFlags(1, 1)
 
     # dst grid file
     dst_file = str(data_dir / Path('cs_4.nc'))
@@ -38,7 +41,9 @@ def test_compute_weights(data_dir):
     rg.dumpWeights('test_regrid_edges_py.nc')
 
 
-def test_apply_weights(data_dir):
+def test_apply_weights():
+
+    data_dir = Path(__file__).absolute().parent / '../../data'
     
     # create a regridder
     rg = RegridEdges()
@@ -48,7 +53,7 @@ def test_apply_weights(data_dir):
     rg.loadSrcGrid(f'{data_dir}/latlon4x2.nc:latlon')
 
     # dst is cubed-sphere
-    rg.setSrcGridFlags(1, 1)
+    rg.setDstGridFlags(1, 1)
     rg.loadDstGrid(f'{data_dir}/cs_4.nc:physics')
 
     # load the weights 
@@ -72,11 +77,7 @@ def test_apply_weights(data_dir):
 
 if __name__ == '__main__':
 
-    data_dir = Path('./data')
-    if len(sys.argv) >= 2:
-        data_dir = Path(sys.argv[1])
-
-    test_compute_weights(data_dir)
-    test_apply_weights(data_dir)
+    test_compute_weights()
+    test_apply_weights()
 
 
