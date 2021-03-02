@@ -143,7 +143,6 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
     tol = std::abs(tol);
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     Vec3 targetPoint(point);
-    double lamMid = this->grid->GetCenter()[0];
 
     // add/substract periodicity length to minimize the distance between 
     // longitudes

@@ -8,7 +8,7 @@ __version__ = "@VERSION@"
 
 # open shared library
 LIB = None
-for libfile in Path(__path__[0] + '/..').glob('mint.cpython*'):
+for libfile in Path(__path__[0] + '/..').glob('libmint.cpython*'):
     LIB = CDLL(libfile)
     if LIB:
         break

@@ -1,4 +1,4 @@
-from mintregrid import Grid
+from mint import Grid
 import numpy
 import sys
 from pathlib import Path

@@ -1,4 +1,4 @@
-from mintregrid import Grid, PolylineIntegral
+from mint import Grid, PolylineIntegral
 import numpy
 import sys
 from pathlib import Path

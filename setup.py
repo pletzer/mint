@@ -76,7 +76,7 @@ print(f'C++11 flag           : {cpp11_flag}')
 
 
 setuptools.setup(
-    name="mintregrid",
+    name="python-mint",
     version=VERSION,
     author="Alexander Pletzer",
     author_email="alexander.pletzer@nesi.org.nz",
@@ -91,8 +91,8 @@ theorem is statisfied to near machine precision.
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
-    packages=['mintregrid'],
-    ext_modules = [setuptools.Extension('mint', # name of the shared library
+    packages=['mint'],
+    ext_modules = [setuptools.Extension('libmint', # name of the shared library
                    sources=glob.glob('src/*.cpp'),
                    define_macros=[],
                    include_dirs=['src/',
@@ -103,6 +103,6 @@ theorem is statisfied to near machine precision.
                    extra_compile_args=[cpp11_flag,],
                    ),],
     include_package_data=True,
-    package_dir={'mintregrid': 'pymint'},
+    package_dir={'mint': 'pymint'},
     install_requires=['numpy', 'vtk>=8.1.0', 'netcdf4', 'tbb'],
 )
