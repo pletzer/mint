@@ -38,7 +38,8 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
 
     Vec3 dp = p1 - p0;
 
-    std::vector< std::pair<vtkIdType, Vec4> > cellIdLambdasPeriod = this->locator->findIntersectionsWithLine(p0, p1);
+    std::vector< std::pair<vtkIdType, Vec4> > 
+              cellIdLambdasPeriodFold = this->locator->findIntersectionsWithLine(p0, p1);
 
     // arrays of cell Ids, start/end "t" values, start/end "xi" param coords, and 
     // duplicity coefficients for each subsegment
@@ -54,13 +55,14 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     Vec3 xia, xib;
     double dist2;
     double weights[8];
-    for (const auto& cIdLamP : cellIdLambdasPeriod) {
+    for (const auto& cIdLamPF : cellIdLambdasPeriodFold) {
 
-        vtkIdType cId = cIdLamP.first;
+        vtkIdType cId = cIdLamPF.first;
 
-        double ta = cIdLamP.second[0];
-        double tb = cIdLamP.second[1];
-        double periodOffset = cIdLamP.second[2];
+        double ta = cIdLamPF.second[0];
+        double tb = cIdLamPF.second[1];
+        double periodOffset = cIdLamPF.second[2];
+        double fold = cIdLamPF.second[3];
 
         Vec3 pa = p0 + dp*ta;
         Vec3 pb = p0 + dp*tb;

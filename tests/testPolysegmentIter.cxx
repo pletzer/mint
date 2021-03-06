@@ -488,13 +488,13 @@ void testFold() {
 
 int main(int argc, char** argv) {
 
+    testFold();
     test1CellLineOutside();
     test1Cell();
     test2Cells();
     test2CellsEdge();
     testPointOutside();
     test3Points();
-    testFold();
 
     return 0;
 }
