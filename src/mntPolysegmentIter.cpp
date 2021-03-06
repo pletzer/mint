@@ -62,7 +62,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
         double ta = cIdLamPF.second[0];
         double tb = cIdLamPF.second[1];
         double periodOffset = cIdLamPF.second[2];
-        double fold = cIdLamPF.second[3];
+        //double fold = cIdLamPF.second[3]; // not c urrently used
 
         Vec3 pa = p0 + dp*ta;
         Vec3 pb = p0 + dp*tb;
