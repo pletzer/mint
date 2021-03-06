@@ -306,13 +306,11 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
         // try with pole folding
         double poleFolding = 0;
-        if (std::abs(p0[1]) > 90.) {
+        if (std::abs(p0[1]) > 90. || std::abs(p1[1]) > 90.) {
+            // apply the fold transform to both points
             this->foldAtPole(p0);
-            poleFolding += 10; // mark this fold for point 0
-        }
-        if (std::abs(p1[1]) > 90.) {
             this->foldAtPole(p1);
-            poleFolding += 100; // mark this fold for point 1
+            poleFolding = 1; // mark this fold
         }
 
         if (poleFolding != 0) {
@@ -328,7 +326,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
                     lambdaInOutPeriod[0] = lambdas[0];
                     lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
                     lambdaInOutPeriod[2] = modPx;
-                    lambdaInOutPeriod[3] = poleFolding; // pole folding: 10 for p0, 100 for p1 and 110 for p0 and p1
+                    lambdaInOutPeriod[3] = 1; // folding at the pole
 
                     // found entry/exit points so add
                     res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
