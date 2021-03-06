@@ -79,10 +79,6 @@ if (NETCDF_INCLUDE_DIR STREQUAL "" OR NETCDF_LIBRARIES STREQUAL "")
                     OUTPUT_VARIABLE NETCDF_LIBRARIES)
 endif()
 
-if (NETCDF_INCLUDE_DIR STREQUAL "" OR NETCDF_LIBRARIES STREQUAL "")
-    # we weree not able to find NetCDF
-endif()
-
 # remove \n at the end of the above variables
 string(STRIP "${NETCDF_INCLUDE_DIR}" NETCDF_INCLUDE_DIR)
 string(STRIP "${NETCDF_LIBRARIES}" NETCDF_LIBRARIES)

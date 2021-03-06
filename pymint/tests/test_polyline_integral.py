@@ -1,4 +1,5 @@
-from mintregrid import Grid, PolylineIntegral
+import pytest
+from mint import Grid, PolylineIntegral
 import numpy
 import sys
 from pathlib import Path

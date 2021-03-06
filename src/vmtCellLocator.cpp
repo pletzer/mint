@@ -5,10 +5,42 @@
 #include <mntLineLineIntersector.h>
 #include <algorithm>
 
+
+inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, double tol) {
+
+    bool res = true;
+
+    // nuber of points in the quad
+    size_t npts = nodes.size();
+
+    // iterate over the edges of the quad
+    for (size_t i0 = 0; i0 < npts; ++i0) {
+
+        size_t i1 = (i0 + 1) % npts;
+
+        // starting/end points of the edge
+        double* p0 = &nodes[i0][0];
+        double* p1 = &nodes[i1][0];
+
+        // vectors from point to the vertices
+        double dx0 = p0[0] - targetPoint[0];
+        double dx1 = p1[0] - targetPoint[0];
+        double dy0 = p0[1] - targetPoint[1];
+        double dy1 = p1[1] - targetPoint[1];
+
+        // area is positive if point is inside the quad
+        double cross = dx0*dy1 - dy0*dx1;
+        res &= (cross > -tol);
+    }
+
+    return res;
+}
+
+
 struct LambdaBegFunctor {
     // compare two elements of the array
-    bool operator()(const std::pair<vtkIdType, Vec3>& x, 
-                    const std::pair<vtkIdType, Vec3>& y) {
+    bool operator()(const std::pair<vtkIdType, Vec4>& x, 
+                    const std::pair<vtkIdType, Vec4>& y) {
         return (x.second[0] < y.second[0]);
     }
 };
@@ -43,6 +75,8 @@ vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
     this->xmax[1] = bounds[3];
     this->xmin[2] = bounds[4];
     this->xmax[2] = bounds[5];
+
+    this->lambdaMid = 0.5*(this->xmin[0] + this->xmax[0]);
 
     // want the buckets to be larger than the cells
     vtkIdType numCells = grid->GetNumberOfCells();
@@ -105,51 +139,35 @@ vmtCellLocator::setPeriodicityLengthX(double periodX) {
 bool 
 vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
 
+    bool res = false;
     tol = std::abs(tol);
-    bool res = true;
-    double adeltas0[3];
-    double adeltas1[3];
-    double* val;
-    int k;
-
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
-    size_t npts = nodes.size();
+    Vec3 targetPoint(point);
 
-    for (size_t i0 = 0; i0 < npts; ++i0) {
+    // add/substract periodicity length to minimize the distance between 
+    // longitudes
+    for (const auto& periodX : this->modPeriodX) {
 
-        size_t i1 = (i0 + 1) % npts;
+        // store the original values
+        double lon = targetPoint[0];
+        double lat = targetPoint[1];
 
-        double* p0 = &nodes[i0][0];
-        double* p1 = &nodes[i1][0];
+        // add periodicity length
+        targetPoint[0] += periodX;
+        // point is inside the quad if res is positive for any
+        // periodicity lengths
+        res |= isPointInQuad(targetPoint, nodes, tol);
 
-        // vector from point to the vertices
-        double dx0 = point[0] - p0[0];
-        double dx1 = point[0] - p1[0];
-        double dy0 = point[1] - p0[1];
-        double dy1 = point[1] - p1[1];
-
-        // add/substract periodicity length to minimize the distance between 
-        // longitudes
-        size_t numPer = this->modPeriodX.size(); // either 1 or 3
-        for (size_t j = 0; j < numPer; ++j) {
-            // modPeriodX could be {0, -360, 360}
-            adeltas0[j] = std::abs(dx0 + this->modPeriodX[j]);
-            adeltas1[j] = std::abs(dx1 + this->modPeriodX[j]);
+        // maybe folding across pole?
+        if (std::abs(targetPoint[1]) > 90) {
+            // map the point back to our domain
+            this->foldAtPole(&targetPoint[0]);
+            res |= isPointInQuad(targetPoint, nodes, tol);
         }
 
-        val = std::min_element(adeltas0, adeltas0 + numPer);
-        k = (int) std::distance(adeltas0, val);
-        dx0 += this->modPeriodX[k];
-
-        val = std::min_element(adeltas1, adeltas1 + numPer);
-        k = (int) std::distance(adeltas1, val);
-        dx1 += this->modPeriodX[k];
-
-        double cross = dx0*dy1 - dy0*dx1;
-        if (cross < -tol) {
-            // negative area
-            res = false;
-        }
+        // back to the original values
+        targetPoint[0] = lon;
+        targetPoint[1] = lat;
     }
 
     return res;
@@ -235,9 +253,6 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
                 bucketId = m * numBucketsY + n;
                 for (const vtkIdType& faceId : this->bucket2Faces.find(bucketId)->second) {
                     cellIds->InsertUniqueId(faceId);
-//                    std::cerr << "*** adding cell id " << faceId << 
-//                                 " m, mLo, mHi = " << m << ',' << mLo << ',' << mHi << 
-//                                 " n, nLo, nHi = " << n << ',' << nLo << ',' << nHi << '\n';
                 }
             }
         }
@@ -246,17 +261,17 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 }
 
 
-std::vector< std::pair<vtkIdType, Vec3> >
+std::vector< std::pair<vtkIdType, Vec4> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     Vec3 direction = pEnd - pBeg;
     double p0[] = {pBeg[0], pBeg[1], pBeg[2]};
     double p1[] = {pEnd[0], pEnd[1], pEnd[2]};
 
-    double lambdaInOutPeriod[3];
+    Vec4 lambdaInOutPeriod;
 
     // store result
-    std::vector< std::pair<vtkIdType, Vec3> > res;
+    std::vector< std::pair<vtkIdType, Vec4> > res;
 
     const double eps = 10 * std::numeric_limits<double>::epsilon();
 
@@ -282,11 +297,43 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
                 lambdaInOutPeriod[0] = lambdas[0];
                 lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
                 lambdaInOutPeriod[2] = modPx;
+                lambdaInOutPeriod[3] = 0.; // no pole folding
 
                 // found entry/exit points so add
-                res.push_back(  std::pair<vtkIdType, Vec3>( cellId, Vec3(lambdaInOutPeriod) )  );
+                res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
             }
         }
+
+        // try with pole folding
+        double poleFolding = 0;
+        if (std::abs(p0[1]) > 90. || std::abs(p1[1]) > 90.) {
+            // apply the fold transform to both points
+            this->foldAtPole(p0);
+            this->foldAtPole(p1);
+            poleFolding = 1; // mark this fold
+        }
+
+        if (poleFolding != 0) {
+            // pole folding detected
+            for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
+
+               vtkIdType cellId = cellIds->GetId(i);
+
+                std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+
+                if (lambdas.size() >= 2) {
+
+                    lambdaInOutPeriod[0] = lambdas[0];
+                    lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
+                    lambdaInOutPeriod[2] = modPx;
+                    lambdaInOutPeriod[3] = 1; // folding at the pole
+
+                    // found entry/exit points so add
+                    res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
+                }
+            }
+        }
+
     }
 
     cellIds->Delete();

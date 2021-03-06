@@ -109,7 +109,7 @@ public:
      * @note lambda0/lambda1 are the linear parametric coordiates of the entry/exit points into/from the cell
      * @note periodXOffset is the periodic offset to add to pBeg[0] and pEnd[0]
      */
-    std::vector< std::pair<vtkIdType, Vec3> >
+    std::vector< std::pair<vtkIdType, Vec4> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**
@@ -133,6 +133,9 @@ private:
 
     vtkUnstructuredGrid* grid;
 
+    // mid point of the longitudes
+    double lambdaMid;
+
     // domain range
     double xmin[3];
     double xmax[3];
@@ -147,6 +150,18 @@ private:
 
     // maps a bucket to a list of faces
     std::map<int, std::set<vtkIdType> > bucket2Faces;
+
+
+    /**
+     * Adjust the longitude and latitude to account for the folding at the pole
+     * @param point lon, lat in input and transformed lon, lat on output
+     */
+    inline void foldAtPole(double point[]) const {
+        double sgnLambda = point[0] - this->lambdaMid >= 0? 1.: -1.;
+        double sgnTheta = point[1] >= 0? 1.: -1.;
+        point[0] -= sgnLambda*180.;
+        point[1] = sgnTheta*180 - point[1];
+    }
 
 
     /**
