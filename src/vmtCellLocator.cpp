@@ -264,7 +264,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 std::vector< std::pair<vtkIdType, Vec4> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
-    Vec3 direction = pEnd - pBeg;
+    Vec3 direction;
     double p0[] = {pBeg[0], pBeg[1], pBeg[2]};
     double p1[] = {pEnd[0], pEnd[1], pEnd[2]};
 
@@ -277,44 +277,35 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     vtkIdList* cellIds = vtkIdList::New();
 
-    for (double modPx : this->modPeriodX) {
+    double lam0 = pBeg[0];
+    double the0 = pBeg[1];
+    double lam1 = pEnd[0];
+    double the1 = pEnd[1];
 
-        p0[0] = pBeg[0] + modPx;
-        p1[0] = pEnd[0] + modPx;
+    for (int kFold : {0, 1}) {
 
-        // collect the cell Ids intersected by the line  
-        this->FindCellsAlongLine(p0, p1, eps, cellIds);
+        // aply folding at the poples transformation
+        // kFold == 0: no transformation
+        // kFold == 1: folding
+        p0[0] = kFold*(180. - lam0) + (1 - kFold)*lam0;
+        p0[1] = kFold*(180. - the0) + (1 - kFold)*the0;
+        p1[0] = kFold*(180. - lam1) + (1 - kFold)*lam1;
+        p1[1] = kFold*(180. - the1) + (1 - kFold)*the1;
 
-        // iterate over the intersected cells
-        for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
+        direction[0] = p1[0] - p0[0];
+        direction[1] = p1[1] - p0[0];
+        direction[2] = 0;
 
-           vtkIdType cellId = cellIds->GetId(i);
+        for (double modPx : this->modPeriodX) {
 
-            std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+            // add/subtract periodicity
+            p0[0] += modPx;
+            p1[0] += modPx;
 
-            if (lambdas.size() >= 2) {
+            // collect the cell Ids intersected by the line  
+            this->FindCellsAlongLine(p0, p1, eps, cellIds);
 
-                lambdaInOutPeriod[0] = lambdas[0];
-                lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
-                lambdaInOutPeriod[2] = modPx;
-                lambdaInOutPeriod[3] = 0.; // no pole folding
-
-                // found entry/exit points so add
-                res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
-            }
-        }
-
-        // try with pole folding
-        double poleFolding = 0;
-        if (std::abs(p0[1]) > 90. || std::abs(p1[1]) > 90.) {
-            // apply the fold transform to both points
-            this->foldAtPole(p0);
-            this->foldAtPole(p1);
-            poleFolding = 1; // mark this fold
-        }
-
-        if (poleFolding != 0) {
-            // pole folding detected
+            // iterate over the intersected cells
             for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
                vtkIdType cellId = cellIds->GetId(i);
@@ -326,12 +317,17 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
                     lambdaInOutPeriod[0] = lambdas[0];
                     lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
                     lambdaInOutPeriod[2] = modPx;
-                    lambdaInOutPeriod[3] = 1; // folding at the pole
+                    lambdaInOutPeriod[3] = kFold;
 
                     // found entry/exit points so add
                     res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
                 }
             }
+
+            // revert the longitudes back to the value before adding periodicity length
+            p0[0] -= modPx;
+            p1[0] -= modPx;
+
         }
 
     }
