@@ -20,14 +20,14 @@ class vmtCellLocator {
 
 public:
 
+    static vmtCellLocator* New() {
+        return new vmtCellLocator();
+    }
+
     /**
      * Constructor
      */
     vmtCellLocator();
-
-    static vmtCellLocator* New() {
-        return new vmtCellLocator();
-    }
 
     /**
      * Destructor
@@ -101,6 +101,13 @@ public:
      */
     void setPeriodicityLengthX(double periodX);
 
+
+    void enableFolding() {
+        this->kFolding.resize(2);
+        this->kFolding[0] = 0;
+        this->kFolding[1] = 1;
+    }
+
     /**
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
@@ -150,6 +157,10 @@ private:
 
     // maps a bucket to a list of faces
     std::map<int, std::set<vtkIdType> > bucket2Faces;
+
+    // vector of one ({0}) or two components ({0, 1}). Use {0, 1} to consider
+    // the folding of the coordinates. 
+    std::vector<int> kFolding;
 
 
     /**

@@ -81,6 +81,7 @@ void testFold() {
 
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->setPeriodicityLengthX(360.);
+    loc->enableFolding();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -137,15 +138,21 @@ void testFold2() {
 
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->setPeriodicityLengthX(360.);
+    loc->enableFolding();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
     const double p0[] = { 10.,   80., 0.};
     const double p1[] = { 10.,  100., 0.};
     const double p2[] = {350.,  100., 0.};
+    const double p3[] = {350.,   80., 0.};
+    const double p4[] = {350.,  -80., 0.};
+    const double p5[] = {350., -100., 0.};
+    const double p6[] = { 10., -100., 0.};
+    const double p7[] = { 10.,  -80., 0.};
     double xPeriod = 360.0;
 
-    std::vector<Vec3> pts{Vec3(p0), Vec3(p1), Vec3(p2)};
+    std::vector<Vec3> pts{Vec3(p0), Vec3(p1), Vec3(p2), Vec3(p3), Vec3(p4), Vec3(p5), Vec3(p6), Vec3(p7)};
     assert(pts.size() >= 2);
 
     printf("testFold2\n");
