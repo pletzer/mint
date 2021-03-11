@@ -7,16 +7,44 @@ import re
 import sys
 
 
-def getVtk():
-    inc_dir = Path(sys.exec_prefix) / Path('include')
-    vtk_version = list(inc_dir.glob('vtk-*'))[-1].name
-    vtk_version = re.sub(r'vtk-', '', vtk_version)
-    return {'VTK_VERSION': vtk_version,
-            'VTK_INCLUDE_DIR': str( Path(sys.exec_prefix) / Path('include') / Path(f'vtk-{vtk_version}') ),
-            'VTK_LIBRARIES_DIR': str( Path(sys.exec_prefix) / Path('lib') )}
+def getCondaVtk():
+    # get the VTK installed by conda
+    include_dir = Path(sys.exec_prefix) / Path('include')
+
+    try:
+        version = list(include_dir.glob('vtk-*'))[-1].name
+    except:
+        raise RuntimeError('ERROR: you need to "conda install vtk"')
+
+    version = re.sub(r'vtk-', '', version)
+    include_dir = str( include_dir / Path(f'vtk-{version}') )
+    libraries_dir = str( Path(sys.exec_prefix) / Path('lib') )
+    libraries = [lb + f'-{version}' for lb in ['vtkCommonComputationalGeometry', 'vtkIOCore', 
+                 'vtkIOLegacy', 'vtkCommonExecutionModel', 'vtkCommonDataModel', 
+                 'vtkCommonTransforms', 'vtkCommonMisc', 'vtkCommonMath', 'vtkCommonSystem',
+                 'vtkCommonCore', 'vtksys']]
+    return {'VTK_VERSION': version,
+            'VTK_INCLUDE_DIR': include_dir,
+            'VTK_LIBRARIES_DIR': libraries_dir,
+            'VTK_LIBRARIES': libraries}
 
 
-# extract the version number from the version.txt file
+def getCondaNetcdf():
+    # get the NetCDF installed by conda
+    include_dir = str( Path(sys.exec_prefix) / Path('include') )
+    libraries_dir = str( Path(sys.exec_prefix) / Path('lib') )
+    libraries = ['netcdf', 'hdf5']
+
+    if not (include_dir / Path('netcdf.h')).exists():
+        raise RuntimeError('ERROR: you need to "conda install libnetcdf"')
+        
+    return {'NETCDF_INCLUDE_DIR': include_dir,
+            'NETCDF_LIBRARIES_DIR': libraries_dir,
+            'NETCDF_LIBRARIES': libraries}
+
+
+
+# extract the MINT version from file version.txt
 with open("version.txt") as f:
     VERSION = f.read().strip()
 
@@ -28,34 +56,8 @@ with open("pymint/__init__.py.in") as fi:
     with open("pymint/__init__.py", 'w') as fo:
         fo.write(init_file)
 
-# 
-# VTK installation. Location  can be set by the user via environment variables, if
-# desired. Otherwise will infer form a typical pip/conda installation
-#
-vtk_libraries = ('vtkCommonComputationalGeometry', 'vtkIOCore', 
-                 'vtkIOLegacy', 'vtkCommonExecutionModel', 'vtkCommonDataModel', 
-                 'vtkCommonTransforms', 'vtkCommonMisc', 'vtkCommonMath', 'vtkCommonSystem',
-                 'vtkCommonCore', 'vtksys')
-
-VTK_VERSION = os.getenv('VTK_VERSION')
-VTK_INCLUDE_DIR = os.getenv('VTK_INCLUDE_DIR')
-VTK_LIBRARIES_DIR = os.getenv('VTK_LIBRARIES_DIR')
-if not (VTK_VERSION and VTK_INCLUDE_DIR and VTK_LIBRARIES_DIR):
-    lib = getVtk()
-    VTK_VERSION = lib['VTK_VERSION']
-    VTK_INCLUDE_DIR = lib['VTK_INCLUDE_DIR']
-    VTK_LIBRARIES_DIR = lib['VTK_LIBRARIES_DIR']
-VTK_LIBRARIES = [f'{lib}-{VTK_VERSION}' for lib in vtk_libraries]
-
-#
-# netCDF installation. 
-#
-NETCDF_INCLUDE_DIR = os.getenv('NETCDF_INCLUDE_DIR')
-NETCDF_LIBRARIES_DIR = os.getenv('NETCDF_LIBRARIES_DIR')
-if not (NETCDF_INCLUDE_DIR and NETCDF_LIBRARIES_DIR):
-    NETCDF_INCLUDE_DIR = str( Path(sys.exec_prefix) / Path('include') )
-    NETCDF_LIBRARIES_DIR = str( Path(sys.exec_prefix) / Path('lib') )
-NETCDF_LIBRARIES = ['netcdf', 'hdf5']
+vtklib = getCondaVtk()
+nclib = getCondaNetcdf()
 
 # C++ 11 flag
 cpp11_flag = '-std=c++11'
@@ -65,13 +67,13 @@ if cpp_flags:
     cpp11_flag = cpp_flags # on Windows: '/std:c11'
 
 
-print(f'VTK_VERSION          = {VTK_VERSION}')
-print(f'VTK_INCLUDE_DIR      = {VTK_INCLUDE_DIR}')
-print(f'VTK_LIBRARIES_DIR    = {VTK_LIBRARIES_DIR}')
-print(f'VTK_LIBRARIES        = {VTK_LIBRARIES}')
-print(f'NETCDF_INCLUDE_DIR   = {NETCDF_INCLUDE_DIR}')
-print(f'NETCDF_LIBRARIES_DIR = {NETCDF_LIBRARIES_DIR}')
-print(f'NETCDF_LIBRARIES     = {NETCDF_LIBRARIES}')
+print(f'VTK_VERSION          = {vtklib["VTK_VERSION"]}')
+print(f'VTK_INCLUDE_DIR      = {vtklib["VTK_INCLUDE_DIR"]}')
+print(f'VTK_LIBRARIES_DIR    = {vtklib["VTK_LIBRARIES_DIR"]}')
+print(f'VTK_LIBRARIES        = {vtklib["VTK_LIBRARIES"]}')
+print(f'NETCDF_INCLUDE_DIR   = {nclib["NETCDF_INCLUDE_DIR"]}')
+print(f'NETCDF_LIBRARIES_DIR = {nclib["NETCDF_LIBRARIES_DIR"]}')
+print(f'NETCDF_LIBRARIES     = {nclib["NETCDF_LIBRARIES"]}')
 print(f'C++11 flag           : {cpp11_flag}')
 
 
@@ -95,11 +97,9 @@ theorem is statisfied to near machine precision.
     ext_modules = [setuptools.Extension('libmint', # name of the shared library
                    sources=glob.glob('src/*.cpp'),
                    define_macros=[],
-                   include_dirs=['src/',
-                                 VTK_INCLUDE_DIR,
-                                 NETCDF_INCLUDE_DIR],
-                   libraries=VTK_LIBRARIES + NETCDF_LIBRARIES,
-                   library_dirs=[VTK_INCLUDE_DIR, NETCDF_LIBRARIES_DIR],
+                   include_dirs=['src/', vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_INCLUDE_DIR"]],
+                   libraries=vtklib["VTK_LIBRARIES"] + nclib["NETCDF_LIBRARIES"],
+                   library_dirs=[ vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_LIBRARIES_DIR"] ],
                    extra_compile_args=[cpp11_flag,],
                    ),],
     include_package_data=True,
