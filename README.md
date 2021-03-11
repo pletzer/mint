@@ -33,7 +33,7 @@ For building the library and the tools
 The MINT python interface (python-mint) requires VTK, netCDF and the tbb libraries to 
 be installed. This is most easily done in a conda environment:
 ```
-conda create -n mintenv python=3.7 vtk=8.2.0 libnetcdf tbb-devel pytest
+conda create -n mintenv python=3.9 vtk=9.0.1 pytest
 conda activate mintenv
 ```
 
