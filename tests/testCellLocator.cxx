@@ -89,17 +89,17 @@ void testContainsPoint(int nx, int ny) {
     // is it still inside if we move it by 360 to the left?
     point[0] = 0.00001 - 360.0;
     point[1] = -89.99999;
-    assert(cloc->containsPoint(0, point, 1.e-10));
+    assert(cloc->containsPointMultiValued(0, point, 1.e-10));
 
     // what about to the right?
     point[0] = 0.00001 + 360.0;
     point[1] = -89.99999;
-    assert(cloc->containsPoint(0, point, 1.e-10));
+    assert(cloc->containsPointMultiValued(0, point, 1.e-10));
 
     // expected to fail because we only support one periodicity length to the left and right
     point[0] = 0.00001 + 2*360.0;
     point[1] = -89.99999;
-    assert(!cloc->containsPoint(0, point, 1.e-10));
+    assert(!cloc->containsPointMultiValued(0, point, 1.e-10));
 
     cloc->Delete();
     grid->Delete();
@@ -219,7 +219,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     
     // check
     double pBegPtr[] = {0.0, -90.0, 0.0};
-    double pEndPtr[] = {360.0, 90.0, 0.0};
+    double pEndPtr[] = {360.0,90.0, 0.0};
     Vec3 pBeg(pBegPtr);
     Vec3 pEnd(pEndPtr);
     std::vector< std::pair<vtkIdType, Vec4> > cellIdLambdasPer;
@@ -486,13 +486,14 @@ void testFolding(int nx, int ny) {
     vmtCellLocator* cloc = vmtCellLocator::New();
     cloc->SetDataSet(grid);
     cloc->BuildLocator();
+    cloc->enableFolding();
     cloc->setPeriodicityLengthX(360.);
 
     double targetPoint[] = {50., 90., 0.};
 
     bool found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -501,7 +502,7 @@ void testFolding(int nx, int ny) {
     targetPoint[1] = 100.;
     found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -510,7 +511,7 @@ void testFolding(int nx, int ny) {
     targetPoint[1] = 100.;
     found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -518,7 +519,7 @@ void testFolding(int nx, int ny) {
     targetPoint[1] = 100.;
     found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -526,7 +527,7 @@ void testFolding(int nx, int ny) {
     targetPoint[1] = -100.;
     found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -534,7 +535,7 @@ void testFolding(int nx, int ny) {
     targetPoint[1] = -100.;
     found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -542,7 +543,7 @@ void testFolding(int nx, int ny) {
     targetPoint[1] = -100.;
     found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -550,7 +551,7 @@ void testFolding(int nx, int ny) {
     targetPoint[1] = -100.;
     found = false;
     for (vtkIdType faceId = 0; faceId < grid->GetNumberOfCells(); ++faceId) {
-        found |= cloc->containsPoint(faceId, targetPoint, 1.e-10);
+        found |= cloc->containsPointMultiValued(faceId, targetPoint, 1.e-10);
     }
     assert(found);
 
@@ -564,17 +565,17 @@ void testFolding(int nx, int ny) {
 
 int main(int argc, char** argv) {
 
-    // test1Quad(1);
-    // test1Quad(10);
-    // test1Quad(1000);
-    // testContainsPoint(10, 5);
-    // testUniformLatLonGrid(10, 5, 1);
-    // testUniformLatLonGrid(10, 5, 2);
-    // testUniformLatLonGrid(10, 5, 5);
-    // testUniformLatLonGrid(10, 5, 10);
-    // testUniformLatLonGrid(10, 5, 20);
-    // testUniformLatLonGrid(10, 5, 50);
-    // testPeriodic(4, 3);
+    testContainsPoint(10, 5);
+    test1Quad(1);
+    test1Quad(10);
+    test1Quad(1000);
+    testUniformLatLonGrid(10, 5, 1);
+    testUniformLatLonGrid(10, 5, 2);
+    testUniformLatLonGrid(10, 5, 5);
+    testUniformLatLonGrid(10, 5, 10);
+    testUniformLatLonGrid(10, 5, 20);
+    testUniformLatLonGrid(10, 5, 50);
+    testPeriodic(4, 3);
     testFolding(4, 3);
 
     return 0;

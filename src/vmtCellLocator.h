@@ -20,14 +20,14 @@ class vmtCellLocator {
 
 public:
 
+    static vmtCellLocator* New() {
+        return new vmtCellLocator();
+    }
+
     /**
      * Constructor
      */
     vmtCellLocator();
-
-    static vmtCellLocator* New() {
-        return new vmtCellLocator();
-    }
 
     /**
      * Destructor
@@ -101,6 +101,12 @@ public:
      */
     void setPeriodicityLengthX(double periodX);
 
+
+    /**
+     * Enable folding across poles
+     */
+    void enableFolding();
+
     /**
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
@@ -120,6 +126,17 @@ public:
      * @return true if inside, false otherwise
      */
     bool containsPoint(vtkIdType faceId, const double point[3], double tol) const;
+
+    /**
+     * Check if a point is indide a face
+     * @param faceId face/cell Id
+     * @param point point
+     * @param tol tolerance
+     * @return true if inside, false otherwise
+     * @note this version takes into account the the multiplicity of longitudes and the folding for points beyond 
+     *       +-90 degrees
+     */
+    bool containsPointMultiValued(vtkIdType faceId, const double point[3], double tol) const;
 
     /**
      * Print the bucket to face indices map
@@ -151,13 +168,17 @@ private:
     // maps a bucket to a list of faces
     std::map<int, std::set<vtkIdType> > bucket2Faces;
 
+    // vector of one ({0}) or two components ({0, 1}). Use {0, 1} to consider
+    // the folding of the coordinates. 
+    std::vector<int> kFolding;
+
 
     /**
      * Adjust the longitude and latitude to account for the folding at the pole
      * @param point lon, lat in input and transformed lon, lat on output
      */
     inline void foldAtPole(double point[]) const {
-        double sgnLambda = point[0] - this->lambdaMid >= 0? 1.: -1.;
+        double sgnLambda = point[0] >= this->lambdaMid? 1.: -1.;
         double sgnTheta = point[1] >= 0? 1.: -1.;
         point[0] -= sgnLambda*180.;
         point[1] = sgnTheta*180 - point[1];

@@ -155,6 +155,12 @@ target_link_libraries(testPolysegmentIter2
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testPolysegmentIter3 testPolysegmentIter3.cxx)
+target_link_libraries(testPolysegmentIter3
+                      mint
+                      ${VTK_LIBRARIES}
+)
+
 add_executable(testFindCellsAlongLine testFindCellsAlongLine.cxx)
 target_link_libraries(testFindCellsAlongLine
                       mint
@@ -295,6 +301,7 @@ add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
 add_test(NAME polysegmentIter COMMAND testPolysegmentIter)
 add_test(NAME polysegmentIter2 COMMAND testPolysegmentIter2)
+add_test(NAME polysegmentIter3 COMMAND testPolysegmentIter3)
 add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME grid COMMAND testGrid)

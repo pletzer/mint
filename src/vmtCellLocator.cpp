@@ -60,6 +60,11 @@ vmtCellLocator::vmtCellLocator() {
         this->xmax[i] = -big;
     }
     this->modPeriodX.push_back(0.0);
+    this->kFolding.push_back(0);
+
+    // now folding is turned on by default
+    this->enableFolding();
+
 }
 
 
@@ -135,39 +140,57 @@ vmtCellLocator::setPeriodicityLengthX(double periodX) {
 
 }
 
+void
+vmtCellLocator::enableFolding() {
+    this->kFolding.resize(2);
+    this->kFolding[0] = 0;
+    this->kFolding[1] = 1;
+}
 
 bool 
 vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
+
+    tol = std::abs(tol);
+    std::vector<Vec3> nodes = this->getFacePoints(faceId);
+    Vec3 targetPoint(point);
+
+    bool res = isPointInQuad(targetPoint, nodes, tol);
+
+    return res;
+}
+
+
+bool 
+vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3], double tol) const {
 
     bool res = false;
     tol = std::abs(tol);
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     Vec3 targetPoint(point);
 
-    // add/substract periodicity length to minimize the distance between 
-    // longitudes
-    for (const auto& periodX : this->modPeriodX) {
+    // store the original values
+    double lon = targetPoint[0];
+    double lat = targetPoint[1];
 
-        // store the original values
-        double lon = targetPoint[0];
-        double lat = targetPoint[1];
+    // add/substract periodicity length and apply folding if need be
+    for (auto kF : this->kFolding) {
 
-        // add periodicity length
-        targetPoint[0] += periodX;
-        // point is inside the quad if res is positive for any
-        // periodicity lengths
-        res |= isPointInQuad(targetPoint, nodes, tol);
-
-        // maybe folding across pole?
-        if (std::abs(targetPoint[1]) > 90) {
-            // map the point back to our domain
+        if (kF > 0) {
+            // apply folding
             this->foldAtPole(&targetPoint[0]);
-            res |= isPointInQuad(targetPoint, nodes, tol);
         }
 
-        // back to the original values
-        targetPoint[0] = lon;
-        targetPoint[1] = lat;
+        for (const auto& periodX : this->modPeriodX) {
+
+            // add periodicity length
+            targetPoint[0] += periodX;
+            // point is inside the quad if res is positive for any
+            // periodicity lengths
+            res |= isPointInQuad(targetPoint, nodes, tol);
+
+            // back to the original values
+            targetPoint[0] -= periodX;
+        }
     }
 
     return res;
@@ -264,11 +287,12 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 std::vector< std::pair<vtkIdType, Vec4> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
-    Vec3 direction = pEnd - pBeg;
-    double p0[] = {pBeg[0], pBeg[1], pBeg[2]};
-    double p1[] = {pEnd[0], pEnd[1], pEnd[2]};
+    Vec3 direction;
 
-    Vec4 lambdaInOutPeriod;
+    Vec3 p0 = pBeg;
+    Vec3 p1 = pEnd;
+
+    Vec4 lambdaInOutPeriodFold;
 
     // store result
     std::vector< std::pair<vtkIdType, Vec4> > res;
@@ -277,63 +301,68 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     vtkIdList* cellIds = vtkIdList::New();
 
-    for (double modPx : this->modPeriodX) {
+    double lam0 = pBeg[0];
+    double the0 = pBeg[1];
+    double lam1 = pEnd[0];
+    double the1 = pEnd[1];
 
-        p0[0] = pBeg[0] + modPx;
-        p1[0] = pEnd[0] + modPx;
+    for (int kFold : this->kFolding) {
 
-        // collect the cell Ids intersected by the line  
-        this->FindCellsAlongLine(p0, p1, eps, cellIds);
+        if (kFold == 1) {
 
-        // iterate over the intersected cells
-        for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
-
-           vtkIdType cellId = cellIds->GetId(i);
-
-            std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
-
-            if (lambdas.size() >= 2) {
-
-                lambdaInOutPeriod[0] = lambdas[0];
-                lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
-                lambdaInOutPeriod[2] = modPx;
-                lambdaInOutPeriod[3] = 0.; // no pole folding
-
-                // found entry/exit points so add
-                res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
+            if (std::abs(p0[1]) <= 90 && std::abs(p1[1]) <= 90) {
+                // no need to fold
+                continue;
             }
+
+            // transform
+            foldAtPole(&p0[0]);
+            foldAtPole(&p1[0]);
         }
 
-        // try with pole folding
-        double poleFolding = 0;
-        if (std::abs(p0[1]) > 90. || std::abs(p1[1]) > 90.) {
-            // apply the fold transform to both points
-            this->foldAtPole(p0);
-            this->foldAtPole(p1);
-            poleFolding = 1; // mark this fold
+        direction = p1 - p0;
+        double distSq = dot(direction, direction);
+        if (distSq < eps) {
+            // zero length, skip
+            std::cout << "... zero distance: distSq = " << distSq << '\n';
+            continue;
         }
 
-        if (poleFolding != 0) {
-            // pole folding detected
+        for (double modPx : this->modPeriodX) {
+
+            // add/subtract periodicity to start/end points
+            p0[0] += modPx;
+            p1[0] += modPx;
+
+            // collect the cell Ids intersected by the line  
+            this->FindCellsAlongLine(&p0[0], &p1[0], eps, cellIds);
+
+            // iterate over the intersected cells
             for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
-               vtkIdType cellId = cellIds->GetId(i);
+                vtkIdType cellId = cellIds->GetId(i);
 
                 std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+                size_t nLam = lambdas.size();
+                double lamBeg = lambdas.front();
+                double lamEnd = lambdas.back();
 
-                if (lambdas.size() >= 2) {
+                if (nLam >= 2 && std::abs(lamEnd - lamBeg) > eps) {
 
-                    lambdaInOutPeriod[0] = lambdas[0];
-                    lambdaInOutPeriod[1] = lambdas[lambdas.size() - 1];
-                    lambdaInOutPeriod[2] = modPx;
-                    lambdaInOutPeriod[3] = 1; // folding at the pole
+                    lambdaInOutPeriodFold[0] = lamBeg;
+                    lambdaInOutPeriodFold[1] = lamEnd;
+                    lambdaInOutPeriodFold[2] = modPx;
+                    lambdaInOutPeriodFold[3] = kFold;
 
                     // found entry/exit points so add
-                    res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriod)  );
+                    res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriodFold)  );
                 }
             }
-        }
 
+            // revert to the original values
+            p0[0] = lam0; p0[1] = the0;
+            p1[0] = lam1; p1[1] = the1;
+        }
     }
 
     cellIds->Delete();
@@ -418,8 +447,8 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
         }
 
         // we have a solution but it could be degenerate
-        if (std::abs(intersector.getDet()) > eps) {
 
+        if (std::abs(intersector.getDet()) > eps) {
             // normal intersection, 1 solution
             Vec2 sol = intersector.getSolution();
             double lambRay = sol[0];
@@ -440,6 +469,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
             // add start/end linear param coord along line
             lambdas.push_back(sol.first);
             lambdas.push_back(sol.second);
+
         }
     }
 
