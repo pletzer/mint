@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python=3.9
+  - python=3.8  # vtk for py39 is not available from PyPI @March 2021
 
 # Setup dependencies.
   - cmake
@@ -12,6 +12,7 @@ dependencies:
   - doxygen
   - setuptools
   - tbb-devel
+  - pip
 
 # Core dependencies.
   - libnetcdf
