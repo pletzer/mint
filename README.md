@@ -1,4 +1,4 @@
-MINT - Mimetic Interpolation on the Sphere
+MINT - Mimetic INTerpolation on the Sphere
 
 ## Overview
 
@@ -11,48 +11,49 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 ## Prerequisites
 
-You will need for the python module:
+To build the MINT Python module:
 
- * C++ compiler with C++ 11 support
- * netcdf4
- * vtk
- * numpy
+ * C++ compiler with C++11 support
+ * Cython
+ * NetCDF library
+ * NumPy
+ * VTK
 
-We recommend to install the above packages with Anaconda.
+We recommend to install the above packages with conda.
 
-For building the library and the tools
+To build the MINT C++ library and the tools:
 
- * C++ compiler with C++ 11 support
- * Fortran compiler (e.g gfortran 6.4)
+ * C++ compiler with C++11 support
+ * Fortran compiler (e.g., gfortran 6.4)
  * NetCDF library
  * Doxygen
+ * VTK
 
+## How to build the MINT Python module
 
-## How to build the python python-mint module
-
-The MINT python interface (python-mint) requires VTK, netCDF and the tbb libraries to 
+The MINT Python interface requires VTK, netCDF and the tbb libraries to 
 be installed. This is most easily done in a conda environment:
 ```
-conda create -n mintenv python=3.9 vtk=9.0.1 pytest
-conda activate mintenv
+conda env create --file requirements/mint.yml
+conda activate mint-dev
 ```
 
-In the top MINT directory then type
+In the root MINT directory then type:
 ```
 python setup.py install 
 ```
 
-Check that you can import the mint module
+Check that you can import the mint module:
 ```
 python -c "import mint"
 ```
 
-To run the tests type
+To run the tests type:
 ```
 pytest
 ```
  
-## How to build the MINT library so you can call it from your program (Fortran or C/C++)
+## How to build the MINT C++ library so you can call it from your program (Fortran or C/C++)
 
 ```
 mkdir build
@@ -118,5 +119,3 @@ https://pletzer.github.io/mint/html/
 The plot below shows the error of mimetic regridding error obtained by computing the 
 closed line integral for each cell. 
 ![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
-
-

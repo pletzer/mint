@@ -1,1 +1,1 @@
-include version.txt pymint/__init__.py.in src/*.h
+include version.txt mint/__init__.py.in src/*.h
