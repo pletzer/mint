@@ -13,7 +13,7 @@ from Cython.Build import cythonize
 LIBRARY = "libmint"
 NAME = "python-mint"
 PACKAGE = "mint"
-
+DIR_NAME = "python_mint"
 
 def getCondaVTK():
     """get the VTK installed by conda"""
@@ -76,9 +76,9 @@ with open("version.txt") as f:
 
 # generate mint/__init__.py from mint/__init__.py.in
 init_file = ""
-with open(f"{PACKAGE}/__init__.py.in") as fi:
+with open(f"{DIR_NAME}/__init__.py.in") as fi:
     init_file = re.sub(r"@VERSION@", VERSION, fi.read())
-    with open(f"{PACKAGE}/__init__.py", "w") as fo:
+    with open(f"{DIR_NAME}/__init__.py", "w") as fo:
         fo.write(init_file)
 
 vtklib = getCondaVTK()
@@ -130,6 +130,7 @@ theorem is statisfied to near machine precision.
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
+    package_dir={PACKAGE: DIR_NAME}, # name of module -> directory
     packages=[PACKAGE],
     ext_modules=cythonize(extensions),
     include_package_data=True,
