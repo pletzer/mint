@@ -1,71 +1,95 @@
 # -*- python -*-
-import setuptools
-from pathlib import Path
-import os
+
 import glob
+import os
+from pathlib import Path
 import re
+from setuptools import setup, Extension
 import sys
 
+from Cython.Build import cythonize
 
-def getCondaVtk():
-    # get the VTK installed by conda
-    include_dir = Path(sys.exec_prefix) / Path('include')
+
+LIBRARY = "libmint"
+NAME = "python-mint"
+PACKAGE = "mint"
+
+
+def getCondaVTK():
+    """get the VTK installed by conda"""
+
+    vtk_libs = [
+        "vtkCommonComputationalGeometry",
+        "vtkIOCore",
+        "vtkIOLegacy",
+        "vtkCommonExecutionModel",
+        "vtkCommonDataModel",
+        "vtkCommonTransforms",
+        "vtkCommonMisc",
+        "vtkCommonMath",
+        "vtkCommonSystem",
+        "vtkCommonCore",
+        "vtksys",
+    ]
+
+    include_dir = Path(sys.exec_prefix) / Path("include")
 
     try:
-        version = list(include_dir.glob('vtk-*'))[-1].name
-    except:
+        version = list(include_dir.glob("vtk-*"))[-1].name
+    except IndexError:
         raise RuntimeError('ERROR: you need to "conda install vtk"')
 
-    version = re.sub(r'vtk-', '', version)
-    include_dir = str( include_dir / Path(f'vtk-{version}') )
-    libraries_dir = str( Path(sys.exec_prefix) / Path('lib') )
-    libraries = [lb + f'-{version}' for lb in ['vtkCommonComputationalGeometry', 'vtkIOCore', 
-                 'vtkIOLegacy', 'vtkCommonExecutionModel', 'vtkCommonDataModel', 
-                 'vtkCommonTransforms', 'vtkCommonMisc', 'vtkCommonMath', 'vtkCommonSystem',
-                 'vtkCommonCore', 'vtksys']]
-    return {'VTK_VERSION': version,
-            'VTK_INCLUDE_DIR': include_dir,
-            'VTK_LIBRARIES_DIR': libraries_dir,
-            'VTK_LIBRARIES': libraries}
+    version = re.sub(r"vtk-", "", version)
+    include_dir = str(include_dir / Path(f"vtk-{version}"))
+    libraries_dir = str(Path(sys.exec_prefix) / Path("lib"))
+    libraries = [f"{lib}-{version}" for lib in vtk_libs]
+    result = {
+        "VTK_VERSION": version,
+        "VTK_INCLUDE_DIR": include_dir,
+        "VTK_LIBRARIES_DIR": libraries_dir,
+        "VTK_LIBRARIES": libraries,
+    }
+    return result
 
 
-def getCondaNetcdf():
-    # get the NetCDF installed by conda
-    include_dir = str( Path(sys.exec_prefix) / Path('include') )
-    libraries_dir = str( Path(sys.exec_prefix) / Path('lib') )
-    libraries = ['netcdf', 'hdf5']
+def getCondaNetCDF():
+    """Get the NetCDF installed by conda."""
 
-    if not (include_dir / Path('netcdf.h')).exists():
+    include_dir = str(Path(sys.exec_prefix) / Path("include"))
+    libraries_dir = str(Path(sys.exec_prefix) / Path("lib"))
+    libraries = ["netcdf", "hdf5"]
+
+    if not (include_dir / Path("netcdf.h")).exists():
         raise RuntimeError('ERROR: you need to "conda install libnetcdf"')
-        
-    return {'NETCDF_INCLUDE_DIR': include_dir,
-            'NETCDF_LIBRARIES_DIR': libraries_dir,
-            'NETCDF_LIBRARIES': libraries}
 
+    result = {
+        "NETCDF_INCLUDE_DIR": include_dir,
+        "NETCDF_LIBRARIES_DIR": libraries_dir,
+        "NETCDF_LIBRARIES": libraries,
+    }
+    return result
 
 
 # extract the MINT version from file version.txt
 with open("version.txt") as f:
     VERSION = f.read().strip()
 
-
-# generate pymint/__init__.py from pymint/__init__.py.in
+# generate mint/__init__.py from mint/__init__.py.in
 init_file = ""
-with open("pymint/__init__.py.in") as fi:
-    init_file = re.sub(r'@VERSION@', VERSION, fi.read())
-    with open("pymint/__init__.py", 'w') as fo:
+with open(f"{PACKAGE}/__init__.py.in") as fi:
+    init_file = re.sub(r"@VERSION@", VERSION, fi.read())
+    with open(f"{PACKAGE}/__init__.py", "w") as fo:
         fo.write(init_file)
 
-vtklib = getCondaVtk()
-nclib = getCondaNetcdf()
+vtklib = getCondaVTK()
+nclib = getCondaNetCDF()
 
 # C++ 11 flag
-cpp11_flag = '-std=c++11'
+cpp11_flag = "-std=c++11"
 # give a chance to override the C++ 11 flag
 cpp_flags = os.getenv("CPPFLAGS")
 if cpp_flags:
-    cpp11_flag = cpp_flags # on Windows: '/std:c11'
-
+    cpp11_flag = cpp_flags  # on Windows: '/std:c11'
 
 print(f'VTK_VERSION          = {vtklib["VTK_VERSION"]}')
 print(f'VTK_INCLUDE_DIR      = {vtklib["VTK_INCLUDE_DIR"]}')
@@ -74,17 +98,30 @@ print(f'VTK_LIBRARIES        = {vtklib["VTK_LIBRARIES"]}')
 print(f'NETCDF_INCLUDE_DIR   = {nclib["NETCDF_INCLUDE_DIR"]}')
 print(f'NETCDF_LIBRARIES_DIR = {nclib["NETCDF_LIBRARIES_DIR"]}')
 print(f'NETCDF_LIBRARIES     = {nclib["NETCDF_LIBRARIES"]}')
-print(f'C++11 flag           : {cpp11_flag}')
+print(f"C++11 flag           : {cpp11_flag}")
 
+extensions = [
+    Extension(
+        LIBRARY,
+        sources=glob.glob("src/*.cpp"),
+        define_macros=[],
+        include_dirs=["src/", vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_INCLUDE_DIR"]],
+        libraries=vtklib["VTK_LIBRARIES"] + nclib["NETCDF_LIBRARIES"],
+        library_dirs=[vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_LIBRARIES_DIR"]],
+        extra_compile_args=[
+            cpp11_flag,
+        ],
+    )
+]
 
-setuptools.setup(
-    name="python-mint",
+setup(
+    name=NAME,
     version=VERSION,
     author="Alexander Pletzer",
     author_email="alexander.pletzer@nesi.org.nz",
-    description="Mimetic INterpolation on the sphere",
+    description="Mimetic INTerpolation on the Sphere",
     long_description="""
-Interpolates or regrids an edge centred field from a source grid to either a destination grid or a target element. The 
+Interpolates or regrids an edge centred field from a source grid to either a destination grid or a target element. The
 interpolation is mimetic in the sense that line integrals are conserved from source to destination grids, i.e. Stokes'
 theorem is statisfied to near machine precision.
     """,
@@ -93,16 +130,10 @@ theorem is statisfied to near machine precision.
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
-    packages=['mint'],
-    ext_modules = [setuptools.Extension('libmint', # name of the shared library
-                   sources=glob.glob('src/*.cpp'),
-                   define_macros=[],
-                   include_dirs=['src/', vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_INCLUDE_DIR"]],
-                   libraries=vtklib["VTK_LIBRARIES"] + nclib["NETCDF_LIBRARIES"],
-                   library_dirs=[ vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_LIBRARIES_DIR"] ],
-                   extra_compile_args=[cpp11_flag,],
-                   ),],
+    packages=[PACKAGE],
+    ext_modules=cythonize(extensions),
     include_package_data=True,
-    package_dir={'mint': 'pymint'},
-    install_requires=['numpy', 'vtk>=8.1.0', 'netcdf4', 'tbb'],
+    install_requires=["numpy", "vtk==9.0.1", "netcdf4", "tbb"],
+    tests_require=["pytest"],
+    zip_safe=False,
 )

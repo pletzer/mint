@@ -1,0 +1,33 @@
+*.py[co]
+
+# Packages
+*.egg?
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+pip-cache
+
+# Unit test / coverage reports
+.coverage
+.pytest_cache
+
+# Created by editiors
+*~
+\#*
+\.\#*
+*.swp
+.ipynb_checkpoints
+
+# MINT files
+mint/__init__.py
+libmint.*
