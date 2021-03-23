@@ -1,8 +1,12 @@
 [build-system]
+# Defined by PEP 518
 requires = [
     "Cython",
-    "setuptools>=50",
-    "wheel"
+    "setuptools>=40.8.0",
+    "wheel",
+    "netCDF4",
+    "vtk==9.0.1",
 ]
+# Defined by PEP 517
 build-backend = "setuptools.build_meta"
 
