@@ -1,4 +1,4 @@
-# -*- python -*-
+# -*- coding: utf-8 -*-
 
 import glob
 import os
@@ -102,7 +102,7 @@ print(f"extra_compile_args   = {extra_compile_args}")
 
 extensions = [
     Extension(
-        "libmint",
+        f"lib{PACKAGE}",
         sources=glob.glob("src/*.cpp"),
         define_macros=[],
         include_dirs=["src/", vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_INCLUDE_DIR"]],
