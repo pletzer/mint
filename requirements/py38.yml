@@ -1,0 +1,23 @@
+name: mint-dev
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.8  # vtk for py39 is not available from PyPI @March 2021
+
+# Setup dependencies.
+  - cmake
+  - cython
+  - doxygen
+  - setuptools
+  - tbb-devel
+  - pip
+
+# Core dependencies.
+  - libnetcdf
+  - numpy
+  - vtk=9.0.1
+
+# Test dependencies.
+  - pytest

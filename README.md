@@ -40,7 +40,7 @@ conda activate mint-dev
 
 In the root MINT directory then type:
 ```
-python setup.py install 
+pip install --no-deps --editable .
 ```
 
 Check that you can import the mint module:
