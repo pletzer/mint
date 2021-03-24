@@ -31,3 +31,6 @@ pip-cache
 # MINT files
 mint/__init__.py
 libmint.*
+test_create_grid.vtk
+test_polyline_integral.vtk
+test_regrid_edges_py.nc
