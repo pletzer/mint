@@ -1,0 +1,115 @@
+# Reference:
+#   - https://cirrus-ci.org/guide/writing-tasks/
+#   - https://cirrus-ci.org/guide/linux/
+#   - https://cirrus-ci.org/guide/macOS/
+#   - https://cirrus-ci.org/guide/windows/
+#   - https://hub.docker.com/_/gcc/
+#   - https://hub.docker.com/_/python/
+
+#
+# Global defaults.
+#
+container:
+  image: python:3.8
+
+env:
+  # Maximum cache period (in weeks) before forcing a new cache upload.
+  CACHE_PERIOD: "2"
+  # Increment the build number to force new mambaforge cache upload.
+  MAMBA_CACHE_BUILD: "1"
+  # Increment the build number to force new mint cache upload.
+  MINT_CACHE_BUILD: "1"
+  # Base environment conda packages to be installed
+  MAMBA_CACHE_PACKAGES: "pip conda-lock"
+
+#
+# Testing (Linux)
+#
+linux_task:
+  auto_cancellation: true
+  matrix:
+    env:
+      PY_VER: "3.6"
+    env:
+      PY_VER: "3.7"
+    env:
+      PY_VER: "3.8"
+  name: "Linux: py${PY_VER}"
+  container:
+    image: gcc:latest
+  env:
+    PATH: ${HOME}/mambaforge/bin:${PATH}
+  mamba_cache:
+    folder: ${HOME}/mambaforge
+    fingerprint_script:
+      - wget --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -O mambaforge.sh
+      - echo "${CIRRUS_OS} $(sha256sum mambaforge.sh)"
+      - echo "${MAMBA_CACHE_PACKAGES}"
+      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MAMBA_CACHE_BUILD}"
+    populate_script:
+      - bash mambaforge.sh -b -p ${HOME}/mambaforge
+      - conda config --set always_yes yes --set changeps1 no
+      - conda config --set show_channel_urls True
+      - conda config --add channels conda-forge
+      - conda install --quiet --name base ${MAMBA_CACHE_PACKAGES}
+  check_script:
+    - conda info --all
+    - conda list --name base
+  mint_cache:
+    folder: ${CIRRUS_WORKING_DIR}/requirements
+    fingerprint_script:
+      - echo "${CIRRUS_OS} tests for Python v${PY_VER}"
+      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
+      - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+    populate_script:
+      - conda-lock --mamba --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+      - mamba create --name py${PY_VER} --quiet --file conda-linux-64.lock
+  test_script:
+    - source activate py${PY_VER}
+    - conda info --envs
+    - pip install --no-deps --editable .
+    - pytest
+
+#
+# Testing (macOS)
+#
+osx_task:
+  auto_cancellation: true
+  matrix:
+    env:
+      PY_VER: "3.8"
+  name: "OSX: py${PY_VER}"
+  osx_instance:
+    image: catalina-xcode
+  env:
+    PATH: ${HOME}/mambaforge/bin:${PATH}
+  mamba_cache:
+    folder: ${HOME}/mambaforge
+    fingerprint_script:
+      - wget --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-MacOSX-x86_64.sh -O mambaforge.sh
+      - echo "${CIRRUS_OS} $(shasum -a 256 mambaforge.sh)"
+      - echo "${MAMBA_CACHE_PACKAGES}"
+      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CONDA_CACHE_BUILD}"
+    populate_script:
+      - bash mambaforge.sh -b -p ${HOME}/mambaforge
+      - conda config --set always_yes yes --set changeps1 no
+      - conda config --set show_channel_urls True
+      - conda config --add channels conda-forge
+      - conda install --quiet --name base ${MAMBA_CACHE_PACKAGES}
+  check_script:
+    - conda info --all
+    - conda list --name base
+  mint_cache:
+    folder: ${CIRRUS_WORKING_DIR}/requirements
+    fingerprint_script:
+      - echo "${CIRRUS_OS} tests for Python ${PY_VER}"
+      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
+      - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+    populate_script:
+      - conda-lock --mamba --platform osx-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+      - mamba create --name py${PY_VER} --quiet --file conda-osx-64.lock
+  test_script:
+    - source activate py${PY_VER}
+    - conda info --envs
+    - pip install --no-deps --editable .
+    - pytest
