@@ -1,6 +1,6 @@
 # MINT - Mimetic INTerpolation on the Sphere
 
-<p align="center">
+<p align="left">
 <a href="https://cirrus-ci.com/github/pletzer/mint">
 <img src="https://api.cirrus-ci.com/github/pletzer/mint.svg?branch=master"
      alt="Cirrus-CI" /></a>
