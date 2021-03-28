@@ -1,4 +1,21 @@
-MINT - Mimetic INTerpolation on the Sphere
+# MINT - Mimetic INTerpolation on the Sphere
+
+<p align="left">
+<a href="https://cirrus-ci.com/github/pletzer/mint">
+<img src="https://api.cirrus-ci.com/github/pletzer/mint.svg?branch=master"
+     alt="Cirrus-CI" /></a>
+<a href="https://github.com/pletzer/mint/graphs/contributors">
+<img src="https://img.shields.io/github/contributors/pletzer/mint.svg"
+     alt="# contributors" /></a>
+<a href="https://github.com/pletzer/mint/releases">
+<img src="https://img.shields.io/github/v/release/pletzer/mint"
+     alt="latest release" /></a>
+<a href="https://github.com/pletzer/mint/commits/master">
+<img src="https://img.shields.io/github/commits-since/pletzer/mint/latest.svg"
+     alt="Commits since last release" /></a>
+</p>
+
+----
 
 ## Overview
 
@@ -11,7 +28,7 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 ## Prerequisites
 
-To build the MINT Python module:
+To build the `MINT` Python module:
 
  * C++ compiler with C++11 support
  * Cython
@@ -19,9 +36,9 @@ To build the MINT Python module:
  * NumPy
  * VTK
 
-We recommend to install the above packages with conda.
+We recommend installing the above packages using `conda`.
 
-To build the MINT C++ library and the tools:
+To build the `MINT` C++ library and the tools:
 
  * C++ compiler with C++11 support
  * Fortran compiler (e.g., gfortran 6.4)
@@ -29,16 +46,16 @@ To build the MINT C++ library and the tools:
  * Doxygen
  * VTK
 
-## How to build the MINT Python module
+## How to Build the MINT Python Module
 
-The MINT Python interface requires VTK, netCDF and the tbb libraries to 
+The `MINT` Python interface requires `VTK`, `netCDF` and the `tbb` libraries to 
 be installed. This is most easily done in a conda environment:
 ```
 conda env create --file requirements/mint.yml
 conda activate mint-dev
 ```
 
-In the root MINT directory then type:
+In the root `MINT` directory then type:
 ```
 pip install --no-deps --editable .
 ```
@@ -53,8 +70,9 @@ To run the tests type:
 pytest
 ```
  
-## How to build the MINT C++ library so you can call it from your program (Fortran or C/C++)
+## How to Build the MINT C++ Library
 
+Perform the following in order to call `MINT` from `Fortran`, `C` or `C++`:
 ```
 mkdir build
 cd build
@@ -62,19 +80,20 @@ cmake ..
 make -j 8
 ```
 
-You can specify the compiler with
+You can specify the compiler with:
 ```
 FC=mpif90 CXX=mpicxx cmake ..; make -j 8
 ```
 
-You can check that the build was successful by typing
+You can check that the build was successful by typing:
 ```
 make test
 ```
 
-### Binary tools
+### Binary Tools
 
-The above CMake build will compile a number of tools. To run the tools, set MINT_SRC_DIR to the location of the MINT source directory (e.g. `export MINT_SRC_DIR=..`).
+The above `CMake` build will compile a number of tools. To run the tools, set
+`MINT_SRC_DIR` to the location of the `MINT` source directory (e.g. `export MINT_SRC_DIR=..`).
 
  1. Compute the interpolation weights from a lat-lon grid to the cubed sphere:
  ```
@@ -83,7 +102,7 @@ The above CMake build will compile a number of tools. To run the tools, set MINT
                       -w weights.nc
  ```
 
- 2. Regrid field "edge_integrated_velocity" from lat-lon to cubed-sphere by loading the previously generated weights:
+ 2. Regrid field `edge_integrated_velocity` from lat-lon to cubed-sphere by loading the previously generated weights:
  ```
  ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
                       -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
@@ -109,12 +128,12 @@ The above CMake build will compile a number of tools. To run the tools, set MINT
 
 ## API Documentation
 
-This is useful if you would like to call MINT from C, Python or Fortran:
+This is useful if you would like to call `MINT` from `C`, `Python` or `Fortran`:
 
 https://pletzer.github.io/mint/html/
 
 
-## Conservation error
+## Conservation Error
 
 The plot below shows the error of mimetic regridding error obtained by computing the 
 closed line integral for each cell. 

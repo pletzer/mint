@@ -27,6 +27,7 @@ pip-cache
 \.\#*
 *.swp
 .ipynb_checkpoints
+.idea
 
 # MINT files
 mint/__init__.py
