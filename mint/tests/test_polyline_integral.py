@@ -1,4 +1,3 @@
-import pytest
 from mint import Grid, PolylineIntegral
 import numpy
 import sys

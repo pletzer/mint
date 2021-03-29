@@ -1,4 +1,3 @@
-import pytest
 from mint import RegridEdges
 import numpy
 import sys

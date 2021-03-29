@@ -1,4 +1,3 @@
-import pytest
 from mint import Grid
 import numpy
 import sys
