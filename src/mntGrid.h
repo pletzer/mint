@@ -95,9 +95,9 @@ int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, co
  * @param self instance of Grid_t
  * @param varname data field name
  * @param nDataPerCell number of components per cell
- * @param points flat array of size ncells*nDataPerCell
+ * @param data flat array of size ncells*nDataPerCell
  * @return error code (0 = OK)
- * @note the grid DOES NOT own the data - the caller is repsonsible for cleaning the data
+ * @note the grid DOES NOT own the data - the caller is repsonsible for freeing the data
  */
 extern "C"
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]);
@@ -163,9 +163,8 @@ int mnt_grid_print(Grid_t** self);
  * @param self instance of Grid_t
  * @param cellId cell Id
  * @param edgeIndex edge index in the range 0-3
- * @param pointIndex point index in the range 0-1 (0 = start, 1 = end)
- * @param point the coordinates of the start point (output)
- * @param point the coordinates of the end point (output)
+ * @param point0 the coordinates of the start point (output)
+ * @param point1 the coordinates of the end point (output)
  * @return error code (0 = OK)
  */
 extern "C"
