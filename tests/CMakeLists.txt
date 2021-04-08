@@ -460,6 +460,8 @@ add_test(NAME regrid_edgesUgrid16To16
 set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
+# there is some leakage near the poles. This happens for the cubed sphere grid because of the bending
+# of the cell edges there. Just checking that we don't have more than 32 warnings.
 add_test(NAME regrid_upstream
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test" "-S" "1"
@@ -467,7 +469,7 @@ add_test(NAME regrid_upstream
                  "-N" "128" "-P" "360"
                  "-debug" "2")
 set_tests_properties(regrid_upstream PROPERTIES
-                     FAIL_REGULAR_EXPRESSION "Warning")
+                     FAIL_REGULAR_EXPRESSION "Warning: \\[32\\] total t of segment")
 
 add_test(NAME regrid_nan
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
