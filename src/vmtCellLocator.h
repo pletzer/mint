@@ -168,8 +168,8 @@ private:
     // maps a bucket to a list of faces
     std::map<int, std::set<vtkIdType> > bucket2Faces;
 
-    // vector of one ({0}) or two components ({0, 1}). Use {0, 1} to consider
-    // the folding of the coordinates. 
+    // vector of one ({0}) or two components ({0, 1}). Use {0, 1} for
+    // folding of over the poles. 
     std::vector<int> kFolding;
 
 

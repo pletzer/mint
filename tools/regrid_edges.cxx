@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
     }
     ier = mnt_regridedges_setSrcGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
 
-    // ...destination griod
+    // ...destination grid
     fixLonAcrossDateline = 1;
     averageLonAtPole = 1;
     if (args.get<int>("-D") == 0) {
@@ -443,8 +443,11 @@ int main(int argc, char** argv) {
         ier = nc_close(srcNcid);
 
     } // has variable 
+    else {
+        std::cout << "info: no variable name was provided, thus only computing weights\n";
+    }
 
-    // cleanup
+    // clean up
     mnt_regridedges_del(&rg);
 
     return 0;
