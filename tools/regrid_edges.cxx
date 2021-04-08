@@ -89,6 +89,78 @@ void computeLoopIntegrals(Grid_t* grd, const std::vector<double>& edgeData,
     *avgAbsLoop /= double(numCells);
 }
 
+/**
+ * Set up the writer 
+ * @param srcNdims number of dimensions
+ * @param srcDims  dimensions of the grid
+ * @param numDstEdges number of destination edges
+ * @param vname edge data variable name
+ * @param dstEdgeDataFile file name where the regridded data will be stored
+ * @param attrs attributes object (will be modified)
+ * @param writer returned writer object (caller should take care if disposing)
+ */
+int setUpWriter(int srcNdims, const size_t* srcDims, size_t numDstEdges, 
+                const std::string& vname, const std::string& dstEdgeDataFile, 
+                NcAttributes_t* attrs, NcFieldWrite_t** writer) {
+
+    int ier;
+
+    std::pair<std::string, std::string> fm = split(dstEdgeDataFile, ':');
+    // get the dst file name
+    std::string dstFileName = fm.first;
+
+    int n1 = dstFileName.size();
+    int n2 = vname.size();
+    const int append = 0; // new file
+    ier = mnt_ncfieldwrite_new(writer, dstFileName.c_str(), n1, vname.c_str(), n2, append);
+    if (ier != 0) {
+        std::cerr << "ERROR: create file " << dstFileName << " with field " 
+                  << vname << " in append mode " << append << '\n';
+        return 14;
+    }
+
+    ier = mnt_ncfieldwrite_setNumDims(writer, srcNdims); // matches the number of source field dimensions
+    if (ier != 0) {
+        std::cerr << "ERROR: cannot set the number of dimensions for field " << vname << " in file " << dstFileName << '\n';
+        ier = mnt_ncfieldwrite_del(writer);
+        return 15;
+    }
+
+    // add the field's axes. Assume the dst field dimensions are the same as the src field except for the last
+    // num edges dimension
+
+
+    // add num_edges axis. WE SHOULD GET THIS FROM THE DEST FILE?
+    std::string axname = "num_edges";
+    int n3 = axname.size();
+    ier = mnt_ncfieldwrite_setDim(writer, srcNdims - 1, axname.c_str(), n3, numDstEdges);
+    if (ier != 0) {
+        std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << numDstEdges
+                  << " for field " << vname << " in file " << dstFileName << '\n';
+        ier = mnt_ncfieldwrite_del(writer);
+        return 16;
+    }
+
+    // add the remaining axes, ASSUME THE ADDITIONAL DST AXES TO MATCH THE SRC AXES
+    for (int i = 0; i < srcNdims - 1; ++i) {
+        axname = "n_" + toString(srcDims[i]);
+        ier = mnt_ncfieldwrite_setDim(writer, i, axname.c_str(), axname.size(), srcDims[i]);
+    }
+
+    // add the attributes
+    ier = mnt_ncattributes_write(&attrs, (*writer)->ncid, (*writer)->varid);
+    if (ier != 0) {
+        std::cerr << "ERROR: writing attributes for field " << vname << " in file " << dstFileName << '\n';
+        ier = mnt_ncfieldwrite_del(writer);
+        return 17;
+    }
+
+    return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char** argv) {
 
     int ier;
@@ -274,59 +346,18 @@ int main(int argc, char** argv) {
         size_t numSrcCells, numDstCells;
         mnt_regridedges_getNumSrcCells(&rg, &numSrcCells);
         mnt_regridedges_getNumDstCells(&rg, &numDstCells);
+        std::cout << "info: number of src cells: " << numSrcCells << '\n';
+        std::cout << "info: number of dst cells: " << numDstCells << '\n';
 
         if (dstEdgeDataFile.size() > 0) {
             // user provided a file name to store the regridded data
 
-            std::pair<std::string, std::string> fm = split(dstEdgeDataFile, ':');
-            // get the dst file name
-            std::string dstFileName = fm.first;
-
-            int n1 = dstFileName.size();
-            int n2 = vname.size();
-            const int append = 0; // new file
-            ier = mnt_ncfieldwrite_new(&writer, dstFileName.c_str(), n1, vname.c_str(), n2, append);
+            ier = setUpWriter(srcNdims, srcDims, numDstEdges, vname, dstEdgeDataFile, 
+                              attrs, &writer);
             if (ier != 0) {
-                std::cerr << "ERROR: create file " << dstFileName << " with field " 
-                          << vname << " in append mode " << append << '\n';
-                return 14;
+                return ier;
             }
 
-            ier = mnt_ncfieldwrite_setNumDims(&writer, srcNdims); // matches the number of source field dimensions
-            if (ier != 0) {
-                std::cerr << "ERROR: cannot set the number of dimensions for field " << vname << " in file " << dstFileName << '\n';
-                ier = mnt_ncfieldwrite_del(&writer);
-                return 15;
-            }
-
-            // add the field's axes. Assume the dst field dimensions are the same as the src field except for the last
-            // num edges dimension
-
-
-            // add num_edges axis. WE SHOULD GET THIS FROM THE DEST FILE?
-            std::string axname = "num_edges";
-            int n3 = axname.size();
-            ier = mnt_ncfieldwrite_setDim(&writer, srcNdims - 1, axname.c_str(), n3, numDstEdges);
-            if (ier != 0) {
-                std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << numDstEdges
-                          << " for field " << vname << " in file " << dstFileName << '\n';
-                ier = mnt_ncfieldwrite_del(&writer);
-                return 16;
-            }
-
-            // add the remaining axes, ASSUME THE ADDITIONAL DST AXES TO MATCH THE SRC AXES
-            for (int i = 0; i < srcNdims - 1; ++i) {
-                axname = "n_" + toString(srcDims[i]);
-                ier = mnt_ncfieldwrite_setDim(&writer, i, axname.c_str(), axname.size(), srcDims[i]);
-            }
-
-            // add the attributes
-            ier = mnt_ncattributes_write(&attrs, writer->ncid, writer->varid);
-            if (ier != 0) {
-                std::cerr << "ERROR: writing attributes for field " << vname << " in file " << dstFileName << '\n';
-                ier = mnt_ncfieldwrite_del(&writer);
-                return 17;
-            }
         }
 
         std::vector<double> loop_integrals;
