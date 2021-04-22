@@ -46,7 +46,9 @@ linux_task:
       - echo "${CIRRUS_OS} $(sha256sum mambaforge.sh)"
       - echo "${MAMBA_CACHE_PACKAGES}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MAMBA_CACHE_BUILD}"
+      - uname -r
     populate_script:
+      - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
       - bash mambaforge.sh -b -p ${HOME}/mambaforge
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
@@ -61,7 +63,9 @@ linux_task:
       - echo "${CIRRUS_OS} py${PY_VER} tests"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+      - uname -r
     populate_script:
+      - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
       - conda-lock --mamba --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
       - mamba create --name py${PY_VER} --quiet --file conda-linux-64.lock
       - conda info --envs
