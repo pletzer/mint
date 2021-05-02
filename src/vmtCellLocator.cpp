@@ -168,10 +168,6 @@ vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3]
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     Vec3 targetPoint(point);
 
-    // store the original values
-    double lon = targetPoint[0];
-    double lat = targetPoint[1];
-
     // add/substract periodicity length and apply folding if need be
     for (auto kF : this->kFolding) {
 

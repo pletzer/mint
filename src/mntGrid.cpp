@@ -174,7 +174,7 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     }
 
     std::size_t numCells;
-    int ier = mnt_grid_getNumberOfCells(self, &numCells);
+    mnt_grid_getNumberOfCells(self, &numCells);
 
     if ((*self)->edgeArcLengths.size() == numCells * 4) {
         // already done

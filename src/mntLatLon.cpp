@@ -66,8 +66,9 @@ int mnt_latlon_load(LatLon_t** self, const std::string& filename) {
     mnt_latlon_new(self);
     mnt_latlon_setNumberOfLatCells(self, numLat0);
     mnt_latlon_setNumberOfLonCells(self, numLon0);
+
     mnt_latlon_build(self);
-    return 0;
+    return ier;
 }
 
 extern "C"

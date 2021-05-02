@@ -725,7 +725,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
         dst_data[i] /= std::max(1, edgeMultiplicity[i]);
     }
 
-    return 0;
+    return ier;
 }
 
 
