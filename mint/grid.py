@@ -1,10 +1,13 @@
-from ctypes import c_void_p, c_int, byref, POINTER, c_char_p, c_size_t, c_longlong
+from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
+                    c_size_t, c_longlong)
 from . import LIB
 import numpy
 
 
 def error_handler(filename, methodname, ier):
-    raise RuntimeError(f'ERROR ier={ier} after calling {methodname} in {filename}!')
+    raise RuntimeError(
+        f'ERROR ier={ier} after calling {methodname} in {filename}!'
+        )
 
 
 FILE = 'grid.py'
@@ -153,7 +156,7 @@ class Grid(object):
         :param data: numpy array of size (ncells, num_edges_per_cell, ndims)
         """
         ndims = data.shape[-1]
-        nEdgesPerCell = 4 # self.getNumEdgesPerCell()
+        nEdgesPerCell = 4
         nDataPerCell = nEdgesPerCell * ndims
         LIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int,
                                         DOUBLE_ARRAY_PTR]
