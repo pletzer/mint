@@ -1,4 +1,4 @@
-#include <limits> // required by vtkUnstructuredGrid
+#include <limits> 
 #include <vector>
 #include <map>
 #include <set>
@@ -7,8 +7,6 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
-#include <limits>
-
 
 #ifndef VMT_CELL_LOCATOR
 #define VMT_CELL_LOCATOR
