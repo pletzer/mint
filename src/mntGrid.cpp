@@ -224,9 +224,9 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     }
 
     // add the field
-    ier = mnt_grid_attach(self, (*self)->EDGE_LENGTH_NAME.c_str(), 4, &(*self)->edgeArcLengths[0]);
+    int ier = mnt_grid_attach(self, (*self)->EDGE_LENGTH_NAME.c_str(), 4, &(*self)->edgeArcLengths[0]);
 
-    return 0;
+    return ier;
 }
 
 
