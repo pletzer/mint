@@ -60,9 +60,24 @@ if (VTK_INCLUDE_DIR AND VTK_LIBRARY_DIR AND VTK_VERSION)
 else ()
     # let MINT search for the location of VTK
     set(VTK_DIR "" CACHE PATH "The directory containing VTKConfig.cmake or vtk-config.cmake")
-    find_package(VTK REQUIRED COMPONENTS 
-        vtksys vtkCommonCore vtkCommonSystem vtkCommonMath vtkCommonMisc vtkCommonTransforms 
-        vtkCommonDataModel vtkCommonExecutionModel vtkCommonComputationalGeometry vtkIOLegacy vtkIOCore)
+    if (VTK_VERSION VERSION_LESS "8.90.0")
+        find_package(VTK REQUIRED)
+    else()
+        message(STATUS "Using new VTK module system")
+        find_package(VTK REQUIRED COMPONENTS 
+            vtksys
+            CommonCore 
+            CommonSystem 
+            CommonMath 
+            CommonMisc 
+            CommonTransforms 
+    	    CommonDataModel 
+            CommonExecutionModel
+            CommonComputationalGeometry 
+            IOLegacy
+            IOCore
+        )
+    endif()
 endif()
 
 # allow the user to set the variables manually
