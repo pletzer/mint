@@ -1,4 +1,4 @@
-
+#include <limits> // required by vtkUnstructutedGrid
 #include <vector>
 #include <map>
 #include <string>
