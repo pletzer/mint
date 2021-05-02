@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
