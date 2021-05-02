@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include <vmtCellLocator.h>
 #include <vtkDoubleArray.h>
 #include <vtkUnstructuredGrid.h>

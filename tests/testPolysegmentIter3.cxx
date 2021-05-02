@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include <mntPolysegmentIter.h>
 #include <mntGrid.h>
 #undef NDEBUG // turn on asserts
