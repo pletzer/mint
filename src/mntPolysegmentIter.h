@@ -1,4 +1,4 @@
-#include <limits>
+#include <limits> // required by vtkUnstructuredGrid
 #include <mntVecN.h>
 #include <mntLineLineIntersector.h>
 #include <vtkUnstructuredGrid.h>

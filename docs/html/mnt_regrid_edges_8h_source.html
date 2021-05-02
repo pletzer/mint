@@ -70,7 +70,7 @@ $(function() {
 <div class="title">mntRegridEdges.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="mnt_regrid_edges_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
+<a href="mnt_regrid_edges_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#include &lt;limits&gt;</span> <span class="comment">// required by vtkUnstructuredGrid</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &lt;map&gt;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
@@ -84,7 +84,7 @@ $(function() {
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;mntMultiArrayIter.h&gt;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#ifndef MNT_REGRID_EDGES</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#define MNT_REGRID_EDGES</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="mnt_regrid_edges_8h.html#acbae3b931f29a9657ce6955ad690d2c2">   15</a></span>&#160;<span class="preprocessor">#define MNT_REGRID_EDGES</span></div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
 <div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="struct_regrid_edges__t.html">   23</a></span>&#160;<span class="keyword">struct </span><a class="code" href="struct_regrid_edges__t.html">RegridEdges_t</a> {</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
@@ -261,7 +261,7 @@ $(function() {
 <div class="ttc" id="amnt_regrid_edges_8h_html_ae1a9e7ace439d7b5b7b34f52f868bb81"><div class="ttname"><a href="mnt_regrid_edges_8h.html#ae1a9e7ace439d7b5b7b34f52f868bb81">mnt_regridedges_del</a></div><div class="ttdeci">int mnt_regridedges_del(RegridEdges_t **self)</div><div class="ttdoc">Destructor.</div></div>
 <div class="ttc" id="amnt_regrid_edges_8h_html_ae4473503bddbceec2ade6b564941bce3"><div class="ttname"><a href="mnt_regrid_edges_8h.html#ae4473503bddbceec2ade6b564941bce3">mnt_regridedges_apply</a></div><div class="ttdeci">int mnt_regridedges_apply(RegridEdges_t **self, const double src_data[], double dst_data[])</div><div class="ttdoc">Apply the interpolation weights to an edge field with unique edge Ids.</div></div>
 <div class="ttc" id="amnt_regrid_edges_8h_html_aed577236b17970ad6c2f59f7318727f9"><div class="ttname"><a href="mnt_regrid_edges_8h.html#aed577236b17970ad6c2f59f7318727f9">mnt_regridedges_getNumDstCells</a></div><div class="ttdeci">int mnt_regridedges_getNumDstCells(RegridEdges_t **self, std::size_t *n)</div><div class="ttdoc">Get the number of the destination grid cells.</div></div>
-<div class="ttc" id="astruct_grid__t_html"><div class="ttname"><a href="struct_grid__t.html">Grid_t</a></div><div class="ttdef"><b>Definition:</b> mntGrid.h:17</div></div>
+<div class="ttc" id="astruct_grid__t_html"><div class="ttname"><a href="struct_grid__t.html">Grid_t</a></div><div class="ttdef"><b>Definition:</b> mntGrid.h:18</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html"><div class="ttname"><a href="struct_regrid_edges__t.html">RegridEdges_t</a></div><div class="ttdoc">Edge-centred field regridding.</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:23</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html_a08a3d130401200689d0fb6878182a107"><div class="ttname"><a href="struct_regrid_edges__t.html#a08a3d130401200689d0fb6878182a107">RegridEdges_t::srcReader</a></div><div class="ttdeci">NcFieldRead_t * srcReader</div><div class="ttdoc">netcdf file source data reader</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:71</div></div>
 <div class="ttc" id="astruct_regrid_edges__t_html_a220f7afb513fb3f5fc8e2562822fe1e1"><div class="ttname"><a href="struct_regrid_edges__t.html#a220f7afb513fb3f5fc8e2562822fe1e1">RegridEdges_t::mai</a></div><div class="ttdeci">MultiArrayIter_t * mai</div><div class="ttdoc">multi-array iterator</div><div class="ttdef"><b>Definition:</b> mntRegridEdges.h:95</div></div>
