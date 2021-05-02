@@ -36,7 +36,7 @@ int mnt_latlon_del(LatLon_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_latlon_setNumberOfLatCells(LatLon_t** self, size_t n);
+int mnt_latlon_setNumberOfLatCells(LatLon_t** self, std::size_t n);
 
 /**
  * Set the number of longitude cells
@@ -44,7 +44,7 @@ int mnt_latlon_setNumberOfLatCells(LatLon_t** self, size_t n);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_latlon_setNumberOfLonCells(LatLon_t** self, size_t n);
+int mnt_latlon_setNumberOfLonCells(LatLon_t** self, std::size_t n);
 
 /**
  * Build the grid

@@ -117,7 +117,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
                                   const char* dst_fort_filename, int dst_nFilenameLength,
                                   int append,
                                   const char* field_name, int nFieldNameLength, 
-                                  size_t* numSlices) {
+                                  std::size_t* numSlices) {
 
     int ier = 0;
 
@@ -126,7 +126,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
     // filter out the mesh name, if present (not used here)
-    size_t columnL = srcFileAndMeshName.find(':');
+    std::size_t columnL = srcFileAndMeshName.find(':');
     std::string srcFilename = srcFileAndMeshName.substr(0, columnL);
     columnL = dstFileAndMeshName.find(':');
     std::string dstFilename = dstFileAndMeshName.substr(0, columnL);
@@ -190,8 +190,8 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
 
     // last dimension is edge axis
     int i = (*self)->ndims - 1;
-    size_t numSrcEdges;
-    size_t numDstEdges;
+    std::size_t numSrcEdges;
+    std::size_t numDstEdges;
     ier = mnt_grid_getNumberOfEdges(&(*self)->srcGridObj, &numSrcEdges);
     ier = mnt_grid_getNumberOfEdges(&(*self)->dstGridObj, &numDstEdges);
     (*self)->srcCounts[i] = numSrcEdges;
@@ -308,14 +308,14 @@ extern "C"
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
-                                  size_t ndata, double data[]) {
+                                  std::size_t ndata, double data[]) {
 
     int ier = 0;
 
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
 
     // filter out the mesh name, if present (not used here)
-    size_t columnL = fileAndMeshName.find(':');
+    std::size_t columnL = fileAndMeshName.find(':');
     std::string filename = fileAndMeshName.substr(0, columnL);
 
     std::string fieldname = std::string(field_name, nFieldNameLength);
@@ -374,12 +374,12 @@ extern "C"
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
-                                  size_t ndata, const double data[]) {
+                                  std::size_t ndata, const double data[]) {
     
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-    size_t columnL = fileAndMeshName.find(':');
+    std::size_t columnL = fileAndMeshName.find(':');
 
     // get the file name
     std::string filename = fileAndMeshName.substr(0, columnL);
@@ -480,10 +480,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     double dstEdgePt1[] = {0., 0., 0.};
     vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
 
-    size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    std::size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // reserve some space for the weights and their cell/edge id arrays
-    size_t n = numDstCells * (*self)->numEdgesPerCell * 20;
+    std::size_t n = numDstCells * (*self)->numEdgesPerCell * 20;
     (*self)->weights.reserve(n);
     (*self)->weightSrcFaceEdgeIds.reserve(n);
     (*self)->weightDstFaceEdgeIds.reserve(n);
@@ -507,7 +507,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
 
     // iterate over the dst grid cells
     int numBadSegments = 0;
-    for (size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
+    for (std::size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
 
         // get this cell vertex Ids
         (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
@@ -531,12 +531,12 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                                                           dstEdgePt0, dstEdgePt1);
 
             // number of sub-segments
-            size_t numSegs = polySegIter.getNumberOfSegments();
+            std::size_t numSegs = polySegIter.getNumberOfSegments();
 
             // iterate over the sub-segments. Each sub-segment gets a src cell Id,
             // start/end cell param coords, the coefficient...
             polySegIter.reset();
-            for (size_t iseg = 0; iseg < numSegs; ++iseg) {
+            for (std::size_t iseg = 0; iseg < numSegs; ++iseg) {
 
                 const vtkIdType srcCellId = polySegIter.getCellId();
                 const Vec3& xia = polySegIter.getBegCellParamCoord();
@@ -628,13 +628,13 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
 }
 
 extern "C"
-int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, size_t* n) {
+int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n) {
     *n = (*self)->srcGrid->GetNumberOfCells();
     return 0;
 }
 
 extern "C"
-int mnt_regridedges_getNumDstCells(RegridEdges_t** self, size_t* n) {
+int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n) {
     *n = (*self)->dstGrid->GetNumberOfCells();
     return 0;
 }
@@ -646,7 +646,7 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
 }
 
 extern "C"
-int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, size_t* nPtr) {
+int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* nPtr) {
     if (!(*self)->srcGridObj) {
         std::cerr << "ERROR: source grid was not loaded\n";
         return 1;
@@ -656,7 +656,7 @@ int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, size_t* nPtr) {
 }
 
 extern "C"
-int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* nPtr) {
+int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* nPtr) {
     if (!(*self)->dstGridObj) {
         std::cerr << "ERROR: destination grid was not loaded\n";
         return 1;
@@ -684,11 +684,11 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     int ier;
 
     // number of unique edges on the destination grid
-    size_t numDstEdges;
+    std::size_t numDstEdges;
     ier = mnt_grid_getNumberOfEdges(&((*self)->dstGridObj), &numDstEdges);
     
     // initialize the data to zero
-    for (size_t i = 0; i < numDstEdges; ++i) {
+    for (std::size_t i = 0; i < numDstEdges; ++i) {
         dst_data[i] = 0.0;
     }
 
@@ -698,14 +698,14 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     std::vector<int> edgeMultiplicity(numDstEdges, 0);
 
     // add the contributions from each cell overlaps
-    for (size_t i = 0; i < (*self)->weights.size(); ++i) {
+    for (std::size_t i = 0; i < (*self)->weights.size(); ++i) {
 
         vtkIdType dstCellId = (*self)->weightDstCellIds[i];
         vtkIdType srcCellId = (*self)->weightSrcCellIds[i];
         int dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
         int srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
 
-        size_t srcEdgeId, dstEdgeId;
+        std::size_t srcEdgeId, dstEdgeId;
         int srcEdgeSign, dstEdgeSign;
         ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
@@ -716,7 +716,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
         edgeMultiplicity[dstEdgeId] = std::min(2, edgeMultiplicity[dstEdgeId] + 1);
     }
 
-    for (size_t i = 0; i < numDstEdges; ++i) {
+    for (std::size_t i = 0; i < numDstEdges; ++i) {
 
         // there has been cases where edgeMultiplicity[i] is zero and so we need to guard 
         // against a division by zero. I would expect in this case dst_data[i] to be also 
@@ -744,7 +744,7 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
     }
 
     // get the sizes
-    size_t numWeights;
+    std::size_t numWeights;
     int numWeightsId;
     ier = nc_inq_dimid(ncid, "num_weights", &numWeightsId);
     if (ier != NC_NOERR) {
@@ -856,7 +856,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
 
-    size_t numWeights = (*self)->weights.size();
+    std::size_t numWeights = (*self)->weights.size();
 
     int ncid, ier;
     ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
@@ -973,9 +973,9 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     double edgeParamCoordEnds[(*self)->numEdgesPerCell * 3];
     double* xiBeg;
     double* xiEnd;
-    for (size_t e = 0; e < (*self)->numEdgesPerCell; ++e) {
+    for (std::size_t e = 0; e < (*self)->numEdgesPerCell; ++e) {
         (*self)->edgeConnectivity.getParamCoords(e, &xiBeg, &xiEnd);
-        for (size_t j = 0; j < 3; ++j) { // always 3d
+        for (std::size_t j = 0; j < 3; ++j) { // always 3d
             edgeParamCoordBegs[e*3 + j] = xiBeg[j];
             edgeParamCoordEnds[e*3 + j] = xiEnd[j];
         }
@@ -1047,7 +1047,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
 
 extern "C"
 int mnt_regridedges_print(RegridEdges_t** self) {
-    size_t numWeights = (*self)->weights.size();
+    std::size_t numWeights = (*self)->weights.size();
     std::cout << "edge to vertex connectivity:\n";
     for (int faceEdgeId = 0; 
          faceEdgeId < (*self)->edgeConnectivity.getNumberOfEdges(); 
@@ -1058,7 +1058,7 @@ int mnt_regridedges_print(RegridEdges_t** self) {
     }
     std::cout << "Number of weights: " << numWeights << '\n';
     printf("                 dst_cell  dst_face_edge     src_cell  src_face_edge       weight\n");
-    for (size_t i = 0; i < numWeights; ++i) {
+    for (std::size_t i = 0; i < numWeights; ++i) {
     printf("%10ld       %8lld         %1d          %8lld         %1d   %15.5lg\n", 
                i, 
                (*self)->weightDstCellIds[i], (*self)->weightDstFaceEdgeIds[i], 

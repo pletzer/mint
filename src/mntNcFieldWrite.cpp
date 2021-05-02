@@ -73,7 +73,7 @@ extern "C"
 int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, 
                             int iAxis, 
                             const char* dimName, int dimNameLen,
-                            size_t dim) {
+                            std::size_t dim) {
   (*self)->dimNames[iAxis] = std::string(dimName, dimNameLen);
   (*self)->dimSizes[iAxis] = dim;
   return 0;
@@ -96,8 +96,8 @@ int mnt_ncfieldwrite_data(NcFieldWrite_t** self,
 
 extern "C"
 int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self, 
-                               const size_t startInds0[], 
-                               const size_t counts[], 
+                               const std::size_t startInds0[], 
+                               const std::size_t counts[], 
                                const double data[]) {
   if (!(*self)->defined) {
     int stat = mnt_ncfieldwrite_define(self);
@@ -124,10 +124,10 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
     return 1;
   }  
 
-  size_t ndims = (*self)->dimSizes.size();
+  std::size_t ndims = (*self)->dimSizes.size();
   std::vector<int> dimIds(ndims);
   int ier;
-  for (size_t i = 0; i < ndims; ++i) {
+  for (std::size_t i = 0; i < ndims; ++i) {
     ier = nc_def_dim((*self)->ncid, (*self)->dimNames[i].c_str(),
                                     (*self)->dimSizes[i], &dimIds[i]);
     if (ier != NC_NOERR) {
@@ -183,7 +183,7 @@ int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self) {
   (*self)->dimNames.resize(0);
   (*self)->dimSizes.resize(0);
   char dimName[NC_MAX_NAME + 1];
-  size_t dim;
+  std::size_t dim;
   for (int iDim = 0; iDim < ndims; ++iDim) {
     ier = nc_inq_dim((*self)->ncid, dimIds[iDim], dimName, &dim);
     if (ier == NC_NOERR) {

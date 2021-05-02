@@ -11,7 +11,7 @@
 struct NcDimensions_t {
 
   // sizes 
-  std::vector<size_t> dims;
+  std::vector<std::size_t> dims;
 
 };
 
@@ -52,7 +52,7 @@ int mnt_ncdimensions_getNumDims(NcDimensions_t** self, int* ndims);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncdimensions_get(NcDimensions_t** self, int i, size_t* len);
+int mnt_ncdimensions_get(NcDimensions_t** self, int i, std::size_t* len);
 
 /**
  * Print the attributes

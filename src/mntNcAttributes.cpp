@@ -34,7 +34,7 @@ int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid) {
 
   // get the attributes
   char attname[NC_MAX_NAME + 1];
-  size_t n;
+  std::size_t n;
   nc_type xtype;
   for (int i = 0; i < natts; ++i) {
     ier = nc_inq_attname(ncid, varid, i, attname);

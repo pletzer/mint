@@ -32,7 +32,7 @@ int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
 
   // get the dimensions and dimension names
   char dimName[NC_MAX_NAME + 1];
-  size_t dim;
+  std::size_t dim;
   for (int iDim = 0; iDim < ndims; ++iDim) {
     ier = nc_inq_dim(ncid, dimIds[iDim], dimName, &dim);
     if (ier == NC_NOERR) {
@@ -67,7 +67,7 @@ int mnt_ncfieldread_getDimName(NcFieldRead_t** self,
 
 
 extern "C"
-int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, size_t* dim) {
+int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, std::size_t* dim) {
   *dim = (*self)->dimSizes[iAxis];
   return 0;
 }
@@ -82,8 +82,8 @@ int mnt_ncfieldread_data(NcFieldRead_t** self,
 
 extern "C"
 int mnt_ncfieldread_dataSlice(NcFieldRead_t** self, 
-                              const size_t startInds0[], 
-                              const size_t counts[], 
+                              const std::size_t startInds0[], 
+                              const std::size_t counts[], 
                               double data[]) {
   int ier = nc_get_vara_double((*self)->ncid, (*self)->varid, 
                                startInds0, counts, data);

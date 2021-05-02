@@ -10,13 +10,13 @@
 struct MultiArrayIter_t {
 
   // dimensions along each axis
-  std::vector<size_t> dims;
+  std::vector<std::size_t> dims;
 
-  std::vector<size_t> prodDims;
+  std::vector<std::size_t> prodDims;
 
-  size_t bigIndex;
+  std::size_t bigIndex;
 
-  size_t ntot;
+  std::size_t ntot;
 
 };
 
@@ -27,7 +27,7 @@ struct MultiArrayIter_t {
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const size_t* dims);
+int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const std::size_t* dims);
 
 /**
  * Destructor
@@ -57,7 +57,7 @@ int mnt_multiarrayiter_next(MultiArrayIter_t** self);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, size_t* n);
+int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, std::size_t* n);
 
 
 /**
@@ -66,6 +66,6 @@ int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, size_t* n);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, size_t indices[]);
+int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, std::size_t indices[]);
 
 #endif // MULTI_ARRAY_ITER

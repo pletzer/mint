@@ -52,11 +52,11 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
     for (int ip0 = 0; ip0 < npoints - 1; ++ip0) {
 
         // get the starting point
-        size_t k0 = 3*ip0;
+        std::size_t k0 = 3*ip0;
         double p0[] = {xyz[k0 + 0], xyz[k0 + 1], xyz[k0 + 2]};
 
         // get the end point
-        size_t k1 = k0 + 3;        
+        std::size_t k1 = k0 + 3;        
         double p1[] = {xyz[k1 + 0], xyz[k1 + 1], xyz[k1 + 2]};
 
         // build the polysegment iterator. This breaks segment p0 -> p1 into 
@@ -64,11 +64,11 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
         PolysegmentIter polyseg(vgrid, loc, p0, p1, periodX);
 
         // number of sub-segments
-        size_t numSubSegs = polyseg.getNumberOfSegments();
+        std::size_t numSubSegs = polyseg.getNumberOfSegments();
         polyseg.reset();
 
         // iterate over the sub-segments 
-        for (size_t i = 0; i < numSubSegs; ++i) {
+        for (std::size_t i = 0; i < numSubSegs; ++i) {
 
             // get the cell Id to which this sub-segment belongs to
             vtkIdType cellId = polyseg.getCellId();

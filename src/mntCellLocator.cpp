@@ -13,7 +13,7 @@ int mnt_celllocator_new(CellLocator_t** self) {
 }
 
 extern "C"
-int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, size_t n) {
+int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, std::size_t n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
@@ -35,7 +35,7 @@ int mnt_celllocator_del(CellLocator_t** self) {
 }
 
 extern "C"
-int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, size_t ncells, 
+int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::size_t ncells, 
 		                         const double points[]) {
     int ier = mnt_grid_setPointsPtr(&(*self)->gridt, nVertsPerCell, ncells, points);
     return ier;
@@ -83,7 +83,7 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
     // vectors from the base vertex to other 3 verts
     double a[3], b[3], c[3];
 
-    size_t numElems = 4; // number of tets
+    std::size_t numElems = 4; // number of tets
     double isQuad = 0.;
 
     unsigned char cellType = (*self)->gridt->grid->GetCell(0)->GetCellType();
@@ -110,7 +110,7 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
         vtkIdList* ptIds = (*self)->gridt->grid->GetCell(icell)->GetPointIds();
 
         // iterate over the 2 triangles or 4 tets
-        for (size_t j = 0; j < numElems; ++j) {
+        for (std::size_t j = 0; j < numElems; ++j) {
 
             // get the point Ids for each vertex of the triangle/tet
             vtkIdType k0 = ptIds->GetId(j0[j]);
@@ -123,7 +123,7 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
             points->GetPoint(kc, pc);
 
             // vectors from the base point to the other triangle/tet vertices
-            for (size_t dim = 0; dim < 3; ++dim) {
+            for (std::size_t dim = 0; dim < 3; ++dim) {
                 a[dim] = pa[dim] - p0[dim];
                 b[dim] = pb[dim] - p0[dim];
                 // use the fake vertical (0, 0, 1) vector for quads
@@ -182,7 +182,7 @@ int mnt_celllocator_runGridDiagnostics(CellLocator_t** self) {
 
 
 extern "C"
-int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, size_t n) {
+int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, std::size_t n) {
     // copy fortran string into c string
     std::string filename = std::string(fort_filename, n);
     int ier = mnt_grid_dump(&(*self)->gridt, filename.c_str());
@@ -211,5 +211,5 @@ int mnt_celllocator_interpPoint(CellLocator_t** self, long long cellId, const do
 
 extern "C"
 void mnt_celllocator_printAddress(void* something) {
-    printf("address is %lld (0x%16zx)\n", (long long) something, (size_t) something);
+    printf("address is %lld (0x%16zx)\n", (long long) something, (std::size_t) something);
 }

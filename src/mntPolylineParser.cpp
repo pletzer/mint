@@ -5,9 +5,9 @@
 Vec3
 PolylineParser::parsePosition(const std::string& posStr) const {
     Vec3 res(0.0);
-    size_t posBeg, posEnd;
+    std::size_t posBeg, posEnd;
     posBeg = 0;
-    for (size_t i = 0; i < this->ndims; ++i) {
+    for (std::size_t i = 0; i < this->ndims; ++i) {
         // index of ',' or end of string, starting at posBeg
         posEnd = posStr.find(',', posBeg);
         // convert substring to number
@@ -27,8 +27,8 @@ PolylineParser::parse(const std::string& expr) {
     this->points.clear();
     const char leftDelim = '(';
     const char rghtDelim = ')';
-    size_t leftPos = 0;
-    size_t rghtPos = expr.size();
+    std::size_t leftPos = 0;
+    std::size_t rghtPos = expr.size();
     while (true) {
         leftPos = expr.find(leftDelim, leftPos);
         rghtPos = expr.find(rghtDelim, leftPos);
@@ -37,7 +37,7 @@ PolylineParser::parse(const std::string& expr) {
             break;
         }
         leftPos++;
-        size_t n = rghtPos - leftPos;
+        std::size_t n = rghtPos - leftPos;
         std::string posStr = expr.substr(leftPos, n);
         this->points.push_back(this->parsePosition(posStr));
     }
@@ -46,9 +46,9 @@ PolylineParser::parse(const std::string& expr) {
 void
 PolylineParser::print() const {
     std::cout << "Points:\n";
-    for (size_t i = 0; i < this->points.size(); ++i) {
+    for (std::size_t i = 0; i < this->points.size(); ++i) {
         const Vec3& point = this->points[i];
-        for (size_t j = 0; j < this->ndims; ++j) {
+        for (std::size_t j = 0; j < this->ndims; ++j) {
             std::cout << point[j] << ',';
         }
         std::cout << '\n';

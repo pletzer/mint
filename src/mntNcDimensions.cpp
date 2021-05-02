@@ -41,14 +41,14 @@ int mnt_ncdimensions_getNumDims(NcDimensions_t** self, int* ndims) {
 }
 
 extern "C"
-int mnt_ncdimensions_get(NcDimensions_t** self, int i, size_t* len) {
+int mnt_ncdimensions_get(NcDimensions_t** self, int i, std::size_t* len) {
   *len = (*self)->dims[i];
   return 0;
 }
 
 extern "C"
 int mnt_ncdimensions_print(NcDimensions_t** self) {
-  for (size_t i = 0; i < (*self)->dims.size(); ++i) {
+  for (std::size_t i = 0; i < (*self)->dims.size(); ++i) {
     std::cout << i << " size: " << (*self)->dims[i] << '\n';
   }
   return 0;

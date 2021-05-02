@@ -19,7 +19,7 @@ struct NcFieldRead_t {
 
   // dimension names and values
   std::vector<std::string> dimNames;
-  std::vector<size_t> dimSizes;
+  std::vector<std::size_t> dimSizes;
   std::vector<int> dimIds;
 };
 
@@ -65,7 +65,7 @@ int mnt_ncfieldread_getDimName(NcFieldRead_t** self, int iAxis, char* dimName, i
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, size_t* dim);
+int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, std::size_t* dim);
 
 /**
  * Read the netcdf variable 
@@ -85,8 +85,8 @@ int mnt_ncfieldread_data(NcFieldRead_t** self,
  */
 extern "C"
 int mnt_ncfieldread_dataSlice(NcFieldRead_t** self, 
-                              const size_t* startInds0, 
-                              const size_t* counts, 
+                              const std::size_t* startInds0, 
+                              const std::size_t* counts, 
                               double data[]);
 
 

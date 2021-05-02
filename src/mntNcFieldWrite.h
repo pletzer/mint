@@ -22,7 +22,7 @@ struct NcFieldWrite_t {
 
   // dimension names and values
   std::vector<std::string> dimNames;
-  std::vector<size_t> dimSizes;
+  std::vector<std::size_t> dimSizes;
 
   bool defined;
   bool append;
@@ -70,7 +70,7 @@ int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims);
  */
 extern "C"
 int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, int iAxis, 
-                            const char* dimName, int dimNameLen, size_t dim);
+                            const char* dimName, int dimNameLen, std::size_t dim);
 
 /**
  * Write the netcdf variable 
@@ -90,8 +90,8 @@ int mnt_ncfieldwrite_data(NcFieldWrite_t** self,
  */
 extern "C"
 int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self, 
-                               const size_t startInds0[], 
-                               const size_t counts[], 
+                               const std::size_t startInds0[], 
+                               const std::size_t counts[], 
                                const double data[]);
 
 

@@ -9,7 +9,7 @@
 #include <cstdlib> // strtod
 #include <deque>
 
-GrExprParser::GrExprParser(size_t n, const std::string& expr) {
+GrExprParser::GrExprParser(std::size_t n, const std::string& expr) {
   this->n = n;
   this->expr = this->squeeze(expr);
 
@@ -58,8 +58,8 @@ GrExprParser::defineVariable(const std::string& name, Vec* object) {
 Vec* 
 GrExprParser::eval() {
 
-  size_t lpos = this->expr.rfind('(');
-  size_t rpos = this->expr.find(')', lpos);
+  std::size_t lpos = this->expr.rfind('(');
+  std::size_t rpos = this->expr.find(')', lpos);
   if (lpos == std::string::npos || 
       rpos == std::string::npos) {
     std::ostringstream error;
@@ -73,7 +73,7 @@ GrExprParser::eval() {
   // fill in the operator argument list
   std::vector<Vec*> args;
   // first element is operator
-  for (size_t i = 1; i < tokens.size(); ++i) {
+  for (std::size_t i = 1; i < tokens.size(); ++i) {
     std::map<std::string, Vec*>::const_iterator it;
     // look into the input var container
     it = this->input.find(tokens[i]);
@@ -168,7 +168,7 @@ std::string
 GrExprParser::squeeze(const std::string& expr) const {
   std::string res;
   bool skip = true;
-  for (size_t i = 0; i < expr.size(); ++i) {
+  for (std::size_t i = 0; i < expr.size(); ++i) {
     char c = expr[i];
     if (c != ' ') {
       res.push_back(c);
@@ -189,7 +189,7 @@ GrExprParser::tokenize(const std::string& array) const {
   // "+ ab cdef" -> {"+", "ab", "cdef"}
   std::vector<std::string> res;
   std::string elem = "";
-  for (size_t i = 0; i < array.size(); ++i) {
+  for (std::size_t i = 0; i < array.size(); ++i) {
     char c = array[i];
     if (c != ' ') {
       elem.push_back(c);
@@ -230,8 +230,8 @@ GrExprParser::fillInVarNamesFromExpr(std::set<std::string>& varnames,
     expr = this->expr;
   }
 
-  size_t lpos = expr.rfind('(');
-  size_t rpos = expr.find(')', lpos);
+  std::size_t lpos = expr.rfind('(');
+  std::size_t rpos = expr.find(')', lpos);
   if (lpos == std::string::npos || 
       rpos == std::string::npos) {
     std::ostringstream error;
@@ -248,7 +248,7 @@ GrExprParser::fillInVarNamesFromExpr(std::set<std::string>& varnames,
   }
 
   // first element is operator
-  for (size_t i = 1; i < tokens.size(); ++i) {
+  for (std::size_t i = 1; i < tokens.size(); ++i) {
     if (varnames.find(tokens[i]) == varnames.end()) {
       // only add to list new variable names
       varnames.insert(tokens[i]);
@@ -302,7 +302,7 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
   varDelimiters.push_back(" ");
   varDelimiters.push_back("(");
   varDelimiters.push_back(")");
-  for (size_t i = 0; i < unaryOps.size(); ++i) {
+  for (std::size_t i = 0; i < unaryOps.size(); ++i) {
     varDelimiters.push_back(unaryOps[i]);
   }
   for (std::map<std::string, int>::const_iterator 
@@ -312,13 +312,13 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
 
   // tokenize the expression in reverse order
   std::vector<std::string> tokens;
-  size_t begPos = 0;
-  size_t endPos = inExpr.size() - 1;
+  std::size_t begPos = 0;
+  std::size_t endPos = inExpr.size() - 1;
   while (begPos <= endPos) {
     // find the position of the last delimiter
     std::string delimiter = "";
-    for (size_t j = 0; j < varDelimiters.size(); ++j) {
-      size_t bp = inExpr.rfind(varDelimiters[j], endPos);
+    for (std::size_t j = 0; j < varDelimiters.size(); ++j) {
+      std::size_t bp = inExpr.rfind(varDelimiters[j], endPos);
       if (bp != std::string::npos && bp > begPos) {
         begPos = bp;
         delimiter = varDelimiters[j];
@@ -328,7 +328,7 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
     std::string varOrOp = inExpr.substr(begPos + delimiter.size(), endPos);
     // remove any spaces
     std::string varOrOpNoSpaces = "";
-    for (size_t j = 0; j < varOrOp.size(); ++j) {
+    for (std::size_t j = 0; j < varOrOp.size(); ++j) {
       char c = varOrOp[j];
       if (c != ' ') {
         varOrOpNoSpaces.push_back(c);
@@ -347,7 +347,7 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
   // already in reverse order
   std::deque<std::string> opStack;
   std::deque<std::string> exprList;
-  for (size_t i = 0; i < tokens.size(); ++i) {
+  for (std::size_t i = 0; i < tokens.size(); ++i) {
     std::string token = tokens[i];
     // determine if token is a variable, a delimiter, or an operator
     // ( and ) are moved to the opStack
@@ -409,7 +409,7 @@ GrExprParser::convertInfixToPrefixNotation(const std::string& inExpr) const {
   // Build the prefix expression. Put brackets around unary and
   // binary operations
   std::string preExpr;
-  for (size_t i = 0; i < exprList.size(); ++i) {
+  for (std::size_t i = 0; i < exprList.size(); ++i) {
     preExpr += exprList[i];
   }
 
