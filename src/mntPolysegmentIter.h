@@ -1,3 +1,4 @@
+#include <limits>
 #include <mntVecN.h>
 #include <mntLineLineIntersector.h>
 #include <vtkUnstructuredGrid.h>
