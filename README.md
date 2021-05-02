@@ -119,7 +119,7 @@ The above `CMake` build will compile a number of tools. To run the tools, set
  4. Regrid a time dependent field with elevation:
  ```
 ./tools/regrid_edges -s $MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc:mesh2d -S 0 \
-                     -d $MINT_SRC_DIR//data/c24_u_integrated.nc:physics -D 1 \
+                     -d $MINT_SRC_DIR/data/c24_u_integrated.nc:physics -D 1 \
                      -v u@$MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc \
                      -O regridedges_xyzt.nc -o regridedges_xyzt.vtk
 
