@@ -69,6 +69,8 @@ set(HEADER_FILES
 )
 
 add_library(mint ${LIB_FILES})
+target_link_libraries(mint ${VTK_LIBRARIES})
+
 
 # Install headers
 install(FILES ${HEADER_FILES} DESTINATION include)

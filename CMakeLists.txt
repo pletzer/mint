@@ -60,9 +60,9 @@ if (VTK_INCLUDE_DIR AND VTK_LIBRARY_DIR AND VTK_VERSION)
 else ()
     # let MINT search for the location of VTK
     set(VTK_DIR "" CACHE PATH "The directory containing VTKConfig.cmake or vtk-config.cmake")
-    find_package(VTK REQUIRED)
-    include_directories(${VTK_INCLUDE_DIRS})
-    message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
+    find_package(VTK REQUIRED COMPONENTS 
+        vtksys vtkCommonCore vtkCommonSystem vtkCommonMath vtkCommonMisc vtkCommonTransforms 
+        vtkCommonDataModel vtkCommonExecutionModel vtkCommonComputationalGeometry vtkIOLegacy vtkIOCore)
 endif()
 
 # allow the user to set the variables manually
