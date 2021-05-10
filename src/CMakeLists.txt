@@ -68,7 +68,19 @@ set(HEADER_FILES
   mntWeights.h
 )
 
-add_library(mint ${LIB_FILES})
+if (VTK_VERSION VERSION_LESS "8.90.0")
+    include(${VTK_USE_FILE})
+    add_library(mint ${LIB_FILES})
+else()
+    message(STATUS "Using new VTK module system")
+    add_library(mint ${LIB_FILES})
+    # may want to replace ${VTK_LIBRARIES} with VTK::vtksys VTK::CommonCore etc
+    target_link_libraries(mint ${visibility} ${VTK_LIBRARIES})
+    vtk_module_autoinit(
+        TARGETS mint
+	      MODULES ${VTK_LIBRARIES}
+    )
+endif()
 
 # Install headers
 install(FILES ${HEADER_FILES} DESTINATION include)

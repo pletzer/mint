@@ -12,7 +12,7 @@
 // C headers
 #include <cmath>
 #include <cstdlib>
-#include <cstring> // size_t
+#include <cstring> // std::size_t
 #include <ctime>
 #include <complex>
 #ifndef NO_ASSERT
@@ -47,13 +47,13 @@ public:
   /** Constructor: create vector of "n" elements.
     
     @param n vector size */
-  Vector(size_t n); 
+  Vector(std::size_t n); 
 
   /** Constructor: create vector of "n" elements "e".
     
     @param n vector size 
     @param e value of each element */
-  Vector(size_t n, T e);
+  Vector(std::size_t n, T e);
 
   /** Constructor: create vector from C array.
     
@@ -146,13 +146,13 @@ public:
    @param elem reference abscissa
    @see ket
   */
-  size_t bra(T elem);
+  std::size_t bra(T elem);
 
   /** Return the indices of the elements that are closest to the left of elem. 
       This assumes that the sequence is monotonically increasing. 
    @param elem reference abscissa
   */
-  Vector<size_t> bra(const Vector<T> &elem);
+  Vector<std::size_t> bra(const Vector<T> &elem);
 
   
   /** Return the index of the element closest to the right of elem. 
@@ -161,25 +161,25 @@ public:
    @param elem reference abscissa
    @see bra
   */
-  size_t ket(T elem);
+  std::size_t ket(T elem);
 
   /** Return the indices of the elements that are closest to the right of elem. 
       This assumes that the sequence is monotonically increasing. 
    @param elem reference abscissa
   */
-  Vector<size_t> ket(const Vector<T> &elem);
+  Vector<std::size_t> ket(const Vector<T> &elem);
 
   /** Resizes the vector to the "n" size. 
    @param n new size
   */
-  Vector<T> &alloc(size_t n);
+  Vector<T> &alloc(std::size_t n);
 
   /** Sum of all elements 
    @return sum
   */
   T sum() const {
     T res = 0;
-    for (size_t i = 0; i < this->size(); ++i) {
+    for (std::size_t i = 0; i < this->size(); ++i) {
       res += (*this)(i);
     }
     return res;
@@ -192,7 +192,7 @@ public:
   /** Return reference to "i"-th element.  
    @param i index 
    @return element */
-  inline const T& operator()(size_t i) const
+  inline const T& operator()(std::size_t i) const
   {
 #ifndef NO_ASSERT
     assert(i < this->size());
@@ -204,7 +204,7 @@ public:
   /** Returns reference to an element of index "i" (can be used for assignment). 
    @param i index 
    @return element */
-  inline T& operator()(size_t i)
+  inline T& operator()(std::size_t i)
   {
 #ifndef NO_ASSERT
     assert(i < this->size());
@@ -213,11 +213,11 @@ public:
     return (*this)[i];
   }
 
-  Vector<T> operator()(const Vector<size_t> &I) const;
+  Vector<T> operator()(const Vector<std::size_t> &I) const;
 };
 
 typedef Vector<double> Vec;
-typedef Vector<size_t> Vec_int;
+typedef Vector<std::size_t> Vec_int;
 typedef Vector< std::complex<double> > Vec_cmplx;
 
 /**@name Vector Functions
@@ -450,7 +450,7 @@ Vector<T> pow(const Vector<T> &v, int exp);
     @param n
  */
 template<class T>
-Vector<T> space(T xmin, T xmax, size_t n=2);
+Vector<T> space(T xmin, T xmax, std::size_t n=2);
 
 /** Uniform grid generation with integer increment. Create vector of size nsize whose
     elements are imin, imin+1, ... imin+size()-1.
@@ -460,7 +460,7 @@ Vector<T> space(T xmin, T xmax, size_t n=2);
     @return vector = [imin, imin+1, ... imin+nsize-1]
  */
 template<class T>
-Vector<T> range(T imin, size_t nsize=2);
+Vector<T> range(T imin, std::size_t nsize=2);
 
 /** Return the maximum value of v. 
     @param v vector 

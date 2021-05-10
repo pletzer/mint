@@ -28,7 +28,7 @@ QuadEdgeIter::QuadEdgeIter() {
         double dir = 0;
         double* xi0 = &(this->allParamCoords)[3*i0];
         double* xi1 = &(this->allParamCoords)[3*i1];
-        for (size_t d = 0; d < 3; ++d) {
+        for (std::size_t d = 0; d < 3; ++d) {
             // dir is either -1 (negative direction), 0 or +1 (positive direction)
             dir += xi1[d] - xi0[d];
         }

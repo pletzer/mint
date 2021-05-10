@@ -36,10 +36,10 @@ class ColMat
 private:
   
    /// Stores the number of rows.
-  size_t i_size;
+  std::size_t i_size;
   
   /// Stores the number of columns.
-  size_t j_size;
+  std::size_t j_size;
   
 public:
 
@@ -53,14 +53,14 @@ public:
   /** Create matrix. Elements are not set.
       @param i no. of rows 
       @param j no. of columns. */
-  ColMat(size_t i, size_t j);
+  ColMat(std::size_t i, size_t j);
 
   /** Create matrix. Elelemnts are set.
     @param i the number of rows
     @param j the number of columns
     @param e value of each element
     */
-  ColMat(size_t i, size_t j, const T& e);
+  ColMat(std::size_t i, size_t j, const T& e);
 
   /** Negation operator (elementwise).  */
   ColMat<T> operator-();
@@ -106,7 +106,7 @@ public:
     @param j the column number
     @return reference to an element pointed by i and j
    */
-  inline T& operator()(size_t i, size_t j)
+  inline T& operator()(std::size_t i, size_t j)
   {
 #ifndef NO_ASSERT
     assert(i < i_size);
@@ -120,7 +120,7 @@ public:
     @param j the column number
     @return reference to an element pointed by i and j
    */
-  inline const T& operator()(size_t i, size_t j) const
+  inline const T& operator()(std::size_t i, size_t j) const
   {
 #ifndef NO_ASSERT
     assert(i < i_size);
@@ -135,36 +135,36 @@ public:
 
   /** Array slicing. Given 2 integer vectors I and J.
    */
-  ColMat<T> operator()(const Vector<size_t> &I, const Vector<size_t> &J ) const;
+  ColMat<T> operator()(const Vector<std::size_t> &I, const Vector<size_t> &J ) const;
   /** Array slicing. Given the integer vector I and a index j.
    */
-  Vector<T> operator()(const Vector<size_t> &I, const size_t j ) const;
+  Vector<T> operator()(const Vector<std::size_t> &I, const size_t j ) const;
   /** Array slicing. Given index i and the integer vector J.
    */
-  Vector<T> operator()(const size_t i, const Vector<size_t> &J ) const;
+  Vector<T> operator()(const std::size_t i, const Vector<size_t> &J ) const;
 
   /** Get Matrix sizes. The argument should be either 1 or 0
       @param i set to 0 get the number of rows, to 1 to get the number of columns
       @return size
    */
-  size_t size(size_t i) const; 
+  std::size_t size(size_t i) const; 
   
   /** Get the number of rows. */
-  size_t isize() const;
+  std::size_t isize() const;
 
   /** Get the number of columns. */
-  size_t jsize() const;
+  std::size_t jsize() const;
 
   /** Resize the matrix. */
-  ColMat<T>& newsize(size_t, size_t);
+  ColMat<T>& newsize(std::size_t, size_t);
 
   /** Allocate space. Elements are not initialized. */
-  ColMat<T>& alloc(const size_t nr, const size_t nc);
+  ColMat<T>& alloc(const std::size_t nr, const size_t nc);
 
   
-  ColMat<T> slip(const Vector<T> &v, const Vector<size_t> &I, const Vector<size_t> &J);
-  ColMat<T> slip(const Vector<T> &v, const Vector<size_t> &I, const size_t j);
-  ColMat<T> slip(const Vector<T> &v, const size_t i, const Vector<size_t> &J);
+  ColMat<T> slip(const Vector<T> &v, const Vector<std::size_t> &I, const Vector<size_t> &J);
+  ColMat<T> slip(const Vector<T> &v, const Vector<std::size_t> &I, const size_t j);
+  ColMat<T> slip(const Vector<T> &v, const std::size_t i, const Vector<size_t> &J);
 };                                                              
 
 typedef ColMat<double> Mat;
@@ -203,10 +203,10 @@ template<class T>
 Vector<T> sum1(const ColMat<T> &a);
 
 //  template<class T> 
-//  ColMat<T> space1(T xmin, T xmax, size_t ny=1, size_t nx=11);
+//  ColMat<T> space1(T xmin, T xmax, std::size_t ny=1, size_t nx=11);
 
 //  template<class T> 
-//  ColMat<T> space0(T ymin, T ymax, size_t ny=11, size_t nx=1);
+//  ColMat<T> space0(T ymin, T ymax, std::size_t ny=11, size_t nx=1);
 
 /** Stretch vertically, along rows. This is equivalent to duplicating 
  n0 times a row vector so as to create a matrix of size n0 times v.size() 
@@ -214,7 +214,7 @@ Vector<T> sum1(const ColMat<T> &a);
 @param n0 vertical size (or no. of rows)
 @return matrix */
 template<class T> 
-ColMat<T> stretch0(const  Vector<T> &v, const size_t n0);
+ColMat<T> stretch0(const  Vector<T> &v, const std::size_t n0);
 
 /** Stretch horizontally, along columns. This is equivalent to duplicating 
  n1 times a column vector so as to create a matrix of size v.size() times n1
@@ -222,7 +222,7 @@ ColMat<T> stretch0(const  Vector<T> &v, const size_t n0);
 @param n1 horizontal size (or no. of columns)
 @return matrix */
 template<class T>
-ColMat<T> stretch1(const Vector<T> &v, const size_t n1);
+ColMat<T> stretch1(const Vector<T> &v, const std::size_t n1);
 
 /* tensor product of 2 vectors = matrix */
 
@@ -490,12 +490,12 @@ ColMat<T>::ColMat() : i_size(0), j_size(0)
 }
 
 template <class T>
-ColMat<T>::ColMat(size_t m, size_t n) : i_size(m), j_size(n), v_(m*n)
+ColMat<T>::ColMat(std::size_t m, size_t n) : i_size(m), j_size(n), v_(m*n)
 {
 }
 
 template <class T>
-ColMat<T>::ColMat(size_t m, size_t n, const T &elem)
+ColMat<T>::ColMat(std::size_t m, size_t n, const T &elem)
   : i_size(m), j_size(n), v_(m*n, elem)
 {
 }
@@ -652,12 +652,12 @@ ColMat<T> operator*(const T f, const ColMat<T> &a)
 template <class T>
 std::ostream&   operator<<(std::ostream& s, const ColMat<T>& V)
 {
-  size_t M = V.size(0);
-  size_t N = V.size(1);
+  std::size_t M = V.size(0);
+  std::size_t N = V.size(1);
 
-  for (size_t i = 0; i < M; i++)
+  for (std::size_t i = 0; i < M; i++)
     {
-      for (size_t j = 0; j < N; j++)
+      for (std::size_t j = 0; j < N; j++)
     s << V(i,j) << " " ;
       s << std::endl;
     }
@@ -666,19 +666,19 @@ std::ostream&   operator<<(std::ostream& s, const ColMat<T>& V)
 }
 
 template<class T>
-size_t ColMat<T>::isize() const
+std::size_t ColMat<T>::isize() const
 {
   return i_size;
 }
 
 template<class T>
-size_t ColMat<T>::jsize() const
+std::size_t ColMat<T>::jsize() const
 {
   return j_size;
 }
 
 template <class T>
-ColMat<T> &ColMat<T>::alloc(const size_t ni_size, const size_t nj_size)
+ColMat<T> &ColMat<T>::alloc(const std::size_t ni_size, const size_t nj_size)
 {
   v_.alloc(ni_size * nj_size);
   i_size = ni_size;
@@ -687,7 +687,7 @@ ColMat<T> &ColMat<T>::alloc(const size_t ni_size, const size_t nj_size)
 }
 
 template <class T>
-ColMat<T>& ColMat<T>::newsize(size_t ni_size, size_t nj_size)
+ColMat<T>& ColMat<T>::newsize(std::size_t ni_size, size_t nj_size)
 {
   v_.resize(ni_size * nj_size);
 
@@ -702,11 +702,11 @@ Vector<T> average0(const ColMat<T> &a)
 {
   /* average along rows */
 
-  size_t nr = a.size(0), nc = a.size(1);
+  std::size_t nr = a.size(0), nc = a.size(1);
   Vector<T> av(nc,0);
   
-  for (size_t j = 0; j < nc; ++j)
-    for (size_t i = 0; i < nr; ++i)
+  for (std::size_t j = 0; j < nc; ++j)
+    for (std::size_t i = 0; i < nr; ++i)
       av(j) += a(i,j);
 
   return av/T(nr);
@@ -717,11 +717,11 @@ Vector<T> average1(const ColMat<T> &a)
 {
   /* average along columns */
   
-  size_t nr = a.size(0), nc = a.size(1);
+  std::size_t nr = a.size(0), nc = a.size(1);
   Vector<T> av(nr,0);
   
-  for (size_t i = 0; i < nr; ++i)
-    for (size_t j = 0; j < nc; ++j)
+  for (std::size_t i = 0; i < nr; ++i)
+    for (std::size_t j = 0; j < nc; ++j)
       av(i) += a(i,j);
 
   return av/T(nc);
@@ -732,12 +732,12 @@ Vector<T> sum0(const ColMat<T> &a)
 {
   /* sum row elements (vertically) */
   
-  size_t nr = a.size(0), nc = a.size(1);
+  std::size_t nr = a.size(0), nc = a.size(1);
   Vector<T> av(nc,0);
 
-  for (size_t j = 0; j < nc; ++j)
+  for (std::size_t j = 0; j < nc; ++j)
     {
-      for (size_t i = 0; i < nr; ++i)
+      for (std::size_t i = 0; i < nr; ++i)
     {
       av(j) += a(i,j);
     }
@@ -748,11 +748,11 @@ Vector<T> sum0(const ColMat<T> &a)
 template<class T>
 Vector<T> sum1(const ColMat<T> &a)
 {
-  size_t ni = a.isize(), nj = a.jsize();
+  std::size_t ni = a.isize(), nj = a.jsize();
   Vector<T> av(ni,0);
   
-  for (size_t i = nj; i--;)
-    for (size_t j = ni; j--;)
+  for (std::size_t i = nj; i--;)
+    for (std::size_t j = ni; j--;)
       av(i) += a(i,j);
 
   return av;
@@ -761,7 +761,7 @@ Vector<T> sum1(const ColMat<T> &a)
 template<class T> 
 ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b)
 {
-  size_t i,j,k;
+  std::size_t i,j,k;
   ColMat<T> c(a.size(0), b.size(1), 0.0);
 
 #ifndef NO_ASSERT
@@ -788,13 +788,13 @@ ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b, const ColMat<T> &c)
   assert(b.jsize() == c.isize());
 #endif
 
-  for (size_t j = 0; j < c.jsize(); ++j)
+  for (std::size_t j = 0; j < c.jsize(); ++j)
   {
-    for (size_t i = 0; i < a.isize(); ++i)
+    for (std::size_t i = 0; i < a.isize(); ++i)
     {
-      for (size_t k = 0; k < b.isize(); ++k)
+      for (std::size_t k = 0; k < b.isize(); ++k)
       {
-        for (size_t el = 0; el < c.isize(); ++el)
+        for (std::size_t el = 0; el < c.isize(); ++el)
         {
           res(i, j) += a(i, k) * b(k, el) * c(el, j);
         }
@@ -816,11 +816,11 @@ Vector<T> dot(const ColMat<T> &a, const ColMat<T> &b, const Vector<T> &c)
   assert(b.jsize() == c.size());
 #endif
 
-  for (size_t i = 0; i < a.isize(); ++i)
+  for (std::size_t i = 0; i < a.isize(); ++i)
   {
-    for (size_t k = 0; k < b.isize(); ++k)
+    for (std::size_t k = 0; k < b.isize(); ++k)
     {
-      for (size_t el = 0; el < c.size(); ++el)
+      for (std::size_t el = 0; el < c.size(); ++el)
       {
         res[i] += a(i, k) * b(k, el) * c[el];
       }
@@ -834,11 +834,11 @@ Vector<T> dot(const ColMat<T> &a, const ColMat<T> &b, const Vector<T> &c)
 template<class T> 
 Vector<T> dot(const ColMat<T> &a, const Vector<T> &b)
 {
-  size_t i,j;
+  std::size_t i,j;
   Vector<T> c(a.size(0),0.);
 
-  size_t n = c.size();
-  size_t n1 = a.size(1);
+  std::size_t n = c.size();
+  std::size_t n1 = a.size(1);
   for (i = 0; i < n; ++i)
     for (j = 0; j < n1; ++j)
       c(i) += a(i,j) * b(j);
@@ -849,11 +849,11 @@ Vector<T> dot(const ColMat<T> &a, const Vector<T> &b)
 template<class T> 
 Vector<T> dot(const Vector<T> &b, const ColMat<T> &a)
 {
-  size_t i,j;
+  std::size_t i,j;
   Vector<T> c(a.size(1), 0);
   
-  size_t n = c.size();
-  size_t n0 = a.size(0);
+  std::size_t n = c.size();
+  std::size_t n0 = a.size(0);
   for (j = 0; j < n; ++j)
     for (i = 0; i < n0; ++i)
       c(j) += b(i)*a(i,j);
@@ -1014,9 +1014,9 @@ template<class T> ColMat<T> pow(const ColMat<T> &a, const int exp)
 }  
 
 template<class T> 
-ColMat<T> space1(T xmin, T xmax, size_t ny, size_t nx) 
+ColMat<T> space1(T xmin, T xmax, std::size_t ny, size_t nx) 
 {
-  size_t i,j;
+  std::size_t i,j;
   ColMat<T> a(ny,nx);
 
   for (i = 0; i < a.size(0); ++i) 
@@ -1031,9 +1031,9 @@ ColMat<T> space1(T xmin, T xmax, size_t ny, size_t nx)
 }
 
 template<class T> 
-ColMat<T> space0(T ymin, T ymax, size_t ny, size_t nx) 
+ColMat<T> space0(T ymin, T ymax, std::size_t ny, size_t nx) 
 {
-  size_t i,j;
+  std::size_t i,j;
   ColMat<T> a(ny,nx);
 
   for (i = 0; i < a.size(0); ++i) 
@@ -1050,13 +1050,13 @@ ColMat<T> space0(T ymin, T ymax, size_t ny, size_t nx)
 /* stretch vertically */
 
 template<class T> 
-ColMat<T> stretch0(const  Vector<T> &v, const size_t n0)
+ColMat<T> stretch0(const  Vector<T> &v, const std::size_t n0)
 {  
-  size_t nv = v.size();
+  std::size_t nv = v.size();
   ColMat<T> d(n0, nv); 
   
-  for(size_t i = 0; i < n0; ++i) 
-    for (size_t j = 0; j < nv; ++j) 
+  for(std::size_t i = 0; i < n0; ++i) 
+    for (std::size_t j = 0; j < nv; ++j) 
       d(i,j) = v(j);
  
   return d; 
@@ -1066,13 +1066,13 @@ ColMat<T> stretch0(const  Vector<T> &v, const size_t n0)
 
   
 template<class T>
-ColMat<T> stretch1(const Vector<T> &v, const size_t n1)
+ColMat<T> stretch1(const Vector<T> &v, const std::size_t n1)
 {  
-  size_t nv = v.size();
+  std::size_t nv = v.size();
   ColMat<T> d(nv, n1); 
 
-  for(size_t j = 0; j < n1; ++j) 
-    for (size_t i = 0; i < nv; ++i) 
+  for(std::size_t j = 0; j < n1; ++j) 
+    for (std::size_t i = 0; i < nv; ++i) 
       d(i,j) = v(i);
   
   return d; 
@@ -1082,10 +1082,10 @@ ColMat<T> stretch1(const Vector<T> &v, const size_t n1)
 
 template<class TYPE>
 ColMat<TYPE> TensorProd(const Vector<TYPE> &a, const Vector<TYPE> &b){
-  size_t m = a.size(), n = b.size();
+  std::size_t m = a.size(), n = b.size();
   ColMat<TYPE> c(m,n);
-  for(size_t j = 0; j < n; j++){
-    for(size_t i = 0; i < m; i++) c(i,j) = a(i)*b(j);
+  for(std::size_t j = 0; j < n; j++){
+    for(std::size_t i = 0; i < m; i++) c(i,j) = a(i)*b(j);
   }
   return c;
 }
@@ -1094,64 +1094,64 @@ ColMat<TYPE> TensorProd(const Vector<TYPE> &a, const Vector<TYPE> &b){
 
 template<class TYPE>
 Vector<TYPE> flatten0(const ColMat<TYPE> &a){
-  size_t m = a.size(0), n = a.size(1);
+  std::size_t m = a.size(0), n = a.size(1);
   Vector<TYPE> r(m*n);
-  for(size_t j = 0; j < n; j++){
-    for(size_t i = 0; i < m; i++) r(j*m+i) = a(i,j);
+  for(std::size_t j = 0; j < n; j++){
+    for(std::size_t i = 0; i < m; i++) r(j*m+i) = a(i,j);
   }
   return r;
 }
 
 template<class TYPE>
 Vector<TYPE> flatten1(const ColMat<TYPE> &a){
-  size_t m = a.size(0), n = a.size(1);
+  std::size_t m = a.size(0), n = a.size(1);
   Vector<TYPE> r(m*n);
-  for(size_t j = 0; j < n; j++){
-    for(size_t i = 0; i < m; i++) r(i*n+j) = a(i,j);
+  for(std::size_t j = 0; j < n; j++){
+    for(std::size_t i = 0; i < m; i++) r(i*n+j) = a(i,j);
   }
   return r;
 }
 
 template<class T>
-ColMat<T> ColMat<T>::operator()(const Vector<size_t> &I, const Vector<size_t> &J ) const
+ColMat<T> ColMat<T>::operator()(const Vector<std::size_t> &I, const Vector<size_t> &J ) const
 {
-  size_t nr = I.size();
-  size_t nc = J.size();
+  std::size_t nr = I.size();
+  std::size_t nc = J.size();
 
   ColMat<T> y(nr, nc);
   
-  for( size_t j = 0; j < nc; ++j)
-    for( size_t i = 0; i < nr; ++i)
+  for( std::size_t j = 0; j < nc; ++j)
+    for( std::size_t i = 0; i < nr; ++i)
       y(i, j) = (*this)(J(j), I(i));
 
   return y;
 }
 
 template<class T>
-Vector<T> ColMat<T>::operator()(const Vector<size_t> &I, const size_t j ) const 
+Vector<T> ColMat<T>::operator()(const Vector<std::size_t> &I, const size_t j ) const 
 {
-  size_t n = I.size();
+  std::size_t n = I.size();
   Vector<T> y(n);
 
-  for( size_t i = 0; i < n; ++i)
+  for( std::size_t i = 0; i < n; ++i)
     y(i) = v_[j*i_size + I(i)];
   
   return y;
 }
 
 template<class T>
-Vector<T> ColMat<T>::operator()(const size_t i, const Vector<size_t> &J ) const
+Vector<T> ColMat<T>::operator()(const std::size_t i, const Vector<size_t> &J ) const
 {
-  size_t n = J.size();
+  std::size_t n = J.size();
   Vector<T> y(n);
-  for( size_t j = 0; j < n; ++j)
+  for( std::size_t j = 0; j < n; ++j)
     y(j) = v_[J(j)*i_size + i];
 
   return y;
 }
 
 template<class T>
-size_t ColMat<T>::size(size_t i) const 
+std::size_t ColMat<T>::size(size_t i) const 
 {
 #ifndef NO_ASSERT
   assert(i == 0 || i == 1);
@@ -1167,46 +1167,46 @@ takes a matrix slot at I(i) and J(i), i = 1,...v.size().
    */
 
 template<class T>
-ColMat<T> ColMat<T>::slip(const Vector<T> &v, const Vector<size_t> &I, const Vector<size_t> &J)
+ColMat<T> ColMat<T>::slip(const Vector<T> &v, const Vector<std::size_t> &I, const Vector<size_t> &J)
 {
-  size_t nv = v.size();
+  std::size_t nv = v.size();
 
 #ifndef NO_ASSERT
   assert(nv == I.size());
   assert(nv == J.size());
 #endif
 
-  for(size_t i = 0; i < nv; ++i)
+  for(std::size_t i = 0; i < nv; ++i)
     v_(J(i) * i_size + I(i)) = v(i);
 
   return *this;
 }
 
 template<class T>
-ColMat<T> ColMat<T>::slip(const Vector<T> &v, const Vector<size_t> &I, const size_t j)
+ColMat<T> ColMat<T>::slip(const Vector<T> &v, const Vector<std::size_t> &I, const size_t j)
 {
-  size_t nv = v.size();
+  std::size_t nv = v.size();
 
 #ifndef NO_ASSERT
   assert(nv == I.size());
 #endif
 
-  for(size_t i = 0; i < nv; ++i)
+  for(std::size_t i = 0; i < nv; ++i)
     v_(j*i_size + I(i)) = v(i);
 
   return *this;
 }
 
 template<class T>
-ColMat<T> ColMat<T>::slip(const Vector<T> &v, const size_t i, const Vector<size_t> &J)
+ColMat<T> ColMat<T>::slip(const Vector<T> &v, const std::size_t i, const Vector<size_t> &J)
 {
-  size_t nv = v.size();
+  std::size_t nv = v.size();
 
 #ifndef NO_ASSERT
   assert(nv == J.size());
 #endif
 
-  for(size_t j = 0; j<nv; ++j) v_(J(j)*i_size + i) = v(j);
+  for(std::size_t j = 0; j<nv; ++j) v_(J(j)*i_size + i) = v(j);
   return *this;
 }
 
@@ -1258,8 +1258,8 @@ template<class T>
 ColMat<T> transpose(const ColMat<T> &a)
 {
   ColMat<T> res(a.size(1), a.size(0));
-  for (size_t i = 0; i < a.size(0); ++i) {
-    for (size_t j = 0; j < a.size(1); ++j)
+  for (std::size_t i = 0; i < a.size(0); ++i) {
+    for (std::size_t j = 0; j < a.size(1); ++j)
       res(j, i) = a(i, j);
   }
   return res;

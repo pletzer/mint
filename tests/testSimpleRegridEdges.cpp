@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include "mntRegridEdges.h"
 #include <vtkDoubleArray.h>
 #include <vtkPoints.h>

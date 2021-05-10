@@ -53,7 +53,7 @@ int mnt_grid_new(Grid_t** self) {
 extern "C"
 int mnt_grid_del(Grid_t** self) {
 
-    for (size_t i = 0; i < (*self)->doubleArrays.size(); ++i) {
+    for (std::size_t i = 0; i < (*self)->doubleArrays.size(); ++i) {
         (*self)->doubleArrays[i]->Delete();
     }
     if ((*self)->reader) {
@@ -173,8 +173,8 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
         return 1;
     }
 
-    size_t numCells;
-    int ier = mnt_grid_getNumberOfCells(self, &numCells);
+    std::size_t numCells;
+    mnt_grid_getNumberOfCells(self, &numCells);
 
     if ((*self)->edgeArcLengths.size() == numCells * 4) {
         // already done
@@ -182,7 +182,7 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     }
 
     (*self)->edgeArcLengths.resize(numCells * 4);
-    for (size_t cellId = 0; cellId < numCells; ++cellId) {
+    for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
         for (int ie = 0; ie < 4; ++ie) {
 
             // edgeId under consideration
@@ -212,7 +212,7 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
             double cos_the1 = cos(the1);
             double sin_the1 = sin(the1);
 
-            size_t k = cellId*4 + ie;
+            std::size_t k = cellId*4 + ie;
 
             // edge length is angle between the two points. Assume radius = 1. Angle is
             // acos of dot product in Cartesian space.
@@ -224,9 +224,9 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     }
 
     // add the field
-    ier = mnt_grid_attach(self, (*self)->EDGE_LENGTH_NAME.c_str(), 4, &(*self)->edgeArcLengths[0]);
+    int ier = mnt_grid_attach(self, (*self)->EDGE_LENGTH_NAME.c_str(), 4, &(*self)->edgeArcLengths[0]);
 
-    return 0;
+    return ier;
 }
 
 
@@ -241,8 +241,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename:meshname"
     std::string fm = std::string(fileAndMeshName);
-    size_t columnPosL = fm.find(':');
-    size_t columnPosR = fm.rfind(':');
+    std::size_t columnPosL = fm.find(':');
+    std::size_t columnPosR = fm.rfind(':');
     if (columnPosL == std::string::npos) {
         std::cerr << "ERROR: could not find ':' in \"" << fileAndMeshName << "\".";
         std::cerr << " use \"filename:meshname\" format to specify the file and mesh names, respectively\n";
@@ -268,10 +268,10 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
     (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
 
-    size_t ncells = ugrid.getNumberOfFaces();
-    size_t nedges = ugrid.getNumberOfEdges();
-    size_t npoints = ugrid.getNumberOfPoints();
-    size_t numVertsPerCell = 4;
+    std::size_t ncells = ugrid.getNumberOfFaces();
+    std::size_t nedges = ugrid.getNumberOfEdges();
+    std::size_t npoints = ugrid.getNumberOfPoints();
+    std::size_t numVertsPerCell = 4;
 
     // get the face to edge connectivity from the file
     (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
@@ -279,26 +279,26 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     if ((*self)->faceEdgeConnectivity.size() == 0) {
     
         // compute the face to edge connectivity from the edge-node and face-node connectivity
-        std::map< std::array<size_t, 2>, size_t > node2Edge;
-        for (size_t iedge = 0; iedge < nedges; ++iedge) {
+        std::map< std::array<std::size_t, 2>, size_t > node2Edge;
+        for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
             // start node
-            size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
+            std::size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
             // end node
-            size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
+            std::size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
             // create two entries n0 -> n1 and n1 -> n0
-            std::pair< std::array<size_t, 2>, size_t > ne1({n0, n1}, iedge);
-            std::pair< std::array<size_t, 2>, size_t > ne2({n1, n0}, iedge);
+            std::pair< std::array<std::size_t, 2>, size_t > ne1({n0, n1}, iedge);
+            std::pair< std::array<std::size_t, 2>, size_t > ne2({n1, n0}, iedge);
             node2Edge.insert(ne1);
             node2Edge.insert(ne2);
         }
         (*self)->faceEdgeConnectivity.resize(ncells * 4);
-        for (size_t icell = 0; icell < ncells; ++icell) {
-            for (size_t i0 = 0; i0 < 4; ++i0) {
-                size_t i1 = (i0 + 1) % 4;
+        for (std::size_t icell = 0; icell < ncells; ++icell) {
+            for (std::size_t i0 = 0; i0 < 4; ++i0) {
+                std::size_t i1 = (i0 + 1) % 4;
                 // start and end node indices
-                size_t n0 = (*self)->faceNodeConnectivity[icell*4 + i0];
-                size_t n1 = (*self)->faceNodeConnectivity[icell*4 + i1];
-                size_t edgeId = node2Edge[std::array<size_t, 2>{n0, n1}];
+                std::size_t n0 = (*self)->faceNodeConnectivity[icell*4 + i0];
+                std::size_t n1 = (*self)->faceNodeConnectivity[icell*4 + i1];
+                std::size_t edgeId = node2Edge[std::array<size_t, 2>{n0, n1}];
                 // set the edge Id for these two nodes
                 (*self)->faceEdgeConnectivity[icell*4 + i0] = edgeId;
             }
@@ -312,19 +312,19 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
         // allocate the vertices and set the values
         (*self)->verts.resize(ncells * numVertsPerCell * 3);
 
-        for (size_t icell = 0; icell < ncells; ++icell) {
+        for (std::size_t icell = 0; icell < ncells; ++icell) {
 
             // fix longitude when crossing the dateline
             // use the first longitude as the base
-            size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
+            std::size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
             double lonBase = ugrid.getPoint(kBase)[LON_INDEX];
 
             double avgLon = 0;
             int poleNodeIdx = -1;
             int count = 0;
-            for (size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+            for (std::size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
 
-                size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
+                std::size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
                 double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
                 double lat = ugrid.getPoint(k)[LAT_INDEX];
 
@@ -365,7 +365,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 else if (avgLon < lonMin) {
                     offsetLon = 360.0;
                 }
-                for (size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+                for (std::size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
                     (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] += offsetLon;
                 }
             }
@@ -438,21 +438,21 @@ int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
                        double point0[], double point1[]) {
 
     // flat index for the start point, 4 points per cell, 3d coordinates
-    size_t k0 = 4*3*cellId + 3*((edgeIndex + 0) % 4);
+    std::size_t k0 = 4*3*cellId + 3*((edgeIndex + 0) % 4);
 
     // flat index for the end point, 4 points per cell, 3d coordinates
-    size_t k1 = 4*3*cellId + 3*((edgeIndex + 1) % 4);
+    std::size_t k1 = 4*3*cellId + 3*((edgeIndex + 1) % 4);
 
     if (edgeIndex < 2) {
         // edge's direction is counterclockwise
-        for (size_t i = 0; i < 3; ++i) {
+        for (std::size_t i = 0; i < 3; ++i) {
             point0[i] = (*self)->verts[i + k0];
             point1[i] = (*self)->verts[i + k1];
         }
     }
     else {
         // edge's direction is clockwise - reverse order of point0 and point1
-        for (size_t i = 0; i < 3; ++i) {
+        for (std::size_t i = 0; i < 3; ++i) {
             point1[i] = (*self)->verts[i + k0];
             point0[i] = (*self)->verts[i + k1];
         }        
@@ -486,7 +486,7 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
 
 extern "C" 
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
-                       size_t* edgeId, int* signEdge) {
+                       std::size_t* edgeId, int* signEdge) {
 
     // initialize
     *signEdge = 0;
@@ -529,13 +529,13 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
 
 
 extern "C"
-int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells) {
+int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
 
     *numCells = (*self)->grid->GetNumberOfCells();
     return 0;
 }
 
-int mnt_grid_getNumberOfEdges(Grid_t** self, size_t* numEdges) {
+int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
     
     *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
     return 0;

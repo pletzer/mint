@@ -60,47 +60,68 @@ if (VTK_INCLUDE_DIR AND VTK_LIBRARY_DIR AND VTK_VERSION)
 else ()
     # let MINT search for the location of VTK
     set(VTK_DIR "" CACHE PATH "The directory containing VTKConfig.cmake or vtk-config.cmake")
-    find_package(VTK REQUIRED)
-    include_directories(${VTK_INCLUDE_DIRS})
-    message(STATUS "VTK include dirs: ${VTK_INCLUDE_DIRS}")
+    if (VTK_VERSION VERSION_LESS "8.90.0")
+        find_package(VTK REQUIRED)
+    else()
+        message(STATUS "Using new VTK module system")
+        find_package(VTK REQUIRED COMPONENTS 
+            vtksys
+            CommonCore 
+            CommonSystem 
+            CommonMath 
+            CommonMisc 
+            CommonTransforms 
+      	    CommonDataModel 
+            CommonExecutionModel
+            CommonComputationalGeometry 
+            IOLegacy
+            IOCore
+        )
+    endif()
 endif()
 
 # allow the user to set the variables manually
-set(NETCDF_INCLUDE_DIR "" CACHE PATH "Directory containing the netCDF include files")
+set(NETCDF_INCLUDE_DIRS "" CACHE PATH "Directories containing the netCDF C include files and Fortran module files")
 set(NETCDF_LIBRARIES "" CACHE STRING "List of netCDF libraries")
 
-# Find the NetCDF library. Setting NETCDF_INCLUDE_DIR and NETCDF_LIBRARIES takes precedence.
-# If not set then key off from nc-config
-if (NETCDF_INCLUDE_DIR STREQUAL "" OR NETCDF_LIBRARIES STREQUAL "")
+# Find the NetCDF library. Setting NETCDF_INCLUDE_DIRS and NETCDF_LIBRARIES takes precedence.
+# If not set then key off from nc-config and nf-config
+if (NETCDF_INCLUDE_DIRS STREQUAL "" OR NETCDF_LIBRARIES STREQUAL "")
     execute_process(COMMAND "nc-config" "--includedir"
-                    OUTPUT_VARIABLE NETCDF_INCLUDE_DIR)
+	    OUTPUT_VARIABLE C_NETCDF_INCLUDE_DIR)
     execute_process(COMMAND "nc-config" "--libs"
-                    OUTPUT_VARIABLE NETCDF_LIBRARIES)
+	    OUTPUT_VARIABLE C_NETCDF_LIBRARIES)
+    execute_process(COMMAND "nf-config" "--includedir"
+	    OUTPUT_VARIABLE FORTRAN_NETCDF_INCLUDE_DIR)
+    execute_process(COMMAND "nf-config" "--flibs"
+	    OUTPUT_VARIABLE FORTRAN_NETCDF_LIBRARIES)
+    # remove \n at the end of the above variables
+    string(STRIP "${C_NETCDF_INCLUDE_DIR}" C_NETCDF_INCLUDE_DIR)
+    string(STRIP "${C_NETCDF_LIBRARIES}" C_NETCDF_LIBRARIES)
+    string(STRIP "${FORTRAN_NETCDF_INCLUDE_DIR}" FORTRAN_NETCDF_INCLUDE_DIR)
+    string(STRIP "${FORTRAN_NETCDF_LIBRARIES}" FORTRAN_NETCDF_LIBRARIES)
+    set(NETCDF_INCLUDE_DIRS ${C_NETCDF_INCLUDE_DIR} ${FORTRAN_NETCDF_INCLUDE_DIR})
+    set(NETCDF_LIBRARIES ${C_NETCDF_LIBRARIES} ${FORTRAN_NETCDF_LIBRARIES})
 endif()
 
-# remove \n at the end of the above variables
-string(STRIP "${NETCDF_INCLUDE_DIR}" NETCDF_INCLUDE_DIR)
-string(STRIP "${NETCDF_LIBRARIES}" NETCDF_LIBRARIES)
-
-
-if ("${NETCDF_INCLUDE_DIR}" STREQUAL "" OR "${NETCDF_LIBRARIES}" STREQUAL "")
+if ("${NETCDF_INCLUDE_DIRS}" STREQUAL "" OR "${NETCDF_LIBRARIES}" STREQUAL "")
     message(STATUS "*******************************************************")
     message(STATUS "Unable to infer the location of NetCDF!")
     message(STATUS "Either:")
-    message(STATUS "1) Specify -DNETCDF_INCLUDE_DIR:PATH=<dir>")
-    message(STATUS "           -DNETCDF_LIBRARIES=\"-L<dir> -lnetcdf\"")
+    message(STATUS "1) Specify -DNETCDF_INCLUDE_DIRS:PATH=<dir>")
+    message(STATUS "           -DNETCDF_LIBRARIES=\"-L<dir> -lnetcdff -lnetcdf\"")
     message(STATUS "   (adding -lhdf5_hl -lhdf5 -ldl -lm -lz -lcurl and other libraries if needed)")
     message(STATUS "--or--")
-    message(STATUS "2) Make sure to have nc-config in your PATH")
-    message(STATUS "   so that NETCDF_INCLUDE_DIR and NETCDF_LIBRARIES can be inferred")
+    message(STATUS "2) Make sure to have nc-config and nf-config in your PATH")
+    message(STATUS "   so that NETCDF_INCLUDE_DIRS and NETCDF_LIBRARIES can be inferred")
     message(FATAL_ERROR "*******************************************************")
 endif()
 
 include_directories(
-  ${NETCDF_INCLUDE_DIR}
+    ${NETCDF_INCLUDE_DIRS}
 )
 
-message(STATUS "NetCDF include dir: ${NETCDF_INCLUDE_DIR}")
+message(STATUS "NetCDF include dirs: ${NETCDF_INCLUDE_DIRS}")
 message(STATUS "NetCDF libraries: ${NETCDF_LIBRARIES}")
 
 find_package(Doxygen)

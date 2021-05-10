@@ -11,7 +11,7 @@ getTriangleParamLocation(const Vec3& q0,
 
     Mat3x2 mat;
     Vec3 rhs;
-    for (size_t i = 0; i < 3; ++i) {
+    for (std::size_t i = 0; i < 3; ++i) {
         mat(i, 0) = q1[i] - q0[i];
         mat(i, 1) = q2[i] - q0[i];
         rhs[i] = p[i] - q0[i];
@@ -43,7 +43,7 @@ LineTriangleIntersector::setPoints(const double p0[],
                                    const double q1[],
                                    const double q2[]) {
 
-    for (size_t i = 0; i < 3; ++i) {
+    for (std::size_t i = 0; i < 3; ++i) {
         this->p0[i] = p0[i];
         this->p1[i] = p1[i];
         this->q0[i] = q0[i];

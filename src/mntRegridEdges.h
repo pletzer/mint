@@ -1,4 +1,4 @@
-
+#include <limits> // required by vtkUnstructuredGrid
 #include <vector>
 #include <map>
 #include <string>
@@ -47,10 +47,10 @@ struct RegridEdges_t {
     std::vector<int> weightSrcFaceEdgeIds;
 
     /** number of points per cell */
-    size_t numPointsPerCell;
+    std::size_t numPointsPerCell;
 
     /** number of edges per cell */
-    size_t numEdgesPerCell;
+    std::size_t numEdgesPerCell;
 
     /** destination grid object */
     Grid_t* dstGridObj;
@@ -77,25 +77,25 @@ struct RegridEdges_t {
     int srcVarid;
 
     /** netcdf source data dimensions */
-    std::vector<size_t> srcDims;
+    std::vector<std::size_t> srcDims;
 
     /** netcdf source data counts */
-    std::vector<size_t> srcCounts;
+    std::vector<std::size_t> srcCounts;
 
     /** netcdf destination data writer */
     NcFieldWrite_t* dstWriter;
 
     /** netcdf destination data dimensions */
-    std::vector<size_t> dstDims;
+    std::vector<std::size_t> dstDims;
 
     /** netcdf destination data counts */
-    std::vector<size_t> dstCounts;
+    std::vector<std::size_t> dstCounts;
 
     /** multi-array iterator */
     MultiArrayIter_t* mai;
 
     /** start indices for multi-array iterator */
-    std::vector<size_t> startIndices;
+    std::vector<std::size_t> startIndices;
 
 };
 
@@ -183,7 +183,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
                                   const char* dst_fort_filename, int dst_nFilenameLength,
                                   int append,
                                   const char* field_name, int nFieldNameLength, 
-                                  size_t* numSlices);
+                                  std::size_t* numSlices);
 
 
 /** 
@@ -240,7 +240,7 @@ extern "C"
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
-                                  size_t ndata, double data[]);
+                                  std::size_t ndata, double data[]);
 
 /** 
  * Dump a field to a 2D UGRID file
@@ -258,7 +258,7 @@ extern "C"
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
-                                  size_t ndata, const double data[]);
+                                  std::size_t ndata, const double data[]);
 
 /** 
  * Load a source grid from a 2D UGRID file
@@ -301,7 +301,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
  * @param n number of cells
  */
 extern "C"
-int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, size_t* n);
+int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n);
 
 /**
  * Get the number of the destination grid cells
@@ -309,7 +309,7 @@ int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, size_t* n);
  * @param n number of cells
  */
 extern "C"
-int mnt_regridedges_getNumDstCells(RegridEdges_t** self, size_t* n);
+int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n);
 
 /**
  * Get the number of edges per cell
@@ -326,7 +326,7 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n);
  * @note Most cells will share edges with their neighbours
  */
 extern "C"
-int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, size_t* n);
+int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* n);
 
 /**
  * Get the number of unique edges in the destination grid
@@ -335,7 +335,7 @@ int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, size_t* n);
  * @note Most cells will share edges with their neighbours
  */
 extern "C"
-int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, size_t* n);
+int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* n);
 
 /**
  * Apply the interpolation weights to an edge field with unique edge Ids

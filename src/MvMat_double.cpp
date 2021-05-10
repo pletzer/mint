@@ -12,9 +12,9 @@
 #include "MvMatrix.h"
 
 /* Identity matrix */
-ColMat<double> eye(size_t n){
+ColMat<double> eye(std::size_t n){
   ColMat<double> a(n, n, 0.0);
-  for (size_t i = 0; i < n; ++i) 
+  for (std::size_t i = 0; i < n; ++i) 
       a(i,i) = 1.0;
   return a;
 }
@@ -68,11 +68,11 @@ ColMat<double> load(const std::string& cfile) {
 // real matrix dot complex vector
 Vec_cmplx dot(const Mat &a, const Vec_cmplx &b)
 {
-  size_t i, j;
+  std::size_t i, j;
   Vec_cmplx c(a.size(0), std::complex<double>(0., 0.));
 
-  size_t n = c.size();
-  size_t n1 = a.size(1);
+  std::size_t n = c.size();
+  std::size_t n1 = a.size(1);
   for (i = 0; i < n; ++i)
     for (j = 0; j < n1; ++j)
       c(i) += a(i,j) * b(j);

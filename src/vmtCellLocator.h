@@ -1,3 +1,4 @@
+#include <limits> 
 #include <vector>
 #include <map>
 #include <set>
@@ -6,8 +7,6 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
-#include <limits>
-
 
 #ifndef VMT_CELL_LOCATOR
 #define VMT_CELL_LOCATOR
@@ -200,7 +199,7 @@ private:
 
         // normalize
         double x[3];
-        for (size_t i = 0; i < 2; ++i) {
+        for (std::size_t i = 0; i < 2; ++i) {
             x[i] = (point[i] - this->xmin[i]) / (this->xmax[i] - this->xmin[i]); // must have some thickness!
         }
 

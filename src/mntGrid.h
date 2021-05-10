@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include <vtkUnstructuredGrid.h>
 #include <vtkDoubleArray.h>
 #include <vtkPoints.h>
@@ -32,13 +33,13 @@ struct Grid_t {
     std::vector<vtkDoubleArray*> doubleArrays;
 
     // flat array of size numFaces * 4
-    std::vector<size_t> faceNodeConnectivity;
+    std::vector<std::size_t> faceNodeConnectivity;
 
     // flat array of size numFaces * 4
-    std::vector<size_t> faceEdgeConnectivity;
+    std::vector<std::size_t> faceEdgeConnectivity;
 
     // flat array of size numEdges * 2
-    std::vector<size_t> edgeNodeConnectivity;
+    std::vector<std::size_t> edgeNodeConnectivity;
 
     std::vector<double> edgeArcLengths;
 
@@ -193,7 +194,7 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
  */
 extern "C" 
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
-                       size_t* edgeId, int* signEdge);
+                       std::size_t* edgeId, int* signEdge);
 
 /**
  * Get the nnumber of cells
@@ -202,7 +203,7 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
  * @return error code (0 = OK)
  */
 extern "C"
-int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells);
+int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells);
 
 /**
  * Get the number of edges
@@ -212,7 +213,7 @@ int mnt_grid_getNumberOfCells(Grid_t** self, size_t* numCells);
  * @note this will currently return 0 unless the grid was loaded from a UGRID 2D file
  */
 extern "C"
-int mnt_grid_getNumberOfEdges(Grid_t** self, size_t* numEdges);
+int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges);
 
 
 #endif // MNT_GRID

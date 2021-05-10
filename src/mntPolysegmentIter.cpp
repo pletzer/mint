@@ -9,7 +9,7 @@ struct TCmpFunctor {
     TCmpFunctor(const std::vector<double>& ts) {
         this->tVals = ts;
     }
-    bool operator()(size_t i, size_t j) {
+    bool operator()(std::size_t i, size_t j) {
         return (this->tVals[i] < this->tVals[j]);
     }
     std::vector<double> tVals;
@@ -93,7 +93,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     // should amoount to 1 if the target is entirely 
     // contained within the source grid
     this->totalT = 0.0;
-    for (size_t i = 0; i < this->numSegs; ++i) {
+    for (std::size_t i = 0; i < this->numSegs; ++i) {
         double ta = this->segTas[i];
         double tb = this->segTbs[i];
         double coeff = this->segCoeffs[i];
@@ -161,7 +161,7 @@ PolysegmentIter::getCoefficient() const {
     return this->segCoeffs[this->index];
 }
  
-size_t
+std::size_t
 PolysegmentIter::getNumberOfSegments() const {
     return this->numSegs;
 }
@@ -173,7 +173,7 @@ PolysegmentIter::getNumberOfSegments() const {
 void
 PolysegmentIter::__assignCoefficientsToSegments() {
 
-    size_t n = this->segCellIds.size();
+    std::size_t n = this->segCellIds.size();
 
     // copy
     std::vector<vtkIdType> sCellIds = this->segCellIds;
@@ -189,7 +189,7 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     this->segXias.resize(0);
     this->segXibs.resize(0);
     this->segCoeffs.resize(0);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
         double ta = sTas[i];
         double tb = sTbs[i];
         if (std::abs(tb - ta) > this->eps100) {
@@ -209,7 +209,7 @@ PolysegmentIter::__assignCoefficientsToSegments() {
     n = this->segCellIds.size(); // changed after removing zero length sub-segments
     // iterate over sub-segment pairs
     for (int i0 = 0; i0 < (int) n - 1; ++i0) {
-        size_t i1 = i0 + 1;
+        std::size_t i1 = i0 + 1;
         double ta0 = this->segTas[i0];
         double tb0 = this->segTbs[i0];
         double ta1 = this->segTas[i1];

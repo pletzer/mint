@@ -12,7 +12,7 @@
 
 /** Column major matrix class */
 
-template <size_t M, size_t N, class T>
+template <std::size_t M, size_t N, class T>
 class MatMxN : public VecN<N*M, T> {
   
 public:
@@ -24,7 +24,7 @@ public:
     @param e value of each element
     */
   MatMxN(const T& e) {
-    for (size_t i = 0; i < this->size(); ++i) {
+    for (std::size_t i = 0; i < this->size(); ++i) {
       (*this)[i] = e;
     }
   }
@@ -34,7 +34,7 @@ public:
     @param j the column number
     @return reference to an element pointed by i and j
    */
-  inline T& operator()(size_t i, size_t j) {
+  inline T& operator()(std::size_t i, size_t j) {
 #ifndef NO_ASSERT
     assert(i < M);
     assert(j < N);
@@ -47,7 +47,7 @@ public:
     @param j the column number
     @return reference to an element pointed by i and j
    */
-  inline const T& operator()(size_t i, size_t j) const {
+  inline const T& operator()(std::size_t i, size_t j) const {
 #ifndef NO_ASSERT
     assert(i < M);
     assert(j < N);
@@ -58,16 +58,16 @@ public:
 
 };
 
-template<size_t M, size_t K, size_t N, class T> 
+template<std::size_t M, size_t K, size_t N, class T> 
 MatMxN<M, N, T> dot(const MatMxN<M, K, T> &a, const MatMxN<K, N, T> &b);
 
-template<size_t M, size_t N, class T> 
+template<std::size_t M, size_t N, class T> 
 VecN<M, T> dot(const MatMxN<M, N, T> &a, const VecN<N, T> &b);
 
-template<size_t M, size_t N, class T> 
+template<std::size_t M, size_t N, class T> 
 VecN<N, T> dot(const VecN<M, T> &b, const MatMxN<M, N, T> &a);
 
-template<size_t M, size_t N, class T>
+template<std::size_t M, size_t N, class T>
 MatMxN<N, M, T> transpose(const MatMxN<M, N, T> &a);
 
 typedef MatMxN<2, 2, double> Mat2x2;

@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
 #include <vtkGenericCell.h>
@@ -32,7 +33,7 @@ int mnt_celllocator_new(CellLocator_t** self);
  * @note you must construct the object before using this method
  */
 extern "C"
-int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, size_t n);
+int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, std::size_t n);
 
 /**
  * Destructor
@@ -51,7 +52,7 @@ int mnt_celllocator_del(CellLocator_t** self);
  *       is expected to exist until the grid object is destroyed.
  */
 extern "C"
-int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, size_t ncells, const double points[]);
+int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::size_t ncells, const double points[]);
 
 /**
  * Check if cell areas/volumes are positive
@@ -86,7 +87,7 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket);
  * @return error code (0 is OK)
  */
 extern "C"
-int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, size_t n);
+int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, std::size_t n);
 
 /**
  * Find the cell and the parametric coordinates

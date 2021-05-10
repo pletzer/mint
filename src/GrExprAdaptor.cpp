@@ -11,7 +11,7 @@
 GrExprAdaptor::GrExprAdaptor(const std::string& expr) {
 
   // squeeze all blanks out 
-  for (size_t i = 0; i < expr.size(); ++i) {
+  for (std::size_t i = 0; i < expr.size(); ++i) {
     char c = expr[i];
     if (c != ' ') {
       this->expr.push_back(c);
@@ -150,7 +150,7 @@ GrExprAdaptor::getPrefixExpr() const {
   
   // convert the list into a string
   std::string res;
-  for (size_t i = 0; i < exprList.size(); ++i) {
+  for (std::size_t i = 0; i < exprList.size(); ++i) {
     
     // token in the expression list
     std::string elem = exprList[i];
@@ -165,7 +165,7 @@ GrExprAdaptor::getPrefixExpr() const {
   }
 
   // replace all commas by a space
-  for (size_t i = 0; i < res.size(); ++i) {
+  for (std::size_t i = 0; i < res.size(); ++i) {
     if (res[i] == ',') {
       res[i] = ' ';
     }
@@ -250,8 +250,8 @@ GrExprAdaptor::tokenize() {
     rightDelimiters.insert(it->first);
   }
   
-  size_t lpos = 0;
-  size_t rpos = this->expr.size();
+  std::size_t lpos = 0;
+  std::size_t rpos = this->expr.size();
   while (rpos > 0 && lpos < rpos) {
  
     // find the right most left delimiter
@@ -259,7 +259,7 @@ GrExprAdaptor::tokenize() {
     for (std::set<std::string>::const_iterator lit = leftDelimiters.begin();
          lit != leftDelimiters.end(); ++lit) {
       const std::string& d = *lit;
-      size_t pos = this->expr.rfind(d, rpos - 1);
+      std::size_t pos = this->expr.rfind(d, rpos - 1);
       if (pos != std::string::npos) {
         if (pos >= lpos) {
           lpos = pos;
@@ -269,8 +269,8 @@ GrExprAdaptor::tokenize() {
     }
     
     // start position of the token
-    size_t pos1 = lpos + lDelim.size();
-    size_t n = rpos - pos1;
+    std::size_t pos1 = lpos + lDelim.size();
+    std::size_t n = rpos - pos1;
 
     // get the token
     std::string token = this->expr.substr(pos1, n);
@@ -278,14 +278,14 @@ GrExprAdaptor::tokenize() {
     // look for right delimiters in the token. Further break the
     // token into smaller token until no more right delimiters 
     // are found.
-    size_t rp = token.size();
+    std::size_t rp = token.size();
     bool foundRightDelimiter = true;
     while (foundRightDelimiter) {
       foundRightDelimiter = false;
       for (std::set<std::string>::const_iterator rit = rightDelimiters.begin();
            rit != rightDelimiters.end(); ++rit) {
         const std::string& d = *rit;
-        size_t pos = token.rfind(d, rp - 1);
+        std::size_t pos = token.rfind(d, rp - 1);
         if (pos != std::string::npos) {
           // found a right delimiter
           this->tokens.push_front( token.substr(pos, rp) );

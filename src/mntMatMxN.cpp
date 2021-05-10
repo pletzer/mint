@@ -1,11 +1,11 @@
 #include <mntMatMxN.h>
 
-template<size_t M, size_t K, size_t N, class T> 
+template<std::size_t M, size_t K, size_t N, class T> 
 MatMxN<M, N, T> dot(const MatMxN<M, K, T> &a, const MatMxN<K, N, T> &b) {
     MatMxN<M, N, T> res( static_cast<T>(0) );
-    for (size_t j = 0; j < N; ++j) {
-        for (size_t i = 0; i < M; ++i) {
-            for (size_t k = 0; k < K; ++k) {
+    for (std::size_t j = 0; j < N; ++j) {
+        for (std::size_t i = 0; i < M; ++i) {
+            for (std::size_t k = 0; k < K; ++k) {
                 res(i, j) += a(i, k) * b(k, j);
             }
         }
@@ -13,33 +13,33 @@ MatMxN<M, N, T> dot(const MatMxN<M, K, T> &a, const MatMxN<K, N, T> &b) {
     return res;
 }
 
-template<size_t M, size_t N, class T> 
+template<std::size_t M, size_t N, class T> 
 VecN<M, T> dot(const MatMxN<M, N, T> &a, const VecN<N, T> &b) {
     VecN<M, T> res( static_cast<T>(0) );
-    for (size_t i = 0; i < M; ++i) {
-        for (size_t j = 0; j < N; ++j) {
+    for (std::size_t i = 0; i < M; ++i) {
+        for (std::size_t j = 0; j < N; ++j) {
             res[i] += a(i, j) * b[j];
         }
     }
     return res;
 }
 
-template<size_t M, size_t N, class T> 
+template<std::size_t M, size_t N, class T> 
 VecN<N, T> dot(const VecN<M, T> &b, const MatMxN<M, N, T> &a) {
     VecN<N, T> res( static_cast<T>(0) );
-    for (size_t j = 0; j < N; ++j) {
-        for (size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+        for (std::size_t i = 0; i < M; ++i) {
             res[j] += b[i] * a(i, j);
         }
     }
     return res;
 }
 
-template<size_t M, size_t N, class T>
+template<std::size_t M, size_t N, class T>
 MatMxN<N, M, T> transpose(const MatMxN<M, N, T> &a) {
     MatMxN<N, M, T> res;
-    for (size_t j = 0; j < N; ++j) {
-        for (size_t i = 0; i < M; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
+        for (std::size_t i = 0; i < M; ++i) {
             res(j, i) = a(i, j);
         }
     }

@@ -13,7 +13,7 @@ public:
      * Constructor
      * @param ndims number of dimensions
      */
-    PolylineParser(size_t ndims) {
+    PolylineParser(std::size_t ndims) {
         this->ndims = ndims;
     }
 
@@ -41,7 +41,7 @@ private:
 
     Vec3 parsePosition(const std::string& posStr) const;
 
-    size_t ndims;
+    std::size_t ndims;
     std::string expr;
     std::vector< Vec3 > points;
 

@@ -34,7 +34,7 @@ public:
    * @note spaces are delimitors, the first string is the 
    * operator
    */
-  GrExprParser(size_t n, const std::string& expr);
+  GrExprParser(std::size_t n, const std::string& expr);
   
   /**
    * Destructor
@@ -116,9 +116,9 @@ public:
   static Vec* add(const std::vector<Vec*>& args) {
     Vec* res = 0;
     if (args.size() > 0) {
-      size_t n = args[0]->size(); // assume all other args have the same size
+      std::size_t n = args[0]->size(); // assume all other args have the same size
       res = new Vec(n, 0.0);
-      for (size_t i = 0; i < args.size(); ++i) {
+      for (std::size_t i = 0; i < args.size(); ++i) {
         *res += *args[i];
       }
     }
@@ -135,7 +135,7 @@ public:
     if (args.size() > 0) {
       // assume all other args have the same size
       res = new Vec(*(args[0]));
-      for (size_t i = 1; i < args.size(); ++i) {
+      for (std::size_t i = 1; i < args.size(); ++i) {
         *res -= *args[i];
       }
     }
@@ -150,9 +150,9 @@ public:
   static Vec* mul(const std::vector<Vec*>& args) {
     Vec* res = 0;
     if (args.size() > 0) {
-      size_t n = args[0]->size(); // assume all other args have the same size
+      std::size_t n = args[0]->size(); // assume all other args have the same size
       res = new Vec(n, 1.0);
-      for (size_t i = 0; i < args.size(); ++i) {
+      for (std::size_t i = 0; i < args.size(); ++i) {
          *res *= *args[i];
       }
     }
@@ -169,7 +169,7 @@ public:
     if (args.size() > 0) {
       // assume all other args have the same size
       res = new Vec(*(args[0]));
-      for (size_t i = 1; i < args.size(); ++i) {
+      for (std::size_t i = 1; i < args.size(); ++i) {
          *res /= *args[i];
       }
     }
@@ -205,9 +205,9 @@ public:
    * @return sqrt elementwise
    */
   static Vec* sqrt(const Vec* x, void* params = 0) {
-    size_t n = x->size();
+    std::size_t n = x->size();
     Vec* res = new Vec(n);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
       (*res)(i) = std::sqrt( (*x)(i) );
     }
     return res;
@@ -220,9 +220,9 @@ public:
    * @return log(x) elementwise
    */
   static Vec* log(const Vec* x, void* params = 0) {
-    size_t n = x->size();
+    std::size_t n = x->size();
     Vec* res = new Vec(n);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
       (*res)(i) = std::log( (*x)(i) );
     }
     return res;
@@ -235,9 +235,9 @@ public:
    * @return log10(x) elementwise
    */
   static Vec* log10(const Vec* x, void* params = 0) {
-    size_t n = x->size();
+    std::size_t n = x->size();
     Vec* res = new Vec(n);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
       (*res)(i) = std::log10( (*x)(i) );
     }
     return res;
@@ -250,9 +250,9 @@ public:
    * @return sin(x) elementwise
    */
   static Vec* sin(const Vec* x, void* params = 0) {
-    size_t n = x->size();
+    std::size_t n = x->size();
     Vec* res = new Vec(n);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
       (*res)(i) = std::sin( (*x)(i) );
     }
     return res;
@@ -265,9 +265,9 @@ public:
    * @return sin(x) elementwise
    */
   static Vec* cos(const Vec* x, void* params = 0) {
-    size_t n = x->size();
+    std::size_t n = x->size();
     Vec* res = new Vec(n);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
       (*res)(i) = std::cos( (*x)(i) );
     }
     return res;
@@ -280,9 +280,9 @@ public:
    * @return sin(x) elementwise
    */
   static Vec* tan(const Vec* x, void* params = 0) {
-    size_t n = x->size();
+    std::size_t n = x->size();
     Vec* res = new Vec(n);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
       (*res)(i) = std::tan( (*x)(i) );
     }
     return res;
@@ -313,7 +313,7 @@ public:
   std::vector<std::string> varnames;
 
   /** size of vector arguments */
-  size_t n;
+  std::size_t n;
 };
 
 #endif // GR_EXPR_PARSER_H

@@ -15,12 +15,12 @@ Vector<T>::Vector()
 }
 
 template<class T>
-Vector<T>::Vector(size_t n) : std::vector<T>(n)
+Vector<T>::Vector(std::size_t n) : std::vector<T>(n)
 {
 }
 
 template<class T>
-Vector<T>::Vector(size_t n, T e) : std::vector<T>(n, e)
+Vector<T>::Vector(std::size_t n, T e) : std::vector<T>(n, e)
 {
 }
 
@@ -43,7 +43,7 @@ Vector<T>::Vector(const Vector<T> &w)
 template<class T>
 void Vector<T>::space(T xmin, T xmax)
 {
-  for (size_t i = 0; i < this->size(); ++i) {
+  for (std::size_t i = 0; i < this->size(); ++i) {
     (*this)[i] = xmin + 
       (xmax-xmin)*static_cast<T>(i)/static_cast<T>(this->size()-1);
   }
@@ -58,15 +58,15 @@ void Vector<T>::random(void)
 template<class T>
 void Vector<T>::range(T imin) 
 {
-  for (size_t i = this->size(); i--;){
+  for (std::size_t i = this->size(); i--;){
     (*this)[i] = imin + static_cast<T>(i);
   }
 }
 
 template<class T>
-size_t Vector<T>::bra(T elem)
+std::size_t Vector<T>::bra(T elem)
 {
-  return static_cast<size_t>(
+  return static_cast<std::size_t>(
                  std::upper_bound(this->begin() + 1, 
                           this->end(), 
                           elem) - 
@@ -75,9 +75,9 @@ size_t Vector<T>::bra(T elem)
 
 // upper_bound does not work for complex
 template<>
-size_t Vector< std::complex<double> >::bra(std::complex<double> elem)
+std::size_t Vector< std::complex<double> >::bra(std::complex<double> elem)
 {
-  size_t i = 0;
+  std::size_t i = 0;
   while (std::abs(this->operator[](i)) < std::abs(elem)) {
     i++;
   }
@@ -85,14 +85,14 @@ size_t Vector< std::complex<double> >::bra(std::complex<double> elem)
 }
 
 template<class T>
-size_t Vector<T>::ket(T elem){
-  size_t n = this->size();
-  size_t i = this->bra(elem) + 1;
+std::size_t Vector<T>::ket(T elem){
+  std::size_t n = this->size();
+  std::size_t i = this->bra(elem) + 1;
   return ( (i<n)? i : n-1 );
 }
 
 template<class T>
-Vector<T> &Vector<T>::alloc(size_t n)
+Vector<T> &Vector<T>::alloc(std::size_t n)
 {
   this->resize(n);
   return (*this);
@@ -191,11 +191,11 @@ Vector<T> &Vector<T>::operator/=(const Vector<T> &w)
 
 
 template<class T>
-Vector<T> Vector<T>::operator()(const Vector<size_t> &I) const
+Vector<T> Vector<T>::operator()(const Vector<std::size_t> &I) const
 {
   Vector<T> y(I.size());
 
-  for (size_t i = I.size(); i--;)
+  for (std::size_t i = I.size(); i--;)
     y[i] = (*this)[ I[i] ];
   return y;
 }
@@ -423,28 +423,28 @@ template<>
 Vector< std::complex<double> > abs(const Vector< std::complex<double> >& v) 
 {
   Vector< std::complex<double> > b(v.size());
-  for (size_t i = 0; i < v.size(); ++i)
+  for (std::size_t i = 0; i < v.size(); ++i)
     b[i] = std::abs(v[i]);
   return b;
 }
 
 Vec real(const Vec_cmplx &v) {
   Vec b(v.size());
-  for (size_t i = 0; i < v.size(); ++i)
+  for (std::size_t i = 0; i < v.size(); ++i)
     b[i] = std::real(v[i]);
   return b;
 }
 
 Vec imag(const Vec_cmplx &v) {
   Vec b(v.size());
-  for (size_t i = 0; i < v.size(); ++i)
+  for (std::size_t i = 0; i < v.size(); ++i)
     b[i] = std::imag(v[i]);
   return b;
 }
 
 Vec_cmplx conjug(const Vec_cmplx &v) {
   Vec_cmplx b(v.size());
-  for (size_t i = 0; i < v.size(); ++i) {
+  for (std::size_t i = 0; i < v.size(); ++i) {
     b[i] = std::complex<double>(std::real(v[i]), -std::imag(v[i]));
   }
   return b;
@@ -453,7 +453,7 @@ Vec_cmplx conjug(const Vec_cmplx &v) {
 Vec realabs(const Vec_cmplx &v) 
 {
   Vec b(v.size());
-  for (size_t i = 0; i < v.size(); ++i)
+  for (std::size_t i = 0; i < v.size(); ++i)
     b[i] = std::abs(v[i]);
   return b;
 }
@@ -477,19 +477,19 @@ Vector<T> pow(const Vector<T> &v, int exp)
 // grid generator
     
 template<class T>
-Vector<T> space(T xmin, T xmax, size_t n)
+Vector<T> space(T xmin, T xmax, std::size_t n)
 {
   Vector<T> a(n);
-  for (size_t i = n; i--;)
+  for (std::size_t i = n; i--;)
     a[i] = xmin + (xmax - xmin)*T(i)/T(n - 1);
   return a;
 }
     
 template<class T>
-Vector<T> range(T imin, size_t n) 
+Vector<T> range(T imin, std::size_t n) 
 {
   Vector<T> a(n);
-  for (size_t i = n; i--;)
+  for (std::size_t i = n; i--;)
     a[i] = imin + static_cast<T>(i);
   return a;
 }
@@ -502,9 +502,9 @@ Vector<T> max(const Vector<T> &v, const Vector<T> &w)
 #ifndef NO_ASSERT
   assert(v.size() == w.size());
 #endif
-  size_t n = v.size();
+  std::size_t n = v.size();
   Vector<T> res(n);
-  for (size_t i = 0; i < n; ++i)  
+  for (std::size_t i = 0; i < n; ++i)  
     res[i] = v(i) > w(i) ? v(i) : w(i);
   return res;
 }
@@ -532,9 +532,9 @@ Vector<T>  min(const Vector<T> &v, const Vector<T> &w)
 #ifndef NO_ASSERT
   assert(v.size() == w.size());
 #endif
-  size_t n = v.size();
+  std::size_t n = v.size();
   Vector<T> res(n);
-  for (size_t i = 0; i < n; ++i)  
+  for (std::size_t i = 0; i < n; ++i)  
     res[i] = v(i) < w(i) ? v(i) : w(i);
   return res;
 }
@@ -567,11 +567,11 @@ T sum(const Vector<T> &v)
 
 template<class T> Vector<T> cat( const Vector<T> &v1, const Vector<T> &v2) 
 {
-  size_t n1 = v1.size(); 
-  size_t n2 = v2.size();
+  std::size_t n1 = v1.size(); 
+  std::size_t n2 = v2.size();
   Vector<T> res(n1+n2);
-  for (size_t i=0; i<n1; ++i) res(i   ) = v1(i);
-  for (size_t j=0; j<n2; ++j) res(j+n1) = v2(j);
+  for (std::size_t i=0; i<n1; ++i) res(i   ) = v1(i);
+  for (std::size_t j=0; j<n2; ++j) res(j+n1) = v2(j);
   return res;
 }
 
@@ -583,55 +583,55 @@ void space(Vector<T> &v, T xmin, T xmax)
 #ifndef NO_ASSERT
   assert(v.size() >= 2);
 #endif
-  size_t n = v.size();
-  for (size_t i = n; i--;)
+  std::size_t n = v.size();
+  for (std::size_t i = n; i--;)
     v[i] = xmin + (xmax - xmin)*T(i)/T(n - 1);
 }
     
 template<class T>
 void range(Vector<T> &v, T imin) 
 {
-  for (size_t i = v.size(); i--;)
+  for (std::size_t i = v.size(); i--;)
     v[i] = T(i) + imin;
 }
 
 // return index of min(v)
 
 template<class T>
-size_t index_min(Vector<T> &v)
+std::size_t index_min(Vector<T> &v)
 {
   T *beg = &v[0];
   T *end = &v[v.size()];  
   T *i = min_element(beg, end);
-  return static_cast<size_t>(i - beg);
+  return static_cast<std::size_t>(i - beg);
 }
 
 // return index of max(v)
 
 template<class T>
-size_t index_max(Vector<T> &v)
+std::size_t index_max(Vector<T> &v)
 {
   T *beg = &v[0];
   T *end = &v[v.size()];  
   T *i = max_element(beg, end);
-  return static_cast<size_t>(i - beg);
+  return static_cast<std::size_t>(i - beg);
 }
 
 void setReal(Vec_cmplx &v, const Vec& rV) {
-  for (size_t i = 0; i < rV.size(); ++i) {
+  for (std::size_t i = 0; i < rV.size(); ++i) {
     v[i] = std::complex<double>(rV[i], v[i].imag());
   }
 }
 
 void setImag(Vec_cmplx &v, const Vec& iV) {
-  for (size_t i = 0; i < iV.size(); ++i) {
+  for (std::size_t i = 0; i < iV.size(); ++i) {
     v[i] = std::complex<double>(v[i].real(), iV[i]);
   }
 }
 
 void setRealImag(Vec_cmplx &v, const Vec& rV, const Vec& iV) {
-  size_t n = rV.size() >= iV.size()? rV.size(): iV.size();
-  for (size_t i = 0; i < n; ++i) {
+  std::size_t n = rV.size() >= iV.size()? rV.size(): iV.size();
+  for (std::size_t i = 0; i < n; ++i) {
     v[i] = std::complex<double>(rV[i], iV[i]);
   }
 }
@@ -657,7 +657,7 @@ std::ostream& operator<<(std::ostream& s, const Vector<T>& v)
 
 // double
 template class Vector<double>;
-template Vector<double> space(double, double, size_t);
+template Vector<double> space(double, double, std::size_t);
 template double max(const Vector<double>&);
 template Vector<double> max(const Vector<double>&, double);
 template Vector<double> max(double, const Vector<double>&);
@@ -696,36 +696,36 @@ template Vector<double> operator/(const Vector<double>&, const Vector<double>&);
 template Vector<double> operator/(const Vector<double>&, double);
 template Vector<double> operator/(double, const Vector<double>&);
 
-// size_t
-template class Vector<size_t>;
-template Vector<size_t> range(size_t, size_t);
-template Vector<size_t> space(size_t, size_t, size_t);
-template size_t max(const Vector<size_t>&);
-template Vector<size_t> max(const Vector<size_t>&, size_t);
-template Vector<size_t> max(size_t, const Vector<size_t>&);
-template Vector<size_t> max(const Vector<size_t>&, const Vector<size_t>&);
-template size_t min(const Vector<size_t>&);
-template Vector<size_t> min(const Vector<size_t>&, size_t);
-template Vector<size_t> min(size_t, const Vector<size_t>&);
-template Vector<size_t> min(const Vector<size_t>&, const Vector<size_t>&);
-template size_t dot(const Vector<size_t>&, const Vector<size_t>&);
-template size_t sum(const Vector<size_t>&);
-template std::ostream& operator<<(std::ostream& s, const Vector<size_t>&);
-template Vector<size_t> cat(const Vector<size_t>&, const Vector<size_t>&);
-template Vector<size_t> operator+(const Vector<size_t>&, size_t);
-template Vector<size_t> operator+(size_t, const Vector<size_t>&);
-template Vector<size_t> operator+(const Vector<size_t>&, const Vector<size_t>&);
-template Vector<size_t> operator-(const Vector<size_t>&, size_t);
-template Vector<size_t> operator-(size_t, const Vector<size_t>&);
-template Vector<size_t> operator-(const Vector<size_t>&, const Vector<size_t>&);
-template Vector<size_t> operator-(const Vector<size_t>&);
-template Vector<size_t> operator*(const Vector<size_t>&, size_t);
-template Vector<size_t> operator*(size_t, const Vector<size_t>&);
-template Vector<size_t> operator*(const Vector<size_t>&, const Vector<size_t>&);
+// std::size_t
+template class Vector<std::size_t>;
+template Vector<std::size_t> range(size_t, size_t);
+template Vector<std::size_t> space(size_t, size_t, size_t);
+template std::size_t max(const Vector<size_t>&);
+template Vector<std::size_t> max(const Vector<size_t>&, size_t);
+template Vector<std::size_t> max(size_t, const Vector<size_t>&);
+template Vector<std::size_t> max(const Vector<size_t>&, const Vector<size_t>&);
+template std::size_t min(const Vector<size_t>&);
+template Vector<std::size_t> min(const Vector<size_t>&, size_t);
+template Vector<std::size_t> min(size_t, const Vector<size_t>&);
+template Vector<std::size_t> min(const Vector<size_t>&, const Vector<size_t>&);
+template std::size_t dot(const Vector<size_t>&, const Vector<size_t>&);
+template std::size_t sum(const Vector<size_t>&);
+template std::ostream& operator<<(std::ostream& s, const Vector<std::size_t>&);
+template Vector<std::size_t> cat(const Vector<size_t>&, const Vector<size_t>&);
+template Vector<std::size_t> operator+(const Vector<size_t>&, size_t);
+template Vector<std::size_t> operator+(size_t, const Vector<size_t>&);
+template Vector<std::size_t> operator+(const Vector<size_t>&, const Vector<size_t>&);
+template Vector<std::size_t> operator-(const Vector<size_t>&, size_t);
+template Vector<std::size_t> operator-(size_t, const Vector<size_t>&);
+template Vector<std::size_t> operator-(const Vector<size_t>&, const Vector<size_t>&);
+template Vector<std::size_t> operator-(const Vector<size_t>&);
+template Vector<std::size_t> operator*(const Vector<size_t>&, size_t);
+template Vector<std::size_t> operator*(size_t, const Vector<size_t>&);
+template Vector<std::size_t> operator*(const Vector<size_t>&, const Vector<size_t>&);
 
 // int
 template class Vector<int>;
-template Vector<int> space(int, int, size_t);
+template Vector<int> space(int, int, std::size_t);
 template int max(const Vector<int>&);
 template Vector<int> max(const Vector<int>&, int);
 template Vector<int> max(int, const Vector<int>&);
@@ -751,7 +751,7 @@ template Vector<int> operator*(const Vector<int>&, const Vector<int>&);
 
 
 template class Vector< std::complex<double> >;
-template Vector< std::complex<double> > space( std::complex<double> ,  std::complex<double> , size_t);
+template Vector< std::complex<double> > space( std::complex<double> ,  std::complex<double> , std::size_t);
 template std::complex<double>  dot(const Vector< std::complex<double> >&, const Vector< std::complex<double> >&);
 template std::complex<double>  sum(const Vector< std::complex<double> >&);
 template Vector< std::complex<double> > pow(const Vector< std::complex<double> >&,  std::complex<double> );

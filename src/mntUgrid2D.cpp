@@ -19,21 +19,21 @@
 
 struct LambdaBegFunctor {
     // compare two elements of the array
-    bool operator()(const std::pair<size_t, std::vector<double> >& x, 
-                    const std::pair<size_t, std::vector<double> >& y) {
+    bool operator()(const std::pair<std::size_t, std::vector<double> >& x, 
+                    const std::pair<std::size_t, std::vector<double> >& y) {
         return (x.second[0] < y.second[0]);
     }
 };
 
 
 std::vector<Vec3> 
-Ugrid2D::getFacePoints(size_t faceId) const {
+Ugrid2D::getFacePoints(std::size_t faceId) const {
 
-    const size_t* pointIds = this->getFacePointIds(faceId);
+    const std::size_t* pointIds = this->getFacePointIds(faceId);
     std::vector<Vec3> res(4); // 2d 4 points per quad
 
     // iterate over the 4 points
-    for (size_t i = 0; i < 4; ++i) {
+    for (std::size_t i = 0; i < 4; ++i) {
         const double* p = this->getPoint(pointIds[i]);
         res[i] = Vec3(p);
     }
@@ -43,15 +43,15 @@ Ugrid2D::getFacePoints(size_t faceId) const {
 
 
 std::vector<Vec3> 
-Ugrid2D::getEdgePoints(size_t edgeId) const {
+Ugrid2D::getEdgePoints(std::size_t edgeId) const {
 
     std::vector<Vec3> res;
 
     // itereate over the 2 points spanning the edge
-    for (size_t i = 0; i < 2; ++i) {
+    for (std::size_t i = 0; i < 2; ++i) {
 
         // get the point id
-        size_t pointId = this->edge2Points[i + edgeId*2];
+        std::size_t pointId = this->edge2Points[i + edgeId*2];
 
         // get the coordinates of this point
         const double* p = this->getPoint(pointId);
@@ -64,7 +64,7 @@ Ugrid2D::getEdgePoints(size_t edgeId) const {
 
 void
 Ugrid2D::getRange(double xMin[], double xMax[]) const {
-    for (size_t i = 0; i < NUM_SPACE_DIMS; ++i) {
+    for (std::size_t i = 0; i < NUM_SPACE_DIMS; ++i) {
         xMin[i] = this->xmin[i];
         xMax[i] = this->xmax[i];
     }
@@ -130,7 +130,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
         return 6;
     }
 
-    size_t n = this->face2Points.size();
+    std::size_t n = this->face2Points.size();
     this->numFaces = n / 4; // 4 points per face
     n = this->edge2Points.size();
     this->numEdges = n / 2; // 2 points per edge
@@ -140,10 +140,10 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
     this->xmin = +std::numeric_limits<double>::max();
     this->xmax = -std::numeric_limits<double>::max();
-    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+    for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
         std::vector<Vec3> nodes = this->getFacePointsRegularized(faceId);
         for (const Vec3& p : nodes) {
-            for (size_t j = 0; j < this->xmin.size(); ++j) {
+            for (std::size_t j = 0; j < this->xmin.size(); ++j) {
                 this->xmin[j] = (p[j] < this->xmin[j]? p[j]: this->xmin[j]);
                 this->xmax[j] = (p[j] > this->xmax[j]? p[j]: this->xmax[j]);
             }                     
@@ -156,12 +156,12 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
 int
 Ugrid2D::readConnectivityData(int ncid, int meshid, 
                               const std::string& role,
-                              std::vector<size_t>& data) {
+                              std::vector<std::size_t>& data) {
 
     int ier;
 
     // get the lengths of the attribute string
-    size_t len;
+    std::size_t len;
     ier = nc_inq_attlen(ncid, meshid, role.c_str(), &len);
     if (ier != NC_NOERR) return 1;
 
@@ -177,7 +177,7 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
 
     // dimensions of the variable to read
     int dimids[2];
-    size_t n0, n1;
+    std::size_t n0, n1;
     // either 0 or 1
     int startIndex;
 
@@ -200,7 +200,7 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
 
     // subtract start_index
     data.resize(n0 * n1);
-    for (size_t i = 0; i < n0 * n1; ++i) {
+    for (std::size_t i = 0; i < n0 * n1; ++i) {
         data[i] = buffer[i] - startIndex;
     }
 
@@ -213,7 +213,7 @@ Ugrid2D::readPoints(int ncid, int meshid) {
     int ier;
 
     // get the lengths of the attribute string
-    size_t len;
+    std::size_t len;
     ier = nc_inq_attlen(ncid, meshid, "node_coordinates", &len);
     if (ier != NC_NOERR) return 10;
 
@@ -223,9 +223,9 @@ Ugrid2D::readPoints(int ncid, int meshid) {
     if (ier != NC_NOERR) return 11;
 
     // val is "varx vary" where var{x,y} are the variable names
-    size_t n = val.size();
-    size_t spaceL = val.find(' ');
-    size_t spaceR = val.rfind(' ');
+    std::size_t n = val.size();
+    std::size_t spaceL = val.find(' ');
+    std::size_t spaceR = val.rfind(' ');
     if (spaceL >= n) {
         // could not find space
         std::cerr << "ERROR: node_coordinates attribute \""
@@ -285,7 +285,7 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         }
         
         // associate data  our coordinate variable
-        size_t j;
+        std::size_t j;
         if (var_stdn == "longitude") {
             j = LON_INDEX;
         }
@@ -307,7 +307,7 @@ Ugrid2D::readPoints(int ncid, int meshid) {
             << var_stdn << "\"\n";
             return 19; 
         }
-        for (size_t i = 0; i < this->numPoints; ++i) {
+        for (std::size_t i = 0; i < this->numPoints; ++i) {
             this->points[j + NUM_SPACE_DIMS*i] = data[i];
         }
     }
@@ -316,7 +316,7 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 }
 
 std::vector<Vec3> 
-Ugrid2D::getFacePointsRegularized(size_t faceId) const {
+Ugrid2D::getFacePointsRegularized(std::size_t faceId) const {
 
     std::vector<Vec3> res = this->getFacePoints(faceId);
 
@@ -325,7 +325,7 @@ Ugrid2D::getFacePointsRegularized(size_t faceId) const {
     }
 
     // regularize
-    for (size_t i = 1; i < res.size(); ++i) {
+    for (std::size_t i = 1; i < res.size(); ++i) {
 
         // add/subtract 360 
         double dLon = res[i][LON_INDEX] - res[0][LON_INDEX];
@@ -339,7 +339,7 @@ Ugrid2D::getFacePointsRegularized(size_t faceId) const {
 
     int indexPole = -1;
     double avgLon = 0.;
-    for (size_t i = 0; i < res.size(); ++i) {
+    for (std::size_t i = 0; i < res.size(); ++i) {
         // detect if node is on/near pole
         if (std::abs(std::abs(res[i][LAT_INDEX]) -  90.) < 1.e-12) {
             indexPole = i;
@@ -366,9 +366,9 @@ Ugrid2D::getFacePointsRegularized(size_t faceId) const {
 
 
 std::vector<Vec3> 
-Ugrid2D::getEdgePointsRegularized(size_t edgeId) const {
+Ugrid2D::getEdgePointsRegularized(std::size_t edgeId) const {
 
-    const size_t* ptIds = this->getEdgePointIds(edgeId);
+    const std::size_t* ptIds = this->getEdgePointIds(edgeId);
     const double* p0 = this->getPoint(ptIds[0]);
     const double* p1 = this->getPoint(ptIds[1]);
 
@@ -402,7 +402,7 @@ Ugrid2D::dumpGridVtk(const std::string& filename) {
     f.open(filename);
     f << "# vtk DataFile Version 4.2\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n";
     f << "POINTS " << 4 * this->numFaces << " double\n";
-    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+    for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
         const std::vector<Vec3> nodes = this->getFacePointsRegularized(faceId);
         for (const Vec3& node : nodes) {
             f << node << ' ';
@@ -410,7 +410,7 @@ Ugrid2D::dumpGridVtk(const std::string& filename) {
         f << '\n';
     }
     f << "CELLS " << this->numFaces << ' ' << 5 * this->numFaces << '\n'; // 2D
-    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+    for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
         // 4 points per face
         f << "4 " << faceId*4 + 0 << ' '
                   << faceId*4 + 1 << ' '
@@ -418,7 +418,7 @@ Ugrid2D::dumpGridVtk(const std::string& filename) {
                   << faceId*4 + 3 << '\n';
     }
     f << "CELL_TYPES " << this->numFaces << '\n';
-    for (size_t faceId = 0; faceId < this->numFaces; ++faceId) {
+    for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
         f << "9 ";
         if (faceId % 10 == 0) f << '\n';
     }

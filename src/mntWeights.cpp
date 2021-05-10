@@ -15,7 +15,7 @@ double computeWeight(const double srcXi0[], const double srcXi1[],
     double sgn = 0.0;
 
     // iterate over the two dimensions of the quad
-    for (size_t d = 0; d < 2; ++d) { // 2d 
+    for (std::size_t d = 0; d < 2; ++d) { // 2d 
 
         double xiM = 0.5*(xia[d] + xib[d]);
         double dxi = xib[d] - xia[d];

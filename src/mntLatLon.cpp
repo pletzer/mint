@@ -19,27 +19,27 @@ int mnt_latlon_del(LatLon_t** self) {
 }
 
 extern "C"
-int mnt_latlon_setNumberOfLatCells(LatLon_t** self, size_t n) {
+int mnt_latlon_setNumberOfLatCells(LatLon_t** self, std::size_t n) {
     (*self)->lats.resize(n + 1);
     return 0;
 }
 
 extern "C"
-int mnt_latlon_setNumberOfLonCells(LatLon_t** self, size_t n) {
+int mnt_latlon_setNumberOfLonCells(LatLon_t** self, std::size_t n) {
     (*self)->lons.resize(n + 1);
     return 0;
 }
 
 extern "C"
 int mnt_latlon_build(LatLon_t** self) {
-    size_t nLats = (*self)->lats.size();
-    size_t nLons = (*self)->lons.size();
+    std::size_t nLats = (*self)->lats.size();
+    std::size_t nLons = (*self)->lons.size();
     (*self)->dLat = 180.0 / double(nLats - 1);
     (*self)->dLon = 360.0 / double(nLons - 1);
-    for (size_t i = 0; i < nLats; ++i) {
+    for (std::size_t i = 0; i < nLats; ++i) {
         (*self)->lats[i] = -90.0 + i * (*self)->dLat;
     }
-    for (size_t i = 0; i < nLons; ++i) {
+    for (std::size_t i = 0; i < nLons; ++i) {
         (*self)->lons[i] = 0.0 + i * (*self)->dLon;
     }
     return 0;
@@ -49,7 +49,7 @@ extern "C"
 int mnt_latlon_load(LatLon_t** self, const std::string& filename) {
 
     int ncid, latitude_0_dim, longitude_0_dim;
-    size_t numLat0, numLon0;
+    std::size_t numLat0, numLon0;
     int ier = 0;
 
     ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
@@ -66,8 +66,9 @@ int mnt_latlon_load(LatLon_t** self, const std::string& filename) {
     mnt_latlon_new(self);
     mnt_latlon_setNumberOfLatCells(self, numLat0);
     mnt_latlon_setNumberOfLonCells(self, numLon0);
+
     mnt_latlon_build(self);
-    return 0;
+    return ier;
 }
 
 extern "C"
@@ -79,10 +80,10 @@ int mnt_latlon_dump(LatLon_t** self, const std::string& filename) {
     int dims_lon[1];
     int ier = 0;
 
-    size_t numLat = (*self)->lats.size();
-    size_t numLon = (*self)->lons.size() - 1; // periodic
-    size_t numLat0 = numLat - 1;
-    size_t numLon0 = numLon;
+    std::size_t numLat = (*self)->lats.size();
+    std::size_t numLon = (*self)->lons.size() - 1; // periodic
+    std::size_t numLat0 = numLat - 1;
+    std::size_t numLon0 = numLon;
 
     ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
     if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when creating the file\n";

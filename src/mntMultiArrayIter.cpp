@@ -2,7 +2,7 @@
 #include <iostream>
 
 extern "C"
-int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const size_t* dims) {
+int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const std::size_t* dims) {
 
     *self = new MultiArrayIter_t();
     (*self)->dims.resize(ndims);
@@ -46,14 +46,14 @@ int mnt_multiarrayiter_next(MultiArrayIter_t** self) {
 }
 
 extern "C"
-int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, size_t* n) {
+int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, std::size_t* n) {
     *n = (*self)->ntot;
     return 0;
 }
 
 extern "C"
-int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, size_t indices[]) {
-    for (size_t i = 0; i < (*self)->dims.size(); ++i) {
+int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, std::size_t indices[]) {
+    for (std::size_t i = 0; i < (*self)->dims.size(); ++i) {
         indices[i] = (*self)->bigIndex / (*self)->prodDims[i] % (*self)->dims[i];
     }
     return 0;

@@ -1,50 +1,50 @@
 #include "mntVecN.h"
 #include <cmath>
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T>::VecN()
 {
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T>::VecN(T e)
 {
-  for (size_t i = 0; i < this->size(); ++i)
+  for (std::size_t i = 0; i < this->size(); ++i)
   {
     (*this)[i] = e;
   }
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T>::VecN(const T* ptr)
 {
-  for (size_t i = 0; i < this->size(); ++i)
+  for (std::size_t i = 0; i < this->size(); ++i)
   {
     (*this)[i] = *(ptr + i);
   }
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T>::VecN(const VecN<N, T> &w)
 {
   (*this) = w;
 }
 
-template<size_t N, class T> 
+template<std::size_t N, class T> 
 void VecN<N, T>::random(void) 
 {
   std::transform(this->begin(), this->end(), this->begin(), Random<T>());
 }
 
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), Setval<T>(f));
   return (*this);
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator+=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
@@ -52,7 +52,7 @@ VecN<N, T> &VecN<N, T>::operator+=(T f)
   return (*this);
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator+=(const VecN<N, T> &w) 
 {
   std::transform(this->begin(), this->end(), 
@@ -62,7 +62,7 @@ VecN<N, T> &VecN<N, T>::operator+=(const VecN<N, T> &w)
   return (*this);
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator-=(const VecN<N, T> &w)
 {
   std::transform(this->begin(), this->end(), 
@@ -72,7 +72,7 @@ VecN<N, T> &VecN<N, T>::operator-=(const VecN<N, T> &w)
   return (*this);
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator-=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
@@ -80,7 +80,7 @@ VecN<N, T> &VecN<N, T>::operator-=(T f)
   return (*this);
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator*=(T f) 
 { 
   std::transform(this->begin(), this->end(), this->begin(), 
@@ -88,7 +88,7 @@ VecN<N, T> &VecN<N, T>::operator*=(T f)
   return *this;  
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator*=(const VecN<N, T> &w)
 {  
   std::transform(this->begin(), this->end(), 
@@ -98,7 +98,7 @@ VecN<N, T> &VecN<N, T>::operator*=(const VecN<N, T> &w)
   return (*this);  
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator/=(T f) 
 {
   std::transform(this->begin(), this->end(), this->begin(), 
@@ -106,7 +106,7 @@ VecN<N, T> &VecN<N, T>::operator/=(T f)
   return (*this);
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator/=(const VecN<N, T> &w) 
 {
   std::transform(this->begin(), this->end(), 
@@ -121,7 +121,7 @@ VecN<N, T> &VecN<N, T>::operator/=(const VecN<N, T> &w)
 
 // find max element
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 T max(const VecN<N, T> &v)
 {
   return *std::max_element(v.begin(), v.end());
@@ -129,7 +129,7 @@ T max(const VecN<N, T> &v)
 
 // find min element 
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 T min(const VecN<N, T> &v) 
 {
   return *std::min_element(v.begin(), v.end());
@@ -137,49 +137,49 @@ T min(const VecN<N, T> &v)
 
 // the + operator
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator+(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> c(v);
   return c += f;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator+(T f, const VecN<N, T> &v) 
 {
   VecN<N, T> c(v);
   return c += f;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator+(const VecN<N, T> &v, const VecN<N, T> &w) 
 {
   VecN<N, T> c(v);
   return c += w;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator-(const VecN<N, T> &v, T f)
 {
   VecN<N, T> c(v);
   return c -= f;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator-(T f, const VecN<N, T> &v)
 {
   VecN<N, T> c = -v;
   return c += f;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator-(const VecN<N, T> &v, const VecN<N, T> &w)
 {
   VecN<N, T> c(v);
   return c -= w;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator-(const VecN<N, T> &v)
 {
   VecN<N, T> c;
@@ -187,41 +187,41 @@ VecN<N, T> operator-(const VecN<N, T> &v)
   return c;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 T dot(const VecN<N, T> &v, const VecN<N, T> &w) 
 {
   return std::inner_product(v.begin(), v.end(), w.begin(), static_cast<T>(0));
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator*(const VecN<N, T> &v, const VecN<N, T> &w) 
 {
   VecN<N, T> c(v);
   return c*=w;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator*(T f, const VecN<N, T> &v)
 {
   VecN<N, T> c(f);
   return c *= v;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator*(const VecN<N, T> &v, T f)
 {
   VecN<N, T> c(f);
   return c *= v;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator/(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> c(v);
   return c /= f;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator/(T f, const VecN<N, T> &v) 
 {
   VecN<N, T> c;
@@ -231,7 +231,7 @@ VecN<N, T> operator/(T f, const VecN<N, T> &v)
 
 // element by element division
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> operator/(const VecN<N, T> &v, const VecN<N, T> &w) 
 {
   VecN<N, T> c(v);
@@ -240,7 +240,7 @@ VecN<N, T> operator/(const VecN<N, T> &v, const VecN<N, T> &w)
 
 // Math functions
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> sin(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -248,7 +248,7 @@ VecN<N, T> sin(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> cos(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -256,7 +256,7 @@ VecN<N, T> cos(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> tan(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -264,7 +264,7 @@ VecN<N, T> tan(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> asin(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -272,7 +272,7 @@ VecN<N, T> asin(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> acos(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -280,7 +280,7 @@ VecN<N, T> acos(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> atan(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -288,7 +288,7 @@ VecN<N, T> atan(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> exp(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -296,7 +296,7 @@ VecN<N, T> exp(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> log(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -304,7 +304,7 @@ VecN<N, T> log(const VecN<N, T> &v)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> sqrt(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -312,7 +312,7 @@ VecN<N, T> sqrt(const VecN<N, T> &v)
   return b;  
 }
   
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> abs(const VecN<N, T> &v) 
 { 
   VecN<N, T> b;  
@@ -320,7 +320,7 @@ VecN<N, T> abs(const VecN<N, T> &v)
   return b;  
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> pow(const VecN<N, T> &v, T exp) 
 { 
   VecN<N, T> b; 
@@ -329,7 +329,7 @@ VecN<N, T> pow(const VecN<N, T> &v, T exp)
   return b;  
 }  
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> pow(const VecN<N, T> &v, int exp) 
 { 
   // we've got to find a more efficient way to do this...
@@ -338,16 +338,16 @@ VecN<N, T> pow(const VecN<N, T> &v, int exp)
 
 // max of 2 vectors
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> max(const VecN<N, T> &v, const VecN<N, T> &w) 
 {
   VecN<N, T> res;
-  for (size_t i = 0; i < v.size(); ++i)  
+  for (std::size_t i = 0; i < v.size(); ++i)  
     res[i] = v(i) > w(i) ? v(i) : w(i);
   return res;
 }
 
-template<size_t N, class T> 
+template<std::size_t N, class T> 
 VecN<N, T> max(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> res;
@@ -356,7 +356,7 @@ VecN<N, T> max(const VecN<N, T> &v, T f)
   return res;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> max(T f, const VecN<N, T> &v) 
 {
   return max(v, f);
@@ -364,16 +364,16 @@ VecN<N, T> max(T f, const VecN<N, T> &v)
 
 // min of 2 arguments
 
-template<size_t N, class T> 
+template<std::size_t N, class T> 
 VecN<N, T>  min(const VecN<N, T> &v, const VecN<N, T> &w) 
 {
   VecN<N, T> res;
-  for (size_t i = 0; i < v.size(); ++i)  
+  for (std::size_t i = 0; i < v.size(); ++i)  
     res[i] = v(i) < w(i) ? v(i) : w(i);
   return res;
 }
 
-template<size_t N, class T> VecN<N, T>  min(const VecN<N, T> &v, T f) 
+template<std::size_t N, class T> VecN<N, T>  min(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> res;
   std::transform(v.begin(), v.end(), res.begin(), 
@@ -381,7 +381,7 @@ template<size_t N, class T> VecN<N, T>  min(const VecN<N, T> &v, T f)
   return res;
 }
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 VecN<N, T> min(T f, const VecN<N, T> &v) 
 {
   return min(v, f);
@@ -391,7 +391,7 @@ VecN<N, T> min(T f, const VecN<N, T> &v)
 sum of elements
 */
 
-template<size_t N, class T>
+template<std::size_t N, class T>
 T sum(const VecN<N, T> &v) 
 {
   return std::accumulate(v.begin(), v.end(), static_cast<T>(0));
@@ -400,29 +400,29 @@ T sum(const VecN<N, T> &v)
 
 // return index of min(v)
 
-template<size_t N, class T>
-size_t index_min(VecN<N, T> &v)
+template<std::size_t N, class T>
+std::size_t index_min(VecN<N, T> &v)
 {
   T *beg = &v[0];
   T *end = &v[v.size()];  
   T *i = min_element(beg, end);
-  return static_cast<size_t>(i - beg);
+  return static_cast<std::size_t>(i - beg);
 }
 
 // return index of max(v)
 
-template<size_t N, class T>
-size_t index_max(VecN<N, T> &v)
+template<std::size_t N, class T>
+std::size_t index_max(VecN<N, T> &v)
 {
   T *beg = &v[0];
   T *end = &v[v.size()];  
   T *i = max_element(beg, end);
-  return static_cast<size_t>(i - beg);
+  return static_cast<std::size_t>(i - beg);
 }
 
 //*******************************************
 
-template <size_t N, class T>
+template <std::size_t N, class T>
 std::ostream& operator<<(std::ostream& s, const VecN<N, T>& v)
 {
   for_each(v.begin(), v.end(), Print<T>(s));

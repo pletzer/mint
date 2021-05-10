@@ -11,12 +11,12 @@ inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, dou
     bool res = true;
 
     // nuber of points in the quad
-    size_t npts = nodes.size();
+    std::size_t npts = nodes.size();
 
     // iterate over the edges of the quad
-    for (size_t i0 = 0; i0 < npts; ++i0) {
+    for (std::size_t i0 = 0; i0 < npts; ++i0) {
 
-        size_t i1 = (i0 + 1) % npts;
+        std::size_t i1 = (i0 + 1) % npts;
 
         // starting/end points of the edge
         double* p0 = &nodes[i0][0];
@@ -55,7 +55,7 @@ vmtCellLocator::vmtCellLocator() {
     this->numBucketsY = 1;
 
     double big = std::numeric_limits<double>::max();
-    for (size_t i = 0; i < 3; ++i) {
+    for (std::size_t i = 0; i < 3; ++i) {
         this->xmin[i] = big;
         this->xmax[i] = -big;
     }
@@ -168,10 +168,6 @@ vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3]
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     Vec3 targetPoint(point);
 
-    // store the original values
-    double lon = targetPoint[0];
-    double lat = targetPoint[1];
-
     // add/substract periodicity length and apply folding if need be
     for (auto kF : this->kFolding) {
 
@@ -247,11 +243,11 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 
     // break the line into segments, the number of segments should not affect the result. Only used as a performance 
     // improvement. Want more segments when the line is 45 deg. Want more segments when the points are far apart. 
-    size_t nSections = std::max(1, std::min(dn, dm));
+    std::size_t nSections = std::max(1, std::min(dn, dm));
     Vec3 du = point1 - point0;
     du /= (double) nSections;
 
-    for (size_t iSection = 0; iSection < nSections; ++iSection) {
+    for (std::size_t iSection = 0; iSection < nSections; ++iSection) {
 
         // start/end points of the segment
         Vec3 pBeg = point0 + (double) iSection * du;
@@ -343,7 +339,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
                 vtkIdType cellId = cellIds->GetId(i);
 
                 std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
-                size_t nLam = lambdas.size();
+                std::size_t nLam = lambdas.size();
                 double lamBeg = lambdas.front();
                 double lamEnd = lambdas.back();
 
@@ -372,7 +368,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     // to avoid double counting, shift lambda entry to be always >= to 
     // the preceding lambda exit and make sure lambda exit >= lambda entry
-    for (size_t i = 1; i < res.size(); ++i) {
+    for (std::size_t i = 1; i < res.size(); ++i) {
 
         double thisLambdaBeg = res[i].second[0];
         double thisLambdaEnd = res[i].second[1];
@@ -419,7 +415,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
 
 
     std::vector<Vec3> nodes = this->getFacePoints(cellId);
-    size_t npts = nodes.size();
+    std::size_t npts = nodes.size();
 
     // computes the intersection point of two lines
     LineLineIntersector intersector;
@@ -430,7 +426,7 @@ vmtCellLocator::collectIntersectionPoints(vtkIdType cellId,
     }
 
     // iterate over the cell's edges
-    size_t i0, i1;
+    std::size_t i0, i1;
     for (i0 = 0; i0 < npts; ++i0) {
 
         i1 = (i0 + 1) % npts;

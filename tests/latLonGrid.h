@@ -1,5 +1,6 @@
 #undef NDEBUG // turn on asserts
 #include <cmath>
+#include <limits> // required by vtkUnstructuredGrid
 #include <vtkUnstructuredGrid.h>
 #include <vtkPoints.h>
 #include <vtkIdList.h>

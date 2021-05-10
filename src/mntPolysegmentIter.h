@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include <mntVecN.h>
 #include <mntLineLineIntersector.h>
 #include <vtkUnstructuredGrid.h>
@@ -46,7 +47,7 @@ public:
      * Get number of segments
      * @return number
      */
-    size_t getNumberOfSegments() const;
+    std::size_t getNumberOfSegments() const;
 
 
 
@@ -127,8 +128,8 @@ private:
     // either 360, 2*pi or 0 (if not periodic)
     double periodX;
 
-    size_t index;
-    size_t numSegs;
+    std::size_t index;
+    std::size_t numSegs;
 
 };
 

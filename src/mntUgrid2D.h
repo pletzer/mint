@@ -1,3 +1,4 @@
+#include <limits> // required by vtkUnstructuredGrid
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -52,7 +53,7 @@ void dumpGridVtk(const std::string& filename);
  * Get the number of faces
  * @return number
  */
-size_t getNumberOfFaces() const {
+std::size_t getNumberOfFaces() const {
     return this->numFaces;
 }
 
@@ -60,7 +61,7 @@ size_t getNumberOfFaces() const {
  * Get the number of unique edges
  * @return number
  */
-size_t getNumberOfEdges() const {
+std::size_t getNumberOfEdges() const {
     return this->numEdges;
 }
 
@@ -68,7 +69,7 @@ size_t getNumberOfEdges() const {
  * Get the number of points/vertices
  * @return number
  */
-size_t getNumberOfPoints() const {
+std::size_t getNumberOfPoints() const {
     return this->numPoints;
 }
 
@@ -77,10 +78,10 @@ size_t getNumberOfPoints() const {
  * @param face Id
  * @return pointer
  */
-const size_t* getFacePointIds(size_t faceId) const {
+const std::size_t* getFacePointIds(size_t faceId) const {
     return &this->face2Points[faceId*4];
 }
-const std::vector<size_t>& getFacePointIds() const {
+const std::vector<std::size_t>& getFacePointIds() const {
     return this->face2Points;
 }
 
@@ -89,10 +90,10 @@ const std::vector<size_t>& getFacePointIds() const {
  * @param face Id 
  * @return pointer
  */
-const size_t* getFaceEdgeIds(size_t faceId) const {
+const std::size_t* getFaceEdgeIds(size_t faceId) const {
     return &this->face2Edges[faceId*4];
 }
-const std::vector<size_t>& getFaceEdgeIds() const {
+const std::vector<std::size_t>& getFaceEdgeIds() const {
     return this->face2Edges;
 }
 
@@ -101,10 +102,10 @@ const std::vector<size_t>& getFaceEdgeIds() const {
  * @param edge Id 
  * @return pointer
  */
-const size_t* getEdgePointIds(size_t edgeId) const {
+const std::size_t* getEdgePointIds(size_t edgeId) const {
     return &this->edge2Points[edgeId*2];
 }
-const std::vector<size_t>& getEdgePointIds() const {
+const std::vector<std::size_t>& getEdgePointIds() const {
     return this->edge2Points;
 }
 
@@ -113,7 +114,7 @@ const std::vector<size_t>& getEdgePointIds() const {
  * @param pointId point id
  * @return pointer
  */
-const double* getPoint(size_t pointId) const {
+const double* getPoint(std::size_t pointId) const {
     return &this->points[pointId*NUM_SPACE_DIMS];
 }
 const std::vector<double>& getPoints() const {
@@ -125,14 +126,14 @@ const std::vector<double>& getPoints() const {
  * @param edgeId edge Id
  * @return the two points with 360 added/substracted to minimize the edge length
  */
-std::vector<Vec3> getEdgePointsRegularized(size_t edgeId) const;
+std::vector<Vec3> getEdgePointsRegularized(std::size_t edgeId) const;
 
 /**
  * Get the regularized points of the face
  * @param faceId face Id
  * @return the four points with 360 added/substracted to make the cell have a positive area
  */
-std::vector<Vec3> getFacePointsRegularized(size_t faceId) const;
+std::vector<Vec3> getFacePointsRegularized(std::size_t faceId) const;
 
 /**
  * Get min/max range of the domain
@@ -146,13 +147,13 @@ void getRange(double xmin[], double xmax[]) const;
  * Get the face vertex coordinates
  * @return array of points
  */
-std::vector<Vec3> getFacePoints(size_t faceId) const;
+std::vector<Vec3> getFacePoints(std::size_t faceId) const;
 
 /**
  * Get the edge vertex coordinates
  * @return array of points
  */
-std::vector<Vec3> getEdgePoints(size_t edgeId) const;
+std::vector<Vec3> getEdgePoints(std::size_t edgeId) const;
 
 
 private:
@@ -164,22 +165,22 @@ private:
     Vec3 xmin;
     Vec3 xmax;
 
-    size_t numPoints;
-    size_t numEdges;
-    size_t numFaces;
+    std::size_t numPoints;
+    std::size_t numEdges;
+    std::size_t numFaces;
 
     // face to node connectivity
-    std::vector<size_t> face2Points;
+    std::vector<std::size_t> face2Points;
 
     // face to edge connectivity
-    std::vector<size_t> face2Edges;
+    std::vector<std::size_t> face2Edges;
 
     // edge to node connectivity
-    std::vector<size_t> edge2Points;
+    std::vector<std::size_t> edge2Points;
 
     int readConnectivityData(int ncid, int meshid, 
                              const std::string& role,
-                             std::vector<size_t>& data);
+                             std::vector<std::size_t>& data);
 
     int readPoints(int ncid, int meshid);
 
