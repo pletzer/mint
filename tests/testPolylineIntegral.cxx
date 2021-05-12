@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
     {
         std::cerr << "Test 3:\n";
         std::vector<double> xyz({0., 0., 0.,
-                                 50., 0., 0.});
+                                 10., 0., 0.});
         testCartesian(36, 18, potential2, xyz);
         std::cerr << "SUCCESS\n";
     }
