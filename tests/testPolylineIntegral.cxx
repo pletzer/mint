@@ -36,15 +36,15 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
     size_t k = 0;
     const double* p0;
     const double* p1;
-    for (size_t i = 0; i < nx; ++i) {
+    for (size_t j = 0; j < ny; ++j) {
 
-        double x0 = xmin + dx*i;
-        double x1 = x0 + dx;
+        double y0 = ymin + dy*j;
+        double y1 = y0 + dy;
 
-        for (size_t j = 0; j < ny; ++j) {
+        for (size_t i = 0; i < nx; ++i) {
 
-            double y0 = ymin + dy*j;
-            double y1 = y0 + dy;
+            double x0 = xmin + dx*i;
+            double x1 = x0 + dx;
 
             // set the vertices. Note 3d even when the quads are in the plane.
             verts[4*3*k + 0 ] = x0;
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
     {
         std::cerr << "Test 3:\n";
         std::vector<double> xyz({0., 0., 0.,
-                                 10., 0., 0.});
+                                 50., 0., 0.});
         testCartesian(0., 360., -90., 90., 36, 18, potential2, xyz);
         std::cerr << "SUCCESS\n";
     }
