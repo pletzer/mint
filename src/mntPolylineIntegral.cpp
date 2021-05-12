@@ -25,7 +25,8 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
 
 
 extern "C"
-int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoints, const double xyz[], int counterclock, double periodX) {
+int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, 
+                               int npoints, const double xyz[], int counterclock, double periodX) {
 
     int ier = 0;
 
@@ -45,6 +46,7 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, int npoi
 
     // build the cell locator
     vmtCellLocator* loc = vmtCellLocator::New();
+    loc->setPeriodicityLengthX(periodX);
     loc->SetDataSet(vgrid);
     loc->BuildLocator();
 
