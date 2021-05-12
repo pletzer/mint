@@ -17,7 +17,8 @@ double potential2(const double p[]) {
     return x;
 }
 
-void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[]), const std::vector<double>& xyz) {
+void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx, size_t ny,
+                   double (*potentialFunc)(const double p[]), const std::vector<double>& xyz) {
 
     int ier;
 
@@ -27,8 +28,8 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
 
     std::vector<double> verts(4*nx*ny*3); // number of cells * 4 nodes * 3 coordinates
     std::vector<double> data(4*nx*ny); // number of cells * 4 edges
-    double dx = 1.0/double(nx);
-    double dy = 1.0/double(ny);
+    double dx = (xmax - xmin)/double(nx);
+    double dy = (ymax - ymin)/double(ny);
 
     // build the grid, which is made of independent quad cells. For each of the cells we
     // set the edge field values
@@ -37,12 +38,12 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
     const double* p1;
     for (size_t i = 0; i < nx; ++i) {
 
-        double x0 = 0. + dx*i;
+        double x0 = xmin + dx*i;
         double x1 = x0 + dx;
 
         for (size_t j = 0; j < ny; ++j) {
 
-            double y0 = 0. + dy*j;
+            double y0 = ymin + dy*j;
             double y1 = y0 + dy;
 
             // set the vertices. Note 3d even when the quads are in the plane.
@@ -140,7 +141,7 @@ int main(int argc, char** argv) {
                                  1., 0., 0.,
                                  1., 1., 0.,
                                  0., 1., 0.});
-        testCartesian(3, 2, potential, xyz);
+        testCartesian(0., 1., 0., 1., 3, 2, potential, xyz);
         std::cerr << "SUCCESS\n";
     }
 
@@ -148,7 +149,7 @@ int main(int argc, char** argv) {
         std::cerr << "Test 2:\n";
         std::vector<double> xyz({0., 0., 0.,
                                  1., 0., 0.});
-        testCartesian(6, 3, potential2, xyz);
+        testCartesian(0., 1., 0., 1., 6, 3, potential2, xyz);
         std::cerr << "SUCCESS\n";
     }
 
@@ -156,7 +157,7 @@ int main(int argc, char** argv) {
         std::cerr << "Test 3:\n";
         std::vector<double> xyz({0., 0., 0.,
                                  10., 0., 0.});
-        testCartesian(36, 18, potential2, xyz);
+        testCartesian(0., 360., -90., 90., 36, 18, potential2, xyz);
         std::cerr << "SUCCESS\n";
     }
 
