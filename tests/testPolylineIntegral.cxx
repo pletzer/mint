@@ -11,7 +11,13 @@ double potential(const double p[]) {
     return y*(2*x + 1);
 }
 
-void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[])) {
+double potential2(const double p[]) {
+    const double x = p[0];
+    const double y = p[1];
+    return x;
+}
+
+void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[]), const std::vector<double>& xyz) {
 
     int ier;
 
@@ -100,11 +106,7 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
     assert(ier == 0);
 
     // set the (open) contour to integrate the flux over
-    const int npoints = 4;
-    std::vector<double> xyz({0., 0., 0.,
-                             1., 0., 0.,
-                             1., 1., 0.,
-                             0., 1., 0.});
+    int npoints = xyz.size() / 3;
     int counterclock = 0;
     double periodX = 0;
     ier = mnt_polylineintegral_build(&pli, grd, npoints, 
@@ -116,7 +118,7 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
     ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0], &totalFlux);
 
     // exact flux is the difference of potential between end and starting points
-    double totalFluxExact = potential(&xyz[(npoints - 1)*3]) - potential(&xyz[0*3]);
+    double totalFluxExact = potentialFunc(&xyz[(npoints - 1)*3]) - potentialFunc(&xyz[0*3]);
 
     std::cout << "testCartesian: total flux = " << totalFlux << " exact: " << totalFluxExact << 
                  " error: " << totalFlux - totalFluxExact << '\n';
@@ -131,7 +133,32 @@ void testCartesian(size_t nx, size_t ny, double (*potentialFunc)(const double p[
 
 int main(int argc, char** argv) {
 
-    testCartesian(3, 2, potential);
+    {
+        std::cerr << "Test 1:\n";
+        // set the (open) contour to integrate the flux over
+        std::vector<double> xyz({0., 0., 0.,
+                                 1., 0., 0.,
+                                 1., 1., 0.,
+                                 0., 1., 0.});
+        testCartesian(3, 2, potential, xyz);
+        std::cerr << "SUCCESS\n";
+    }
+
+    {
+        std::cerr << "Test 2:\n";
+        std::vector<double> xyz({0., 0., 0.,
+                                 1., 0., 0.});
+        testCartesian(6, 3, potential2, xyz);
+        std::cerr << "SUCCESS\n";
+    }
+
+    {
+        std::cerr << "Test 3:\n";
+        std::vector<double> xyz({0., 0., 0.,
+                                 50., 0., 0.});
+        testCartesian(36, 18, potential2, xyz);
+        std::cerr << "SUCCESS\n";
+    }
 
     return 0;
 }
