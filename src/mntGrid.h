@@ -96,9 +96,10 @@ int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, co
  * @param self instance of Grid_t
  * @param varname data field name
  * @param nDataPerCell number of components per cell
- * @param data flat array of size ncells*nDataPerCell
+ * @param data pointer to a flat array of size ncells*nDataPerCell
  * @return error code (0 = OK)
- * @note the grid DOES NOT own the data - the caller is repsonsible for freeing the data
+ * @note the grid DOES NOT own the data - the caller is responsible for ensuring that the data exist
+ *       during the life of the grid object and for freeing the data
  */
 extern "C"
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]);

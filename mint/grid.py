@@ -23,6 +23,8 @@ class Grid(object):
 
         self.ptr = c_void_p()
         self.obj = byref(self.ptr)
+        # container holding attached data
+        self.data = {}
 
         LIB.mnt_grid_new.argtypes = [POINTER(c_void_p)]
         ier = LIB.mnt_grid_new(self.obj)
@@ -153,15 +155,15 @@ class Grid(object):
         Attach data to the grid.
 
         :param varname: field name
-        :param data: numpy array of size (ncells, num_edges_per_cell, ndims)
+        :param data: numpy array of size (ncells, nDataPerCell)
         """
-        ndims = data.shape[-1]
-        nEdgesPerCell = 4
-        nDataPerCell = nEdgesPerCell * ndims
+        nDataPerCell = data.shape[-1]
         LIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int,
                                         DOUBLE_ARRAY_PTR]
+        # make a copy to ensure that the data exist during the life of this instance
+        self.data[varname] = data.copy()
         ier = LIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
-                                  nDataPerCell, data)
+                                  nDataPerCell, self.data[varname])
         if ier:
             error_handler(FILE, 'attach', ier)
 
