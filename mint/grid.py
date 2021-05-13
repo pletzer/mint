@@ -1,5 +1,5 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
-                    c_size_t, c_longlong)
+                    c_size_t, c_longlong, c_double)
 from . import LIB
 import numpy
 
@@ -149,6 +149,33 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'getNodeIds', ier)
         return (nodeIds[0], nodeIds[1])
+
+    def computeEdgeArcLengths(self):
+        """
+        Compute and store edge arc lengths
+        :note assumes the sphere radius to be one
+        """
+        LIB.mnt_grid_computeEdgeArcLengths.argtypes = [POINTER(c_void_p)]
+        ier = LIB.mnt_grid_computeEdgeArcLengths(self.obj)
+        if ier:
+            error_handler(FILE, 'computeEdgeArcLengths', ier)
+
+
+    def getEdgeArcLength(self, cellId, edgeIndex):
+        """
+        Get the arch length for given cell and edge
+        :param cellId: cell Id
+        :param edgeIndex: edge index (0...3)
+        :returns length assuming radius of one
+        """
+        res = c_double()
+        LIB.mnt_grid_getEdgeArcLength.argtypes = [POINTER(c_void_p), c_longlong, c_int,
+                                                  POINTER(c_double)]
+        ier = LIB.mnt_grid_getEdgeArcLength(self.obj, cellId, edgeIndex, byref(res))
+        if ier:
+            error_handler(FILE, 'getEdgeArcLength', ier)
+        return res.value
+
 
     def attach(self, varname, data):
         """

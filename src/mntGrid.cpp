@@ -229,6 +229,17 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     return ier;
 }
 
+extern "C"
+int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, double* res) {
+
+    if ((*self)->edgeArcLengths.size() == 0) {
+        std::cerr << "ERROR: you need to call mnt_grid_computeEdgeArcLengths before invoking mnt_grid_getEdgeArcLength\n";
+        return 1;
+    }
+    std::size_t k = cellId*4 + edgeIndex;
+    *res = (*self)->edgeArcLengths[k];
+    return 0;
+}
 
 extern "C"
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {

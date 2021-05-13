@@ -62,11 +62,8 @@ def test_load_grid():
 def test_load_from_ugrid_file():
 
     data_dir = Path(__file__).absolute().parent / '../../data'
-
     gr = Grid()
-
     gr.setFlags(1, 1)
-
     filename = str(data_dir / Path('cs_4.nc'))
     gr.loadFrom2DUgrid(f'{filename}:physics')
 
@@ -85,10 +82,28 @@ def test_load_from_ugrid_file():
     data = numpy.array(range(ncells*4*3), numpy.float64)
     gr.attach('myData', data)
 
+
+def test_edge_arc_lengths():
+
+    data_dir = Path(__file__).absolute().parent / '../../data'
+    gr = Grid()
+    gr.setFlags(1, 1)
+    filename = str(data_dir / Path('cs_4.nc'))
+    gr.loadFrom2DUgrid(f'{filename}:physics')
+    gr.computeEdgeArcLengths()
+
+    ncells = gr.getNumberOfCells()
+    for icell in range(ncells):
+        for edgeIndex in range(4):
+            arcLength = gr.getEdgeArcLength(icell, edgeIndex)
+            print(f'cell {icell} edge {edgeIndex} edge arc length (radius=1): {arcLength}')
+
+
 if __name__ == '__main__':
 
+    test_edge_arc_lengths()
     test_attach_data()
-    # test_create_grid()
-    # test_load_grid()
-    # test_load_from_ugrid_file()
+    test_create_grid()
+    test_load_grid()
+    test_load_from_ugrid_file()
 
