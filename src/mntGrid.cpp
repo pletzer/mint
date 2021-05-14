@@ -233,7 +233,6 @@ int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, do
     }
     std::size_t k = cellId*4 + edgeIndex;
     *res = (*self)->edgeArcLengths[k];
-    std::cerr << "... k=" << k << " edge arc length = " << *res << '\n';
     return 0;
 }
 
