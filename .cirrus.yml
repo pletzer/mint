@@ -36,7 +36,7 @@ linux_task:
       PY_VER: "3.8"
   name: "Linux: py${PY_VER}"
   container:
-    image: gcc:latest
+    dockerfile: requirements/ci/linux/Dockerfile
   env:
     PATH: ${HOME}/mambaforge/bin:${PATH}
   mamba_cache:
@@ -46,9 +46,7 @@ linux_task:
       - echo "${CIRRUS_OS} $(sha256sum mambaforge.sh)"
       - echo "${MAMBA_CACHE_PACKAGES}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MAMBA_CACHE_BUILD}"
-      - uname -r
     populate_script:
-      - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
       - bash mambaforge.sh -b -p ${HOME}/mambaforge
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
@@ -58,19 +56,19 @@ linux_task:
     - conda info --all
     - conda list --name base
   mint_cache:
-    folder: ${CIRRUS_WORKING_DIR}/mambaforge/envs/py${PY_VER}
+    folder: ${HOME}/mambaforge/envs/py${PY_VER}
     fingerprint_script:
       - echo "${CIRRUS_OS} py${PY_VER} tests"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
-      - uname -r
     populate_script:
-      - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
       - conda-lock --mamba --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
       - mamba create --name py${PY_VER} --quiet --file conda-linux-64.lock
-      - conda info --envs
+      - cp conda-linux-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
   test_script:
-    - source activate py${PY_VER}
+    - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-linux-64.lock >&2
+    - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
+    - conda activate py${PY_VER} >/dev/null 2>&1
     - pip install --no-deps --editable .
     - pytest
 
@@ -104,16 +102,20 @@ osx_task:
     - conda info --all
     - conda list --name base
   mint_cache:
-    folder: ${CIRRUS_WORKING_DIR}/mambaforge/envs/py${PY_VER}
+    folder: ${HOME}/mambaforge/envs/py${PY_VER}
     fingerprint_script:
       - echo "${CIRRUS_OS} py${PY_VER} tests"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
     populate_script:
       - conda-lock --mamba --platform osx-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
-      - mamba create --name py${PY_VER} --quiet --file conda-osx-64.lock
-      - conda info --envs
+      - mamba create --yes --name py${PY_VER} --quiet --file conda-osx-64.lock
+      - cp conda-osx-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
+  mesa_script:
+    - brew install mesa
   test_script:
-    - source activate py${PY_VER}
+    - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-osx-64.lock >&2
+    - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
+    - conda activate py${PY_VER} >/dev/null 2>&1
     - pip install --no-deps --editable .
     - pytest
