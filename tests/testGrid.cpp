@@ -59,6 +59,17 @@ void testUgrid() {
     ier = mnt_grid_computeEdgeArcLengths(&grd);
     assert(ier == 0);
 
+    // check that we can retrieve the edge arc lengths
+    for (auto cellId : cellIds) {
+        for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
+        	double arcLength;
+        	ier = mnt_grid_getEdgeArcLength(&grd, cellId, edgeIndex, &arcLength);
+        	assert(ier == 0);
+        	assert(arcLength >= 0);
+        	assert(arcLength <= M_PI);
+        }
+    }
+
     // should be able to compute the edge arcs multitple times
     ier = mnt_grid_computeEdgeArcLengths(&grd);
     assert(ier == 0);    

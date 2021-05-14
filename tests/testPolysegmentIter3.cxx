@@ -69,6 +69,60 @@ void createUniformGrid(int nx, int ny,
 
 }
 
+void testSimple() {
+    
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+    vtkPoints* points = vtkPoints::New();
+    vtkDoubleArray* coords = vtkDoubleArray::New();
+
+    createUniformGrid(36, 18, grid, points, coords);
+
+    vmtCellLocator* loc = vmtCellLocator::New();
+    const double xPeriod = 360.0;
+    loc->setPeriodicityLengthX(xPeriod);
+    loc->enableFolding();
+    loc->SetDataSet(grid);
+    loc->BuildLocator();
+
+    const double p0[] = {0.0,  0.0, 0.};
+    const double p1[] = {10.0, 0.0, 0.};
+
+    std::vector<Vec3> pts{Vec3(p0), Vec3(p1)};
+    assert(pts.size() >= 2);
+
+    printf("testSimple\n");
+    printf("intrvl    sgmt       cell       ta        tb       xia              xib\n");
+    for (size_t iInterval = 0; iInterval < pts.size() - 1; ++iInterval) {
+
+        Vec3& pa = pts[iInterval + 0];
+        Vec3& pb = pts[iInterval + 1];
+
+        PolysegmentIter psi(grid, loc, &pa[0], &pb[0], xPeriod);
+
+        size_t numSegs = psi.getNumberOfSegments();
+        psi.reset();
+        for (size_t i = 0; i < numSegs; ++i) {
+            vtkIdType cellId = psi.getCellId();
+            const Vec3& xia = psi.getBegCellParamCoord();
+            const Vec3& xib = psi.getEndCellParamCoord();
+            double ta = psi.getBegLineParamCoord();
+            double tb = psi.getEndLineParamCoord();
+            double coeff = psi.getCoefficient();
+            printf("%4lu     %4lu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
+                    iInterval, i, cellId, ta, tb, xia[0], xia[1], xib[0], xib[1]);
+            psi.next();
+        }
+        double tTotal = psi.getIntegratedParamCoord();
+        double error = tTotal - 1.0;
+        std::cout << "testFold: total t = " << tTotal <<  " error = " << error << '\n';
+        assert(std::abs(error) < 1.e-10);
+    }
+
+    loc->Delete();
+    grid->Delete();
+    points->Delete();
+    coords->Delete();
+}
 
 void testFold() {
     // test folding at the pole
@@ -81,7 +135,8 @@ void testFold() {
     createUniformGrid(10, 5, grid, points, coords);
 
     vmtCellLocator* loc = vmtCellLocator::New();
-    loc->setPeriodicityLengthX(360.);
+    const double xPeriod = 360.0;
+    loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
     loc->SetDataSet(grid);
     loc->BuildLocator();
@@ -89,7 +144,6 @@ void testFold() {
     const double p0[] = {160.,  80.0, 0.};
     const double p1[] = {160., 100.0, 0.};
     const double p2[] = {200., 100.0, 0.};
-    double xPeriod = 360.0;
 
     std::vector<Vec3> pts{Vec3(p0), Vec3(p1), Vec3(p2)};
     assert(pts.size() >= 2);
@@ -138,7 +192,8 @@ void testFold2() {
     createUniformGrid(10, 5, grid, points, coords);
 
     vmtCellLocator* loc = vmtCellLocator::New();
-    loc->setPeriodicityLengthX(360.);
+    double xPeriod = 360.0;
+    loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
     loc->SetDataSet(grid);
     loc->BuildLocator();
@@ -151,7 +206,6 @@ void testFold2() {
     const double p5[] = {350., -100., 0.};
     const double p6[] = { 10., -100., 0.};
     const double p7[] = { 10.,  -80., 0.};
-    double xPeriod = 360.0;
 
     std::vector<Vec3> pts{Vec3(p0), Vec3(p1), Vec3(p2), Vec3(p3), Vec3(p4), Vec3(p5), Vec3(p6), Vec3(p7)};
     assert(pts.size() >= 2);
@@ -200,7 +254,8 @@ void testFold3() {
     createUniformGrid(10, 5, grid, points, coords);
 
     vmtCellLocator* loc = vmtCellLocator::New();
-    loc->setPeriodicityLengthX(360.);
+    double xPeriod = 360.0;
+    loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
     loc->SetDataSet(grid);
     loc->BuildLocator();
@@ -209,7 +264,6 @@ void testFold3() {
     const double p1[] = { 360.1, -90.1, 0.};
     const double p2[] = { 360.1, +90.1, 0.};
     const double p3[] = { -0.1,   +90.1, 0.};
-    double xPeriod = 360.0;
 
     std::vector<Vec3> pts{Vec3(p0), Vec3(p1), Vec3(p2), Vec3(p3)};
     assert(pts.size() >= 2);
@@ -258,7 +312,8 @@ void testFold4() {
     createUniformGrid(10, 5, grid, points, coords);
 
     vmtCellLocator* loc = vmtCellLocator::New();
-    loc->setPeriodicityLengthX(360.);
+    double xPeriod = 360.0;
+    loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
     loc->SetDataSet(grid);
     loc->BuildLocator();
@@ -267,7 +322,6 @@ void testFold4() {
     const double p1[] = { 360., -90., 0.};
     const double p2[] = { 360., +90., 0.};
     const double p3[] = { -0.,   +90., 0.};
-    double xPeriod = 360.0;
 
     std::vector<Vec3> pts{Vec3(p0), Vec3(p1), Vec3(p2), Vec3(p3)};
     assert(pts.size() >= 2);
@@ -308,6 +362,7 @@ void testFold4() {
 
 int main(int argc, char** argv) {
 
+    testSimple();
     testFold4();
     testFold3();
     testFold2();

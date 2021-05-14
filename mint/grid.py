@@ -1,5 +1,5 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
-                    c_size_t, c_longlong)
+                    c_size_t, c_longlong, c_double)
 from . import LIB
 import numpy
 
@@ -23,6 +23,8 @@ class Grid(object):
 
         self.ptr = c_void_p()
         self.obj = byref(self.ptr)
+        # container holding attached data
+        self.data = {}
 
         LIB.mnt_grid_new.argtypes = [POINTER(c_void_p)]
         ier = LIB.mnt_grid_new(self.obj)
@@ -148,20 +150,47 @@ class Grid(object):
             error_handler(FILE, 'getNodeIds', ier)
         return (nodeIds[0], nodeIds[1])
 
+    def computeEdgeArcLengths(self):
+        """
+        Compute and store edge arc lengths
+        :note assumes the sphere radius to be one
+        """
+        LIB.mnt_grid_computeEdgeArcLengths.argtypes = [POINTER(c_void_p)]
+        ier = LIB.mnt_grid_computeEdgeArcLengths(self.obj)
+        if ier:
+            error_handler(FILE, 'computeEdgeArcLengths', ier)
+
+
+    def getEdgeArcLength(self, cellId, edgeIndex):
+        """
+        Get the arch length for given cell and edge
+        :param cellId: cell Id
+        :param edgeIndex: edge index (0...3)
+        :returns length assuming radius of one
+        """
+        res = c_double()
+        LIB.mnt_grid_getEdgeArcLength.argtypes = [POINTER(c_void_p), c_longlong, c_int,
+                                                  POINTER(c_double)]
+        ier = LIB.mnt_grid_getEdgeArcLength(self.obj, cellId, edgeIndex, byref(res))
+        if ier:
+            error_handler(FILE, 'getEdgeArcLength', ier)
+        return res.value
+
+
     def attach(self, varname, data):
         """
         Attach data to the grid.
 
         :param varname: field name
-        :param data: numpy array of size (ncells, num_edges_per_cell, ndims)
+        :param data: numpy array of size (ncells, nDataPerCell)
         """
-        ndims = data.shape[-1]
-        nEdgesPerCell = 4
-        nDataPerCell = nEdgesPerCell * ndims
+        nDataPerCell = data.shape[-1]
         LIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int,
                                         DOUBLE_ARRAY_PTR]
+        # make a copy to ensure that the data exist during the life of this instance
+        self.data[varname] = data.copy()
         ier = LIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
-                                  nDataPerCell, data)
+                                  nDataPerCell, self.data[varname])
         if ier:
             error_handler(FILE, 'attach', ier)
 

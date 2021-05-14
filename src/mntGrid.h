@@ -96,9 +96,10 @@ int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, co
  * @param self instance of Grid_t
  * @param varname data field name
  * @param nDataPerCell number of components per cell
- * @param data flat array of size ncells*nDataPerCell
+ * @param data pointer to a flat array of size ncells*nDataPerCell
  * @return error code (0 = OK)
- * @note the grid DOES NOT own the data - the caller is repsonsible for freeing the data
+ * @note the grid DOES NOT own the data - the caller is responsible for ensuring that the data exist
+ *       during the life of the grid object and for freeing the data
  */
 extern "C"
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]);
@@ -107,9 +108,21 @@ int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const 
  * Compute and store the arc length for each edge of the grid 
  * @param self instance of Grid_t
  * @return error code (0 = OK)
+ * @note assumes the sphere radius to be one
  */
 extern "C"
 int mnt_grid_computeEdgeArcLengths(Grid_t** self);
+
+/**
+ * Get the length given a cell and an edge index
+ * @param self instance of Grid_t
+ * @param cellId cell Id
+ * @param edgeIndex edge index in the range 0-3
+ * @param res length of the edge assuming a radius of one
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, double* res);
 
 /**
  * Get the VTK unstructured grid
