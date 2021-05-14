@@ -181,20 +181,17 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
         return 0;
     }
 
+    Vec3 p0, p1;
+
     (*self)->edgeArcLengths.resize(numCells * 4);
     for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
-        for (int ie = 0; ie < 4; ++ie) {
+        for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
 
-            // edgeId under consideration
-            vtkIdType eId = (*self)->faceEdgeConnectivity[4*cellId + ie];
+            vtkIdType ptId0 = 4*cellId + edgeIndex;
+            vtkIdType ptId1 = 4*cellId + (edgeIndex + 1) % 4;
 
-            // vertex Ids of the edge
-            vtkIdType nId0 = (*self)->edgeNodeConnectivity[eId*2 + 0];
-            vtkIdType nId1 = (*self)->edgeNodeConnectivity[eId*2 + 1];
-
-            // get the vertices of this edge
-            double* p0 = (*self)->points->GetPoint(nId0);
-            double* p1 = (*self)->points->GetPoint(nId1);
+            (*self)->points->GetPoint(ptId0, &p0[0]);
+            (*self)->points->GetPoint(ptId1, &p1[0]);
 
             // assumes points are in degrees
             double lam0 = p0[LON_INDEX] * M_PI/180.;
@@ -212,14 +209,12 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
             double cos_the1 = cos(the1);
             double sin_the1 = sin(the1);
 
-            std::size_t k = cellId*4 + ie;
 
             // edge length is angle between the two points. Assume radius = 1. Angle is
             // acos of dot product in Cartesian space.
-            (*self)->edgeArcLengths[k] = acos( cos_the0*cos_lam0*cos_the1*cos_lam1 + 
-                                               cos_the0*sin_lam0*cos_the1*sin_lam1 + 
-                                               sin_the0*sin_the1 );
-
+            double r0DotR1 = cos_the0*cos_lam0*cos_the1*cos_lam1 + cos_the0*sin_lam0*cos_the1*sin_lam1 + sin_the0*sin_the1;
+            std::size_t k = 4*cellId + edgeIndex;
+            (*self)->edgeArcLengths[k] = std::abs( acos(r0DotR1) );
         }
     }
 
@@ -238,6 +233,7 @@ int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, do
     }
     std::size_t k = cellId*4 + edgeIndex;
     *res = (*self)->edgeArcLengths[k];
+    std::cerr << "... k=" << k << " edge arc length = " << *res << '\n';
     return 0;
 }
 
