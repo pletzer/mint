@@ -184,7 +184,9 @@ class Grid(object):
         :param varname: field name
         :param data: numpy array of size (ncells, nDataPerCell)
         """
-        nDataPerCell = data.shape[-1]
+        nDataPerCell = 1
+        if len(data.shape) > 1:
+        	nDataPerCell = data.shape[-1]
         LIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int,
                                         DOUBLE_ARRAY_PTR]
         # make a copy to ensure that the data exist during the life of this instance
