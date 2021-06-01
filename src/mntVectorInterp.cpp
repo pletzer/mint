@@ -28,7 +28,7 @@ int mnt_vectorinterp_set(VectorInterp_t** self, Grid_t* grid, vmtCellLocator* lo
 
 extern "C"
 int mnt_vectorinterp_find(VectorInterp_t** self, const double targerPoint[], double tol2) {
-    vtkGenericCell *cell;
+    vtkGenericCell *cell = NULL;
     double weights[8];
     (*self)->cellId = (*self)->locator->FindCell(targerPoint, tol2, cell, &(*self)->pcoords[0], weights);
     if ((*self)->cellId < 0) {
