@@ -133,7 +133,7 @@ int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell,
         (*self)->grid->InsertNextCell(cellType, ptIds);
     }
     (*self)->grid->SetPoints((*self)->points);
-    (*self)->grid->BuildLinks(); // DO WE NEED THIS?
+    // (*self)->grid->BuildLinks(); // DO WE NEED THIS?
 
     // clean
     ptIds->Delete();

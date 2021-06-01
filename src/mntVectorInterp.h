@@ -18,7 +18,6 @@ struct VectorInterp_t {
     vtkIdType cellId;
 };
 
-
 /**
  * Constructor
  * @param self instance of VectorInterp_t
