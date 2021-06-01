@@ -19,8 +19,6 @@ struct Grid_t {
 
     const std::string EDGE_LENGTH_NAME = "_edge_lengths";
 
-    // vertex raw data
-    std::vector<double> verts;
 
     // VTK data needed to construct a grid
     vtkDoubleArray* pointData;
@@ -48,6 +46,11 @@ struct Grid_t {
 
     double periodX;
 
+    // vertex raw data
+    double *verts;
+
+    // whether or not the vertices are owned by this instance
+    bool ownsVerts;
 };
 
 
@@ -81,15 +84,23 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
 /**
  * Set the pointer to an array of points
  * @param self instance of Grid_t
- * @param nVertsPerCell number of vertices per cell
- * @param ncells number of cells
  * @param points flat array of size 4*ncells*3 (4 points per cell, each point has three coordinates)
  * @return error code (0 = OK)
  * @note the caller is responsible for managing the memory of the points array, which
  *       is expected to exist until the grid object is destroyed
  */
 extern "C"
-int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, vtkIdType ncells, const double points[]);
+int mnt_grid_setPointsPtr(Grid_t** self, double points[]);
+
+/**
+ * Build the grid and connectivity
+ * @param self instance of Grid_t
+ * @param nVertsPerCell number of vertices per cell
+ * @param ncells number of cells
+ * @return error code (0 = OK)
+ */
+extern "C"
+int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells);
 
 /**
  * Attach data to the grid

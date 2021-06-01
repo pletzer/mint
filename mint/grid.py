@@ -97,7 +97,7 @@ class Grid(object):
 
     def setPoints(self, points):
         """
-        Set the points coordinates
+        Set the points coordinates and build the connectivity
 
         :param points: numpy contiguous array of shape (ncells,
                        num_verts_per_cell, 3)
@@ -105,11 +105,12 @@ class Grid(object):
         ncells, num_verts_per_cell, ndim = points.shape
         if ndim != 3:
             raise RuntimeError(f'ERROR: points.shape[2] != 3, got {ndim}!')
-        LIB.mnt_grid_setPointsPtr.argtypes = [POINTER(c_void_p),
-                                              c_int, c_longlong,
-                                              DOUBLE_ARRAY_PTR]
-        ier = LIB.mnt_grid_setPointsPtr(self.obj, num_verts_per_cell,
-                                        ncells, points)
+        LIB.mnt_grid_setPointsPtr.argtypes = [POINTER(c_void_p), DOUBLE_ARRAY_PTR]
+        LIB.mnt_grid_build.argtypes = [POINTER(c_void_p), c_int, c_longlong]
+        ier = LIB.mnt_grid_setPointsPtr(self.obj, points)
+        if ier:
+            error_handler(FILE, 'setPointsPtr', ier)
+        ier = LIB.mnt_grid_build(self.obj, num_verts_per_cell, ncells)
         if ier:
             error_handler(FILE, 'setPointsPtr', ier)
 

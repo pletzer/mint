@@ -44,7 +44,7 @@ void createUniformGrid(int nx, int ny, double points[]) {
     }
 }
 
-void testContainsPoint(int nx, int ny) {
+void testUniformGrid(int nx, int ny) {
 
     std::vector<double> points(4*ny*nx*3);
     createUniformGrid(nx, ny, &points[0]);
@@ -55,7 +55,10 @@ void testContainsPoint(int nx, int ny) {
     int averageLonAtPole = 0;
     int degrees = 1;
     mnt_grid_setFlags(&mgrid, fixLonAcrossDateline, averageLonAtPole, degrees);
-    mnt_grid_setPointsPtr(&mgrid, 4, ny*nx, &points[0]);
+    mnt_grid_setPointsPtr(&mgrid, &points[0]);
+    mnt_grid_build(&mgrid, 4, ny*nx);
+
+    mnt_grid_print(&mgrid);
 
     // create locator
     vmtCellLocator* cloc = vmtCellLocator::New();
@@ -94,7 +97,7 @@ void testContainsPoint(int nx, int ny) {
 
 int main(int argc, char** argv) {
 
-    testContainsPoint(10, 5);
+    testUniformGrid(8, 4);
 
     return 0;
 }

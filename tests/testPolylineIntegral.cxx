@@ -99,7 +99,9 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
         }
     }
     vtkIdType ncells = nx * ny;
-    ier = mnt_grid_setPointsPtr(&grd, 4, ncells, &verts[0]);
+    ier = mnt_grid_setPointsPtr(&grd, &verts[0]);
+    assert(ier == 0);
+    ier = mnt_grid_build(&grd, 4, ncells);
     assert(ier == 0);
 
     PolylineIntegral_t* pli = NULL;

@@ -46,6 +46,8 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->fixLonAcrossDateline = true;
     (*self)->averageLonAtPole = true;
     (*self)->periodX = 360.0; // if in radians, only used if the above switches are set
+    (*self)->verts = NULL;
+    (*self)->ownsVerts = false;
 
     return 0;
 }
@@ -64,6 +66,10 @@ int mnt_grid_del(Grid_t** self) {
     }
     if ((*self)->points) (*self)->points->Delete();
     if ((*self)->pointData) (*self)->pointData->Delete();
+
+    if ((*self)->ownsVerts) {
+        delete[] (*self)->verts;
+    }
 
     delete *self;
 
@@ -93,8 +99,15 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
 }
 
 extern "C"
-int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell, 
-	                      vtkIdType ncells, const double points[]) {
+int mnt_grid_setPointsPtr(Grid_t** self, double points[]) {
+
+    (*self)->verts = points;
+    (*self)->ownsVerts = false;
+    return 0;
+}
+
+extern "C"
+int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
     (*self)->pointData = vtkDoubleArray::New();
     (*self)->points = vtkPoints::New();
@@ -104,7 +117,8 @@ int mnt_grid_setPointsPtr(Grid_t** self, int nVertsPerCell,
     int npoints = nVertsPerCell * ncells;
     (*self)->pointData->SetNumberOfTuples(npoints);
     (*self)->pointData->SetNumberOfComponents(3);
-    (*self)->pointData->SetVoidArray((double*) points, npoints*3, save);
+    // this must be called after setPointsPtr
+    (*self)->pointData->SetVoidArray((*self)->verts, npoints*3, save);
 
     (*self)->points->SetData((*self)->pointData);
 
@@ -316,7 +330,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
 
         // allocate the vertices and set the values
-        (*self)->verts.resize(ncells * numVertsPerCell * 3);
+        (*self)->verts = new double[ncells * numVertsPerCell * 3];
+        (*self)->ownsVerts = true;
 
         for (std::size_t icell = 0; icell < ncells; ++icell) {
 
@@ -378,9 +393,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
         }
     }
 
-    // set the pointer
-    ier = mnt_grid_setPointsPtr(self, (int) numVertsPerCell, (vtkIdType) ncells, 
-    	                        &((*self)->verts[0]));
+    // build the connectivity
+    ier = mnt_grid_build(self, numVertsPerCell, ncells);
 
     return 0;
 }

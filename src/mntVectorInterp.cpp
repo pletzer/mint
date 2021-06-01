@@ -44,27 +44,31 @@ int mnt_vectorinterp_getVector(VectorInterp_t** self, const double data[], doubl
     int ier;
 
     if ((*self)->cellId < 0) {
-        // failed
+        // failed, maybe the cell was not found?
+        // be sure to call mnt_vectorinterp_find before
         return 1;
     }
 
-    // get the cell vertices
+    // get the cell vertices, assumes edges are in the positive pcoords direction
     Vec3 v0, v1, v2, v3;
     ier = mnt_grid_getPoints(&(*self)->grid, (*self)->cellId, 0, &v0[0], &v1[0]);
     ier = mnt_grid_getPoints(&(*self)->grid, (*self)->cellId, 2, &v3[0], &v2[0]);
+    std::cerr << "*** ier = " << ier << " cell verts " << v2 << ';' << v3 << '\n';
 
     double xsi = (*self)->pcoords[0];
     double eta = (*self)->pcoords[1];
     double isx = 1.0 - xsi;
     double ate = 1.0 - eta;
+    std::cerr << "*** pcoords = " << xsi << ',' << eta << '\n';
 
     // compute the Jacobians attached at each vertex
     double a013 = crossDotZHat(v1 - v0, v3 - v0);
     double a120 = crossDotZHat(v2 - v1, v0 - v1);
     double a231 = crossDotZHat(v3 - v2, v1 - v2);
     double a302 = crossDotZHat(v0 - v3, v2 - v3);
+    std::cerr << "*** jacs at nodes " << a013 << ',' << a120 << ',' << a231 << ',' << a302 << '\n';
 
-    // interpolate
+    // interpolate, assume edges in positive pcoords direction
     double jac = isx*ate*a013 + xsi*ate*a120 + xsi*eta*a231 + isx*eta*a302;
     Vec3 drdXsi = ate*(v1 - v0) + eta*(v2 - v3);
     Vec3 drdEta = isx*(v3 - v0) + xsi*(v2 - v1);
@@ -78,6 +82,7 @@ int mnt_vectorinterp_getVector(VectorInterp_t** self, const double data[], doubl
     gradEta[0] = - drdXsi[1]/jac;
     gradEta[1] = + drdXsi[0]/jac;
     gradEta[2] = 0.0;
+    std::cerr << "*** gradXi = " << gradXsi << " gradEta = " << gradEta << '\n';
 
 
     // interpolate
@@ -86,6 +91,7 @@ int mnt_vectorinterp_getVector(VectorInterp_t** self, const double data[], doubl
     double data1 = data[k + 1];
     double data2 = data[k + 2];
     double data3 = data[k + 3];
+    std::cerr << "*** data = " << data0 << ',' << data1 << ',' << data2 << ',' << data3 << '\n';
     for (std::size_t i = 0; i < 3; ++i) {
         vector[i] = (data0*ate + data2*eta)*gradXsi[i] + 
                     (data3*isx + data1*xsi)*gradEta[i];

@@ -52,7 +52,8 @@ int mnt_celllocator_del(CellLocator_t** self);
  *       is expected to exist until the grid object is destroyed.
  */
 extern "C"
-int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::size_t ncells, const double points[]);
+int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::size_t ncells, 
+                                 double points[]);
 
 /**
  * Check if cell areas/volumes are positive
