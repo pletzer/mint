@@ -44,6 +44,99 @@ void createUniformGrid(int nx, int ny, double points[]) {
     }
 }
 
+void testSimple() {
+
+    int ier;
+    vtkIdType numCells = 1;
+    std::vector<double> points{0., 0., 0.,
+                               1., 0., 0.,
+                               1., 1., 0.,
+                               0., 1., 0.};
+    Grid_t* mgrid = NULL;
+    ier = mnt_grid_new(&mgrid);
+    assert(ier == 0);
+    int fixLonAcrossDateline = 0;
+    int averageLonAtPole = 0;
+    int degrees = 0;
+    ier = mnt_grid_setFlags(&mgrid, fixLonAcrossDateline, averageLonAtPole, degrees);
+    assert(ier == 0);
+    ier = mnt_grid_setPointsPtr(&mgrid, &points[0]);
+    assert(ier == 0);
+    ier = mnt_grid_build(&mgrid, 4, numCells);
+    assert(ier == 0);
+    ier = mnt_grid_print(&mgrid);
+    assert(ier == 0);
+
+    // create locator
+    vmtCellLocator* cloc = vmtCellLocator::New();
+    vtkUnstructuredGrid* ugrid;
+    ier = mnt_grid_get(&mgrid, &ugrid);
+    assert(ier == 0);
+    cloc->SetDataSet(ugrid);
+    cloc->SetNumberOfCellsPerBucket(10);
+    cloc->BuildLocator();
+
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_set(&vp, mgrid, cloc);
+    assert(ier == 0);
+    double tol2 = 1.e-10;
+
+    {
+        // set some data
+        std::vector<double> data{0., 1., 2., 3.};
+        Vec3 target, resVec;
+
+        target[0] = 0.;
+        target[1] = 0.;
+        target[2] = 0.;
+        ier = mnt_vectorinterp_find(&vp, &target[0], tol2);
+        assert(ier == 0);
+        ier = mnt_vectorinterp_getVector(&vp, &data[0], &resVec[0]);
+        assert(ier == 0);
+        std::cout << "at point " << target << " vector is " << resVec << '\n';
+        assert(fabs(resVec[0] - 0.0) < 1.e-10 && fabs(resVec[1] - 3.0) < 1.e-10);
+
+        target[0] = 1.;
+        target[1] = 0.;
+        target[2] = 0.;
+        ier = mnt_vectorinterp_find(&vp, &target[0], tol2);
+        assert(ier == 0);
+        ier = mnt_vectorinterp_getVector(&vp, &data[0], &resVec[0]);
+        assert(ier == 0);
+        std::cout << "at point " << target << " vector is " << resVec << '\n';
+        assert(fabs(resVec[0] - 0.0) < 1.e-10 && fabs(resVec[1] - 1.0) < 1.e-10);
+
+        target[0] = 1.;
+        target[1] = 1.;
+        target[2] = 0.;
+        ier = mnt_vectorinterp_find(&vp, &target[0], tol2);
+        assert(ier == 0);
+        ier = mnt_vectorinterp_getVector(&vp, &data[0], &resVec[0]);
+        assert(ier == 0);
+        std::cout << "at point " << target << " vector is " << resVec << '\n';
+        assert(fabs(resVec[0] - 2.0) < 1.e-10 && fabs(resVec[1] - 1.0) < 1.e-10);
+
+        target[0] = 0.;
+        target[1] = 1.;
+        target[2] = 0.;
+        ier = mnt_vectorinterp_find(&vp, &target[0], tol2);
+        assert(ier == 0);
+        ier = mnt_vectorinterp_getVector(&vp, &data[0], &resVec[0]);
+        assert(ier == 0);
+        std::cout << "at point " << target << " vector is " << resVec << '\n';
+        assert(fabs(resVec[0] - 2.0) < 1.e-10 && fabs(resVec[1] - 3.0) < 1.e-10);
+    }
+
+    // destroy
+    ier = mnt_vectorinterp_del(&vp);
+    assert(ier == 0);
+    cloc->Delete();
+    ier = mnt_grid_del(&mgrid);
+    assert(ier == 0);
+}
+
 void testUniformGrid(int nx, int ny) {
 
     std::vector<double> points(4*ny*nx*3);
@@ -57,8 +150,6 @@ void testUniformGrid(int nx, int ny) {
     mnt_grid_setFlags(&mgrid, fixLonAcrossDateline, averageLonAtPole, degrees);
     mnt_grid_setPointsPtr(&mgrid, &points[0]);
     mnt_grid_build(&mgrid, 4, ny*nx);
-
-    mnt_grid_print(&mgrid);
 
     // create locator
     vmtCellLocator* cloc = vmtCellLocator::New();
@@ -97,6 +188,7 @@ void testUniformGrid(int nx, int ny) {
 
 int main(int argc, char** argv) {
 
+    testSimple();
     testUniformGrid(8, 4);
 
     return 0;
