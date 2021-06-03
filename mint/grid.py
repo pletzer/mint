@@ -226,3 +226,4 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'getNumberOfEdges', ier)
         return n.value
+

@@ -26,8 +26,6 @@ class VectorInterp(object):
 
         self.ptr = c_void_p()
         self.obj = byref(self.ptr)
-        # container holding attached data
-        self.data = {}
 
         LIB.mnt_vectorinterp_new.argtypes = [POINTER(c_void_p)]
         ier = LIB.mnt_vectorinterp_new(self.obj)
@@ -50,7 +48,7 @@ class VectorInterp(object):
         :param grid: instance of a Grid
         """
         LIB.mnt_vectorinterp_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
-        ier = LIB.mnt_vectorinterp_setGrid(self.obj, grid.grid)
+        ier = LIB.mnt_vectorinterp_setGrid(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
@@ -75,16 +73,16 @@ class VectorInterp(object):
 
         :param targetPoints: array of size numPoints times 3
         :param tol2: square of the distance tolerance
+        :returns the number of points outside the domain
         """
         LIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p), c_int,
                                                     DOUBLE_ARRAY_PTR, c_double]
         self.numPoints = targetPoints.shape[0]
-        ier = LIB.mnt_vectorinterp_findPoints(self.obj, self.numPoints,
-                                              targetPoints, tol2)
-        if ier:
-            error_handler(FILE, 'findPoints', ier)
+        numBad = LIB.mnt_vectorinterp_findPoints(self.obj, self.numPoints,
+                                                 targetPoints, tol2)
+        return numBad
 
-    def getVector(self, data):
+    def getVectors(self, data):
         """
         Get the vectors at the target points.
 
@@ -94,7 +92,7 @@ class VectorInterp(object):
         LIB.mnt_vectorinterp_getVectors.argtypes = [POINTER(c_void_p),
                                                     DOUBLE_ARRAY_PTR,
                                                     DOUBLE_ARRAY_PTR]
-        res = numpy.zeros((self.numPoints,), numpy.float64)
+        res = numpy.zeros((self.numPoints, 3), numpy.float64)
         ier = LIB.mnt_vectorinterp_getVectors(self.obj, data, res)
         if ier:
             error_handler(FILE, 'getVectors', ier)
