@@ -8,7 +8,9 @@ def error_handler(filename, methodname, ier):
 FILE = 'regrid_edges.py'
 
 class RegridEdges(object):
-
+    """
+    A class to interpolate a 1 form from a grid to another grid
+    """
 
     def __init__(self):
         """

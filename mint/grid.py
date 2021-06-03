@@ -15,6 +15,9 @@ DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 
 
 class Grid(object):
+    """
+    A class to represent a collection of quad cells
+    """
 
     def __init__(self):
         """

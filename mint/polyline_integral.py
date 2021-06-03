@@ -8,7 +8,9 @@ def error_handler(filename, methodname, ier):
 FILE = 'polyline_integral.py'
 
 class PolylineIntegral(object):
-
+    """
+    A class to compute line or flux integrals
+    """
 
     def __init__(self):
         """
