@@ -26,6 +26,7 @@ class VectorInterp(object):
 
         self.ptr = c_void_p()
         self.obj = byref(self.ptr)
+        self.numTargetPoints = 0
 
         LIB.mnt_vectorinterp_new.argtypes = [POINTER(c_void_p)]
         ier = LIB.mnt_vectorinterp_new(self.obj)
@@ -69,16 +70,20 @@ class VectorInterp(object):
 
     def findPoints(self, targetPoints, tol2):
         """
-        Find the cells containing the points.
+        Find the cells containing the target points.
 
         :param targetPoints: array of size numPoints times 3
         :param tol2: square of the distance tolerance
         :returns the number of points outside the domain
         """
+        if len(targetPoints.shape) != 2:
+            raise RuntimeError(f'ERROR: targetPoints should have two dimensions numTargetPoints * 3 (got {targetPoints.shape})')
+        if targetPoints.shape[-1] != 3:
+            raise RuntimeError(f"ERROR: targetPoints' last dimension should be 3 (got {targetPoints.shape[-1]})")
         LIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p), c_int,
                                                     DOUBLE_ARRAY_PTR, c_double]
-        self.numPoints = targetPoints.shape[0]
-        numBad = LIB.mnt_vectorinterp_findPoints(self.obj, self.numPoints,
+        self.numTargetPoints = targetPoints.shape[0]
+        numBad = LIB.mnt_vectorinterp_findPoints(self.obj, self.numTargetPoints,
                                                  targetPoints, tol2)
         return numBad
 
@@ -87,12 +92,13 @@ class VectorInterp(object):
         Get the vectors at the target points.
 
         :param data: edge data array of size numCells times 4
+        :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints
         """
         LIB.mnt_vectorinterp_getVectors.argtypes = [POINTER(c_void_p),
                                                     DOUBLE_ARRAY_PTR,
                                                     DOUBLE_ARRAY_PTR]
-        res = numpy.zeros((self.numPoints, 3), numpy.float64)
+        res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
         ier = LIB.mnt_vectorinterp_getVectors(self.obj, data, res)
         if ier:
             error_handler(FILE, 'getVectors', ier)

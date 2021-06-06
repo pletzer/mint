@@ -69,6 +69,9 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
                                                          cell, pcoords, weights);
         if ((*self)->cellIds[i] < 0) {
             // outside the domain?
+            std::cerr << "Warning: target point " << 
+                          targetPoints[3*i] << ',' << targetPoints[3*i + 1] << ',' << targetPoints[3*i + 2] << 
+                          " is outside of the domain\n";
             numFailures++;
             continue;
         }
