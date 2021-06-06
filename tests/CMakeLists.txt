@@ -190,6 +190,13 @@ target_link_libraries(testCellLocator
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testVectorInterp testVectorInterp.cxx)
+target_link_libraries(testVectorInterp
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testC2fString testC2fString.f90)
 set_target_properties(testC2fString PROPERTIES LINKER_LANGUAGE Fortran)
 target_link_libraries(testC2fString
@@ -306,6 +313,7 @@ add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME cellLocator COMMAND testCellLocator)
+add_test(NAME vectorInterp COMMAND testVectorInterp)
 add_test(NAME exprParser COMMAND testExprParser)
 add_test(NAME size COMMAND testSize)
 add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC)

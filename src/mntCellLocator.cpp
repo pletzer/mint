@@ -36,8 +36,9 @@ int mnt_celllocator_del(CellLocator_t** self) {
 
 extern "C"
 int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::size_t ncells, 
-		                         const double points[]) {
-    int ier = mnt_grid_setPointsPtr(&(*self)->gridt, nVertsPerCell, ncells, points);
+                                 double points[]) {
+    int ier = mnt_grid_setPointsPtr(&(*self)->gridt, points);
+    ier = mnt_grid_build(&(*self)->gridt, nVertsPerCell, ncells);
     return ier;
 }
 

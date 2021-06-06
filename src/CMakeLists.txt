@@ -38,6 +38,7 @@ set(LIB_FILES
   mnt_ncdimensions_capi_mod.f90
   mnt_ncattributes_capi_mod.f90
   mntWeights.cpp
+  mntVectorInterp.cpp
 )
 
 set(HEADER_FILES
@@ -66,6 +67,7 @@ set(HEADER_FILES
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h
   mntWeights.h
+  mntVectorInterp.h
 )
 
 if (VTK_VERSION VERSION_LESS "8.90.0")
