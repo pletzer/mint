@@ -1,8 +1,6 @@
 from mint import Grid
 from mint import VectorInterp
 import numpy
-import sys
-from pathlib import Path
 import vtk
 
 
@@ -20,19 +18,20 @@ def generateStructuredGridPoints(nx, ny, v0, v1, v2, v3):
     # parametric
     nx1 = nx + 1
     ny1 = ny + 1
-    x = numpy.linspace(0., 1., nx + 1)
-    y = numpy.linspace(0., 1., ny + 1)
+    x = numpy.linspace(0., 1., nx1)
+    y = numpy.linspace(0., 1., ny1)
     xx1, yy1 = numpy.meshgrid(x, y, indexing='ij')
     xx0 = 1.0 - xx1
     yy0 = 1.0 - yy1
     # structured points
-    spts = numpy.zeros(list(xx0.shape) + [3,], numpy.float64)
+    spts = numpy.zeros(list(xx0.shape) + [3], numpy.float64)
     for j in range(3):
         spts[..., j] = xx0*yy0*v0[j] + \
                        xx1*yy0*v1[j] + \
                        xx1*yy1*v2[j] + \
                        xx0*yy1*v3[j]
     return spts
+
 
 def getCellByCellPoints(spts):
     """
@@ -48,6 +47,7 @@ def getCellByCellPoints(spts):
     res[:, 2, :] = spts[+1:, +1:, :].reshape((nx*ny, 3))
     res[:, 3, :] = spts[:-1, +1:, :].reshape((nx*ny, 3))
     return res
+
 
 def saveVectorsVTKFile(spts, vectors, filename):
     """
@@ -89,6 +89,7 @@ def saveVectorsVTKFile(spts, vectors, filename):
     writer.SetInputData(sgrid)
     writer.Update()
 
+
 def test_rectilinear(nx, ny, nxTarget, nyTarget):
 
     v0 = (0., 0., 0.)
@@ -97,7 +98,9 @@ def test_rectilinear(nx, ny, nxTarget, nyTarget):
     v3 = (0., 1., 0.)
     # create the grid
     gr = Grid()
-    cellPoints = getCellByCellPoints(generateStructuredGridPoints(nx, ny, v0, v1, v2, v3))
+    cellPoints = getCellByCellPoints(generateStructuredGridPoints(nx, ny,
+                                                                  v0, v1,
+                                                                  v2, v3))
     gr.setPoints(cellPoints)
     numCells = cellPoints.shape[0]
 
@@ -107,14 +110,15 @@ def test_rectilinear(nx, ny, nxTarget, nyTarget):
     vi.buildLocator(numCellsPerBucket=1, periodX=0.)
 
     # generate targets point for the above grid
-    targetPoints = generateStructuredGridPoints(nxTarget, nyTarget, v0, v1, v2, v3).reshape(-1, 3)
+    targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
+                                                v0, v1,
+                                                v2, v3).reshape(-1, 3)
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
 
     # generate edge data
     data = numpy.zeros((numCells, 4), numpy.float64)
-    i = 0
     for cellId in range(numCells):
         # iterate over the edges of the source grid cells
         for edgeIndex in range(4):
@@ -124,9 +128,12 @@ def test_rectilinear(nx, ny, nxTarget, nyTarget):
 
             # get the interpolated vectors
             vectorData = vi.getVectors(numpy.array(data))
+            assert(abs(vectorData.max() - 1.) < 1.e-12)
+            assert(abs(vectorData.min() - 0.) < 1.e-12)
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
+
 
 def test_slanted(nx, ny, nxTarget, nyTarget):
 
@@ -136,7 +143,9 @@ def test_slanted(nx, ny, nxTarget, nyTarget):
     v3 = (0.5, 1., 0.)
     # create the grid
     gr = Grid()
-    cellPoints = getCellByCellPoints(generateStructuredGridPoints(nx, ny, v0, v1, v2, v3))
+    cellPoints = getCellByCellPoints(generateStructuredGridPoints(nx, ny,
+                                                                  v0, v1,
+                                                                  v2, v3))
     gr.setPoints(cellPoints)
     numCells = cellPoints.shape[0]
 
@@ -146,14 +155,14 @@ def test_slanted(nx, ny, nxTarget, nyTarget):
     vi.buildLocator(numCellsPerBucket=1, periodX=0.)
 
     # generate targets point for the above grid
-    targetPoints = generateStructuredGridPoints(nxTarget, nyTarget, v0, v1, v2, v3).reshape(-1, 3)
+    targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
+                                                v0, v1, v2, v3).reshape(-1, 3)
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
 
     # generate edge data
     data = numpy.zeros((numCells, 4), numpy.float64)
-    i = 0
     for cellId in range(numCells):
         # iterate over the edges of the source grid cells
         for edgeIndex in range(4):
@@ -167,17 +176,21 @@ def test_slanted(nx, ny, nxTarget, nyTarget):
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
 
-            saveVectorsVTKFile(targetPoints, vectorData, f'slanted_cellId{cellId}edgeIndex{edgeIndex}.vtk')
+            fileName = f'slanted_cellId{cellId}edgeIndex{edgeIndex}.vtk'
+            saveVectorsVTKFile(targetPoints, vectorData, fileName)
+
 
 def test_degenerate(nx, ny, nxTarget, nyTarget):
 
     v0 = (0., 0., 0.)
     v1 = (1., 1., 0.)
-    v2 = (1., 1., 0.) # degenerate point
+    v2 = (1., 1., 0.)  # degenerate point
     v3 = (0., 1., 0.)
     # create the grid
     gr = Grid()
-    cellPoints = getCellByCellPoints(generateStructuredGridPoints(nx, ny, v0, v1, v2, v3))
+    cellPoints = getCellByCellPoints(generateStructuredGridPoints(nx, ny,
+                                                                  v0, v1,
+                                                                  v2, v3))
     gr.setPoints(cellPoints)
     numCells = cellPoints.shape[0]
 
@@ -187,14 +200,14 @@ def test_degenerate(nx, ny, nxTarget, nyTarget):
     vi.buildLocator(numCellsPerBucket=1, periodX=0.)
 
     # generate targets point for the above grid
-    targetPoints = generateStructuredGridPoints(nxTarget, nyTarget, v0, v1, v2, v3).reshape(-1, 3)
+    targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
+                                                v0, v1, v2, v3).reshape(-1, 3)
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
 
     # generate edge data
     data = numpy.zeros((numCells, 4), numpy.float64)
-    i = 0
     for cellId in range(numCells):
         # iterate over the edges of the source grid cells
         for edgeIndex in range(4):
@@ -208,7 +221,8 @@ def test_degenerate(nx, ny, nxTarget, nyTarget):
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
 
-            saveVectorsVTKFile(targetPoints, vectorData, f'degenerate_cellId{cellId}edgeIndex{edgeIndex}.vtk')
+            fileName = f'degenerate_cellId{cellId}edgeIndex{edgeIndex}.vtk'
+            saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
 
 if __name__ == '__main__':
@@ -216,5 +230,3 @@ if __name__ == '__main__':
     test_rectilinear(1, 1, 2, 3)
     test_slanted(1, 1, 4, 5)
     test_degenerate(1, 1, 12, 11)
-
-
