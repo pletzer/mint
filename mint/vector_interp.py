@@ -1,5 +1,5 @@
 from ctypes import (c_void_p, c_int, byref, POINTER,
-                    c_double)
+                    c_double, c_size_t)
 from . import LIB
 import numpy
 
@@ -80,7 +80,7 @@ class VectorInterp(object):
             raise RuntimeError(f'ERROR: targetPoints should have two dimensions numTargetPoints * 3 (got {targetPoints.shape})')
         if targetPoints.shape[-1] != 3:
             raise RuntimeError(f"ERROR: targetPoints' last dimension should be 3 (got {targetPoints.shape[-1]})")
-        LIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p), c_int,
+        LIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p), c_size_t,
                                                     DOUBLE_ARRAY_PTR, c_double]
         self.numTargetPoints = targetPoints.shape[0]
         numBad = LIB.mnt_vectorinterp_findPoints(self.obj, self.numTargetPoints,
