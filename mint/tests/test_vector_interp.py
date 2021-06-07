@@ -90,7 +90,9 @@ def saveVectorsVTKFile(spts, vectors, filename):
     writer.Update()
 
 
-def test_rectilinear(nx, ny, nxTarget, nyTarget):
+def test_rectilinear():
+
+    nx, ny, nxTarget, nyTarget = 1, 1, 2, 3
 
     v0 = (0., 0., 0.)
     v1 = (1., 0., 0.)
@@ -135,7 +137,9 @@ def test_rectilinear(nx, ny, nxTarget, nyTarget):
             data[cellId, edgeIndex] = 0.0
 
 
-def test_slanted(nx, ny, nxTarget, nyTarget):
+def test_slanted():
+
+    nx, ny, nxTarget, nyTarget = 1, 1, 4, 5
 
     v0 = (0., 0., 0.)
     v1 = (1., 0., 0.)
@@ -180,7 +184,9 @@ def test_slanted(nx, ny, nxTarget, nyTarget):
             saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
 
-def test_degenerate(nx, ny, nxTarget, nyTarget):
+def test_degenerate():
+
+    nx, ny, nxTarget, nyTarget = 1, 1, 12, 11
 
     v0 = (0., 0., 0.)
     v1 = (1., 1., 0.)
@@ -227,6 +233,6 @@ def test_degenerate(nx, ny, nxTarget, nyTarget):
 
 if __name__ == '__main__':
 
-    test_rectilinear(1, 1, 2, 3)
-    test_slanted(1, 1, 4, 5)
-    test_degenerate(1, 1, 12, 11)
+    test_rectilinear()
+    test_slanted()
+    test_degenerate()
