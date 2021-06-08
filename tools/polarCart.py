@@ -50,7 +50,7 @@ class PolarCart:
         dy = (ymax - ymin)/float(self.ny)
 
         # construct the unstructured grid as a collection of 
-        # 2D cells. Each cell has its own cooordinates. Make
+        # 2D cells. Each cell has its own coordinates. Make
         # sure each cell's area is positive in lat-lon space
         # build unstructured grid
 

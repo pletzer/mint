@@ -67,7 +67,7 @@ for icell in range(ncells):
 		egrid.InsertNextCell(vtk.VTK_LINE, edgePtIds)
 		iedge += 1
 
-# add the adat to the edge grid
+# add the data to the edge grid
 egrid.GetCellData().AddArray(edata)
 
 # write the edge grid
