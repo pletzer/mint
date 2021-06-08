@@ -19,4 +19,4 @@ ys = args.y0 + args.a*numpy.sin(ts)
 res = ''
 for i in range(args.n + 1):
 	res += '({:15.12f}, {:15.12f}),'.format(xs[i], ys[i])
-print res
+print(res)

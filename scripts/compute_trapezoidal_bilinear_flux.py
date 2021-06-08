@@ -50,7 +50,7 @@ def vectorField(xy):
 	# find the cell and the pcoords
 	xyz = numpy.array([xy[0], xy[1], 0.])
 	cellId = cellLocator.FindCell(xyz, tol2, cell, pcoords, weights)
-	if cellId < 0: print 'ERROR cellId = ', cellId
+	if cellId < 0: print('ERROR cellId = ', cellId)
 
 	grid.GetCellPoints(cellId, ptIds)
 
@@ -79,4 +79,4 @@ for i in range(ncells):
 	xy1 = xy[i + 1, :]
 	flux += integratedFlux(xy0, xy1)
 
-print 'flux = {:16.12f}'.format(flux)
+print('flux = {:16.12f}'.format(flux))

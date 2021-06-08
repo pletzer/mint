@@ -31,4 +31,4 @@ for i in range(ncells):
 	xy1 = xy[i + 1, :]
 	flux += integratedFlux(xy0, xy1)
 
-print 'flux = {:16.12f}'.format(flux)
+print('flux = {:16.12f}'.format(flux))
