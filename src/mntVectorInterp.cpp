@@ -11,6 +11,7 @@ int mnt_vectorinterp_new(VectorInterp_t** self) {
     (*self)->grid = NULL;
     (*self)->locator = NULL;
     (*self)->ownsLocator = false;
+    (*self)->calledFindPoints = false;
     return 0;
 }
 
@@ -40,12 +41,19 @@ int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator) 
 
 extern "C"
 int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX) {
+
+    if (!(*self)->grid) {
+        std::cerr << "ERROR: must call setGrid before invoking buildLocator\n";
+        return -1;
+    }
+
     (*self)->ownsLocator = true;
     (*self)->locator = vmtCellLocator::New();
     (*self)->locator->SetDataSet((*self)->grid->grid);
     (*self)->locator->SetNumberOfCellsPerBucket(numCellsPerBucket);
     (*self)->locator->BuildLocator();
     (*self)->locator->setPeriodicityLengthX(periodX);
+
     return 0;
 }
 
@@ -53,14 +61,18 @@ extern "C"
 int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints, 
                                     const double targetPoints[], double tol2) {
 
+    if (!(*self)->locator) {
+        std::cerr << "ERROR: must call either setLocator or buildLocator before invoking findPoints\n";
+        return -1;
+    }
+
     vtkGenericCell *cell = NULL;
     double weights[8];
     int numFailures = 0;
     double pcoords[3];
 
     (*self)->cellIds.resize(numPoints);
-    (*self)->xsi.resize(numPoints);
-    (*self)->eta.resize(numPoints);
+    (*self)->pcoords.resize(numPoints);
 
     for (std::size_t i = 0; i < numPoints; ++i) {
 
@@ -76,11 +88,15 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
             continue;
         }
 
-        // store the parametric coordinates of the target point 
-        (*self)->xsi[i] = pcoords[0];
-        (*self)->eta[i] = pcoords[1];
+        // store the parametric coordinates of the target point
+        for (std::size_t j = 0; j < 3; ++j) {
+            (*self)->pcoords[i][j] = pcoords[j];
+        }
 
     }
+
+    (*self)->calledFindPoints = true;
+
     return numFailures;
 }
 
@@ -88,12 +104,28 @@ extern "C"
 int mnt_vectorinterp_getVectors(VectorInterp_t** self, 
                                 const double data[], double vectors[]) {
 
+    if (!(*self)->calledFindPoints) {
+        std::cerr << "ERROR: must call findPoints before getting the vector\n";
+        return -1;
+    }
+    if (!(*self)->grid) {
+        std::cerr << "ERROR: must set the grid\n";
+        return -2;
+    }
+
+    if ((*self)->pcoords.size() == 0) {
+        std::cerr << "Warning: there is no target point in the domain\n";
+        return 2;
+    }
+
     int numFailures = 0;
     Vec3 v0, v1, v2, v3, gradXsi, gradEta;
 
-    for (std::size_t i = 0; i < (*self)->cellIds.size(); ++i) {
+    for (std::size_t iTargetId = 0;
+                     iTargetId < (*self)->cellIds.size(); 
+                     ++iTargetId) {
 
-        vtkIdType cellId = (*self)->cellIds[i];
+        vtkIdType cellId = (*self)->cellIds[iTargetId];
 
         if (cellId < 0) {
             numFailures++;
@@ -102,8 +134,8 @@ int mnt_vectorinterp_getVectors(VectorInterp_t** self,
         }
 
         // parametric coordinates of the target point 
-        double xsi = (*self)->xsi[i];
-        double eta = (*self)->eta[i];
+        double xsi = (*self)->pcoords[iTargetId][0];
+        double eta = (*self)->pcoords[iTargetId][1];
         double isx = 1.0 - xsi;
         double ate = 1.0 - eta;
 
@@ -136,14 +168,14 @@ int mnt_vectorinterp_getVectors(VectorInterp_t** self,
         gradEta[2] = 0.0;
 
         // interpolate
-        double data0 = data[cellId + 0];
-        double data1 = data[cellId + 1];
-        double data2 = data[cellId + 2];
-        double data3 = data[cellId + 3];
+        double data0 = data[cellId*4 + 0];
+        double data1 = data[cellId*4 + 1];
+        double data2 = data[cellId*4 + 2];
+        double data3 = data[cellId*4 + 3];
         for (std::size_t j = 0; j < 3; ++j) {
             // fill in the vector
-            vectors[i*3 + j] = (data0*ate + data2*eta)*gradXsi[j] + 
-                               (data3*isx + data1*xsi)*gradEta[j];
+            vectors[iTargetId*3 + j] = (data0*ate + data2*eta)*gradXsi[j] + 
+                                       (data3*isx + data1*xsi)*gradEta[j];
         }
 
     }

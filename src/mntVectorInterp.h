@@ -16,13 +16,14 @@ struct VectorInterp_t {
 
     // parametric coordinates for the quad, one per
     // target point
-    std::vector<double> xsi;
-    std::vector<double> eta;
+    std::vector<Vec3> pcoords;
 
     // cell locator, either a borrowed pointer or
     // or owned by the class
     vmtCellLocator* locator;
+
     bool ownsLocator;
+    bool calledFindPoints;
 };
 
 /**
