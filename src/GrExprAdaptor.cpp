@@ -1,7 +1,3 @@
-// -*-c++-*-
-// $Id: GrExprAdaptor.cpp 524 2013-10-01 03:24:44Z pletzer $
-
-// grin includes
 #include <GrExprAdaptor.h>
 
 // standard includes

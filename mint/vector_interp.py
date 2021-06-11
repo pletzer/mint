@@ -2,12 +2,13 @@ from ctypes import (c_void_p, c_int, byref, POINTER,
                     c_double, c_size_t)
 from . import LIB
 import numpy
+import logging
 
 
 def error_handler(filename, methodname, ier):
-    raise RuntimeError(
-        f'ERROR ier={ier} after calling {methodname} in {filename}!'
-        )
+    msg = f'ier={ier} after calling {methodname} in {filename}!'
+    logging.error(msg)
+    raise RuntimeError(msg)
 
 
 FILE = 'vectorinterp.py'

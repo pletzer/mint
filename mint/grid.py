@@ -2,13 +2,13 @@ from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
                     c_size_t, c_longlong, c_double)
 from . import LIB
 import numpy
+import logging
 
 
 def error_handler(filename, methodname, ier):
-    raise RuntimeError(
-        f'ERROR ier={ier} after calling {methodname} in {filename}!'
-        )
-
+    msg = f'ier={ier} after calling {methodname} in {filename}!'
+    logging.error(msg)
+    raise RuntimeError(msg)
 
 FILE = 'grid.py'
 DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)

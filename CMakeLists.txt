@@ -7,7 +7,6 @@
 # Project information
 project(mint)
 
-
 # Required version
 cmake_minimum_required(VERSION 3.1)
 
@@ -21,7 +20,6 @@ if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     message(STATUS "CMAKE_BUILD_TYPE not specified -- setting to Release")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
-
 
 enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 11)

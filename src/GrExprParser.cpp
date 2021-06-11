@@ -1,7 +1,3 @@
-// -*-c++-*-
-// $Id: GrExprParser.cpp 495 2013-09-24 21:01:45Z pletzer $
-
-// grin includes
 #include <GrExprParser.h>
 
 // standard includes
