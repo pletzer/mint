@@ -1,9 +1,18 @@
 from ctypes import c_void_p, c_double, c_int, byref, POINTER, c_char_p, c_size_t
 from . import LIB
 import numpy
+import logging
+
 
 def error_handler(filename, methodname, ier):
-    raise RuntimeError(f'ERROR ier={ier} after calling {methodname} in {filename}!')
+    msg = f'ier={ier} after calling {methodname} in {filename}!'
+    logging.error(msg)
+    raise RuntimeError(msg)
+
+def warning_handler(filename, methodname, ier, detailedMsg=''):
+    msg = f'ier={ier} after calling {methodname} in {filename}!\n'
+    msg += detailedMsg
+    logging.warning(msg)
 
 FILE = 'regrid_edges.py'
 
@@ -135,7 +144,11 @@ class RegridEdges(object):
         LIB.mnt_regridedges_build.argtypes = [POINTER(c_void_p), c_int, c_double, c_int]
         ier = LIB.mnt_regridedges_build(self.obj, numCellsPerBucket, periodX, debug)
         if ier:
-            error_handler(FILE, 'build', ier)
+            warning_handler(FILE, 'build', ier, 
+                detailedMsg='''Some target lines could not be located within the grid. 
+This can happen if the targets fall outside of the source grid.
+Make sure the source grid flags have been set correctly for this grid.
+Also make sure periodX has been set to the periodicity length (360).''')
 
 
     def dumpWeights(self, filename):
