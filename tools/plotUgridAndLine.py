@@ -95,7 +95,7 @@ for i in range(numFaces):
 	# set the edge field values, edgeTuple is in the counterclockwise direction
 	edgeTuple = [0., 0., 0., 0.]
 
-	# get the edges attched to this face
+	# get the edges attached to this face
 	edgeIds = f2e[i, :]
 
 	index = 0

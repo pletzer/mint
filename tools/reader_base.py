@@ -82,6 +82,7 @@ class ReaderBase(object):
         """
         Save the grid to a VTK file
         @param filename VTK file
+        @param binary
         """
         writer = vtk.vtkUnstructuredGridWriter()
         if binary:
@@ -166,7 +167,8 @@ class ReaderBase(object):
         """
         Set vector field on cell points
         @param name name of the field
-        @param data array of size (numCells, 4)
+        @param uData array of size (numCells, 4)
+        @param vData
         """
         numCells = self.getNumberOfCells()
         self.pointVectorArray = numpy.zeros((numCells*4, 3), numpy.float64)

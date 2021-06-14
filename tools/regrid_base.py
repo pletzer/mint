@@ -33,7 +33,7 @@ class RegridBase(object):
     def setSrcFile(self, filename):
         """
         Set source grid and data from file
-        @param reader instance of ReaderBase
+        @param filename file name
         """
         self.srcReader.SetFileName(filename)
         self.srcReader.Update()
@@ -46,7 +46,7 @@ class RegridBase(object):
     def setDstFile(self, filename):
         """
         Set destination grid from file
-        @param reader instance of ReaderBase
+        @param filename file name
         """    
         self.dstReader.SetFileName(filename)
         self.dstReader.Update()
@@ -85,7 +85,7 @@ class RegridBase(object):
         numDstCells = self.dstGrid.GetNumberOfCells()
         # allocate space
         res = numpy.zeros((numDstCells, 4), numpy.float64)
-        # itererate over the desCellId, srcCellId pairs
+        # iterate over the desCellId, srcCellId pairs
         for k in self.weights:
             dstCellId, srcCellId = k
             res[dstCellId, :] += self.weights[k].dot(srcData[srcCellId, :])
@@ -106,7 +106,7 @@ class RegridBase(object):
     def saveDstEdgeData(self, varname, dstData, filename):
         """
         Save destination edge data cell by cell on the destination grid
-        @param variable name 
+        @param varname variable name
         @param dstData array of size numDstCells * 4 
         @param filename file name
         """

@@ -39,7 +39,7 @@ def saveTrajectory(sols, outputFile):
     """
     Save the trajectory to VTK file
     @param sols list of return values of odeint
-    @param filename
+    @param outputFile
     """
 
     # number of contours
