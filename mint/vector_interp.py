@@ -74,7 +74,7 @@ class VectorInterp(object):
         Find the cells containing the target points.
 
         :param targetPoints: array of size numPoints times 3
-        :param tol2: square of the distance tolerance
+        :param tol2: tolerance in the square of the distance
         :returns the number of points outside the domain
         """
         if len(targetPoints.shape) != 2:

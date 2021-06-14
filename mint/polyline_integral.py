@@ -52,7 +52,8 @@ class PolylineIntegral(object):
         :param grid: instance of Grid
         :param xyz: numpy array with npoints rows and 3 columns
         :param counterclock: orientation of the edges in the cell
-                             (false=positive in xi)
+                             (True=counterclockwise,
+                              False=positive in xi)
         :param periodX: periodicity length in x (longitudes),
                         Set to zero if non-periodic.
         """

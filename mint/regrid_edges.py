@@ -51,7 +51,7 @@ class RegridEdges(object):
 
         :param fixLonAcrossDateline: set to 1 if a periodicity length
                                      should be added/subtracted
-                                     to make eeach cell as compact as
+                                     to make each cell as compact as
                                      possible
         :param averageLonAtPole: set to 1 if the longitudes at the poles
                                  should be the average of the cells'
