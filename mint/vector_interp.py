@@ -74,17 +74,24 @@ class VectorInterp(object):
         Find the cells containing the target points.
 
         :param targetPoints: array of size numPoints times 3
-        :param tol2: square of the distance tolerance
+        :param tol2: tolerance in the square of the distance
         :returns the number of points outside the domain
         """
         if len(targetPoints.shape) != 2:
-            raise RuntimeError(f'ERROR: targetPoints should have two dimensions numTargetPoints * 3 (got {targetPoints.shape})')
+            msg = 'ERROR: targetPoints should have dims (numTargetPoints, 3)'\
+                  f', got {targetPoints.shape}'
+            raise RuntimeError(msg)
         if targetPoints.shape[-1] != 3:
-            raise RuntimeError(f"ERROR: targetPoints' last dimension should be 3 (got {targetPoints.shape[-1]})")
-        LIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p), c_size_t,
-                                                    DOUBLE_ARRAY_PTR, c_double]
+            msg = "ERROR: targetPoints' last dimension should be 3,"\
+                   f" got {targetPoints.shape[-1]}"
+            raise RuntimeError(msg)
+        LIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p),
+                                                    c_size_t,
+                                                    DOUBLE_ARRAY_PTR,
+                                                    c_double]
         self.numTargetPoints = targetPoints.shape[0]
-        numBad = LIB.mnt_vectorinterp_findPoints(self.obj, self.numTargetPoints,
+        numBad = LIB.mnt_vectorinterp_findPoints(self.obj,
+                                                 self.numTargetPoints,
                                                  targetPoints, tol2)
         return numBad
 
