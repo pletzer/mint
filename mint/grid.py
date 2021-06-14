@@ -5,13 +5,14 @@ import numpy
 import logging
 
 
+FILE = 'grid.py'
+DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
+
+
 def error_handler(filename, methodname, ier):
     msg = f'ier={ier} after calling {methodname} in {filename}!'
     logging.error(msg)
     raise RuntimeError(msg)
-
-FILE = 'grid.py'
-DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 
 
 class Grid(object):
@@ -108,7 +109,8 @@ class Grid(object):
         ncells, num_verts_per_cell, ndim = points.shape
         if ndim != 3:
             raise RuntimeError(f'ERROR: points.shape[2] != 3, got {ndim}!')
-        LIB.mnt_grid_setPointsPtr.argtypes = [POINTER(c_void_p), DOUBLE_ARRAY_PTR]
+        LIB.mnt_grid_setPointsPtr.argtypes = [POINTER(c_void_p),
+                                              DOUBLE_ARRAY_PTR]
         LIB.mnt_grid_build.argtypes = [POINTER(c_void_p), c_int, c_longlong]
         ier = LIB.mnt_grid_setPointsPtr(self.obj, points)
         if ier:
@@ -164,7 +166,6 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'computeEdgeArcLengths', ier)
 
-
     def getEdgeArcLength(self, cellId, edgeIndex):
         """
         Get the arch length for given cell and edge
@@ -173,13 +174,14 @@ class Grid(object):
         :returns length assuming radius of one
         """
         res = c_double()
-        LIB.mnt_grid_getEdgeArcLength.argtypes = [POINTER(c_void_p), c_longlong, c_int,
+        LIB.mnt_grid_getEdgeArcLength.argtypes = [POINTER(c_void_p),
+                                                  c_longlong, c_int,
                                                   POINTER(c_double)]
-        ier = LIB.mnt_grid_getEdgeArcLength(self.obj, cellId, edgeIndex, byref(res))
+        ier = LIB.mnt_grid_getEdgeArcLength(self.obj, cellId, edgeIndex,
+                                            byref(res))
         if ier:
             error_handler(FILE, 'getEdgeArcLength', ier)
         return res.value
-
 
     def attach(self, varname, data):
         """
@@ -190,10 +192,11 @@ class Grid(object):
         """
         nDataPerCell = 1
         if len(data.shape) > 1:
-        	nDataPerCell = data.shape[-1]
+            nDataPerCell = data.shape[-1]
         LIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int,
                                         DOUBLE_ARRAY_PTR]
-        # make a copy to ensure that the data exist during the life of this instance
+        # make a copy to ensure that the data exist during the life of
+        # this instance
         self.data[varname] = data.copy()
         ier = LIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
                                   nDataPerCell, self.data[varname])
@@ -226,4 +229,3 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'getNumberOfEdges', ier)
         return n.value
-
