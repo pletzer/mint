@@ -85,7 +85,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
                                 const double targetPoints[], double tol2);
 
 /**
- * Get the vectors at the target points
+ * Get the edge vectors at given target points
  * @param self instance of VectorInterp_t
  * @param data edge data, array of size numCells*4
  * @param vectors array of output vectors, size numPoints*3
@@ -94,7 +94,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
  *       will not be touched if the point falls out of the domain.
  */
 extern "C"
-int mnt_vectorinterp_getVectors(VectorInterp_t** self,
-                                const double data[], double vectors[]);
+int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
+                                    const double data[], double vectors[]);
 
 #endif // MNT_VECTOR_INTERP

@@ -96,9 +96,9 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.0) < 1.e-10 && fabs(resVec[1] - 3.0) < 1.e-10);
 
     target[0] = 1.;
@@ -106,9 +106,9 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.0) < 1.e-10 && fabs(resVec[1] - 1.0) < 1.e-10);
 
     target[0] = 1.;
@@ -116,9 +116,9 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 2.0) < 1.e-10 && fabs(resVec[1] - 1.0) < 1.e-10);
 
     target[0] = 0.;
@@ -126,9 +126,9 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 2.0) < 1.e-10 && fabs(resVec[1] - 3.0) < 1.e-10);
 
     // destroy
@@ -203,9 +203,9 @@ void testRotated() {
     target[2] = points[2];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
 
     target[0] = points[3];
@@ -213,9 +213,9 @@ void testRotated() {
     target[2] = points[5];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
 
     target[0] = points[6];
@@ -223,9 +223,9 @@ void testRotated() {
     target[2] = points[8];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0) < 1.e-12 && fabs(resVec[1] - 0) < 1.e-12);
 
     target[0] = points[9];
@@ -233,9 +233,9 @@ void testRotated() {
     target[2] = points[11];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0) < 1.e-12 && fabs(resVec[1] - 0) < 1.e-12);
 
     // destroy
@@ -287,8 +287,8 @@ void testUniformGrid(int nx, int ny) {
     mnt_vectorinterp_setLocator(&vp, cloc);
     double tol2 = 1.e-10;
     mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
-    mnt_vectorinterp_getVectors(&vp, &data[0], &resVec[0]);
-    std::cout << "at point " << target << " vector is " << resVec << '\n';
+    mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    std::cout << "at point " << target << " edge vector is " << resVec << '\n';
 
     // destroy
     mnt_vectorinterp_del(&vp);

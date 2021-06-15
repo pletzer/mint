@@ -95,19 +95,36 @@ class VectorInterp(object):
                                                  targetPoints, tol2)
         return numBad
 
-    def getVectors(self, data):
+    def getEdgeVectors(self, data):
         """
-        Get the vectors at the target points.
+        Get the edge vectors at given target points.
 
         :param data: edge data array of size numCells times 4
         :returns vector array of size numTargetPoints times 3
-        :note: call this after invoking findPoints
+        :note: call this after invoking findPoints.
         """
-        LIB.mnt_vectorinterp_getVectors.argtypes = [POINTER(c_void_p),
-                                                    DOUBLE_ARRAY_PTR,
-                                                    DOUBLE_ARRAY_PTR]
+        LIB.mnt_vectorinterp_getEdgeVectors.argtypes = [POINTER(c_void_p),
+                                                        DOUBLE_ARRAY_PTR,
+                                                        DOUBLE_ARRAY_PTR]
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = LIB.mnt_vectorinterp_getVectors(self.obj, data, res)
+        ier = LIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, res)
         if ier:
-            error_handler(FILE, 'getVectors', ier)
+            error_handler(FILE, 'getEdgeVectors', ier)
+        return res
+
+    def getFaceVectors(self, data):
+        """
+        Get the lateral face vectors at given target points.
+
+        :param data: edge data array of size numCells times 4
+        :returns vector array of size numTargetPoints times 3
+        :note: call this after invoking findPoints.
+        """
+        LIB.mnt_vectorinterp_getFaceVectors.argtypes = [POINTER(c_void_p),
+                                                        DOUBLE_ARRAY_PTR,
+                                                        DOUBLE_ARRAY_PTR]
+        res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
+        ier = LIB.mnt_vectorinterp_getFaceVectors(self.obj, data, res)
+        if ier:
+            error_handler(FILE, 'getFaceVectors', ier)
         return res
