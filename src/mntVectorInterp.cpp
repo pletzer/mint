@@ -105,11 +105,11 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
                                     const double data[], double vectors[]) {
 
     if (!(*self)->calledFindPoints) {
-        std::cerr << "ERROR: must call findPoints before getting the vector\n";
+        std::cerr << "ERROR: must call findPoints before calling getEdgeVectors\n";
         return -1;
     }
     if (!(*self)->grid) {
-        std::cerr << "ERROR: must set the grid\n";
+        std::cerr << "ERROR: must set the grid before calling getEdgeVectors\n";
         return -2;
     }
 
@@ -187,11 +187,11 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     const double data[], double vectors[]) {
 
     if (!(*self)->calledFindPoints) {
-        std::cerr << "ERROR: must call findPoints before getting the vector\n";
+        std::cerr << "ERROR: must call findPoints before calling getFaceVectors\n";
         return -1;
     }
     if (!(*self)->grid) {
-        std::cerr << "ERROR: must set the grid\n";
+        std::cerr << "ERROR: must set the grid before calling getFaceVectors\n";
         return -2;
     }
 
@@ -252,6 +252,6 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
         }
     }
 
-    return 0;
+    return numFailures;
 }
 
