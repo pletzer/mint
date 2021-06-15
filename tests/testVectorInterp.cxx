@@ -198,6 +198,7 @@ void testRotated() {
     std::vector<double> data{1, 0, 0, 0};
     Vec3 target, resVec;
 
+    // basis vector at south edge
     target[0] = points[0];
     target[1] = points[1];
     target[2] = points[2];
@@ -221,6 +222,10 @@ void testRotated() {
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " face vector is " << resVec << '\n';
+    assert(fabs(resVec[1] - 0.8660254037844) < 1.e-12 && fabs(resVec[0] + 0.5) < 1.e-12);
 
     target[0] = points[6];
     target[1] = points[7];
@@ -241,6 +246,54 @@ void testRotated() {
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0) < 1.e-12 && fabs(resVec[1] - 0) < 1.e-12);
+
+    // basis vector at east edge
+    data[0] = 0.0; data[1] = 1.0; data[2] = 0.0; data[3] = 0.0;
+    target[0] = 0.5*(points[3] + points[6]);
+    target[1] = 0.5*(points[4] + points[7]);
+    target[2] = 0.5*(points[5] + points[8]);
+    ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " east edge vector is " << resVec << '\n';
+    assert(fabs(resVec[0] + 0.5) < 1.e-12 && fabs(resVec[1] - 0.8660254037844) < 1.e-12);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " east face vector is " << resVec << '\n';
+    assert(fabs(resVec[1] - 0.5) < 1.e-12 && fabs(resVec[0] - 0.8660254037844) < 1.e-12);
+
+    // basis vector at west edge
+    data[0] = 0.0; data[1] = 0.0; data[2] = 0.0; data[3] = 1.0;
+    target[0] = 0.5*(points[ 9] + points[0]);
+    target[1] = 0.5*(points[10] + points[1]);
+    target[2] = 0.5*(points[11] + points[2]);
+    ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " west edge vector is " << resVec << '\n';
+    assert(fabs(resVec[0] + 0.5) < 1.e-12 && fabs(resVec[1] - 0.8660254037844) < 1.e-12);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " west face vector is " << resVec << '\n';
+    assert(fabs(resVec[1] - 0.5) < 1.e-12 && fabs(resVec[0] - 0.8660254037844) < 1.e-12);
+
+    // basis vector at north edge
+    data[0] = 0.0; data[1] = 0.0; data[2] = 1.0; data[3] = 0.0;
+    target[0] = 0.5*(points[ 6] + points[ 9]);
+    target[1] = 0.5*(points[ 7] + points[10]);
+    target[2] = 0.5*(points[ 8] + points[11]);
+    ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " north edge vector is " << resVec << '\n';
+    assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " north face vector is " << resVec << '\n';
+    assert(fabs(resVec[1] - 0.8660254037844) < 1.e-12 && fabs(resVec[0] + 0.5) < 1.e-12);
 
     // destroy
     ier = mnt_vectorinterp_del(&vp);
