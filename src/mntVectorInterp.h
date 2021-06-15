@@ -97,4 +97,17 @@ extern "C"
 int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
                                     const double data[], double vectors[]);
 
+/**
+ * Get the face vectors at given target points
+ * @param self instance of VectorInterp_t
+ * @param data edge data, array of size numCells*4
+ * @param vectors array of output vectors, size numPoints*3
+ * @return error code (0 = OK)
+ * @note call this after mnt_vectorinterp_findPoints. The returned vectors
+ *       will not be touched if the point falls out of the domain.
+ */
+extern "C"
+int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
+                                    const double data[], double vectors[]);
+
 #endif // MNT_VECTOR_INTERP

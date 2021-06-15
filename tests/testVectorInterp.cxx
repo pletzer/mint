@@ -289,6 +289,8 @@ void testUniformGrid(int nx, int ny) {
     mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
+    mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    std::cout << "at point " << target << " face vector is " << resVec << '\n';
 
     // destroy
     mnt_vectorinterp_del(&vp);
