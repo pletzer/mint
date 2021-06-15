@@ -1,9 +1,6 @@
 #include <mntVectorInterp.h>
 #include <vtkGenericCell.h>
 
-double crossDotZHat(const Vec3& a, const Vec3& b) {
-    return a[0]*b[1] - a[1]*b[0];
-}
 
 extern "C" 
 int mnt_vectorinterp_new(VectorInterp_t** self) {
@@ -119,7 +116,8 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
     }
 
     int numFailures = 0;
-    Vec3 v0, v1, v2, v3, gradXsi, gradEta;
+    Vec3 drdXsi, drdEta, gradXsi, gradEta;
+    double jac;
 
     for (std::size_t iTargetId = 0;
                      iTargetId < (*self)->cellIds.size(); 
@@ -133,30 +131,7 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
             continue;
         }
 
-        // parametric coordinates of the target point 
-        double xsi = (*self)->pcoords[iTargetId][0];
-        double eta = (*self)->pcoords[iTargetId][1];
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
-
-        // get the cell vertices, this should never fail 
-        mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
-        mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
-
-        // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(v1 - v0, v3 - v0);
-        double a120 = crossDotZHat(v2 - v1, v0 - v1);
-        double a231 = crossDotZHat(v3 - v2, v1 - v2);
-        double a302 = crossDotZHat(v0 - v3, v2 - v3);
-
-        // Jacobian for this quad, should be a strictly positive quantity if nodes are
-        // ordered correctly
-        double jac = 0.25*(a013 + a120 + a231 + a302);
-
-        // cotangent vectors obtained by finite differencing and linearly interpolating
-        // in the other direction
-        Vec3 drdXsi = ate*(v1 - v0) + eta*(v2 - v3);
-        Vec3 drdEta = isx*(v3 - v0) + xsi*(v2 - v1);
+        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, jac);
 
         // contravariant bases
         gradXsi[0] = + drdEta[1]/jac;
@@ -166,6 +141,12 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
         gradEta[0] = - drdXsi[1]/jac;
         gradEta[1] = + drdXsi[0]/jac;
         gradEta[2] = 0.0;
+
+        // parametric coordinates of the target point 
+        double xsi = (*self)->pcoords[iTargetId][0];
+        double eta = (*self)->pcoords[iTargetId][1];
+        double isx = 1.0 - xsi;
+        double ate = 1.0 - eta;
 
         // interpolate
         double data0 = data[cellId*4 + 0];
@@ -179,7 +160,7 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
         }
     }
 
-    return 0;
+    return numFailures;
 }
 
 extern "C"
@@ -201,7 +182,8 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
     }
 
     int numFailures = 0;
-    Vec3 v0, v1, v2, v3, gradXsi, gradEta;
+    Vec3 drdXsi, drdEta, gradXsi, gradEta;
+    double jac;
 
     for (std::size_t iTargetId = 0;
                      iTargetId < (*self)->cellIds.size(); 
@@ -215,30 +197,13 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
             continue;
         }
 
+        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, jac);
+
         // parametric coordinates of the target point 
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
         double isx = 1.0 - xsi;
         double ate = 1.0 - eta;
-
-        // get the cell vertices, this should never fail 
-        mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
-        mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
-
-        // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(v1 - v0, v3 - v0);
-        double a120 = crossDotZHat(v2 - v1, v0 - v1);
-        double a231 = crossDotZHat(v3 - v2, v1 - v2);
-        double a302 = crossDotZHat(v0 - v3, v2 - v3);
-
-        // Jacobian for this quad, should be a strictly positive quantity if nodes are
-        // ordered correctly
-        double jac = 0.25*(a013 + a120 + a231 + a302);
-
-        // cotangent vectors obtained by finite differencing and linearly interpolating
-        // in the other direction
-        Vec3 drdXsi = ate*(v1 - v0) + eta*(v2 - v3);
-        Vec3 drdEta = isx*(v3 - v0) + xsi*(v2 - v1);
 
         // interpolate
         double data0 = data[cellId*4 + 0];

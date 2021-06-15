@@ -110,4 +110,41 @@ extern "C"
 int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     const double data[], double vectors[]);
 
+/* private */
+
+inline double crossDotZHat(const Vec3& a, const Vec3& b) {
+    return a[0]*b[1] - a[1]*b[0];
+}
+
+inline void mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
+                                                Vec3& drdXsi, Vec3& drdEta, double& jac) {
+
+        Vec3 v0, v1, v2, v3;
+        vtkIdType cellId = (*self)->cellIds[iTargetId];
+
+        // parametric coordinates of the target point 
+        double xsi = (*self)->pcoords[iTargetId][0];
+        double eta = (*self)->pcoords[iTargetId][1];
+        double isx = 1.0 - xsi;
+        double ate = 1.0 - eta;
+
+        // get the cell vertices, this should never fail 
+        mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
+        mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
+
+        // Jacobians attached to each vertex (can be zero if points are degenerate)
+        double a013 = crossDotZHat(v1 - v0, v3 - v0);
+        double a120 = crossDotZHat(v2 - v1, v0 - v1);
+        double a231 = crossDotZHat(v3 - v2, v1 - v2);
+        double a302 = crossDotZHat(v0 - v3, v2 - v3);
+
+        // Jacobian for this quad, should be a strictly positive quantity if nodes are
+        // ordered correctly
+        jac = 0.25*(a013 + a120 + a231 + a302);
+
+        // cotangent vectors obtained by finite differencing and linearly interpolating
+        // in the other direction
+        drdXsi = ate*(v1 - v0) + eta*(v2 - v3);
+        drdEta = isx*(v3 - v0) + xsi*(v2 - v1);
+}
 #endif // MNT_VECTOR_INTERP
