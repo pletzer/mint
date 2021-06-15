@@ -177,7 +177,6 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
             vectors[iTargetId*3 + j] = (data0*ate + data2*eta)*gradXsi[j] + 
                                        (data3*isx + data1*xsi)*gradEta[j];
         }
-
     }
 
     return 0;
@@ -248,10 +247,9 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
         double data3 = data[cellId*4 + 3];
         for (std::size_t j = 0; j < 3; ++j) {
             // fill in the vector
-            vectors[iTargetId*3 + j] = (data0*ate + data2*eta)*drdXsi[j]/jac + 
-                                       (data3*isx + data1*xsi)*drdEta[j]/jac;
+            vectors[iTargetId*3 + j] = (data0*ate + data2*eta)*drdEta[j]/jac + 
+                                       (data3*isx + data1*xsi)*drdXsi[j]/jac;
         }
-
     }
 
     return 0;

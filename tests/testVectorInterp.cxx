@@ -207,6 +207,10 @@ void testRotated() {
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    assert(ier == 0);
+    std::cout << "at point " << target << " face vector is " << resVec << '\n';
+    assert(fabs(resVec[1] - 0.8660254037844) < 1.e-12 && fabs(resVec[0] + 0.5) < 1.e-12);
 
     target[0] = points[3];
     target[1] = points[4];
