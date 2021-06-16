@@ -5,14 +5,20 @@ import numpy
 import logging
 
 
+FILE = 'vectorinterp.py'
+DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
+
+
 def error_handler(filename, methodname, ier):
     msg = f'ier={ier} after calling {methodname} in {filename}!'
     logging.error(msg)
     raise RuntimeError(msg)
 
 
-FILE = 'vectorinterp.py'
-DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
+def warning_handler(filename, methodname, ier, detailedMsg=''):
+    msg = f'ier={ier} after calling {methodname} in {filename}!\n'
+    msg += detailedMsg
+    logging.warning(msg)
 
 
 class VectorInterp(object):
@@ -109,7 +115,8 @@ class VectorInterp(object):
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
         ier = LIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, res)
         if ier:
-            error_handler(FILE, 'getEdgeVectors', ier)
+            msg = "Some target lines fall outside the grid."
+            warning_handler(FILE, 'getEdgeVectors', ier, detailedMsg=msg)
         return res
 
     def getFaceVectors(self, data):
@@ -126,5 +133,6 @@ class VectorInterp(object):
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
         ier = LIB.mnt_vectorinterp_getFaceVectors(self.obj, data, res)
         if ier:
-            error_handler(FILE, 'getFaceVectors', ier)
+            msg = "Some target lines fall outside the grid."
+            warning_handler(FILE, 'getFaceVectors', ier, detailedMsg=msg)
         return res

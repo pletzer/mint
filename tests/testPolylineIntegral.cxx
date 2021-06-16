@@ -17,6 +17,12 @@ double potential2(const double p[]) {
     return x;
 }
 
+double singularPotential(const double p[]) {
+    const double x = p[0];
+    const double y = p[1];    
+    return atan2(y, x)/(2*M_PI);
+}
+
 void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx, size_t ny,
                    double (*potentialFunc)(const double p[]), const std::vector<double>& xyz) {
 
@@ -64,7 +70,7 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
             verts[4*3*k + 11] = 0.;
 
             // set the edge integrals, just a difference of potential
-            // notre the orientation of the edges
+            // note the orientation of the edges
             //      2
             //  3 -->---2
             //  |       |
@@ -135,6 +141,15 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
 }
 
 int main(int argc, char** argv) {
+
+    {
+        std::cerr << "Test singular:\n";
+        // set the (open) contour to integrate the flux over
+        std::vector<double> xyz({1., 0., 0.,
+                                 0., 1., 0.});
+        testCartesian(0., 1., 0., 1., 10, 10, singularPotential, xyz);
+        std::cerr << "SUCCESS\n";
+    }
 
     {
         std::cerr << "Test 1:\n";
