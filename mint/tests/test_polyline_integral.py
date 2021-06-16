@@ -1,7 +1,5 @@
 from mint import Grid, PolylineIntegral
 import numpy
-import sys
-from pathlib import Path
 
 
 def potentialFunc(p):
@@ -14,12 +12,11 @@ def singularPotentialFunc(p):
     return numpy.arctan2(y, x)/(2.*numpy.pi)
 
 
-def test_simple(potFunc, xyz):
+def test_simple(nx, ny, potFunc, xyz):
 
     # create the grid and the edge data
     gr = Grid()
 
-    nx, ny = 3, 2
     points = numpy.zeros((nx*ny, 4, 3), numpy.float64)
     data = numpy.zeros((nx*ny, 4))
     dx = 1.0 / float(nx)
@@ -62,7 +59,6 @@ def test_simple(potFunc, xyz):
     gr.setPoints(points)
     gr.dump('test_polyline_integral.vtk')
 
-
     pli = PolylineIntegral()
     # no periodicity in x
     pli.build(gr, xyz, counterclock=False, periodX=0.0)
@@ -72,13 +68,13 @@ def test_simple(potFunc, xyz):
     print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
     assert abs(flux - exactFlux) < 1.e-10
 
-def test_partially_outside():
+
+def test_partially_outside(nx, ny, potFunc):
 
     print('target line is partially outside the domain, expect a warning!')
     # create the grid and the edge data
     gr = Grid()
 
-    nx, ny = 3, 2
     points = numpy.zeros((nx*ny, 4, 3), numpy.float64)
     data = numpy.zeros((nx*ny, 4))
     dx = 1.0 / float(nx)
@@ -110,10 +106,10 @@ def test_partially_outside():
             #  |     |
             #  +-->--+
             #     0
-            data[k, 0] = potentialFunc(points[k, 1, :]) - potentialFunc(points[k, 0, :])
-            data[k, 1] = potentialFunc(points[k, 2, :]) - potentialFunc(points[k, 1, :])
-            data[k, 2] = potentialFunc(points[k, 2, :]) - potentialFunc(points[k, 3, :])
-            data[k, 3] = potentialFunc(points[k, 3, :]) - potentialFunc(points[k, 0, :])
+            data[k, 0] = potFunc(points[k, 1, :]) - potFunc(points[k, 0, :])
+            data[k, 1] = potFunc(points[k, 2, :]) - potFunc(points[k, 1, :])
+            data[k, 2] = potFunc(points[k, 2, :]) - potFunc(points[k, 3, :])
+            data[k, 3] = potFunc(points[k, 3, :]) - potFunc(points[k, 0, :])
 
             # increment the cell counter
             k += 1
@@ -134,20 +130,20 @@ def test_partially_outside():
     flux = pli.getIntegral(data)
 
     # because the first point is outside the domain, only the contribution
-    # stemming from the path inside the domain will be computed. Let's 
+    # stemming from the path inside the domain will be computed. Let's
     # correct for this by moving the first point inwards
     xyz[0, 0] = 0.
     exactFlux = potentialFunc(xyz[-1, :]) - potentialFunc(xyz[0, :])
     print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
     assert abs(flux - exactFlux) < 1.e-10
 
-def test_completely_outside():
+
+def test_completely_outside(nx, ny, potFunc):
 
     print('target line is outside the domain, expect warnings!')
     # create the grid and the edge data
     gr = Grid()
 
-    nx, ny = 3, 2
     points = numpy.zeros((nx*ny, 4, 3), numpy.float64)
     data = numpy.zeros((nx*ny, 4))
     dx = 1.0 / float(nx)
@@ -179,10 +175,10 @@ def test_completely_outside():
             #  |     |
             #  +-->--+
             #     0
-            data[k, 0] = potentialFunc(points[k, 1, :]) - potentialFunc(points[k, 0, :])
-            data[k, 1] = potentialFunc(points[k, 2, :]) - potentialFunc(points[k, 1, :])
-            data[k, 2] = potentialFunc(points[k, 2, :]) - potentialFunc(points[k, 3, :])
-            data[k, 3] = potentialFunc(points[k, 3, :]) - potentialFunc(points[k, 0, :])
+            data[k, 0] = potFunc(points[k, 1, :]) - potFunc(points[k, 0, :])
+            data[k, 1] = potFunc(points[k, 2, :]) - potFunc(points[k, 1, :])
+            data[k, 2] = potFunc(points[k, 2, :]) - potFunc(points[k, 3, :])
+            data[k, 3] = potFunc(points[k, 3, :]) - potFunc(points[k, 0, :])
 
             # increment the cell counter
             k += 1
@@ -211,15 +207,13 @@ if __name__ == '__main__':
     # polyline through which the line integral will be computed
     xyz = numpy.array([(1., 0., 0.),
                        (0., 1., 0.)])
-    test_simple(singularPotentialFunc, xyz)
+    test_simple(3, 2, singularPotentialFunc, xyz)
 
     xyz = numpy.array([(0., 0., 0.),
                        (1., 0., 0.),
                        (1., 1., 0.),
                        (0., 1., 0.)])
-    test_simple(potentialFunc, xyz)
+    test_simple(3, 2, potentialFunc, xyz)
 
-    test_partially_outside()
-    test_completely_outside()
-
-
+    test_partially_outside(2, 3, potentialFunc)
+    test_completely_outside(2, 3, potentialFunc)
