@@ -132,11 +132,16 @@ inline void mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size
         mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
         mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
 
+        Vec3 a = v1 - v0;
+        Vec3 b = v2 - v1;
+        Vec3 c = v2 - v3;
+        Vec3 d = v3 - v0;
+
         // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(v1 - v0, v3 - v0);
-        double a120 = crossDotZHat(v2 - v1, v0 - v1);
-        double a231 = crossDotZHat(v3 - v2, v1 - v2);
-        double a302 = crossDotZHat(v0 - v3, v2 - v3);
+        double a013 = crossDotZHat(a, d);
+        double a120 = crossDotZHat(a, b);
+        double a231 = crossDotZHat(c, b);
+        double a302 = crossDotZHat(c, d);
 
         // Jacobian for this quad, should be a strictly positive quantity if nodes are
         // ordered correctly
@@ -144,7 +149,8 @@ inline void mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size
 
         // cotangent vectors obtained by finite differencing and linearly interpolating
         // in the other direction
-        drdXsi = ate*(v1 - v0) + eta*(v2 - v3);
-        drdEta = isx*(v3 - v0) + xsi*(v2 - v1);
+        drdXsi = ate*a + eta*c;
+        drdEta = isx*d + xsi*b;
+
 }
 #endif // MNT_VECTOR_INTERP
