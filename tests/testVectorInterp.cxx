@@ -211,7 +211,8 @@ void testRotated() {
     ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
-    assert(fabs(resVec[1] - 0.8660254037844) < 1.e-12 && fabs(resVec[0] + 0.5) < 1.e-12);
+    // note negative sign because area is pointing down
+    assert(fabs(resVec[1] - (-0.8660254037844)) < 1.e-12 && fabs(resVec[0] - 0.5) < 1.e-12);
 
     target[0] = points[3];
     target[1] = points[4];
@@ -225,7 +226,8 @@ void testRotated() {
     ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
-    assert(fabs(resVec[1] - 0.8660254037844) < 1.e-12 && fabs(resVec[0] + 0.5) < 1.e-12);
+    // negative because area is pointing down
+    assert(fabs(resVec[1] - (-0.8660254037844)) < 1.e-12 && fabs(resVec[0] - 0.5) < 1.e-12);
 
     target[0] = points[6];
     target[1] = points[7];
@@ -293,7 +295,8 @@ void testRotated() {
     ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " north face vector is " << resVec << '\n';
-    assert(fabs(resVec[1] - 0.8660254037844) < 1.e-12 && fabs(resVec[0] + 0.5) < 1.e-12);
+    // note area is pointing down
+    assert(fabs(resVec[1] - (-0.8660254037844)) < 1.e-12 && fabs(resVec[0] - 0.5) < 1.e-12);
 
     // destroy
     ier = mnt_vectorinterp_del(&vp);

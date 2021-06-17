@@ -121,7 +121,7 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
 
         Vec3 v0, v1, v2, v3;
         vtkIdType cellId = (*self)->cellIds[iTargetId];
-        int numBadCells = 0;
+        int ier = 0;
 
         // parametric coordinates of the target point 
         double xsi = (*self)->pcoords[iTargetId][0];
@@ -150,7 +150,7 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         if (jac <= 0) {
             std::cerr << "Warning: bad cell " << cellId << " vertices: " 
                       << v0 << ',' << v1 << ',' << v2 << ',' << v3 << '\n';
-            numBadCells++;
+            ier = 1;
         }
 
         // cotangent vectors obtained by finite differencing and linearly interpolating
@@ -158,6 +158,6 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         drdXsi = ate*a + eta*c;
         drdEta = isx*d + xsi*b;
 
-        return numBadCells;
+        return ier;
 }
 #endif // MNT_VECTOR_INTERP
