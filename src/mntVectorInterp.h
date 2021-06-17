@@ -116,11 +116,12 @@ inline double crossDotZHat(const Vec3& a, const Vec3& b) {
     return a[0]*b[1] - a[1]*b[0];
 }
 
-inline void mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
+inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
                                                 Vec3& drdXsi, Vec3& drdEta, double& jac) {
 
         Vec3 v0, v1, v2, v3;
         vtkIdType cellId = (*self)->cellIds[iTargetId];
+        int numBadCells = 0;
 
         // parametric coordinates of the target point 
         double xsi = (*self)->pcoords[iTargetId][0];
@@ -146,11 +147,17 @@ inline void mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size
         // Jacobian for this quad, should be a strictly positive quantity if nodes are
         // ordered correctly
         jac = 0.25*(a013 + a120 + a231 + a302);
+        if (jac <= 0) {
+            std::cerr << "Warning: bad cell " << cellId << " vertices: " 
+                      << v0 << ',' << v1 << ',' << v2 << ',' << v3 << '\n';
+            numBadCells++;
+        }
 
         // cotangent vectors obtained by finite differencing and linearly interpolating
         // in the other direction
         drdXsi = ate*a + eta*c;
         drdEta = isx*d + xsi*b;
 
+        return numBadCells;
 }
 #endif // MNT_VECTOR_INTERP
