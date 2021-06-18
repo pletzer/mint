@@ -1,5 +1,6 @@
 from mint import Grid, PolylineIntegral
 import numpy
+import pytest
 
 
 def potentialFunc(p):
@@ -11,7 +12,15 @@ def singularPotentialFunc(p):
     x, y = p[:2]
     return numpy.arctan2(y, x)/(2.*numpy.pi)
 
-
+@pytest.mark.parametrize("nx", [3])
+@pytest.mark.parametrize("ny", [2])
+@pytest.mark.parametrize("potFunc", [potentialFunc, singularPotentialFunc])
+@pytest.mark.parametrize("xyz", [numpy.array([(1., 0., 0.),
+                                              (0., 1., 0.)]),
+                                 numpy.array([(0., 0., 0.),
+                                              (1., 0., 0.),
+                                              (1., 1., 0.),
+                                              (0., 1., 0.)])])
 def test_simple(nx, ny, potFunc, xyz):
 
     # create the grid and the edge data
@@ -69,6 +78,9 @@ def test_simple(nx, ny, potFunc, xyz):
     assert abs(flux - exactFlux) < 1.e-10
 
 
+@pytest.mark.parametrize("nx", [3])
+@pytest.mark.parametrize("ny", [2])
+@pytest.mark.parametrize("potFunc", [potentialFunc])
 def test_partially_outside(nx, ny, potFunc):
 
     print('target line is partially outside the domain, expect a warning!')
@@ -138,6 +150,9 @@ def test_partially_outside(nx, ny, potFunc):
     assert abs(flux - exactFlux) < 1.e-10
 
 
+@pytest.mark.parametrize("nx", [3])
+@pytest.mark.parametrize("ny", [2])
+@pytest.mark.parametrize("potFunc", [potentialFunc])
 def test_completely_outside(nx, ny, potFunc):
 
     print('target line is outside the domain, expect warnings!')
