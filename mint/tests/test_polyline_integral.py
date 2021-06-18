@@ -12,6 +12,7 @@ def singularPotentialFunc(p):
     x, y = p[:2]
     return numpy.arctan2(y, x)/(2.*numpy.pi)
 
+
 @pytest.mark.parametrize("nx", [3])
 @pytest.mark.parametrize("ny", [2])
 @pytest.mark.parametrize("potFunc", [potentialFunc, singularPotentialFunc])
