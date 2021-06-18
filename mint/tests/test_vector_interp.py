@@ -128,10 +128,16 @@ def test_rectilinear():
             # set one edge to 1, all other edges to zero
             data[cellId, edgeIndex] = 1.0
 
-            # get the interpolated vectors
-            vectorData = vi.getVectors(numpy.array(data))
+            # get the edge interpolated vectors
+            vectorData = vi.getEdgeVectors(data)
             assert(abs(vectorData.max() - 1.) < 1.e-12)
             assert(abs(vectorData.min() - 0.) < 1.e-12)
+
+            # get the lateral flux interpolated vectors
+            vectorData = vi.getFaceVectors(data)
+            # face vectors take the sign of the area vector, negative if pointing down
+            assert(abs(numpy.fabs(vectorData).max() - 1.) < 1.e-12)
+            assert(abs(numpy.fabs(vectorData).min() - 0.) < 1.e-12)            
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
@@ -174,14 +180,18 @@ def test_slanted():
             # set one edge to 1, all other edges to zero
             data[cellId, edgeIndex] = 1.0
 
-            # get the interpolated vectors
-            vectorData = vi.getVectors(numpy.array(data))
+            # get the edge interpolated vectors
+            vectorData = vi.getEdgeVectors(data)
+            fileName = f'slanted_edgeVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk'
+            saveVectorsVTKFile(targetPoints, vectorData, fileName)
+
+            # get the lateral face interpolated vectors
+            vectorData = vi.getFaceVectors(data)
+            fileName = f'slanted_faceVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk'
+            saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
-
-            fileName = f'slanted_cellId{cellId}edgeIndex{edgeIndex}.vtk'
-            saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
 
 def test_degenerate():
@@ -221,8 +231,11 @@ def test_degenerate():
             # set one edge to 1, all other edges to zero
             data[cellId, edgeIndex] = 1.0
 
-            # get the interpolated vectors
-            vectorData = vi.getVectors(numpy.array(data))
+            # get the edge interpolated vectors
+            vectorData = vi.getEdgeVectors(data)
+
+            # get the face interpolated vectors
+            vectorData = vi.getFaceVectors(data)
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
