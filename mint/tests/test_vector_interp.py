@@ -135,8 +135,9 @@ def test_rectilinear():
 
             # get the lateral flux interpolated vectors
             vectorData = vi.getFaceVectors(data)
-            assert(abs(vectorData.max() - 1.) < 1.e-12)
-            assert(abs(vectorData.min() - 0.) < 1.e-12)            
+            # face vectors take the sign of the area vector, negative if pointing down
+            assert(abs(numpy.fabs(vectorData).max() - 1.) < 1.e-12)
+            assert(abs(numpy.fabs(vectorData).min() - 0.) < 1.e-12)            
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
