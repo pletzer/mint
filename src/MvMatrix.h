@@ -1265,4 +1265,4 @@ ColMat<T> transpose(const ColMat<T> &a)
   return res;
 }
 
-#endif /* _MATRIX_H */
+#endif /* _MATRIX_H_ */

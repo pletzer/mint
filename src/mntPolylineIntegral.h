@@ -6,8 +6,8 @@
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 
-#ifndef MNT_Polyline_INTEGRAL
-#define MNT_Polyline_INTEGRAL
+#ifndef MNT_POLY_LINE_INTEGRAL
+#define MNT_POLY_LINE_INTEGRAL
 
 /**
  * A class to compute flux and line integrals along a broken (poly-) line. 

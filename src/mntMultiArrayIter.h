@@ -68,4 +68,4 @@ int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, std::size_t* n);
 extern "C"
 int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, std::size_t indices[]);
 
-#endif // MULTI_ARRAY_ITER
+#endif // MNT_MULTI_ARRAY_ITER
