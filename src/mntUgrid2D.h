@@ -124,14 +124,14 @@ const std::vector<double>& getPoints() const {
 /**
  * Get the regularized points of the edge
  * @param edgeId edge Id
- * @return the two points with 360 added/substracted to minimize the edge length
+ * @return the two points with 360 added/subtracted to minimize the edge length
  */
 std::vector<Vec3> getEdgePointsRegularized(std::size_t edgeId) const;
 
 /**
  * Get the regularized points of the face
  * @param faceId face Id
- * @return the four points with 360 added/substracted to make the cell have a positive area
+ * @return the four points with 360 added/subtracted to make the cell have a positive area
  */
 std::vector<Vec3> getFacePointsRegularized(std::size_t faceId) const;
 

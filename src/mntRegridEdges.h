@@ -64,7 +64,7 @@ struct RegridEdges_t {
     /** number of dimensions */
     int ndims;
 
-    /** netcdf dimnension names */
+    /** netcdf dimension names */
     std::vector<std::string> dimNames;
 
     /** netcdf file source data reader */
@@ -118,7 +118,7 @@ int mnt_regridedges_del(RegridEdges_t** self);
 /**
  * Set the source grid flags
  * @param self instance of the regridding object
- * @param fixLonAcrossDateline set this to 1 if a periodicty length (360) should be added/subtracted to nodes in order to make each cell as compact as possible
+ * @param fixLonAcrossDateline set this to 1 if a periodicity length (360) should be added/subtracted to nodes in order to make each cell as compact as possible
  * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the cell's longitudes
  * @return error code (0 = OK)
  * @note Longitudes are not uniquely defined at the poles
@@ -129,7 +129,7 @@ int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateli
 /**
  * Set the destination grid flags
  * @param self instance of the regridding object
- * @param fixLonAcrossDateline set this to 1 if a periodicty length (360) should be added/subtracted to nodes in order to make each cell as compact as possible
+ * @param fixLonAcrossDateline set this to 1 if a periodicity length (360) should be added/subtracted to nodes in order to make each cell as compact as possible
  * @param averageLonAtPole set this to 1 if longitudes at the poles should take the average value of the cell's longitudes
  * @return error code (0 = OK)
  * @note Longitudes are not uniquely defined at the poles
@@ -162,13 +162,13 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength);
 
 /** 
- * Inititalize the slice iterator
+ * Initialize the slice iterator
  * @param self instance of the regridding object
  * @param src_fort_filename src file name (does not require termination character)
  * @param src_nFilenameLength length of src filename string (excluding '\0' if present)
  * @param dst_fort_filename dst file name (does not require termination character)
  * @param dst_nFilenameLength length of dst filename string (excluding '\0' if present)
- * @param append set this to 1 in order to append the data to an exisiting file, 0 otherwise
+ * @param append set this to 1 in order to append the data to an existing file, 0 otherwise
  * @param field_name name of the field
  * @param nFieldNameLength length of field_name string (excluding '\0' if present)
  * @param numSlices number of slices (output)

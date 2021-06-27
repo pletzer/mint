@@ -38,7 +38,7 @@ public:
   VecN(T e);
 
   /** Constructor: create vector from C pointer.
-    @param ptr poointer */
+    @param ptr pointer */
   VecN(const T* ptr);
 
   /** Copy constructor: elements are copied into a new vector. 
@@ -343,7 +343,7 @@ VecN<N, T> pow(const VecN<N, T> &v, int exp);
 template<std::size_t N, class T>
 T max(const VecN<N, T> &v);
 
-/** Take the maxium of two vectors.
+/** Take the maximum of two vectors.
     @param v a vector
     @param w another vector
     @return vector with elements $v_i > w_i ? v_i: w_i$.

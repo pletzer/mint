@@ -90,7 +90,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->numSegs = this->segCellIds.size();
 
     // compute the total, integrated linear param coord
-    // should amoount to 1 if the target is entirely 
+    // should amount to 1 if the target is entirely
     // contained within the source grid
     this->totalT = 0.0;
     for (std::size_t i = 0; i < this->numSegs; ++i) {

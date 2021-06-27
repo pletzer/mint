@@ -31,7 +31,7 @@ class UgridReaderXYZ(ReaderBase):
 
         super(UgridReaderXYZ, self).__init__()
         
-        # filname:meshname
+        # filename:meshname
         fname, mname = filename.split(':')
         nc = netCDF4.Dataset(fname, 'r')
 
@@ -60,7 +60,7 @@ class UgridReaderXYZ(ReaderBase):
         ncells = f2n.shape[0]
 
         # construct the unstructured grid as a collection of 
-        # 2D cells. Each cell has its own cooordinates. Make
+        # 2D cells. Each cell has its own coordinates. Make
         # sure each cell's area is positive in lat-lon space
         # build unstructured grid
 

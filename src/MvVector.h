@@ -469,7 +469,7 @@ Vector<T> range(T imin, std::size_t nsize=2);
 template<class T>
 T max(const Vector<T> &v);
 
-/** Take the maxium of two vectors.
+/** Take the maximum of two vectors.
     @param v a vector
     @param w another vector
     @return vector with elements $v_i > w_i ? v_i: w_i$.

@@ -164,8 +164,8 @@ yUpstream = xyUpstream[1, numPoints:]
 #xUpstream -= (xUpstream > args.periodicityLength) * args.periodicityLength
 
 if not args.clip:
-	# make sure the latitudes are within [-90, 90]
-	numpy.clip(yUpstream, -90., 90., out=yUpstream)
+    # make sure the latitudes are within [-90, 90]
+    numpy.clip(yUpstream, -90., 90., out=yUpstream)
 
 # save the new coordinates
 xVarUp = ncUp.createVariable(xNameUp, 'f8', (numPointsDimName,))

@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         GrExprParser yExpr(ts.size(), GrExprAdaptor(yLineExpr).getPrefixExpr());
         yExpr.defineVariable("t", &ts);
 
-        // hold the line cooridnates
+        // hold the line coordinates
         Vec* xs = xExpr.eval();
         Vec* ys = yExpr.eval();
         size_t npts = (*xs).size();

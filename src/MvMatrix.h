@@ -55,7 +55,7 @@ public:
       @param j no. of columns. */
   ColMat(std::size_t i, size_t j);
 
-  /** Create matrix. Elelemnts are set.
+  /** Create matrix. Elements are set.
     @param i the number of rows
     @param j the number of columns
     @param e value of each element
@@ -229,7 +229,7 @@ ColMat<T> stretch1(const Vector<T> &v, const std::size_t n1);
 //  template<class TYPE>
 //  ColMat<TYPE> TensorProd(const Vector<TYPE> &a, const Vector<TYPE> &b);
 
-/* convert matrix to vector by flattenning along columns or rows */
+/* convert matrix to vector by flattening along columns or rows */
 
 //  template<class TYPE>
 //  Vector<TYPE> flatten0(const ColMat<TYPE> &a);
@@ -354,7 +354,7 @@ ColMat<T> dot(const ColMat<T> &a, const ColMat<T> &b, const ColMat<T> &c);
     matrix multiplication. 
     @see dot
     @param a a matrix
-    @param b another matrix of shapre identical to a
+    @param b another matrix of shape identical to a
     @return matrix =a*b (!= a.b)
 */
 template<class T> 
@@ -1090,7 +1090,7 @@ ColMat<TYPE> TensorProd(const Vector<TYPE> &a, const Vector<TYPE> &b){
   return c;
 }
 
-/* convert matrix to vector by flattenning along columns or rows */
+/* convert matrix to vector by flattening along columns or rows */
 
 template<class TYPE>
 Vector<TYPE> flatten0(const ColMat<TYPE> &a){
@@ -1265,4 +1265,4 @@ ColMat<T> transpose(const ColMat<T> &a)
   return res;
 }
 
-#endif /* _MATRIX_H */
+#endif /* _MATRIX_H_ */

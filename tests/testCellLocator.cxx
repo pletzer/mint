@@ -116,13 +116,13 @@ void test1Quad(int numCellsPerBucket) {
     // grid nodes
     vtkDoubleArray* coords = vtkDoubleArray::New();
     coords->SetNumberOfComponents(3);
-    point[0] = 0.0; point[1] = 0.0;; point[2] = 0.0;
+    point[0] = 0.0; point[1] = 0.0; point[2] = 0.0;
     coords->InsertNextTuple(point);
-    point[0] = 1.0; point[1] = 0.0;; point[2] = 0.0;
+    point[0] = 1.0; point[1] = 0.0; point[2] = 0.0;
     coords->InsertNextTuple(point);
-    point[0] = 1.0; point[1] = 1.0;; point[2] = 0.0;
+    point[0] = 1.0; point[1] = 1.0; point[2] = 0.0;
     coords->InsertNextTuple(point);
-    point[0] = 0.0; point[1] = 1.0;; point[2] = 0.0;
+    point[0] = 0.0; point[1] = 1.0; point[2] = 0.0;
     coords->InsertNextTuple(point);
 
     vtkPoints* points = vtkPoints::New();
