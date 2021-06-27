@@ -8,7 +8,7 @@
 void test0() {
 
     // tests the case ndims == 0
-    // expect one interaction
+    // expect one iteration
     // getIndices should be a no operation
 
     int ier;

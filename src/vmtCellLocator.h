@@ -118,7 +118,7 @@ public:
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**
-     * Check if a point is indeed a face
+     * Check if a point is inside a face
      * @param faceId face/cell Id
      * @param point point
      * @param tol tolerance
@@ -127,7 +127,7 @@ public:
     bool containsPoint(vtkIdType faceId, const double point[3], double tol) const;
 
     /**
-     * Check if a point is indeed a face
+     * Check if a point is inside a face
      * @param faceId face/cell Id
      * @param point point
      * @param tol tolerance
