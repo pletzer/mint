@@ -120,9 +120,9 @@ def tendency(t, point, loc, grid):
     # apply periodicity on longitudes when leaving domain
     #point[0] = point[0] % 360.
     if point[0] < LONMIN:
-    	point[0] += 360.
+        point[0] += 360.
     if point[0] > LONMIN + 360.:
-    	point[0] -= 360.
+        point[0] -= 360.
 
     # lat cannot exceed 90 deg
     point[1] = max(-90., min(90., point[1]))
@@ -189,7 +189,7 @@ timeSteps = numpy.linspace(0.0, args.finalTime, args.numSteps + 1)
 sols = []
 zrs = numpy.zeros((3,), numpy.float64)
 for isol in range(args.ns):
-	# assume lons start at -190 deg!
+    # assume lons start at -190 deg!
     p0 = numpy.array([-180. + 360.*random.random(), -90. + 180.*random.random(), 0.0])
     sol = odeint(tendency, p0, timeSteps, tfirst=True, args=(loc, ugrid))
 
