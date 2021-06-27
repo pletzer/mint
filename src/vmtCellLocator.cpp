@@ -10,7 +10,7 @@ inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, dou
 
     bool res = true;
 
-    // nuber of points in the quad
+    // number of points in the quad
     std::size_t npts = nodes.size();
 
     // iterate over the edges of the quad
@@ -168,7 +168,7 @@ vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3]
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     Vec3 targetPoint(point);
 
-    // add/substract periodicity length and apply folding if need be
+    // add/subtract periodicity length and apply folding if need be
     for (auto kF : this->kFolding) {
 
         if (kF > 0) {

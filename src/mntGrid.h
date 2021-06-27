@@ -73,7 +73,7 @@ int mnt_grid_del(Grid_t** self);
 /**
  * Set the grid flags
  * @param self instance of Grid_t
- * @param fixLonAcrossDateline set this to 0 if periodicty length should NOT be added/subtracted to nodes in order to make the cell as compact as possible
+ * @param fixLonAcrossDateline set this to 0 if periodicity length should NOT be added/subtracted to nodes in order to make the cell as compact as possible
  * @param averageLonAtPole set this to 0 if longitudes at the poles should NOT take the average value of the node cell node's longitudes
  * @param degrees set this to 0 if the coordinates are in radians
  * @return error code (0 = OK)
@@ -221,7 +221,7 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
                        std::size_t* edgeId, int* signEdge);
 
 /**
- * Get the nnumber of cells
+ * Get the number of cells
  * @param self instance of Grid_t
  * @param numCells number of cells (output)
  * @return error code (0 = OK)

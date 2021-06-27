@@ -44,7 +44,7 @@ int mnt_celllocator_del(CellLocator_t** self);
 
 /**
  * Set the points (vertices) array pointer
- * @param nVertsPerCell numnber of vertices per cell
+ * @param nVertsPerCell number of vertices per cell
  * @param ncells number of cells
  * @param points flat array of size 4*ncells*3
  * @return error code (0 is OK)

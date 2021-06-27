@@ -1,4 +1,3 @@
-import netCDF4
 import numpy
 import vtk
 

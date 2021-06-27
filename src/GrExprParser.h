@@ -31,7 +31,7 @@ public:
    * Constructor
    * @param n vector argument length
    * @param expr expression in prefix notation, e.g. (+ a b)
-   * @note spaces are delimitors, the first string is the 
+   * @note spaces are delimiters, the first string is the
    * operator
    */
   GrExprParser(std::size_t n, const std::string& expr);
@@ -72,7 +72,7 @@ public:
   Vec* eval();
   
   /** 
-   * Convert expresion from infix to prefix notation
+   * Convert expression from infix to prefix notation
    * @param inExpr expression in infix notation, e.g. 3*sin(x+y*z)
    * @return expression in prefix notation, e.g. (* 3 (sin (+ x (* y z))))
    */

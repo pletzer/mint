@@ -1,9 +1,7 @@
-import netCDF4
 import numpy
 import argparse
 import sys
 import time
-import functools
 from scipy.integrate import odeint
 from ugrid_reader import UgridReader
 import re

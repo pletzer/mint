@@ -70,7 +70,7 @@ void testUgrid() {
         }
     }
 
-    // should be able to compute the edge arcs multitple times
+    // should be able to compute the edge arcs multiple times
     ier = mnt_grid_computeEdgeArcLengths(&grd);
     assert(ier == 0);    
     

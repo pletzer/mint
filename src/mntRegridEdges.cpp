@@ -145,7 +145,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
         return 1;
     }
 
-    // intantiate the reader
+    // instantiate the reader
     ier = mnt_ncfieldread_new(&(*self)->srcReader, (*self)->srcNcid, (*self)->srcVarid);
 
     // get the number of dimensions

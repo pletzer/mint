@@ -51,7 +51,7 @@ class CmdLineArgParser {
    * Parse command line arguments
    * @param argc number of arguments
    * @param argv arguments
-   * @return true if all arguments were sucessfully parsed, false otherwise
+   * @return true if all arguments were successfully parsed, false otherwise
    */
   bool parse(int argc, char *argv[]);
 

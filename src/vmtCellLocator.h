@@ -61,7 +61,7 @@ public:
      * @param point target
      * @param tol2 tolerance
      * @param cell pointer to the cell
-     * @param pcoords parametric coodinates of x in the cell (output)
+     * @param pcoords parametric coordinates of x in the cell (output)
      * @param weights interpolation weights of the point
      * @return cell Id if found, < 0 otherwise
      */
@@ -111,14 +111,14 @@ public:
      * @param pBeg start point of the line
      * @param pEnd end point of the line
      * @return list of (cellId, [lambda0, lambda1, periodXOffset]) pairs
-     * @note lambda0/lambda1 are the linear parametric coordiates of the entry/exit points into/from the cell
+     * @note lambda0/lambda1 are the linear parametric coordinates of the entry/exit points into/from the cell
      * @note periodXOffset is the periodic offset to add to pBeg[0] and pEnd[0]
      */
     std::vector< std::pair<vtkIdType, Vec4> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
 
     /**
-     * Check if a point is indide a face
+     * Check if a point is indeed a face
      * @param faceId face/cell Id
      * @param point point
      * @param tol tolerance
@@ -127,7 +127,7 @@ public:
     bool containsPoint(vtkIdType faceId, const double point[3], double tol) const;
 
     /**
-     * Check if a point is indide a face
+     * Check if a point is indeed a face
      * @param faceId face/cell Id
      * @param point point
      * @param tol tolerance

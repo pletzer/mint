@@ -47,7 +47,7 @@ Ugrid2D::getEdgePoints(std::size_t edgeId) const {
 
     std::vector<Vec3> res;
 
-    // itereate over the 2 points spanning the edge
+    // iterate over the 2 points spanning the edge
     for (std::size_t i = 0; i < 2; ++i) {
 
         // get the point id

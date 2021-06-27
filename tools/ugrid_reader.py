@@ -31,7 +31,7 @@ class UgridReader(ReaderBase):
 
         super(UgridReader, self).__init__()
         
-        # filname:meshname
+        # filename:meshname
         fname, mname = filename.split(':')
         nc = netCDF4.Dataset(fname, 'r')
 

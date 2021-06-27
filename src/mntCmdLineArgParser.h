@@ -96,7 +96,7 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
 /**
  * Get string command line argument
  * @param name name of the command line argument
- * @param n length of alocated val
+ * @param n length of allocated val
  * @param val string will be coped into val, val must be have been allocated (size >= n + 1)
  * @return error code (0 is OK)
  * @note termination character '\0' will be added to remaining characters that were allocated to val
