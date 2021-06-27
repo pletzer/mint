@@ -2,6 +2,8 @@ from mint import Grid
 from mint import VectorInterp
 import numpy
 import vtk
+from tempfile import TemporaryDirectory
+from os import sep
 
 
 def generateStructuredGridPoints(nx, ny, v0, v1, v2, v3):
@@ -171,27 +173,28 @@ def test_slanted():
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
 
-    # generate edge data
-    data = numpy.zeros((numCells, 4), numpy.float64)
-    for cellId in range(numCells):
-        # iterate over the edges of the source grid cells
-        for edgeIndex in range(4):
+    with TemporaryDirectory() as d:
+        # generate edge data
+        data = numpy.zeros((numCells, 4), numpy.float64)
+        for cellId in range(numCells):
+            # iterate over the edges of the source grid cells
+            for edgeIndex in range(4):
 
-            # set one edge to 1, all other edges to zero
-            data[cellId, edgeIndex] = 1.0
+                # set one edge to 1, all other edges to zero
+                data[cellId, edgeIndex] = 1.0
 
-            # get the edge interpolated vectors
-            vectorData = vi.getEdgeVectors(data)
-            fileName = f'slanted_edgeVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk'
-            saveVectorsVTKFile(targetPoints, vectorData, fileName)
+                # get the edge interpolated vectors
+                vectorData = vi.getEdgeVectors(data)
+                fileName = f'{d}{sep}slanted_edgeVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk'
+                saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
-            # get the lateral face interpolated vectors
-            vectorData = vi.getFaceVectors(data)
-            fileName = f'slanted_faceVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk'
-            saveVectorsVTKFile(targetPoints, vectorData, fileName)
+                # get the lateral face interpolated vectors
+                vectorData = vi.getFaceVectors(data)
+                fileName = f'{d}{sep}slanted_faceVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk'
+                saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
-            # reset this edge's value back to its original
-            data[cellId, edgeIndex] = 0.0
+                # reset this edge's value back to its original
+                data[cellId, edgeIndex] = 0.0
 
 
 def test_degenerate():
@@ -222,26 +225,27 @@ def test_degenerate():
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
 
-    # generate edge data
-    data = numpy.zeros((numCells, 4), numpy.float64)
-    for cellId in range(numCells):
-        # iterate over the edges of the source grid cells
-        for edgeIndex in range(4):
+    with TemporaryDirectory() as d:
+        # generate edge data
+        data = numpy.zeros((numCells, 4), numpy.float64)
+        for cellId in range(numCells):
+            # iterate over the edges of the source grid cells
+            for edgeIndex in range(4):
 
-            # set one edge to 1, all other edges to zero
-            data[cellId, edgeIndex] = 1.0
+                # set one edge to 1, all other edges to zero
+                data[cellId, edgeIndex] = 1.0
 
-            # get the edge interpolated vectors
-            vectorData = vi.getEdgeVectors(data)
+                # get the edge interpolated vectors
+                vectorData = vi.getEdgeVectors(data)
 
-            # get the face interpolated vectors
-            vectorData = vi.getFaceVectors(data)
+                # get the face interpolated vectors
+                vectorData = vi.getFaceVectors(data)
 
-            # reset this edge's value back to its original
-            data[cellId, edgeIndex] = 0.0
+                # reset this edge's value back to its original
+                data[cellId, edgeIndex] = 0.0
 
-            fileName = f'degenerate_cellId{cellId}edgeIndex{edgeIndex}.vtk'
-            saveVectorsVTKFile(targetPoints, vectorData, fileName)
+                fileName = f'{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}.vtk'
+                saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
 
 if __name__ == '__main__':
