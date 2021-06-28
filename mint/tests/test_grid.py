@@ -1,9 +1,8 @@
 from mint import Grid
 import numpy
-import sys
 from pathlib import Path
 import vtk
-
+from tempfile import NamedTemporaryFile
 
 def test_create_grid():
     # create the grid
@@ -18,7 +17,8 @@ def test_create_grid():
                           (2., 1., 0.),
                           (1., 1., 0.)]).reshape(2, 4, 3)
     gr.setPoints(points)
-    gr.dump('test_create_grid.vtk')
+    with NamedTemporaryFile() as f:
+        gr.dump(f.name)
 
 def test_attach_data():
     # create the grid
@@ -37,15 +37,16 @@ def test_attach_data():
     nDataPerCell = 3
     data = numpy.arange(0, 2*nDataPerCell, dtype=numpy.float64).reshape((2, nDataPerCell))
     gr.attach('mydata', data)
-    gr.dump('test_create_grid_with_data.vtk')
-    # read the data back to check the layout of the data
-    reader = vtk.vtkUnstructuredGridReader()
-    reader.SetFileName('test_create_grid_with_data.vtk')
-    reader.Update()
-    ugrid = reader.GetOutput()
-    arr = ugrid.GetCellData().GetArray('mydata')
-    assert(arr.GetNumberOfTuples() == gr.getNumberOfCells())
-    assert(arr.GetNumberOfComponents() == nDataPerCell)
+    with NamedTemporaryFile() as f:
+        gr.dump(f.name)
+        # read the data back to check the layout of the data
+        reader = vtk.vtkUnstructuredGridReader()
+        reader.SetFileName(f.name)
+        reader.Update()
+        ugrid = reader.GetOutput()
+        arr = ugrid.GetCellData().GetArray('mydata')
+        assert(arr.GetNumberOfTuples() == gr.getNumberOfCells())
+        assert(arr.GetNumberOfComponents() == nDataPerCell)
 
 def test_load_grid():
     data_dir = Path(__file__).absolute().parent / '../../data'

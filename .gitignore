@@ -21,7 +21,10 @@ pip-cache
 .coverage
 .pytest_cache
 
-# Created by editiors
+# Build
+cmake-build-debug/
+
+# Created by editors
 *~
 \#*
 \.\#*
