@@ -20,7 +20,7 @@ var searchData=
   ['mnt_5fgrid_5fprint_37',['mnt_grid_print',['../mnt_grid_8h.html#a8c4d90bca519150e4afae3e5015192af',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fsetflags_38',['mnt_grid_setFlags',['../mnt_grid_8h.html#a040d330df9c3720b891f66dfad67e088',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fsetpointsptr_39',['mnt_grid_setPointsPtr',['../mnt_grid_8h.html#a1e6d989bb93be620e9eddc713259fc87',1,'mntGrid.h']]],
-  ['mnt_5fpolyline_5fintegral_40',['MNT_Polyline_INTEGRAL',['../mnt_polyline_integral_8h.html#a553c427a9546fbca24c5e46716f22e74',1,'mntPolylineIntegral.h']]],
+  ['mnt_5fpoly_5fline_5fintegral_40',['MNT_POLY_LINE_INTEGRAL',['../mnt_polyline_integral_8h.html#a0d98caea47bbef7cc99a068fe3dd012b',1,'mntPolylineIntegral.h']]],
   ['mnt_5fpolylineintegral_5fbuild_41',['mnt_polylineintegral_build',['../mnt_polyline_integral_8h.html#a56e41cb15ea9e82072736f4048164545',1,'mntPolylineIntegral.h']]],
   ['mnt_5fpolylineintegral_5fdel_42',['mnt_polylineintegral_del',['../mnt_polyline_integral_8h.html#aa4fd9118e0bd14c2f2787f71bab1bc18',1,'mntPolylineIntegral.h']]],
   ['mnt_5fpolylineintegral_5fgetintegral_43',['mnt_polylineintegral_getIntegral',['../mnt_polyline_integral_8h.html#a9334f3db0ee451b1a9dd5e92de1146bf',1,'mntPolylineIntegral.h']]],

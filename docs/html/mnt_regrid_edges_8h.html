@@ -121,7 +121,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a45cb532cad223ffb8b565c8884bc6f82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the destination grid to a VTK file.  <a href="mnt_regrid_edges_8h.html#a45cb532cad223ffb8b565c8884bc6f82">More...</a><br /></td></tr>
 <tr class="separator:a45cb532cad223ffb8b565c8884bc6f82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a649397394155b038cfd29f526f629526"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a649397394155b038cfd29f526f629526">mnt_regridedges_initSliceIter</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *src_fort_filename, int src_nFilenameLength, const char *dst_fort_filename, int dst_nFilenameLength, int append, const char *field_name, int nFieldNameLength, std::size_t *numSlices)</td></tr>
-<tr class="memdesc:a649397394155b038cfd29f526f629526"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inititalize the slice iterator.  <a href="mnt_regrid_edges_8h.html#a649397394155b038cfd29f526f629526">More...</a><br /></td></tr>
+<tr class="memdesc:a649397394155b038cfd29f526f629526"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the slice iterator.  <a href="mnt_regrid_edges_8h.html#a649397394155b038cfd29f526f629526">More...</a><br /></td></tr>
 <tr class="separator:a649397394155b038cfd29f526f629526"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad26c5384328a2b1563765ff13c748a4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#aad26c5384328a2b1563765ff13c748a4">mnt_regridedges_loadSrcSlice</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, double data[])</td></tr>
 <tr class="memdesc:aad26c5384328a2b1563765ff13c748a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a slice of the source field from the 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#aad26c5384328a2b1563765ff13c748a4">More...</a><br /></td></tr>
@@ -822,7 +822,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Inititalize the slice iterator. </p>
+<p>Initialize the slice iterator. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
@@ -830,7 +830,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">src_nFilenameLength</td><td>length of src filename string (excluding '\0' if present) </td></tr>
     <tr><td class="paramname">dst_fort_filename</td><td>dst file name (does not require termination character) </td></tr>
     <tr><td class="paramname">dst_nFilenameLength</td><td>length of dst filename string (excluding '\0' if present) </td></tr>
-    <tr><td class="paramname">append</td><td>set this to 1 in order to append the data to an exisiting file, 0 otherwise </td></tr>
+    <tr><td class="paramname">append</td><td>set this to 1 in order to append the data to an existing file, 0 otherwise </td></tr>
     <tr><td class="paramname">field_name</td><td>name of the field </td></tr>
     <tr><td class="paramname">nFieldNameLength</td><td>length of field_name string (excluding '\0' if present) </td></tr>
     <tr><td class="paramname">numSlices</td><td>number of slices (output) </td></tr>
@@ -1219,7 +1219,7 @@ Supplying the length of the filename string allows one to call this function fro
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
-    <tr><td class="paramname">fixLonAcrossDateline</td><td>set this to 1 if a periodicty length (360) should be added/subtracted to nodes in order to make each cell as compact as possible </td></tr>
+    <tr><td class="paramname">fixLonAcrossDateline</td><td>set this to 1 if a periodicity length (360) should be added/subtracted to nodes in order to make each cell as compact as possible </td></tr>
     <tr><td class="paramname">averageLonAtPole</td><td>set this to 1 if longitudes at the poles should take the average value of the cell's longitudes </td></tr>
   </table>
   </dd>
@@ -1265,7 +1265,7 @@ Supplying the length of the filename string allows one to call this function fro
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
-    <tr><td class="paramname">fixLonAcrossDateline</td><td>set this to 1 if a periodicty length (360) should be added/subtracted to nodes in order to make each cell as compact as possible </td></tr>
+    <tr><td class="paramname">fixLonAcrossDateline</td><td>set this to 1 if a periodicity length (360) should be added/subtracted to nodes in order to make each cell as compact as possible </td></tr>
     <tr><td class="paramname">averageLonAtPole</td><td>set this to 1 if longitudes at the poles should take the average value of the cell's longitudes </td></tr>
   </table>
   </dd>
