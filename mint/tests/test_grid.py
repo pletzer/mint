@@ -48,8 +48,10 @@ def test_attach_data():
     assert(arr.GetNumberOfComponents() == nDataPerCell)
 
 def test_load_grid():
+    data_dir = Path(__file__).absolute().parent / '../../data'
     gr = Grid()
-    gr.load('test_create_grid.vtk')
+    filename = str(data_dir / Path('test_create_grid.vtk'))
+    gr.load(filename)
     ncells = gr.getNumberOfCells()
     print(f'ncells = {ncells}')
     assert(ncells == 2)
