@@ -15,7 +15,7 @@ def test_create_grid():
                           (1., 0., 0.),
                           (2., 0., 0.),
                           (2., 1., 0.),
-                          (1., 1., 0.)]).reshape(2, 4, 3)
+                          (1., 1., 0.)]).reshape((2, 4, 3))
     gr.setPoints(points)
     with NamedTemporaryFile() as f:
         gr.dump(f.name)
@@ -31,7 +31,7 @@ def test_attach_data():
                           (1., 0., 0.),
                           (2., 0., 0.),
                           (2., 1., 0.),
-                          (1., 1., 0.)]).reshape(2, 4, 3)
+                          (1., 1., 0.)]).reshape((2, 4, 3))
     gr.setPoints(points)
     # create cell data, 3 per cell
     nDataPerCell = 3

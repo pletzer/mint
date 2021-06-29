@@ -116,7 +116,7 @@ def test_rectilinear():
     # generate targets point for the above grid
     targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
                                                 v0, v1,
-                                                v2, v3).reshape(-1, 3)
+                                                v2, v3).reshape((-1, 3))
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
@@ -168,7 +168,7 @@ def test_slanted():
 
     # generate targets point for the above grid
     targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
-                                                v0, v1, v2, v3).reshape(-1, 3)
+                                                v0, v1, v2, v3).reshape((-1, 3))
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
@@ -220,7 +220,7 @@ def test_degenerate():
 
     # generate targets point for the above grid
     targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
-                                                v0, v1, v2, v3).reshape(-1, 3)
+                                                v0, v1, v2, v3).reshape((-1, 3))
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
     assert(numBad == 0)
