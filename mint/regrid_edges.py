@@ -160,7 +160,7 @@ class RegridEdges(object):
         ier = LIB.mnt_regridedges_build(self.obj, numCellsPerBucket,
                                         periodX, debug)
         if ier:
-            msg = "Some target lines fall outside the grid."
+            msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
             warning_handler(FILE, 'build', ier, detailedMsg=msg)
 
     def dumpWeights(self, filename):

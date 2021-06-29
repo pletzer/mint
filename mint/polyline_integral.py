@@ -67,7 +67,7 @@ class PolylineIntegral(object):
         ier = LIB.mnt_polylineintegral_build(self.obj, grid.ptr, xyz.shape[0],
                                              xyz, cc, periodX)
         if ier:
-            msg = "Some target lines fall outside the grid."
+            msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
             warning_handler(FILE, 'build', ier, detailedMsg=msg)
 
     def getIntegral(self, data):
