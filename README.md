@@ -24,7 +24,14 @@ grid cells, which have four vertices (i.e. the cells are quadrilaterals). The ed
 along each edge. The vertex coordinates are stored in longitude-latitude space.
 
 The regridding method is mimetic in the sense that Stokes's theorem is satisfied to near machine precision. In particular, the 
-loop integrals of an interpolated vector field deriving from a gradient is zero. 
+loop integrals of an interpolated vector field deriving from a gradient is zero.
+
+## References
+
+`MINT` implements the 2D+1 interpolation and regridding method described in 
+[Mimetic Interpolation of Vector Fields on Arakawa C/D Grids](https://journals.ametsoc.org/view/journals/mwre/147/1/mwr-d-18-0146.1.xml). 
+See [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub) for the corresponding methods in n dimensions.
+
 
 ## Prerequisites
 
