@@ -1,6 +1,5 @@
 from mint import RegridEdges
 import numpy
-import sys
 from pathlib import Path
 
 
