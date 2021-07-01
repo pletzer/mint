@@ -6,18 +6,17 @@ __init__.py is automatically generated from __init__.py.in, DO NOT EDIT __init__
 
 from ctypes import CDLL
 from pathlib import Path
-import glob
 
 __version__ = "@VERSION@"
 
 # open shared library
 LIB = None
 for libfile in Path(__path__[0] + '/..').glob('libmint.cpython*'):
-    LIB = CDLL(libfile)
+    LIB = CDLL(libfile.name)
     if LIB:
         break
 
-__all__ = [LIB, 'regrid_edges', 'grid', 'polyline_integral', 'vector_interp',]
+__all__ = [LIB, 'regrid_edges', 'grid', 'polyline_integral', 'vector_interp']
 
 from .regrid_edges import RegridEdges
 from .grid import Grid
