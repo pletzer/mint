@@ -137,7 +137,7 @@ class Grid(object):
                                      byref(edgeId), byref(edgeSign))
         if ier:
             error_handler(FILE, 'getEdgeId', ier)
-        return (edgeId.value, edgeSign.value)
+        return edgeId.value, edgeSign.value
 
     def getNodeIds(self, cellId, edgeIndex):
         """
@@ -154,7 +154,7 @@ class Grid(object):
         ier = LIB.mnt_grid_getNodeIds(self.obj, cellId, edgeIndex, nodeIds)
         if ier:
             error_handler(FILE, 'getNodeIds', ier)
-        return (nodeIds[0], nodeIds[1])
+        return nodeIds[0], nodeIds[1]
 
     def computeEdgeArcLengths(self):
         """
