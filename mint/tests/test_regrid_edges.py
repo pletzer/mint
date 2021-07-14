@@ -31,9 +31,9 @@ def test_compute_weights():
     # compute the regridding weights. numCellsPerBucket is used to accelerate the cell
     # search. The smaller numCellPerBucket the faster the search. However, numCellPerBucket
     # there are edge cases where the search fails when numCellsPerBucket is too small.
-    # periodX is the periodicity length to add/subtract to make the cells well behaved. 
-    # (periodX can be 0 if a regional model)
-    rg.build(numCellsPerBucket=128, periodX=360., debug=2)
+    # periox is the periodicity length to add/subtract to make the cells well behaved. 
+    # (periox can be 0 if a regional model)
+    rg.build(numCellsPerBucket=128, periox=360., debug=2)
 
     # save the weights in a netCDF file
     rg.dumpWeights('test_regrid_edges_py.nc')
