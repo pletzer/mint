@@ -145,20 +145,20 @@ class RegridEdges(object):
             error_handler(FILE, 'getNumDstEdges', ier)
         return n.value
 
-    def build(self, numCellsPerBucket, periox, debug):
+    def build(self, numCellsPerBucket, periodx, debug):
         """
         Build the regridder and compute the regridding weights
 
         :param numCellsPerBucket: average number of cells per bucket
                                   (performance only)
-        :param periox: periodicity length (set to 0 if non-periodic)
+        :param periodx: periodicity length (set to 0 if non-periodic)
         :param debug: 0=no debug info, 1=print debug info, 2=save bad
                       edges in VTK file
         """
         LIB.mnt_regridedges_build.argtypes = [POINTER(c_void_p), c_int,
                                               c_double, c_int]
         ier = LIB.mnt_regridedges_build(self.obj, numCellsPerBucket,
-                                        periox, debug)
+                                        periodx, debug)
         if ier:
             msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
             warning_handler(FILE, 'build', ier, detailedMsg=msg)

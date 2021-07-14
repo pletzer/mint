@@ -71,7 +71,7 @@ def test_simple(nx, ny, potFunc, xyz):
 
     pli = PolylineIntegral()
     # no periodicity in x
-    pli.build(gr, xyz, counterclock=False, periox=0.0)
+    pli.build(gr, xyz, counterclock=False, periodx=0.0)
 
     flux = pli.getIntegral(data)
     exactFlux = potFunc(xyz[-1, :]) - potFunc(xyz[0, :])
@@ -138,7 +138,7 @@ def test_partially_outside(nx, ny, potFunc):
                        (0., 1., 0.)])
 
     # no periodicity in x
-    pli.build(gr, xyz, counterclock=False, periox=0.0)
+    pli.build(gr, xyz, counterclock=False, periodx=0.0)
 
     flux = pli.getIntegral(data)
 
@@ -210,7 +210,7 @@ def test_completely_outside(nx, ny, potFunc):
                        (0., 1., 0.)])
 
     # no periodicity in x
-    pli.build(gr, xyz, counterclock=False, periox=0.0)
+    pli.build(gr, xyz, counterclock=False, periodx=0.0)
 
     flux = pli.getIntegral(data)
     exactFlux = 0.0
