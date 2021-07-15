@@ -114,7 +114,7 @@ def test_rectilinear():
     # create the interpolator
     vi = VectorInterp()
     vi.setGrid(gr)
-    vi.buildLocator(numCellsPerBucket=1, periodx=0.)
+    vi.buildLocator(numCellsPerBucket=1, periodX=0.)
 
     # generate targets point for the above grid
     targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
@@ -167,7 +167,7 @@ def test_slanted():
     # create the interpolator
     vi = VectorInterp()
     vi.setGrid(gr)
-    vi.buildLocator(numCellsPerBucket=1, periodx=0.)
+    vi.buildLocator(numCellsPerBucket=1, periodX=0.)
 
     # generate targets point for the above grid
     targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
@@ -219,7 +219,7 @@ def test_degenerate():
     # create the interpolator
     vi = VectorInterp()
     vi.setGrid(gr)
-    vi.buildLocator(numCellsPerBucket=1, periodx=0.)
+    vi.buildLocator(numCellsPerBucket=1, periodX=0.)
 
     # generate targets point for the above grid
     targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,

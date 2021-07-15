@@ -45,7 +45,7 @@ class PolylineIntegral(object):
         if ier:
             error_handler(FILE, '__del__', ier)
 
-    def build(self, grid, xyz, counterclock, periodx):
+    def build(self, grid, xyz, counterclock, periodX):
         """
         Build the flux calculator
 
@@ -54,7 +54,7 @@ class PolylineIntegral(object):
         :param counterclock: orientation of the edges in the cell
                              (True=counterclockwise,
                               False=positive in xi)
-        :param periodx: periodicity length in x (longitudes),
+        :param periodX: periodicity length in x (longitudes),
                         Set to zero if non-periodic.
         """
         LIB.mnt_polylineintegral_build.argtypes = [POINTER(c_void_p), c_void_p,
@@ -65,7 +65,7 @@ class PolylineIntegral(object):
         if counterclock:
             cc = 1
         ier = LIB.mnt_polylineintegral_build(self.obj, grid.ptr, xyz.shape[0],
-                                             xyz, cc, periodx)
+                                             xyz, cc, periodX)
         if ier:
             msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
             warning_handler(FILE, 'build', ier, detailedmsg=msg)

@@ -60,18 +60,18 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
-    def buildLocator(self, numCellsPerBucket, periodx):
+    def buildLocator(self, numCellsPerBucket, periodX):
         """
         Build the cell locator.
 
         :param numCellsPerBucket: approximate number of cells per bucket
-        :param periodx: periodicity in x (set to 0 if non-periodic)
+        :param periodX: periodicity in x (set to 0 if non-periodic)
         :note: call this after setGrid
         """
         LIB.mnt_vectorinterp_buildLocator.argtypes = [POINTER(c_void_p),
                                                       c_int, c_double]
         ier = LIB.mnt_vectorinterp_buildLocator(self.obj,
-                                                numCellsPerBucket, periodx)
+                                                numCellsPerBucket, periodX)
         if ier:
             error_handler(FILE, 'buildLocator', ier)
 
