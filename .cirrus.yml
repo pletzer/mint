@@ -82,7 +82,7 @@ osx_task:
       PY_VER: "3.8"
   name: "OSX: py${PY_VER}"
   osx_instance:
-    image: bigsur-xcode
+    image: big-sur-xcode
   env:
     PATH: ${HOME}/mambaforge/bin:${PATH}
   mamba_cache:
