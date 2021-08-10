@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from os import sep
 
 
+# noinspection SpellCheckingInspection
 def generateStructuredGridPoints(nx, ny, v0, v1, v2, v3):
     """
     Generate structured grid points
@@ -35,6 +36,7 @@ def generateStructuredGridPoints(nx, ny, v0, v1, v2, v3):
     return spts
 
 
+# noinspection SpellCheckingInspection
 def getCellByCellPoints(spts):
     """
     Get the grid cell by cell
@@ -51,6 +53,7 @@ def getCellByCellPoints(spts):
     return res
 
 
+# noinspection SpellCheckingInspection
 def saveVectorsVTKFile(spts, vectors, filename):
     """
     Save vector data in VTK file

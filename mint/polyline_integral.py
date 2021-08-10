@@ -13,9 +13,9 @@ def error_handler(filename, methodname, ier):
     raise RuntimeError(msg)
 
 
-def warning_handler(filename, methodname, ier, detailedMsg=''):
+def warning_handler(filename, methodname, ier, detailedmsg=''):
     msg = f'ier={ier} after calling {methodname} in {filename}!\n'
-    msg += detailedMsg
+    msg += detailedmsg
     logging.warning(msg)
 
 
@@ -68,7 +68,7 @@ class PolylineIntegral(object):
                                              xyz, cc, periodX)
         if ier:
             msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
-            warning_handler(FILE, 'build', ier, detailedMsg=msg)
+            warning_handler(FILE, 'build', ier, detailedmsg=msg)
 
     def getIntegral(self, data):
         """

@@ -82,7 +82,7 @@ osx_task:
       PY_VER: "3.8"
   name: "OSX: py${PY_VER}"
   osx_instance:
-    image: catalina-xcode
+    image: big-sur-xcode
   env:
     PATH: ${HOME}/mambaforge/bin:${PATH}
   mamba_cache:
@@ -111,8 +111,6 @@ osx_task:
       - conda-lock --mamba --platform osx-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
       - mamba create --yes --name py${PY_VER} --quiet --file conda-osx-64.lock
       - cp conda-osx-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
-  mesa_script:
-    - brew install mesa
   test_script:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-osx-64.lock >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1

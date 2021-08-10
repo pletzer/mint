@@ -15,9 +15,9 @@ def error_handler(filename, methodname, ier):
     raise RuntimeError(msg)
 
 
-def warning_handler(filename, methodname, ier, detailedMsg=''):
+def warning_handler(filename, methodname, ier, detailedmsg=''):
     msg = f'ier={ier} after calling {methodname} in {filename}!\n'
-    msg += detailedMsg
+    msg += detailedmsg
     logging.warning(msg)
 
 
