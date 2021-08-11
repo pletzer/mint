@@ -35,7 +35,8 @@ def getCondaVTK():
     try:
         version = list(include_dir.glob("vtk-*"))[-1].name
     except IndexError:
-        raise RuntimeError('ERROR: you need to "conda install vtk"')
+        print(f'VTK include dir: {include_dir}')
+        raise RuntimeError('ERROR: you need to "conda install -c conda-forge vtk"')
 
     version = re.sub(r"vtk-", "", version)
     include_dir = str(include_dir / Path(f"vtk-{version}"))
