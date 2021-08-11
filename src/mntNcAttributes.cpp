@@ -50,9 +50,9 @@ int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid) {
       (*self)->attInt.insert(std::pair<std::string, int>(std::string(attname), val));
     }
     else if (xtype == NC_CHAR) {
-      char val[n + 1];
-      ier = nc_get_att_text(ncid, varid, attname, val);
-      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), std::string(val, 0, n)));
+      std::string val(n, ' ');
+      ier = nc_get_att_text(ncid, varid, attname, &val[0]);
+      (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), val.c_str()));
     }
     else {
       std::cerr << "Warning: unsupported attribute type " << xtype << " of length " << n << '\n';
