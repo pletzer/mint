@@ -31,11 +31,13 @@ def getCondaVTK():
     ]
 
     include_dir = Path(sys.exec_prefix) / Path("include")
+    if os.name == 'nt':
+        # On Windows the include files are under Library
+        include_dir = Path(sys.exec_prefix) / Path("Library") / Path("include")
 
     try:
         version = list(include_dir.glob("vtk-*"))[-1].name
     except IndexError:
-        print(f'VTK include dir: {include_dir}')
         raise RuntimeError('ERROR: you need to "conda install -c conda-forge vtk"')
 
     version = re.sub(r"vtk-", "", version)
@@ -56,6 +58,10 @@ def getCondaNetCDF():
 
     include_dir = str(Path(sys.exec_prefix) / Path("include"))
     libraries_dir = str(Path(sys.exec_prefix) / Path("lib"))
+    if os.name == 'nt':
+        # Windows
+        include_dir = str(Path(sys.exec_prefix) / Path("Library") / Path("include"))
+        libraries_dir = str(Path(sys.exec_prefix) / Path("Library") / Path("lib"))
     libraries = ["netcdf", "hdf5"]
 
     if not (include_dir / Path("netcdf.h")).exists():
