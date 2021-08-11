@@ -43,6 +43,9 @@ def getCondaVTK():
     version = re.sub(r"vtk-", "", version)
     include_dir = str(include_dir / Path(f"vtk-{version}"))
     libraries_dir = str(Path(sys.exec_prefix) / Path("lib"))
+    if os.name == 'nt':
+        # Windows
+        libraries_dir = str(Path(sys.exec_prefix) / Path("Library") / Path("lib"))
     libraries = [f"{lib}-{version}" for lib in vtk_libs]
     result = {
         "VTK_VERSION": version,
@@ -89,14 +92,15 @@ with open(f"{PACKAGE}/__init__.py.in") as fi:
 vtklib = getCondaVTK()
 nclib = getCondaNetCDF()
 
+extra_compile_args = []
 cpp_flags = os.getenv("CPPFLAGS")
 cxx_flags = os.getenv("CXXFLAGS")
 if cxx_flags is not None:
     extra_compile_args = cxx_flags.split()
 elif cpp_flags is not None:
     extra_compile_args = cpp_flags.split()
-else:
-    extra_compile_args = ["-std=c++11"]
+elif os.name != 'nt':
+    extra_compile_args.append("-std=c++11")
 
 print(f'VTK_VERSION          = {vtklib["VTK_VERSION"]}')
 print(f'VTK_INCLUDE_DIR      = {vtklib["VTK_INCLUDE_DIR"]}')

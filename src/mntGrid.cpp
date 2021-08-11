@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
+#include <cmath>
+
 #include <mntGrid.h>
 #include <vtkCellData.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -5,7 +8,6 @@
 #include <netcdf.h>
 #include <string>
 #include <cstring>
-#include <cmath>
 #include <algorithm>
 #include <array>
 #include "mntUgrid2D.h"
