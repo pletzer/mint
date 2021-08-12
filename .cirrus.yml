@@ -34,6 +34,8 @@ linux_task:
       PY_VER: "3.7"
     env:
       PY_VER: "3.8"
+    env:
+      PY_VER: "3.9"
   name: "Linux: py${PY_VER}"
   container:
     dockerfile: requirements/ci/linux/Dockerfile
