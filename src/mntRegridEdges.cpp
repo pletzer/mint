@@ -965,8 +965,8 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         return 8;
     }
 
-    double edgeParamCoordBegs[MNT_NUM_EDGES_PER_QUAD * 3];
-    double edgeParamCoordEnds[MNT_NUM_EDGES_PER_QUAD * 3];
+    std::array<double, MNT_NUM_EDGES_PER_QUAD * 3> edgeParamCoordBegs;
+    std::array<double, MNT_NUM_EDGES_PER_QUAD * 3> edgeParamCoordEnds;
     double* xiBeg;
     double* xiEnd;
     for (std::size_t e = 0; e < MNT_NUM_EDGES_PER_QUAD; ++e) {
@@ -978,7 +978,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     }
 
     // write
-    ier = nc_put_var_double(ncid, edgeParamCoordBegId, edgeParamCoordBegs);
+    ier = nc_put_var_double(ncid, edgeParamCoordBegId, &edgeParamCoordBegs[0]);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not write variable \"edge_param_coord_beg\"\n";
         std::cerr << nc_strerror (ier);
@@ -986,7 +986,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         return 9;
     }
 
-    ier = nc_put_var_double(ncid, edgeParamCoordEndId, edgeParamCoordEnds);
+    ier = nc_put_var_double(ncid, edgeParamCoordEndId, &edgeParamCoordEnds[0]);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not write variable \"edge_param_coord_end\"\n";
         std::cerr << nc_strerror (ier);
