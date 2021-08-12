@@ -23,8 +23,8 @@ int mnt_ncdimensions_read(NcDimensions_t** self, int ncid, int varid) {
   if (ier != NC_NOERR) return ier;
 
   (*self)->dims.resize(ndims);
-  int dimIds[ndims];
-  ier =  nc_inq_vardimid(ncid, varid, dimIds);
+  std::vector<int> dimIds(ndims);
+  ier =  nc_inq_vardimid(ncid, varid, &dimIds[0]);
   if (ier != NC_NOERR) return ier;
 
   for (int i = 0; i < ndims; ++i) {
