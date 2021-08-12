@@ -26,8 +26,6 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vmtCellLocator::New();
-    (*self)->numPointsPerCell = 4; // 2d
-    (*self)->numEdgesPerCell = 4;  // 2d
 
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
@@ -483,7 +481,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     std::size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // reserve some space for the weights and their cell/edge id arrays
-    std::size_t n = numDstCells * (*self)->numEdgesPerCell * 20;
+    std::size_t n = numDstCells * MNT_NUM_EDGES_PER_QUAD * 20;
     (*self)->weights.reserve(n);
     (*self)->weightSrcFaceEdgeIds.reserve(n);
     (*self)->weightDstFaceEdgeIds.reserve(n);
@@ -641,7 +639,7 @@ int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n) {
 
 extern "C"
 int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
-    *n = (*self)->numEdgesPerCell;
+    *n = MNT_NUM_EDGES_PER_QUAD;
     return 0;
 }
 
@@ -754,8 +752,6 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
         return 2;
     }
     ier = nc_inq_dimlen(ncid, numWeightsId, &numWeights);
-
-    // should check that numEdgesPerCell and (*self)->numEdgesPerCell match
 
     int dstCellIdsId, srcCellIdsId, dstFaceEdgeIdsId, srcFaceEdgeIdsId, weightsId;
 
@@ -878,7 +874,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     }    
 
     int numEdgesPerCellId;
-    ier = nc_def_dim(ncid, "num_edges_per_cell", (*self)->numEdgesPerCell, &numEdgesPerCellId);
+    ier = nc_def_dim(ncid, "num_edges_per_cell", MNT_NUM_EDGES_PER_QUAD, &numEdgesPerCellId);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not define dimension \"num_edges_per_cell\"! ier = " << ier << "\n";
         std::cerr << nc_strerror (ier);
@@ -969,11 +965,11 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         return 8;
     }
 
-    double edgeParamCoordBegs[(*self)->numEdgesPerCell * 3];
-    double edgeParamCoordEnds[(*self)->numEdgesPerCell * 3];
+    double edgeParamCoordBegs[MNT_NUM_EDGES_PER_QUAD * 3];
+    double edgeParamCoordEnds[MNT_NUM_EDGES_PER_QUAD * 3];
     double* xiBeg;
     double* xiEnd;
-    for (std::size_t e = 0; e < (*self)->numEdgesPerCell; ++e) {
+    for (std::size_t e = 0; e < MNT_NUM_EDGES_PER_QUAD; ++e) {
         (*self)->edgeConnectivity.getParamCoords(e, &xiBeg, &xiEnd);
         for (std::size_t j = 0; j < 3; ++j) { // always 3d
             edgeParamCoordBegs[e*3 + j] = xiBeg[j];

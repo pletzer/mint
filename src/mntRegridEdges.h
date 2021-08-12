@@ -14,6 +14,8 @@
 #ifndef MNT_REGRID_EDGES
 #define MNT_REGRID_EDGES
 
+#define MNT_NUM_EDGES_PER_QUAD 4
+
 /**
  * @brief Edge-centred field regridding
  *
@@ -45,12 +47,6 @@ struct RegridEdges_t {
 
     /** source face indices of the weights */
     std::vector<int> weightSrcFaceEdgeIds;
-
-    /** number of points per cell */
-    std::size_t numPointsPerCell;
-
-    /** number of edges per cell */
-    std::size_t numEdgesPerCell;
 
     /** destination grid object */
     Grid_t* dstGridObj;
