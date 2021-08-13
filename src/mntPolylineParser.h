@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <vector>
 #include <string>
 #include <mntVecN.h>

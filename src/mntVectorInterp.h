@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntVecN.h>

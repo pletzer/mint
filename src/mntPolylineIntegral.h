@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <limits> // required by vtkUnstructuredGrid
 #include <vector>
 #include <map>

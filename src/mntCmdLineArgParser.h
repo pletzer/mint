@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <CmdLineArgParser.h>
 
 #ifndef MNT_CMD_LINE_ARG_PARSER

@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <vector>
 
 #ifndef MNT_MULTI_ARRAY_ITER
