@@ -19,7 +19,7 @@
 #include <vtkPoints.h>
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_new(RegridEdges_t** self) {
     
     *self = new RegridEdges_t();
@@ -43,7 +43,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_del(RegridEdges_t** self) {
 
     int ier = 0;
@@ -76,7 +76,7 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
 
     const int degrees = 1; // for the time being
@@ -84,7 +84,7 @@ int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateli
 
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
 
     const int degrees = 1; // for the time being
@@ -92,7 +92,7 @@ int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateli
 
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength) {
 
@@ -100,7 +100,7 @@ int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
 
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength) {
 
@@ -109,7 +109,7 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_initSliceIter(RegridEdges_t** self,
                                   const char* src_fort_filename, int src_nFilenameLength,
                                   const char* dst_fort_filename, int dst_nFilenameLength,
@@ -243,7 +243,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadSrcSlice(RegridEdges_t** self,
                                  double data[]) {
 
@@ -267,7 +267,7 @@ int mnt_regridedges_loadSrcSlice(RegridEdges_t** self,
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpDstSlice(RegridEdges_t** self,
                                  double data[]) {
 
@@ -292,7 +292,7 @@ int mnt_regridedges_dumpDstSlice(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_nextSlice(RegridEdges_t** self) {
 
     // increment the iterator
@@ -302,7 +302,7 @@ int mnt_regridedges_nextSlice(RegridEdges_t** self) {
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
@@ -368,7 +368,7 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
@@ -430,7 +430,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
@@ -441,7 +441,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
@@ -452,7 +452,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug) {
 
     // checks
@@ -625,25 +625,25 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n) {
     *n = (*self)->srcGrid->GetNumberOfCells();
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n) {
     *n = (*self)->dstGrid->GetNumberOfCells();
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
     *n = MNT_NUM_EDGES_PER_QUAD;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* nPtr) {
     if (!(*self)->srcGridObj) {
         std::cerr << "ERROR: source grid was not loaded\n";
@@ -653,7 +653,7 @@ int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* nPtr) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* nPtr) {
     if (!(*self)->dstGridObj) {
         std::cerr << "ERROR: destination grid was not loaded\n";
@@ -663,7 +663,7 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* nPtr) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_apply(RegridEdges_t** self, 
                           const double src_data[], double dst_data[]) {
 
@@ -727,7 +727,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
@@ -844,7 +844,7 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
 
@@ -1041,7 +1041,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_print(RegridEdges_t** self) {
     std::size_t numWeights = (*self)->weights.size();
     std::cout << "edge to vertex connectivity:\n";

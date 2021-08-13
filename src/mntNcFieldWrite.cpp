@@ -4,7 +4,7 @@
 #include <netcdf.h>
 #include <iostream>
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
                         const char* fileName, int fileNameLen, 
                         const char* varName, int varNameLen,
@@ -53,7 +53,7 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_del(NcFieldWrite_t** self) {
   int ier = nc_close((*self)->ncid);
   delete *self;
@@ -61,7 +61,7 @@ int mnt_ncfieldwrite_del(NcFieldWrite_t** self) {
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims) {
   (*self)->dimSizes.resize(ndims);
   (*self)->dimNames.resize(ndims);
@@ -69,7 +69,7 @@ int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims) {
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, 
                             int iAxis, 
                             const char* dimName, int dimNameLen,
@@ -79,7 +79,7 @@ int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self,
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_data(NcFieldWrite_t** self, 
                           const double data[]) {
 
@@ -94,7 +94,7 @@ int mnt_ncfieldwrite_data(NcFieldWrite_t** self,
   return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self, 
                                const std::size_t startInds0[], 
                                const std::size_t counts[], 
@@ -111,7 +111,7 @@ int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self,
   return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
 
   if ((*self)->defined) {
@@ -152,7 +152,7 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
   return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self) {
 
   int ier;

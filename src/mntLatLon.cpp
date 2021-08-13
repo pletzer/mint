@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-extern "C"
+LIBRARY_API
 int mnt_latlon_new(LatLon_t** self){
     *self = new LatLon_t();
     (*self)->fillValue = -1.073742e+09;
@@ -12,25 +12,25 @@ int mnt_latlon_new(LatLon_t** self){
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_latlon_del(LatLon_t** self) {
     delete *self;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_latlon_setNumberOfLatCells(LatLon_t** self, std::size_t n) {
     (*self)->lats.resize(n + 1);
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_latlon_setNumberOfLonCells(LatLon_t** self, std::size_t n) {
     (*self)->lons.resize(n + 1);
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_latlon_build(LatLon_t** self) {
     std::size_t nLats = (*self)->lats.size();
     std::size_t nLons = (*self)->lons.size();
@@ -45,7 +45,7 @@ int mnt_latlon_build(LatLon_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_latlon_load(LatLon_t** self, const std::string& filename) {
 
     int ncid, latitude_0_dim, longitude_0_dim;
@@ -71,7 +71,7 @@ int mnt_latlon_load(LatLon_t** self, const std::string& filename) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_latlon_dump(LatLon_t** self, const std::string& filename) {
 
     int ncid, latitude_0_dim, latitude_dim, longitude_0_dim, longitude_dim;
