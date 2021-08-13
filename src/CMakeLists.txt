@@ -42,6 +42,7 @@ set(LIB_FILES
 )
 
 set(HEADER_FILES
+  mntDLLExport.h
   vmtCellLocator.h
   mntUgrid2D.h
   mntQuadEdgeIter.h
