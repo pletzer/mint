@@ -42,7 +42,8 @@ set(LIB_FILES
 )
 
 set(HEADER_FILES
-  mntDLLExport.h
+  mntLIBRARY_API.h
+  mntFileMeshNameExtractor.h
   vmtCellLocator.h
   mntUgrid2D.h
   mntQuadEdgeIter.h

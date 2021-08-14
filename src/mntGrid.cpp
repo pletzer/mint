@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include "mntUgrid2D.h"
+#include "mntFileMeshNameExtractor.h"
 
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge distances
@@ -262,16 +263,10 @@ LIBRARY_API
 int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename:meshname"
-    std::string fm = std::string(fileAndMeshName);
-    std::size_t columnPosR = fm.rfind(':');
-    if (columnPosR == std::string::npos) {
-        std::cerr << "ERROR: could not find ':' in \"" << fileAndMeshName << "\".";
-        std::cerr << " use \"filename:meshname\" format to specify the file and mesh names, respectively\n";
-        return 2;
-    }
+    auto fm =  fileMeshNameExtractor(fileAndMeshName);
 
-    std::string filename = fm.substr(0, columnPosR);
-    std::string meshname = fm.substr(columnPosR + 1, std::string::npos);
+    std::string filename = fm["filename"];
+    std::string meshname = fm["meshname"];
 
     Ugrid2D ugrid;
     int ier = ugrid.load(filename, meshname);
