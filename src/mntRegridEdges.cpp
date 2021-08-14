@@ -3,6 +3,7 @@
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
 #include <mntWeights.h>
+#include "mntFileMeshNameExtractor.h"
 
 #include <netcdf.h>
 
@@ -124,10 +125,10 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
     // filter out the mesh name, if present (not used here)
-    std::size_t columnL = srcFileAndMeshName.find(':');
-    std::string srcFilename = srcFileAndMeshName.substr(0, columnL);
-    columnL = dstFileAndMeshName.find(':');
-    std::string dstFilename = dstFileAndMeshName.substr(0, columnL);
+    auto fmSrc = fileMeshNameExtractor(srcFileAndMeshName);
+    auto fmDst = fileMeshNameExtractor(dstFileAndMeshName);
+    std::string srcFilename = fmSrc["filename"];
+    std::string dstFilename = fmDst["filename"];
 
     // open the source file
     ier = nc_open(srcFilename.c_str(), NC_NOWRITE, &(*self)->srcNcid);
@@ -313,8 +314,8 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
 
     // filter out the mesh name, if present (not used here)
-    std::size_t columnL = fileAndMeshName.find(':');
-    std::string filename = fileAndMeshName.substr(0, columnL);
+    auto fm = fileMeshNameExtractor(fileAndMeshName);
+    std::string filename = fm["filename"];
 
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
@@ -379,10 +380,11 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
 
     std::size_t columnL = fileAndMeshName.find(':');
 
-    // get the file name
-    std::string filename = fileAndMeshName.substr(0, columnL);
-    // get the mesh name
-    std::string meshname = fileAndMeshName.substr(columnL + 1);
+
+    // get the file and mesh names
+    auto fm = fileMeshNameExtractor(fileAndMeshName);
+    std::string filename = fm["filename"];
+    std::string meshname = fm["meshname"];
 
     int ier;
     NcFieldWrite_t* wr = NULL;

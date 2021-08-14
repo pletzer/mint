@@ -4,6 +4,7 @@ include_directories(
 )
 
 set(LIB_FILES
+  mntFileMeshNameExtractor.cpp
   vmtCellLocator.cpp
   mntUgrid2D.cpp
   mntQuadEdgeIter.cpp
