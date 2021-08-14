@@ -263,15 +263,14 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename:meshname"
     std::string fm = std::string(fileAndMeshName);
-    std::size_t columnPosL = fm.find(':');
     std::size_t columnPosR = fm.rfind(':');
-    if (columnPosL == std::string::npos) {
+    if (columnPosR == std::string::npos) {
         std::cerr << "ERROR: could not find ':' in \"" << fileAndMeshName << "\".";
         std::cerr << " use \"filename:meshname\" format to specify the file and mesh names, respectively\n";
         return 2;
     }
 
-    std::string filename = fm.substr(0, columnPosL);
+    std::string filename = fm.substr(0, columnPosR);
     std::string meshname = fm.substr(columnPosR + 1, std::string::npos);
 
     Ugrid2D ugrid;
