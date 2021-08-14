@@ -4,6 +4,8 @@ from pathlib import Path
 import vtk
 from tempfile import NamedTemporaryFile
 
+DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
+
 def test_create_grid():
     # create the grid
     gr = Grid()
@@ -49,19 +51,17 @@ def test_attach_data():
         assert(arr.GetNumberOfComponents() == nDataPerCell)
 
 def test_load_grid():
-    data_dir = Path(__file__).absolute().parent / '../../data'
     gr = Grid()
-    filename = str(data_dir / Path('test_create_grid.vtk'))
+    filename = str(DATA_DIR / Path('test_create_grid.vtk'))
     gr.load(filename)
     ncells = gr.getNumberOfCells()
     print(f'ncells = {ncells}')
     assert(ncells == 2)
 
 def test_load_from_ugrid_file():
-    data_dir = Path(__file__).absolute().parent / '../../data'
     gr = Grid()
     gr.setFlags(1, 1)
-    filename = str(data_dir / Path('cs_4.nc'))
+    filename = str(DATA_DIR / Path('cs_4.nc'))
     gr.loadFrom2DUgrid(f'{filename}:physics')
     nedges = gr.getNumberOfEdges()
     print(f'nedges = {nedges}')
@@ -77,10 +77,9 @@ def test_load_from_ugrid_file():
     gr.attach('myData', data)
 
 def test_edge_arc_lengths():
-    data_dir = Path(__file__).absolute().parent / '../../data'
     gr = Grid()
     gr.setFlags(1, 1)
-    filename = str(data_dir / Path('cs_4.nc'))
+    filename = str(DATA_DIR / Path('cs_4.nc'))
     gr.loadFrom2DUgrid(f'{filename}:physics')
     gr.computeEdgeArcLengths()
     ncells = gr.getNumberOfCells()
