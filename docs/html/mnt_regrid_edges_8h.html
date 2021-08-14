@@ -74,7 +74,8 @@ $(function() {
 <div class="title">mntRegridEdges.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;limits&gt;</code><br />
+<div class="textblock"><code>#include &quot;mntLIBRARY_API.h&quot;</code><br />
+<code>#include &lt;limits&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 <code>#include &lt;map&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
@@ -99,83 +100,99 @@ Classes</h2></td></tr>
 Macros</h2></td></tr>
 <tr class="memitem:acbae3b931f29a9657ce6955ad690d2c2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#acbae3b931f29a9657ce6955ad690d2c2">MNT_REGRID_EDGES</a></td></tr>
 <tr class="separator:acbae3b931f29a9657ce6955ad690d2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91e6789a688ace909765ec2d303dfd68"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a91e6789a688ace909765ec2d303dfd68">MNT_NUM_EDGES_PER_QUAD</a>&#160;&#160;&#160;4</td></tr>
+<tr class="separator:a91e6789a688ace909765ec2d303dfd68"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab0fb5f5b64e4985035e1cb4deb28ee79"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ab0fb5f5b64e4985035e1cb4deb28ee79">mnt_regridedges_new</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
-<tr class="memdesc:ab0fb5f5b64e4985035e1cb4deb28ee79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a regridding object for edge centred fields.  <a href="mnt_regrid_edges_8h.html#ab0fb5f5b64e4985035e1cb4deb28ee79">More...</a><br /></td></tr>
-<tr class="separator:ab0fb5f5b64e4985035e1cb4deb28ee79"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae1a9e7ace439d7b5b7b34f52f868bb81"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ae1a9e7ace439d7b5b7b34f52f868bb81">mnt_regridedges_del</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
-<tr class="memdesc:ae1a9e7ace439d7b5b7b34f52f868bb81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="mnt_regrid_edges_8h.html#ae1a9e7ace439d7b5b7b34f52f868bb81">More...</a><br /></td></tr>
-<tr class="separator:ae1a9e7ace439d7b5b7b34f52f868bb81"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9031e75918b12c10ecd99ce090370bcd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a9031e75918b12c10ecd99ce090370bcd">mnt_regridedges_setSrcGridFlags</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int fixLonAcrossDateline, int averageLonAtPole)</td></tr>
-<tr class="memdesc:a9031e75918b12c10ecd99ce090370bcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the source grid flags.  <a href="mnt_regrid_edges_8h.html#a9031e75918b12c10ecd99ce090370bcd">More...</a><br /></td></tr>
-<tr class="separator:a9031e75918b12c10ecd99ce090370bcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a349cdf4e7518aec1c3c3c34cdcf7cb0f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a349cdf4e7518aec1c3c3c34cdcf7cb0f">mnt_regridedges_setDstGridFlags</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int fixLonAcrossDateline, int averageLonAtPole)</td></tr>
-<tr class="memdesc:a349cdf4e7518aec1c3c3c34cdcf7cb0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the destination grid flags.  <a href="mnt_regrid_edges_8h.html#a349cdf4e7518aec1c3c3c34cdcf7cb0f">More...</a><br /></td></tr>
-<tr class="separator:a349cdf4e7518aec1c3c3c34cdcf7cb0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abeb406415cdc28a6b822a3a9e3ecd51e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#abeb406415cdc28a6b822a3a9e3ecd51e">mnt_regridedges_dumpSrcGridVtk</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength)</td></tr>
-<tr class="memdesc:abeb406415cdc28a6b822a3a9e3ecd51e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the source grid to a VTK file.  <a href="mnt_regrid_edges_8h.html#abeb406415cdc28a6b822a3a9e3ecd51e">More...</a><br /></td></tr>
-<tr class="separator:abeb406415cdc28a6b822a3a9e3ecd51e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45cb532cad223ffb8b565c8884bc6f82"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a45cb532cad223ffb8b565c8884bc6f82">mnt_regridedges_dumpDstGridVtk</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength)</td></tr>
-<tr class="memdesc:a45cb532cad223ffb8b565c8884bc6f82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the destination grid to a VTK file.  <a href="mnt_regrid_edges_8h.html#a45cb532cad223ffb8b565c8884bc6f82">More...</a><br /></td></tr>
-<tr class="separator:a45cb532cad223ffb8b565c8884bc6f82"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a649397394155b038cfd29f526f629526"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a649397394155b038cfd29f526f629526">mnt_regridedges_initSliceIter</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *src_fort_filename, int src_nFilenameLength, const char *dst_fort_filename, int dst_nFilenameLength, int append, const char *field_name, int nFieldNameLength, std::size_t *numSlices)</td></tr>
-<tr class="memdesc:a649397394155b038cfd29f526f629526"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the slice iterator.  <a href="mnt_regrid_edges_8h.html#a649397394155b038cfd29f526f629526">More...</a><br /></td></tr>
-<tr class="separator:a649397394155b038cfd29f526f629526"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad26c5384328a2b1563765ff13c748a4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#aad26c5384328a2b1563765ff13c748a4">mnt_regridedges_loadSrcSlice</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, double data[])</td></tr>
-<tr class="memdesc:aad26c5384328a2b1563765ff13c748a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a slice of the source field from the 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#aad26c5384328a2b1563765ff13c748a4">More...</a><br /></td></tr>
-<tr class="separator:aad26c5384328a2b1563765ff13c748a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28943e20fdc76cbb49599a0222a73f02"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a28943e20fdc76cbb49599a0222a73f02">mnt_regridedges_dumpDstSlice</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, double data[])</td></tr>
-<tr class="memdesc:a28943e20fdc76cbb49599a0222a73f02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump a slice of the destination field slice to 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#a28943e20fdc76cbb49599a0222a73f02">More...</a><br /></td></tr>
-<tr class="separator:a28943e20fdc76cbb49599a0222a73f02"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3881bb86a140dc39ff67915a87802fac"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a3881bb86a140dc39ff67915a87802fac">mnt_regridedges_nextSlice</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
-<tr class="memdesc:a3881bb86a140dc39ff67915a87802fac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increment the slice iterator.  <a href="mnt_regrid_edges_8h.html#a3881bb86a140dc39ff67915a87802fac">More...</a><br /></td></tr>
-<tr class="separator:a3881bb86a140dc39ff67915a87802fac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac44415fbcf1dbce2f70f65e0804f1ea2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ac44415fbcf1dbce2f70f65e0804f1ea2">mnt_regridedges_loadEdgeField</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength, const char *field_name, int nFieldNameLength, std::size_t ndata, double data[])</td></tr>
-<tr class="memdesc:ac44415fbcf1dbce2f70f65e0804f1ea2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a field from a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#ac44415fbcf1dbce2f70f65e0804f1ea2">More...</a><br /></td></tr>
-<tr class="separator:ac44415fbcf1dbce2f70f65e0804f1ea2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a410d0b7fef0c80687282595bbba0479b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a410d0b7fef0c80687282595bbba0479b">mnt_regridedges_dumpEdgeField</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength, const char *field_name, int nFieldNameLength, std::size_t ndata, const double data[])</td></tr>
-<tr class="memdesc:a410d0b7fef0c80687282595bbba0479b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump a field to a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#a410d0b7fef0c80687282595bbba0479b">More...</a><br /></td></tr>
-<tr class="separator:a410d0b7fef0c80687282595bbba0479b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08aede904801745efb0d3c1a1778fd55"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a08aede904801745efb0d3c1a1778fd55">mnt_regridedges_loadSrcGrid</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
-<tr class="memdesc:a08aede904801745efb0d3c1a1778fd55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a source grid from a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#a08aede904801745efb0d3c1a1778fd55">More...</a><br /></td></tr>
-<tr class="separator:a08aede904801745efb0d3c1a1778fd55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fde26cd02f3816735b2330322fda880"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a0fde26cd02f3816735b2330322fda880">mnt_regridedges_loadDstGrid</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
-<tr class="memdesc:a0fde26cd02f3816735b2330322fda880"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a destination grid from a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#a0fde26cd02f3816735b2330322fda880">More...</a><br /></td></tr>
-<tr class="separator:a0fde26cd02f3816735b2330322fda880"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a224f40b7b61bbde232176ecf5e9a09aa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a224f40b7b61bbde232176ecf5e9a09aa">mnt_regridedges_build</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int numCellsPerBucket, double periodX, int debug)</td></tr>
-<tr class="memdesc:a224f40b7b61bbde232176ecf5e9a09aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the regridder and compute the regridding weights.  <a href="mnt_regrid_edges_8h.html#a224f40b7b61bbde232176ecf5e9a09aa">More...</a><br /></td></tr>
-<tr class="separator:a224f40b7b61bbde232176ecf5e9a09aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9c952bd82ad7209bcbc08a171acee025"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a9c952bd82ad7209bcbc08a171acee025">mnt_regridedges_getNumSrcCells</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
-<tr class="memdesc:a9c952bd82ad7209bcbc08a171acee025"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of the source grid cells.  <a href="mnt_regrid_edges_8h.html#a9c952bd82ad7209bcbc08a171acee025">More...</a><br /></td></tr>
-<tr class="separator:a9c952bd82ad7209bcbc08a171acee025"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed577236b17970ad6c2f59f7318727f9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#aed577236b17970ad6c2f59f7318727f9">mnt_regridedges_getNumDstCells</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
-<tr class="memdesc:aed577236b17970ad6c2f59f7318727f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of the destination grid cells.  <a href="mnt_regrid_edges_8h.html#aed577236b17970ad6c2f59f7318727f9">More...</a><br /></td></tr>
-<tr class="separator:aed577236b17970ad6c2f59f7318727f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab107b0ceea0fb5cd63a5b8ab85e2768e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ab107b0ceea0fb5cd63a5b8ab85e2768e">mnt_regridedges_getNumEdgesPerCell</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int *n)</td></tr>
-<tr class="memdesc:ab107b0ceea0fb5cd63a5b8ab85e2768e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of edges per cell.  <a href="mnt_regrid_edges_8h.html#ab107b0ceea0fb5cd63a5b8ab85e2768e">More...</a><br /></td></tr>
-<tr class="separator:ab107b0ceea0fb5cd63a5b8ab85e2768e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e0797085a68989a039d2a86f6b3d7bf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a4e0797085a68989a039d2a86f6b3d7bf">mnt_regridedges_getNumSrcEdges</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
-<tr class="memdesc:a4e0797085a68989a039d2a86f6b3d7bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of unique edges in the source grid.  <a href="mnt_regrid_edges_8h.html#a4e0797085a68989a039d2a86f6b3d7bf">More...</a><br /></td></tr>
-<tr class="separator:a4e0797085a68989a039d2a86f6b3d7bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ca0f37bdd0607bede9cb207abd876a9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a7ca0f37bdd0607bede9cb207abd876a9">mnt_regridedges_getNumDstEdges</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
-<tr class="memdesc:a7ca0f37bdd0607bede9cb207abd876a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of unique edges in the destination grid.  <a href="mnt_regrid_edges_8h.html#a7ca0f37bdd0607bede9cb207abd876a9">More...</a><br /></td></tr>
-<tr class="separator:a7ca0f37bdd0607bede9cb207abd876a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4473503bddbceec2ade6b564941bce3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ae4473503bddbceec2ade6b564941bce3">mnt_regridedges_apply</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const double src_data[], double dst_data[])</td></tr>
-<tr class="memdesc:ae4473503bddbceec2ade6b564941bce3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the interpolation weights to an edge field with unique edge Ids.  <a href="mnt_regrid_edges_8h.html#ae4473503bddbceec2ade6b564941bce3">More...</a><br /></td></tr>
-<tr class="separator:ae4473503bddbceec2ade6b564941bce3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa3c4233d8cd35364dbdfd99472a419fa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#aa3c4233d8cd35364dbdfd99472a419fa">mnt_regridedges_loadWeights</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
-<tr class="memdesc:aa3c4233d8cd35364dbdfd99472a419fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load the weights from file.  <a href="mnt_regrid_edges_8h.html#aa3c4233d8cd35364dbdfd99472a419fa">More...</a><br /></td></tr>
-<tr class="separator:aa3c4233d8cd35364dbdfd99472a419fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89db9fdb674d4f3ea530b7e3315a6769"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a89db9fdb674d4f3ea530b7e3315a6769">mnt_regridedges_dumpWeights</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
-<tr class="memdesc:a89db9fdb674d4f3ea530b7e3315a6769"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the weights to file.  <a href="mnt_regrid_edges_8h.html#a89db9fdb674d4f3ea530b7e3315a6769">More...</a><br /></td></tr>
-<tr class="separator:a89db9fdb674d4f3ea530b7e3315a6769"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15f8691973013471c92ff2cb78d69efc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a15f8691973013471c92ff2cb78d69efc">mnt_regridedges_print</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
-<tr class="memdesc:a15f8691973013471c92ff2cb78d69efc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print/display the weights.  <a href="mnt_regrid_edges_8h.html#a15f8691973013471c92ff2cb78d69efc">More...</a><br /></td></tr>
-<tr class="separator:a15f8691973013471c92ff2cb78d69efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a695a99450567e4172347091a3c525c89"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a695a99450567e4172347091a3c525c89">mnt_regridedges_new</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
+<tr class="memdesc:a695a99450567e4172347091a3c525c89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a regridding object for edge centred fields.  <a href="mnt_regrid_edges_8h.html#a695a99450567e4172347091a3c525c89">More...</a><br /></td></tr>
+<tr class="separator:a695a99450567e4172347091a3c525c89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25b0237e7a1851454eea8cba1108f6db"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a25b0237e7a1851454eea8cba1108f6db">mnt_regridedges_del</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
+<tr class="memdesc:a25b0237e7a1851454eea8cba1108f6db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="mnt_regrid_edges_8h.html#a25b0237e7a1851454eea8cba1108f6db">More...</a><br /></td></tr>
+<tr class="separator:a25b0237e7a1851454eea8cba1108f6db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae565af756a08f8f1ac5df515d48d5fec"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ae565af756a08f8f1ac5df515d48d5fec">mnt_regridedges_setSrcGridFlags</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int fixLonAcrossDateline, int averageLonAtPole)</td></tr>
+<tr class="memdesc:ae565af756a08f8f1ac5df515d48d5fec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the source grid flags.  <a href="mnt_regrid_edges_8h.html#ae565af756a08f8f1ac5df515d48d5fec">More...</a><br /></td></tr>
+<tr class="separator:ae565af756a08f8f1ac5df515d48d5fec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d5bffef774b78622d203fbe0c09220d"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a2d5bffef774b78622d203fbe0c09220d">mnt_regridedges_setDstGridFlags</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int fixLonAcrossDateline, int averageLonAtPole)</td></tr>
+<tr class="memdesc:a2d5bffef774b78622d203fbe0c09220d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the destination grid flags.  <a href="mnt_regrid_edges_8h.html#a2d5bffef774b78622d203fbe0c09220d">More...</a><br /></td></tr>
+<tr class="separator:a2d5bffef774b78622d203fbe0c09220d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55d45087a3afcb4e966f2817d552e3f5"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a55d45087a3afcb4e966f2817d552e3f5">mnt_regridedges_dumpSrcGridVtk</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength)</td></tr>
+<tr class="memdesc:a55d45087a3afcb4e966f2817d552e3f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the source grid to a VTK file.  <a href="mnt_regrid_edges_8h.html#a55d45087a3afcb4e966f2817d552e3f5">More...</a><br /></td></tr>
+<tr class="separator:a55d45087a3afcb4e966f2817d552e3f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac01b23259939fa3a285cd4a36ed851e1"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ac01b23259939fa3a285cd4a36ed851e1">mnt_regridedges_dumpDstGridVtk</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength)</td></tr>
+<tr class="memdesc:ac01b23259939fa3a285cd4a36ed851e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the destination grid to a VTK file.  <a href="mnt_regrid_edges_8h.html#ac01b23259939fa3a285cd4a36ed851e1">More...</a><br /></td></tr>
+<tr class="separator:ac01b23259939fa3a285cd4a36ed851e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1e6e3a794466f39249cff036a9788ac"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ad1e6e3a794466f39249cff036a9788ac">mnt_regridedges_initSliceIter</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *src_fort_filename, int src_nFilenameLength, const char *dst_fort_filename, int dst_nFilenameLength, int append, const char *field_name, int nFieldNameLength, std::size_t *numSlices)</td></tr>
+<tr class="memdesc:ad1e6e3a794466f39249cff036a9788ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the slice iterator.  <a href="mnt_regrid_edges_8h.html#ad1e6e3a794466f39249cff036a9788ac">More...</a><br /></td></tr>
+<tr class="separator:ad1e6e3a794466f39249cff036a9788ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6235e857247880e9844f8303523e290"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ab6235e857247880e9844f8303523e290">mnt_regridedges_loadSrcSlice</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, double data[])</td></tr>
+<tr class="memdesc:ab6235e857247880e9844f8303523e290"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a slice of the source field from the 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#ab6235e857247880e9844f8303523e290">More...</a><br /></td></tr>
+<tr class="separator:ab6235e857247880e9844f8303523e290"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafef2a68161a715c8201cd9627293725"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#aafef2a68161a715c8201cd9627293725">mnt_regridedges_dumpDstSlice</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, double data[])</td></tr>
+<tr class="memdesc:aafef2a68161a715c8201cd9627293725"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump a slice of the destination field slice to 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#aafef2a68161a715c8201cd9627293725">More...</a><br /></td></tr>
+<tr class="separator:aafef2a68161a715c8201cd9627293725"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72ecdd959125265b94c6a7dabe71d629"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a72ecdd959125265b94c6a7dabe71d629">mnt_regridedges_nextSlice</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
+<tr class="memdesc:a72ecdd959125265b94c6a7dabe71d629"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increment the slice iterator.  <a href="mnt_regrid_edges_8h.html#a72ecdd959125265b94c6a7dabe71d629">More...</a><br /></td></tr>
+<tr class="separator:a72ecdd959125265b94c6a7dabe71d629"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3befcc0de19dfb076af611fa3364c4a"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#af3befcc0de19dfb076af611fa3364c4a">mnt_regridedges_loadEdgeField</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength, const char *field_name, int nFieldNameLength, std::size_t ndata, double data[])</td></tr>
+<tr class="memdesc:af3befcc0de19dfb076af611fa3364c4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a field from a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#af3befcc0de19dfb076af611fa3364c4a">More...</a><br /></td></tr>
+<tr class="separator:af3befcc0de19dfb076af611fa3364c4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e78399876b3f35c2f74b4dca91683c2"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a6e78399876b3f35c2f74b4dca91683c2">mnt_regridedges_dumpEdgeField</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int nFilenameLength, const char *field_name, int nFieldNameLength, std::size_t ndata, const double data[])</td></tr>
+<tr class="memdesc:a6e78399876b3f35c2f74b4dca91683c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump a field to a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#a6e78399876b3f35c2f74b4dca91683c2">More...</a><br /></td></tr>
+<tr class="separator:a6e78399876b3f35c2f74b4dca91683c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd4456bc1fa2c433a5d2da07d6fcf731"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#afd4456bc1fa2c433a5d2da07d6fcf731">mnt_regridedges_loadSrcGrid</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
+<tr class="memdesc:afd4456bc1fa2c433a5d2da07d6fcf731"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a source grid from a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#afd4456bc1fa2c433a5d2da07d6fcf731">More...</a><br /></td></tr>
+<tr class="separator:afd4456bc1fa2c433a5d2da07d6fcf731"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6724181862e70af6f4ddb19f525d871"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ae6724181862e70af6f4ddb19f525d871">mnt_regridedges_loadDstGrid</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
+<tr class="memdesc:ae6724181862e70af6f4ddb19f525d871"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a destination grid from a 2D UGRID file.  <a href="mnt_regrid_edges_8h.html#ae6724181862e70af6f4ddb19f525d871">More...</a><br /></td></tr>
+<tr class="separator:ae6724181862e70af6f4ddb19f525d871"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9bdccb2f73c9fb967a5dee6a5a8e687"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ae9bdccb2f73c9fb967a5dee6a5a8e687">mnt_regridedges_build</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int numCellsPerBucket, double periodX, int debug)</td></tr>
+<tr class="memdesc:ae9bdccb2f73c9fb967a5dee6a5a8e687"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the regridder and compute the regridding weights.  <a href="mnt_regrid_edges_8h.html#ae9bdccb2f73c9fb967a5dee6a5a8e687">More...</a><br /></td></tr>
+<tr class="separator:ae9bdccb2f73c9fb967a5dee6a5a8e687"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a7f9072bf4e336d054d35768ed9f368"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a4a7f9072bf4e336d054d35768ed9f368">mnt_regridedges_getNumSrcCells</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
+<tr class="memdesc:a4a7f9072bf4e336d054d35768ed9f368"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of the source grid cells.  <a href="mnt_regrid_edges_8h.html#a4a7f9072bf4e336d054d35768ed9f368">More...</a><br /></td></tr>
+<tr class="separator:a4a7f9072bf4e336d054d35768ed9f368"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a870bc6ef95f7422b195e38364edb081c"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a870bc6ef95f7422b195e38364edb081c">mnt_regridedges_getNumDstCells</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
+<tr class="memdesc:a870bc6ef95f7422b195e38364edb081c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of the destination grid cells.  <a href="mnt_regrid_edges_8h.html#a870bc6ef95f7422b195e38364edb081c">More...</a><br /></td></tr>
+<tr class="separator:a870bc6ef95f7422b195e38364edb081c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54e3f38a0afa7619df85d89f971a8dfb"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a54e3f38a0afa7619df85d89f971a8dfb">mnt_regridedges_getNumEdgesPerCell</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int *n)</td></tr>
+<tr class="memdesc:a54e3f38a0afa7619df85d89f971a8dfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of edges per cell.  <a href="mnt_regrid_edges_8h.html#a54e3f38a0afa7619df85d89f971a8dfb">More...</a><br /></td></tr>
+<tr class="separator:a54e3f38a0afa7619df85d89f971a8dfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9afd1bbb998c905b17c264a07c6e70d"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ac9afd1bbb998c905b17c264a07c6e70d">mnt_regridedges_getNumSrcEdges</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
+<tr class="memdesc:ac9afd1bbb998c905b17c264a07c6e70d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of unique edges in the source grid.  <a href="mnt_regrid_edges_8h.html#ac9afd1bbb998c905b17c264a07c6e70d">More...</a><br /></td></tr>
+<tr class="separator:ac9afd1bbb998c905b17c264a07c6e70d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81adced614297c90ede7bc25c341eadb"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a81adced614297c90ede7bc25c341eadb">mnt_regridedges_getNumDstEdges</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
+<tr class="memdesc:a81adced614297c90ede7bc25c341eadb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of unique edges in the destination grid.  <a href="mnt_regrid_edges_8h.html#a81adced614297c90ede7bc25c341eadb">More...</a><br /></td></tr>
+<tr class="separator:a81adced614297c90ede7bc25c341eadb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c1a0568d9790c7ca672d427d17bf86c"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a0c1a0568d9790c7ca672d427d17bf86c">mnt_regridedges_apply</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const double src_data[], double dst_data[])</td></tr>
+<tr class="memdesc:a0c1a0568d9790c7ca672d427d17bf86c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the interpolation weights to an edge field with unique edge Ids.  <a href="mnt_regrid_edges_8h.html#a0c1a0568d9790c7ca672d427d17bf86c">More...</a><br /></td></tr>
+<tr class="separator:a0c1a0568d9790c7ca672d427d17bf86c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2900dcefc3194b04449df18956bb235"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ac2900dcefc3194b04449df18956bb235">mnt_regridedges_loadWeights</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
+<tr class="memdesc:ac2900dcefc3194b04449df18956bb235"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load the weights from file.  <a href="mnt_regrid_edges_8h.html#ac2900dcefc3194b04449df18956bb235">More...</a><br /></td></tr>
+<tr class="separator:ac2900dcefc3194b04449df18956bb235"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a601f00a4c33b27c4121603f63beea44c"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a601f00a4c33b27c4121603f63beea44c">mnt_regridedges_dumpWeights</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
+<tr class="memdesc:a601f00a4c33b27c4121603f63beea44c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dump the weights to file.  <a href="mnt_regrid_edges_8h.html#a601f00a4c33b27c4121603f63beea44c">More...</a><br /></td></tr>
+<tr class="separator:a601f00a4c33b27c4121603f63beea44c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3cdc2e4c1523d2149b0f67d3bd926403"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a3cdc2e4c1523d2149b0f67d3bd926403">mnt_regridedges_print</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
+<tr class="memdesc:a3cdc2e4c1523d2149b0f67d3bd926403"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print/display the weights.  <a href="mnt_regrid_edges_8h.html#a3cdc2e4c1523d2149b0f67d3bd926403">More...</a><br /></td></tr>
+<tr class="separator:a3cdc2e4c1523d2149b0f67d3bd926403"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a91e6789a688ace909765ec2d303dfd68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91e6789a688ace909765ec2d303dfd68">&#9670;&nbsp;</a></span>MNT_NUM_EDGES_PER_QUAD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MNT_NUM_EDGES_PER_QUAD&#160;&#160;&#160;4</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="acbae3b931f29a9657ce6955ad690d2c2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acbae3b931f29a9657ce6955ad690d2c2">&#9670;&nbsp;</a></span>MNT_REGRID_EDGES</h2>
 
@@ -191,14 +208,14 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ae4473503bddbceec2ade6b564941bce3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae4473503bddbceec2ade6b564941bce3">&#9670;&nbsp;</a></span>mnt_regridedges_apply()</h2>
+<a id="a0c1a0568d9790c7ca672d427d17bf86c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c1a0568d9790c7ca672d427d17bf86c">&#9670;&nbsp;</a></span>mnt_regridedges_apply()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_apply </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_apply </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -237,14 +254,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a224f40b7b61bbde232176ecf5e9a09aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a224f40b7b61bbde232176ecf5e9a09aa">&#9670;&nbsp;</a></span>mnt_regridedges_build()</h2>
+<a id="ae9bdccb2f73c9fb967a5dee6a5a8e687"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9bdccb2f73c9fb967a5dee6a5a8e687">&#9670;&nbsp;</a></span>mnt_regridedges_build()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_build </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_build </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -289,14 +306,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ae1a9e7ace439d7b5b7b34f52f868bb81"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae1a9e7ace439d7b5b7b34f52f868bb81">&#9670;&nbsp;</a></span>mnt_regridedges_del()</h2>
+<a id="a25b0237e7a1851454eea8cba1108f6db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25b0237e7a1851454eea8cba1108f6db">&#9670;&nbsp;</a></span>mnt_regridedges_del()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_del </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_del </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em></td><td>)</td>
@@ -316,14 +333,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a45cb532cad223ffb8b565c8884bc6f82"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45cb532cad223ffb8b565c8884bc6f82">&#9670;&nbsp;</a></span>mnt_regridedges_dumpDstGridVtk()</h2>
+<a id="ac01b23259939fa3a285cd4a36ed851e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac01b23259939fa3a285cd4a36ed851e1">&#9670;&nbsp;</a></span>mnt_regridedges_dumpDstGridVtk()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_dumpDstGridVtk </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_dumpDstGridVtk </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -362,14 +379,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a28943e20fdc76cbb49599a0222a73f02"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a28943e20fdc76cbb49599a0222a73f02">&#9670;&nbsp;</a></span>mnt_regridedges_dumpDstSlice()</h2>
+<a id="aafef2a68161a715c8201cd9627293725"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aafef2a68161a715c8201cd9627293725">&#9670;&nbsp;</a></span>mnt_regridedges_dumpDstSlice()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_dumpDstSlice </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_dumpDstSlice </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -401,14 +418,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a410d0b7fef0c80687282595bbba0479b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a410d0b7fef0c80687282595bbba0479b">&#9670;&nbsp;</a></span>mnt_regridedges_dumpEdgeField()</h2>
+<a id="a6e78399876b3f35c2f74b4dca91683c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e78399876b3f35c2f74b4dca91683c2">&#9670;&nbsp;</a></span>mnt_regridedges_dumpEdgeField()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_dumpEdgeField </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_dumpEdgeField </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -475,14 +492,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="abeb406415cdc28a6b822a3a9e3ecd51e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abeb406415cdc28a6b822a3a9e3ecd51e">&#9670;&nbsp;</a></span>mnt_regridedges_dumpSrcGridVtk()</h2>
+<a id="a55d45087a3afcb4e966f2817d552e3f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55d45087a3afcb4e966f2817d552e3f5">&#9670;&nbsp;</a></span>mnt_regridedges_dumpSrcGridVtk()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_dumpSrcGridVtk </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_dumpSrcGridVtk </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -521,14 +538,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a89db9fdb674d4f3ea530b7e3315a6769"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89db9fdb674d4f3ea530b7e3315a6769">&#9670;&nbsp;</a></span>mnt_regridedges_dumpWeights()</h2>
+<a id="a601f00a4c33b27c4121603f63beea44c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a601f00a4c33b27c4121603f63beea44c">&#9670;&nbsp;</a></span>mnt_regridedges_dumpWeights()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_dumpWeights </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_dumpWeights </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -567,14 +584,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aed577236b17970ad6c2f59f7318727f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed577236b17970ad6c2f59f7318727f9">&#9670;&nbsp;</a></span>mnt_regridedges_getNumDstCells()</h2>
+<a id="a870bc6ef95f7422b195e38364edb081c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a870bc6ef95f7422b195e38364edb081c">&#9670;&nbsp;</a></span>mnt_regridedges_getNumDstCells()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_getNumDstCells </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_getNumDstCells </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -604,14 +621,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7ca0f37bdd0607bede9cb207abd876a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ca0f37bdd0607bede9cb207abd876a9">&#9670;&nbsp;</a></span>mnt_regridedges_getNumDstEdges()</h2>
+<a id="a81adced614297c90ede7bc25c341eadb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81adced614297c90ede7bc25c341eadb">&#9670;&nbsp;</a></span>mnt_regridedges_getNumDstEdges()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_getNumDstEdges </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_getNumDstEdges </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -642,14 +659,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ab107b0ceea0fb5cd63a5b8ab85e2768e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab107b0ceea0fb5cd63a5b8ab85e2768e">&#9670;&nbsp;</a></span>mnt_regridedges_getNumEdgesPerCell()</h2>
+<a id="a54e3f38a0afa7619df85d89f971a8dfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54e3f38a0afa7619df85d89f971a8dfb">&#9670;&nbsp;</a></span>mnt_regridedges_getNumEdgesPerCell()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_getNumEdgesPerCell </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_getNumEdgesPerCell </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -679,14 +696,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a9c952bd82ad7209bcbc08a171acee025"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c952bd82ad7209bcbc08a171acee025">&#9670;&nbsp;</a></span>mnt_regridedges_getNumSrcCells()</h2>
+<a id="a4a7f9072bf4e336d054d35768ed9f368"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a7f9072bf4e336d054d35768ed9f368">&#9670;&nbsp;</a></span>mnt_regridedges_getNumSrcCells()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_getNumSrcCells </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_getNumSrcCells </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -716,14 +733,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a4e0797085a68989a039d2a86f6b3d7bf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4e0797085a68989a039d2a86f6b3d7bf">&#9670;&nbsp;</a></span>mnt_regridedges_getNumSrcEdges()</h2>
+<a id="ac9afd1bbb998c905b17c264a07c6e70d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9afd1bbb998c905b17c264a07c6e70d">&#9670;&nbsp;</a></span>mnt_regridedges_getNumSrcEdges()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_getNumSrcEdges </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_getNumSrcEdges </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -754,14 +771,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a649397394155b038cfd29f526f629526"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a649397394155b038cfd29f526f629526">&#9670;&nbsp;</a></span>mnt_regridedges_initSliceIter()</h2>
+<a id="ad1e6e3a794466f39249cff036a9788ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1e6e3a794466f39249cff036a9788ac">&#9670;&nbsp;</a></span>mnt_regridedges_initSliceIter()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_initSliceIter </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_initSliceIter </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -844,14 +861,14 @@ Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time,
 
 </div>
 </div>
-<a id="a0fde26cd02f3816735b2330322fda880"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0fde26cd02f3816735b2330322fda880">&#9670;&nbsp;</a></span>mnt_regridedges_loadDstGrid()</h2>
+<a id="ae6724181862e70af6f4ddb19f525d871"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6724181862e70af6f4ddb19f525d871">&#9670;&nbsp;</a></span>mnt_regridedges_loadDstGrid()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_loadDstGrid </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_loadDstGrid </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -890,14 +907,14 @@ Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time,
 
 </div>
 </div>
-<a id="ac44415fbcf1dbce2f70f65e0804f1ea2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac44415fbcf1dbce2f70f65e0804f1ea2">&#9670;&nbsp;</a></span>mnt_regridedges_loadEdgeField()</h2>
+<a id="af3befcc0de19dfb076af611fa3364c4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3befcc0de19dfb076af611fa3364c4a">&#9670;&nbsp;</a></span>mnt_regridedges_loadEdgeField()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_loadEdgeField </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_loadEdgeField </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -966,14 +983,14 @@ Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time,
 
 </div>
 </div>
-<a id="a08aede904801745efb0d3c1a1778fd55"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a08aede904801745efb0d3c1a1778fd55">&#9670;&nbsp;</a></span>mnt_regridedges_loadSrcGrid()</h2>
+<a id="afd4456bc1fa2c433a5d2da07d6fcf731"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd4456bc1fa2c433a5d2da07d6fcf731">&#9670;&nbsp;</a></span>mnt_regridedges_loadSrcGrid()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_loadSrcGrid </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_loadSrcGrid </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -1012,14 +1029,14 @@ Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time,
 
 </div>
 </div>
-<a id="aad26c5384328a2b1563765ff13c748a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aad26c5384328a2b1563765ff13c748a4">&#9670;&nbsp;</a></span>mnt_regridedges_loadSrcSlice()</h2>
+<a id="ab6235e857247880e9844f8303523e290"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6235e857247880e9844f8303523e290">&#9670;&nbsp;</a></span>mnt_regridedges_loadSrcSlice()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_loadSrcSlice </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_loadSrcSlice </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -1053,14 +1070,14 @@ Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time,
 
 </div>
 </div>
-<a id="aa3c4233d8cd35364dbdfd99472a419fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa3c4233d8cd35364dbdfd99472a419fa">&#9670;&nbsp;</a></span>mnt_regridedges_loadWeights()</h2>
+<a id="ac2900dcefc3194b04449df18956bb235"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2900dcefc3194b04449df18956bb235">&#9670;&nbsp;</a></span>mnt_regridedges_loadWeights()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_loadWeights </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_loadWeights </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -1101,14 +1118,14 @@ Supplying the length of the filename string allows one to call this function fro
 
 </div>
 </div>
-<a id="ab0fb5f5b64e4985035e1cb4deb28ee79"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab0fb5f5b64e4985035e1cb4deb28ee79">&#9670;&nbsp;</a></span>mnt_regridedges_new()</h2>
+<a id="a695a99450567e4172347091a3c525c89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a695a99450567e4172347091a3c525c89">&#9670;&nbsp;</a></span>mnt_regridedges_new()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_new </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_new </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em></td><td>)</td>
@@ -1128,14 +1145,14 @@ Supplying the length of the filename string allows one to call this function fro
 
 </div>
 </div>
-<a id="a3881bb86a140dc39ff67915a87802fac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3881bb86a140dc39ff67915a87802fac">&#9670;&nbsp;</a></span>mnt_regridedges_nextSlice()</h2>
+<a id="a72ecdd959125265b94c6a7dabe71d629"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72ecdd959125265b94c6a7dabe71d629">&#9670;&nbsp;</a></span>mnt_regridedges_nextSlice()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_nextSlice </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_nextSlice </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em></td><td>)</td>
@@ -1156,14 +1173,14 @@ Supplying the length of the filename string allows one to call this function fro
 
 </div>
 </div>
-<a id="a15f8691973013471c92ff2cb78d69efc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15f8691973013471c92ff2cb78d69efc">&#9670;&nbsp;</a></span>mnt_regridedges_print()</h2>
+<a id="a3cdc2e4c1523d2149b0f67d3bd926403"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3cdc2e4c1523d2149b0f67d3bd926403">&#9670;&nbsp;</a></span>mnt_regridedges_print()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_print </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_print </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em></td><td>)</td>
@@ -1183,14 +1200,14 @@ Supplying the length of the filename string allows one to call this function fro
 
 </div>
 </div>
-<a id="a349cdf4e7518aec1c3c3c34cdcf7cb0f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a349cdf4e7518aec1c3c3c34cdcf7cb0f">&#9670;&nbsp;</a></span>mnt_regridedges_setDstGridFlags()</h2>
+<a id="a2d5bffef774b78622d203fbe0c09220d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d5bffef774b78622d203fbe0c09220d">&#9670;&nbsp;</a></span>mnt_regridedges_setDstGridFlags()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_setDstGridFlags </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_setDstGridFlags </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>
@@ -1229,14 +1246,14 @@ Supplying the length of the filename string allows one to call this function fro
 
 </div>
 </div>
-<a id="a9031e75918b12c10ecd99ce090370bcd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9031e75918b12c10ecd99ce090370bcd">&#9670;&nbsp;</a></span>mnt_regridedges_setSrcGridFlags()</h2>
+<a id="ae565af756a08f8f1ac5df515d48d5fec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae565af756a08f8f1ac5df515d48d5fec">&#9670;&nbsp;</a></span>mnt_regridedges_setSrcGridFlags()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int mnt_regridedges_setSrcGridFlags </td>
+          <td class="memname">LIBRARY_API int mnt_regridedges_setSrcGridFlags </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
           <td class="paramname"><em>self</em>, </td>

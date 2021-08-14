@@ -9,7 +9,10 @@ import sys
 
 from Cython.Build import cythonize
 
-#  https://stackoverflow.com/questions/4529555/building-a-ctypes-based-c-library-with-distutils
+# the following allows us to build a shared library on Windows named libmint.so, see
+# https://github.com/himbeles/ctypes-example.git. Works if one uses ctypes to call the
+# shared library.
+# https://stackoverflow.com/questions/4529555/building-a-ctypes-based-c-library-with-distutils
 from distutils.command.build_ext import build_ext as build_ext_orig
 class CTypesExtension(Extension): pass
 class build_ext(build_ext_orig):
@@ -145,6 +148,5 @@ extensions = [
 
 setup(
     ext_modules=cythonize(extensions, compiler_directives=dict(language_level=3)),
-    #ext_modules=extensions,
     cmdclass={'build_ext': build_ext},
 )
