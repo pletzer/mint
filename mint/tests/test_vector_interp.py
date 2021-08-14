@@ -140,9 +140,10 @@ def test_rectilinear():
 
             # get the lateral flux interpolated vectors
             vectorData = vi.getFaceVectors(data)
-            # face vectors take the sign of the area vector, negative if pointing down
+            # face vectors take the sign of the area vector,
+            # negative if pointing down
             assert(abs(numpy.fabs(vectorData).max() - 1.) < 1.e-12)
-            assert(abs(numpy.fabs(vectorData).min() - 0.) < 1.e-12)            
+            assert(abs(numpy.fabs(vectorData).min() - 0.) < 1.e-12)
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
@@ -252,9 +253,7 @@ def test_degenerate():
                 data[cellId, edgeIndex] = 0.0
 
 
-
 if __name__ == '__main__':
-
     test_rectilinear()
     test_slanted()
     test_degenerate()
