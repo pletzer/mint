@@ -34,14 +34,14 @@ struct RegridAxis_t {
  * Constructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_new(RegridAxis_t** self);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_del(RegridAxis_t** self);
 
 
@@ -51,7 +51,7 @@ int mnt_regridaxis_del(RegridAxis_t** self);
  * @param srcValues axis values
  * @return error code (0 is OK, any other value indicates that srcValues are not monotonically increasing/decreasing)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_build(RegridAxis_t** self, int numValues, const double srcValues[]);
 
 /**
@@ -61,7 +61,7 @@ int mnt_regridaxis_build(RegridAxis_t** self, int numValues, const double srcVal
  * @param weights returned weights for the above indices (output)
  * @return error code (0 is OK, 1 target is below range, 2 target is above range)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_getPointWeights(RegridAxis_t** self, double target, int indices[2], double weights[2]);
 
 /**
@@ -70,7 +70,7 @@ int mnt_regridaxis_getPointWeights(RegridAxis_t** self, double target, int indic
  * @param indexBounds index bounds (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_getCellIndexBounds(RegridAxis_t** self, const double targets[2], double indexBounds[2]);
 
 

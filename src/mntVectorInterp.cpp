@@ -2,7 +2,7 @@
 #include <vtkGenericCell.h>
 
 
-extern "C" 
+LIBRARY_API 
 int mnt_vectorinterp_new(VectorInterp_t** self) {
     *self = new VectorInterp_t();
     (*self)->grid = NULL;
@@ -12,7 +12,7 @@ int mnt_vectorinterp_new(VectorInterp_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_del(VectorInterp_t** self) {
 
     if ((*self)->ownsLocator) {
@@ -24,19 +24,19 @@ int mnt_vectorinterp_del(VectorInterp_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid) {
     (*self)->grid = grid;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator) {
     (*self)->locator = locator;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX) {
 
     if (!(*self)->grid) {
@@ -54,7 +54,7 @@ int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, 
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints, 
                                     const double targetPoints[], double tol2) {
 
@@ -97,7 +97,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
     return numFailures;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self, 
                                     const double data[], double vectors[]) {
 
@@ -163,7 +163,7 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
     return numFailures;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self, 
                                     const double data[], double vectors[]) {
 

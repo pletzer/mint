@@ -21,14 +21,14 @@ struct LatLon_t {
  * Constructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_latlon_new(LatLon_t** self);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_latlon_del(LatLon_t** self);
 
 /**
@@ -36,7 +36,7 @@ int mnt_latlon_del(LatLon_t** self);
  * @param n number of cells
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_latlon_setNumberOfLatCells(LatLon_t** self, std::size_t n);
 
 /**
@@ -44,14 +44,14 @@ int mnt_latlon_setNumberOfLatCells(LatLon_t** self, std::size_t n);
  * @param n number of cells
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_latlon_setNumberOfLonCells(LatLon_t** self, std::size_t n);
 
 /**
  * Build the grid
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_latlon_build(LatLon_t** self);
 
 /**
@@ -59,7 +59,7 @@ int mnt_latlon_build(LatLon_t** self);
  * @param filename file name
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_latlon_load(LatLon_t** self, const std::string& filename);
 
 /**
@@ -67,7 +67,7 @@ int mnt_latlon_load(LatLon_t** self, const std::string& filename);
  * @param filename file name
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_latlon_dump(LatLon_t** self, const std::string& filename);
 
 #endif // MNT_LATLON

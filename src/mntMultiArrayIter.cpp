@@ -1,7 +1,7 @@
 #include <mntMultiArrayIter.h>
 #include <iostream>
 
-extern "C"
+LIBRARY_API
 int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const std::size_t* dims) {
 
     *self = new MultiArrayIter_t();
@@ -26,32 +26,32 @@ int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const std::size_t
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_multiarrayiter_del(MultiArrayIter_t** self) {
     delete *self;
     return 0;
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_multiarrayiter_begin(MultiArrayIter_t** self) {
     (*self)->bigIndex = 0;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_multiarrayiter_next(MultiArrayIter_t** self) {
     (*self)->bigIndex++;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_multiarrayiter_getNumIters(MultiArrayIter_t** self, std::size_t* n) {
     *n = (*self)->ntot;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_multiarrayiter_getIndices(MultiArrayIter_t** self, std::size_t indices[]) {
     for (std::size_t i = 0; i < (*self)->dims.size(); ++i) {
         indices[i] = (*self)->bigIndex / (*self)->prodDims[i] % (*self)->dims[i];

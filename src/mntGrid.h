@@ -58,7 +58,7 @@ struct Grid_t {
  * @param self instance of Grid_t
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_new(Grid_t** self);
 
 /**
@@ -66,7 +66,7 @@ int mnt_grid_new(Grid_t** self);
  * @param self instance of Grid_t
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_del(Grid_t** self);
 
 /**
@@ -77,7 +77,7 @@ int mnt_grid_del(Grid_t** self);
  * @param degrees set this to 0 if the coordinates are in radians
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole, int degrees);
 
 /**
@@ -88,7 +88,7 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
  * @note the caller is responsible for managing the memory of the points array, which
  *       is expected to exist until the grid object is destroyed
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_setPointsPtr(Grid_t** self, double points[]);
 
 /**
@@ -98,7 +98,7 @@ int mnt_grid_setPointsPtr(Grid_t** self, double points[]);
  * @param ncells number of cells
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells);
 
 /**
@@ -111,7 +111,7 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells);
  * @note the grid DOES NOT own the data - the caller is responsible for ensuring that the data exist
  *       during the life of the grid object and for freeing the data
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]);
 
 /**
@@ -120,7 +120,7 @@ int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const 
  * @return error code (0 = OK)
  * @note assumes the sphere radius to be one
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_computeEdgeArcLengths(Grid_t** self);
 
 /**
@@ -131,7 +131,7 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self);
  * @param res length of the edge assuming a radius of one
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, double* res);
 
 /**
@@ -140,7 +140,7 @@ int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, do
  * @param grid_ptr address of vtlUnstructuredGrid object
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
 
 /**
@@ -151,7 +151,7 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
  * @note user should invoke mnt_grid_del to free memory when disposing of the grid
  * @note call mnt_grid_new prior to this call
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName);
 
 /**
@@ -162,7 +162,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName);
  * @note user should invoke mnt_grid_del to free memory when disposing of the grid
  * @note call mnt_grid_new prior to this call
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_load(Grid_t** self, const char* filename);
 
 /**
@@ -171,7 +171,7 @@ int mnt_grid_load(Grid_t** self, const char* filename);
  * @param filename '\0' terminated file name
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_dump(Grid_t** self, const char* filename);
 
 /**
@@ -179,7 +179,7 @@ int mnt_grid_dump(Grid_t** self, const char* filename);
  * @param self instance of Grid_t
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_print(Grid_t** self);
 
 /**
@@ -191,7 +191,7 @@ int mnt_grid_print(Grid_t** self);
  * @param point1 the coordinates of the end point (output)
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex, 
                        double point0[], double point1[]);
 
@@ -203,7 +203,7 @@ int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
  * @param nodeIds node Ids for the start/end vertices on the original grid (output)
  * @return error code (0 = OK)
  */
-extern "C" 
+LIBRARY_API 
 int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]);
 
 /**
@@ -215,7 +215,7 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
  * @param signEdge +1 if edge edgeId points in the same direction as (cellid, edgeIndex), -1 otherwise
  * @return error code (0 = OK)
  */
-extern "C" 
+LIBRARY_API 
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
                        std::size_t* edgeId, int* signEdge);
 
@@ -225,7 +225,7 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
  * @param numCells number of cells (output)
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells);
 
 /**
@@ -235,7 +235,7 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells);
  * @return error code (0 = OK)
  * @note this will currently return 0 unless the grid was loaded from a UGRID 2D file
  */
-extern "C"
+LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges);
 
 

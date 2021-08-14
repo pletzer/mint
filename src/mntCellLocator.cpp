@@ -3,7 +3,7 @@
 #include <cstring>
 #include <string>
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_new(CellLocator_t** self) {
     *self = new CellLocator_t();
     mnt_grid_new(&(*self)->gridt);
@@ -12,7 +12,7 @@ int mnt_celllocator_new(CellLocator_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, std::size_t n) {
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
@@ -25,7 +25,7 @@ int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, std::s
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_del(CellLocator_t** self) {
     (*self)->cell->Delete();
     (*self)->loc->Delete();
@@ -34,7 +34,7 @@ int mnt_celllocator_del(CellLocator_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::size_t ncells, 
                                  double points[]) {
     int ier = mnt_grid_setPointsPtr(&(*self)->gridt, points);
@@ -42,7 +42,7 @@ int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::s
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
 
     // get the grid
@@ -57,7 +57,7 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells) {
 
     // initialize
@@ -155,7 +155,7 @@ int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_runGridDiagnostics(CellLocator_t** self) {
     vtkIdType ncells = (*self)->gridt->grid->GetNumberOfCells();
     vtkIdType npts = (*self)->gridt->grid->GetNumberOfPoints();
@@ -182,7 +182,7 @@ int mnt_celllocator_runGridDiagnostics(CellLocator_t** self) {
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, std::size_t n) {
     // copy fortran string into c string
     std::string filename = std::string(fort_filename, n);
@@ -190,7 +190,7 @@ int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, st
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* cellId, 
 		                 double pcoords[]) {
     // may need to be adjusted
@@ -199,7 +199,7 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* 
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_celllocator_interpPoint(CellLocator_t** self, long long cellId, const double pcoords[], double point[]) {
     if (cellId < 0) {
         return 1;
@@ -210,7 +210,7 @@ int mnt_celllocator_interpPoint(CellLocator_t** self, long long cellId, const do
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 void mnt_celllocator_printAddress(void* something) {
     printf("address is %lld (0x%16zx)\n", (long long) something, (std::size_t) something);
 }

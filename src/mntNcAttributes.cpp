@@ -4,13 +4,13 @@
 #include <netcdf.h>
 #include <iostream>
 
-extern "C"
+LIBRARY_API
 int mnt_ncattributes_new(NcAttributes_t** self) {
   *self = new NcAttributes_t();
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncattributes_del(NcAttributes_t** self) {
   (*self)->attStr.clear();
   (*self)->attInt.clear();
@@ -19,7 +19,7 @@ int mnt_ncattributes_del(NcAttributes_t** self) {
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid) {
 
   int ier;
@@ -65,7 +65,7 @@ int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid) {
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
 
   int ier;
@@ -102,7 +102,7 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncattributes_isIntensive(NcAttributes_t** self) {
   if ((*self)->attStr["field_methods"] == "intensive") {
     return 1;
@@ -110,7 +110,7 @@ int mnt_ncattributes_isIntensive(NcAttributes_t** self) {
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncattributes_print(NcAttributes_t** self) {
 
   std::cout << "string attributes:\n";

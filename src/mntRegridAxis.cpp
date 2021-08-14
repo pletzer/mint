@@ -1,6 +1,6 @@
 #include <mntRegridAxis.h>
 
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_new(RegridAxis_t** self) {
 
     *self = new RegridAxis_t();
@@ -14,7 +14,7 @@ int mnt_regridaxis_new(RegridAxis_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_del(RegridAxis_t** self) {
 
     // destroy the spline object
@@ -26,7 +26,7 @@ int mnt_regridaxis_del(RegridAxis_t** self) {
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_build(RegridAxis_t** self, int numValues, const double srcValues[]) {
 
     (*self)->spline->RemoveAllPoints();
@@ -71,7 +71,7 @@ int mnt_regridaxis_build(RegridAxis_t** self, int numValues, const double srcVal
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_getPointWeights(RegridAxis_t** self, double target, int indices[2], double weights[2]) {
 
     double t = (*self)->spline->Evaluate(target);
@@ -90,7 +90,7 @@ int mnt_regridaxis_getPointWeights(RegridAxis_t** self, double target, int indic
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridaxis_getCellIndexBounds(RegridAxis_t** self, const double targets[2], double indexBounds[2]) {
 
     indexBounds[0] = (*self)->spline->Evaluate(targets[0]);
