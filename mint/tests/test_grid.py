@@ -2,7 +2,7 @@ from mint import Grid
 import numpy
 from pathlib import Path
 import vtk
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
@@ -20,8 +20,9 @@ def test_create_grid():
                           (2., 1., 0.),
                           (1., 1., 0.)]).reshape((2, 4, 3))
     gr.setPoints(points)
-    with NamedTemporaryFile() as f:
-        gr.dump(f.name)
+    with TemporaryDirectory() as d:
+        fname = str(Path(d) / Path('grid.vtk'))
+        gr.dump(fname)
 
 
 def test_attach_data():
@@ -42,11 +43,12 @@ def test_attach_data():
     data = numpy.arange(0, 2*nDataPerCell,
                         dtype=numpy.float64).reshape((2, nDataPerCell))
     gr.attach('mydata', data)
-    with NamedTemporaryFile() as f:
-        gr.dump(f.name)
+    with TemporaryDirectory() as d:
+        fname = str(Path(d) / Path('grid.vtk'))
+        gr.dump(fname)
         # read the data back to check the layout of the data
         reader = vtk.vtkUnstructuredGridReader()
-        reader.SetFileName(f.name)
+        reader.SetFileName(fname)
         reader.Update()
         ugrid = reader.GetOutput()
         arr = ugrid.GetCellData().GetArray('mydata')
