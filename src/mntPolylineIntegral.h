@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <limits> // required by vtkUnstructuredGrid
 #include <vector>
 #include <map>
@@ -25,7 +26,7 @@ struct PolylineIntegral_t {
  * @param self instance of the polyline integral object
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_new(PolylineIntegral_t** self);
 
 /**
@@ -33,7 +34,7 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self);
  * @param self this instance
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_del(PolylineIntegral_t** self);
 
 /** 
@@ -49,7 +50,7 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self);
  * @param periodX periodicity length (0. if not periodic)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, 
                                int npoints, const double xyz[], int counterclock,
                                double periodX);
@@ -64,7 +65,7 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
  * @param result line integral of the field over the polyline
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[], double* result);
 
 

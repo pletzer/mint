@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntVecN.h>
@@ -31,7 +32,7 @@ struct VectorInterp_t {
  * @param self instance of VectorInterp_t
  * @return error code (0 = OK)
  */
-extern "C" 
+LIBRARY_API 
 int mnt_vectorinterp_new(VectorInterp_t** self);
 
 /**
@@ -39,7 +40,7 @@ int mnt_vectorinterp_new(VectorInterp_t** self);
  * @param self instance of VectorInterp_t
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_del(VectorInterp_t** self);
 
 /**
@@ -49,7 +50,7 @@ int mnt_vectorinterp_del(VectorInterp_t** self);
  * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid);
 
 /**
@@ -58,7 +59,7 @@ int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid);
  * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
 
 /**
@@ -67,7 +68,7 @@ int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
  * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX);
 
 /**
@@ -80,7 +81,7 @@ int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, 
  * @note the error code is the number of points for which the parametric coordinates could 
  *       not be found
  */
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints, 
                                 const double targetPoints[], double tol2);
 
@@ -93,7 +94,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
  *       will not be touched if the point falls out of the domain.
  */
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
                                     const double data[], double vectors[]);
 
@@ -106,7 +107,7 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
  *       will not be touched if the point falls out of the domain.
  */
-extern "C"
+LIBRARY_API
 int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     const double data[], double vectors[]);
 

@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <vector>
 #include <string>
 
@@ -19,14 +20,14 @@ struct NcDimensions_t {
  * Constructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncdimensions_new(NcDimensions_t** self);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncdimensions_del(NcDimensions_t** self);
 
 /**
@@ -35,7 +36,7 @@ int mnt_ncdimensions_del(NcDimensions_t** self);
  * @param varid variable id
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncdimensions_read(NcDimensions_t** self, int ncid, int varid);
 
 /**
@@ -43,7 +44,7 @@ int mnt_ncdimensions_read(NcDimensions_t** self, int ncid, int varid);
  * @param ndims number (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncdimensions_getNumDims(NcDimensions_t** self, int* ndims);
 
 /**
@@ -51,14 +52,14 @@ int mnt_ncdimensions_getNumDims(NcDimensions_t** self, int* ndims);
  * @param len size (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncdimensions_get(NcDimensions_t** self, int i, std::size_t* len);
 
 /**
  * Print the attributes
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncdimensions_print(NcDimensions_t** self);
 
 

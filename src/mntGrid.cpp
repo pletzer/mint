@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
+#include <cmath>
+
 #include <mntGrid.h>
 #include <vtkCellData.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -5,10 +8,10 @@
 #include <netcdf.h>
 #include <string>
 #include <cstring>
-#include <cmath>
 #include <algorithm>
 #include <array>
 #include "mntUgrid2D.h"
+#include "mntFileMeshNameExtractor.h"
 
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge distances
@@ -33,7 +36,7 @@ double fixLongitude(double periodX, double lonBase, double lon) {
     return lon + (indexMin - 1)*periodX;
 }
 
-extern "C" 
+LIBRARY_API 
 int mnt_grid_new(Grid_t** self) {
 
     *self = new Grid_t();
@@ -52,7 +55,7 @@ int mnt_grid_new(Grid_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_del(Grid_t** self) {
 
     for (std::size_t i = 0; i < (*self)->doubleArrays.size(); ++i) {
@@ -76,7 +79,7 @@ int mnt_grid_del(Grid_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole, int degrees) {
 
     (*self)->fixLonAcrossDateline = true;
@@ -98,7 +101,7 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_setPointsPtr(Grid_t** self, double points[]) {
 
     (*self)->verts = points;
@@ -106,7 +109,7 @@ int mnt_grid_setPointsPtr(Grid_t** self, double points[]) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
     (*self)->pointData = vtkDoubleArray::New();
@@ -155,7 +158,7 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]) {
 
     if (!(*self)->grid) {
@@ -180,7 +183,7 @@ int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const 
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
 
     if (!(*self)->grid) {
@@ -238,7 +241,7 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, double* res) {
 
     if ((*self)->edgeArcLengths.size() == 0) {
@@ -250,27 +253,20 @@ int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, do
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
     *grid_ptr = (*self)->grid;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename:meshname"
-    std::string fm = std::string(fileAndMeshName);
-    std::size_t columnPosL = fm.find(':');
-    std::size_t columnPosR = fm.rfind(':');
-    if (columnPosL == std::string::npos) {
-        std::cerr << "ERROR: could not find ':' in \"" << fileAndMeshName << "\".";
-        std::cerr << " use \"filename:meshname\" format to specify the file and mesh names, respectively\n";
-        return 2;
-    }
+    auto fm = fileMeshNameExtractor(fileAndMeshName);
 
-    std::string filename = fm.substr(0, columnPosL);
-    std::string meshname = fm.substr(columnPosR + 1, std::string::npos);
+    std::string filename = fm["filename"];
+    std::string meshname = fm["meshname"];
 
     Ugrid2D ugrid;
     int ier = ugrid.load(filename, meshname);
@@ -399,7 +395,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_load(Grid_t** self, const char* filename) {
     // check if the file exists
     if (!fstream(filename).good()) {
@@ -417,7 +413,7 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_dump(Grid_t** self, const char* filename) {
     vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
     writer->SetFileName(filename);
@@ -427,7 +423,7 @@ int mnt_grid_dump(Grid_t** self, const char* filename) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_print(Grid_t** self) {
 
     vtkPoints* points = (*self)->grid->GetPoints();
@@ -453,7 +449,7 @@ int mnt_grid_print(Grid_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
                        double point0[], double point1[]) {
 
@@ -481,7 +477,7 @@ int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
     return 0;
 }
 
-extern "C" 
+LIBRARY_API 
 int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]) {
     
     // nodeIndex0,1 are the local cell indices of the vertices in the range 0-3
@@ -504,7 +500,7 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
     return 0;
 }
 
-extern "C" 
+LIBRARY_API 
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
                        std::size_t* edgeId, int* signEdge) {
 
@@ -548,7 +544,7 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
 
     *numCells = (*self)->grid->GetNumberOfCells();

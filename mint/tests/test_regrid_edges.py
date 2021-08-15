@@ -3,20 +3,22 @@ import numpy
 from pathlib import Path
 
 
-def test_compute_weights():
+DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
-    data_dir = Path(__file__).absolute().parent / '../../data'
+
+def test_compute_weights():
 
     # create a regridder
     rg = RegridEdges()
 
-    # src is lon-lat grid so set the flags to 0, 0. This will 
+    # src is lon-lat grid so set the flags to 0, 0. This will
     # not apply any transformations to the grid
     rg.setSrcGridFlags(0, 0)
 
     # src grid file
-    src_file = str(data_dir / Path('latlon4x2.nc'))
-    # load the src grid, latlon is the name of the mesh stored in the netcdf file
+    src_file = str(DATA_DIR / Path('latlon4x2.nc'))
+    # load the src grid, latlon is the name of the mesh stored in
+    # the netcdf file
     rg.loadSrcGrid(f'{src_file}:latlon')
 
     # dst is cubed-sphere. Cells at the poles need to be fixed to
@@ -24,15 +26,17 @@ def test_compute_weights():
     rg.setDstGridFlags(1, 1)
 
     # dst grid file
-    dst_file = str(data_dir / Path('cs_4.nc'))
-    # load the dst grid, physics is the name of the mesh stored in the netcdf file
+    dst_file = str(DATA_DIR / Path('cs_4.nc'))
+    # load the dst grid, physics is the name of the mesh stored in
+    # the netcdf file
     rg.loadDstGrid(f'{dst_file}:physics')
 
-    # compute the regridding weights. numCellsPerBucket is used to accelerate the cell
-    # search. The smaller numCellPerBucket the faster the search. However, numCellPerBucket
-    # there are edge cases where the search fails when numCellsPerBucket is too small.
-    # periodX is the periodicity length to add/subtract to make the cells well behaved. 
-    # (periodX can be 0 if a regional model)
+    # compute the regridding weights. numCellsPerBucket is used to
+    # accelerate the cell search. The smaller numCellPerBucket the
+    # faster the search. However, there are edge cases where the
+    # search fails when numCellsPerBucket is too small. periodX is
+    # the periodicity length to add/subtract to make the cells well
+    # behaved (periodX can be 0 if a regional model)
     rg.build(numCellsPerBucket=128, periodX=360., debug=2)
 
     # save the weights in a netCDF file
@@ -40,21 +44,18 @@ def test_compute_weights():
 
 
 def test_apply_weights():
-
-    data_dir = Path(__file__).absolute().parent / '../../data'
-    
     # create a regridder
     rg = RegridEdges()
 
     # src is lon-lat grid
     rg.setSrcGridFlags(0, 0)
-    rg.loadSrcGrid(f'{data_dir}/latlon4x2.nc:latlon')
+    rg.loadSrcGrid(f'{DATA_DIR}/latlon4x2.nc:latlon')
 
     # dst is cubed-sphere
     rg.setDstGridFlags(1, 1)
-    rg.loadDstGrid(f'{data_dir}/cs_4.nc:physics')
+    rg.loadDstGrid(f'{DATA_DIR}/cs_4.nc:physics')
 
-    # load the weights 
+    # load the weights
     rg.loadWeights('test_regrid_edges_py.nc')
 
     num_src_edges = rg.getNumSrcEdges()
@@ -70,12 +71,12 @@ def test_apply_weights():
     # apply the weights to the src field, will fill in dst_data
     rg.apply(src_data, dst_data)
 
-    print(f'dst_data = {dst_data}')
+    check_sum = numpy.abs(dst_data).sum()
+    assert(abs(check_sum - 515.8441563902018) < 1.e-8)
+    print(f'check sum test passsed: {check_sum}')
 
 
 if __name__ == '__main__':
 
     test_compute_weights()
     test_apply_weights()
-
-

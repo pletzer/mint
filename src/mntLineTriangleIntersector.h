@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <mntMatMxN.h>
 #include <mntVecN.h>
 #include <mntLineLineIntersector.h>

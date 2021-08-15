@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -37,7 +38,7 @@ struct NcFieldWrite_t {
  * @param append 1 for append, otherwise a new file will be created
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
                         const char* fileName, int fileNameLen, 
                         const char* varName, int varNameLen, 
@@ -47,7 +48,7 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
  * Destructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_del(NcFieldWrite_t** self);
 
 
@@ -56,7 +57,7 @@ int mnt_ncfieldwrite_del(NcFieldWrite_t** self);
  * @param ndims number (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims);
 
 
@@ -68,7 +69,7 @@ int mnt_ncfieldwrite_setNumDims(NcFieldWrite_t** self, int ndims);
  * @param dim size
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, int iAxis, 
                             const char* dimName, int dimNameLen, std::size_t dim);
 
@@ -77,7 +78,7 @@ int mnt_ncfieldwrite_setDim(NcFieldWrite_t** self, int iAxis,
  * @param data (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_data(NcFieldWrite_t** self, 
                           const double data[]);
 
@@ -88,7 +89,7 @@ int mnt_ncfieldwrite_data(NcFieldWrite_t** self,
  * @param data (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self, 
                                const std::size_t startInds0[], 
                                const std::size_t counts[], 
@@ -98,10 +99,10 @@ int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self,
 
 /* private methods */
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_define(NcFieldWrite_t** self);
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self);
 
 

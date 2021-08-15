@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <CmdLineArgParser.h>
 
 #ifndef MNT_CMD_LINE_ARG_PARSER
@@ -7,14 +8,14 @@
  * Constructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_new(CmdLineArgParser** self);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_del(CmdLineArgParser** self);
 
 /**
@@ -24,7 +25,7 @@ int mnt_cmdlineargparser_del(CmdLineArgParser** self);
  * @param help help message
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_setdouble(CmdLineArgParser** self, const char* name, double def_value, const char* help);
 
 /**
@@ -34,7 +35,7 @@ int mnt_cmdlineargparser_setdouble(CmdLineArgParser** self, const char* name, do
  * @param help help message
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_setint(CmdLineArgParser** self, const char* name, int def_value, const char* help);
 
 /**
@@ -44,7 +45,7 @@ int mnt_cmdlineargparser_setint(CmdLineArgParser** self, const char* name, int d
  * @param help help message
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, const char* def_value, const char* help);
 
 /**
@@ -54,7 +55,7 @@ int mnt_cmdlineargparser_setstring(CmdLineArgParser** self, const char* name, co
  * @param help help message
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_setbool(CmdLineArgParser** self, const char* name, int def_value, const char* help);
 
 /**
@@ -64,14 +65,14 @@ int mnt_cmdlineargparser_setbool(CmdLineArgParser** self, const char* name, int 
  * @param args list of command line arguments as a contiguous array
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args);
 
 /**
  * Print help message
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_help(CmdLineArgParser** self);
 
 
@@ -81,7 +82,7 @@ int mnt_cmdlineargparser_help(CmdLineArgParser** self);
  * @param val returned value
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_getdouble(CmdLineArgParser** self, const char* name, double* val);
 
 /**
@@ -90,7 +91,7 @@ int mnt_cmdlineargparser_getdouble(CmdLineArgParser** self, const char* name, do
  * @param val returned value
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* val);
 
 /**
@@ -101,7 +102,7 @@ int mnt_cmdlineargparser_getint(CmdLineArgParser** self, const char* name, int* 
  * @return error code (0 is OK)
  * @note termination character '\0' will be added to remaining characters that were allocated to val
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, int n, char* val);
 
 /**
@@ -110,7 +111,7 @@ int mnt_cmdlineargparser_getstring(CmdLineArgParser** self, const char* name, in
  * @param val returned value, 0 = false
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_cmdlineargparser_getbool(CmdLineArgParser** self, const char* name, int* val);
 
 

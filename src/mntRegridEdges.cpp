@@ -3,6 +3,7 @@
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
 #include <mntWeights.h>
+#include "mntFileMeshNameExtractor.h"
 
 #include <netcdf.h>
 
@@ -19,15 +20,13 @@
 #include <vtkPoints.h>
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_new(RegridEdges_t** self) {
     
     *self = new RegridEdges_t();
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
     (*self)->srcLoc = vmtCellLocator::New();
-    (*self)->numPointsPerCell = 4; // 2d
-    (*self)->numEdgesPerCell = 4;  // 2d
 
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
@@ -45,7 +44,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_del(RegridEdges_t** self) {
 
     int ier = 0;
@@ -78,7 +77,7 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
 
     const int degrees = 1; // for the time being
@@ -86,7 +85,7 @@ int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateli
 
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
 
     const int degrees = 1; // for the time being
@@ -94,7 +93,7 @@ int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateli
 
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength) {
 
@@ -102,7 +101,7 @@ int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
 
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength) {
 
@@ -111,7 +110,7 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_initSliceIter(RegridEdges_t** self,
                                   const char* src_fort_filename, int src_nFilenameLength,
                                   const char* dst_fort_filename, int dst_nFilenameLength,
@@ -126,10 +125,10 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
     // filter out the mesh name, if present (not used here)
-    std::size_t columnL = srcFileAndMeshName.find(':');
-    std::string srcFilename = srcFileAndMeshName.substr(0, columnL);
-    columnL = dstFileAndMeshName.find(':');
-    std::string dstFilename = dstFileAndMeshName.substr(0, columnL);
+    auto fmSrc = fileMeshNameExtractor(srcFileAndMeshName);
+    auto fmDst = fileMeshNameExtractor(dstFileAndMeshName);
+    std::string srcFilename = fmSrc["filename"];
+    std::string dstFilename = fmDst["filename"];
 
     // open the source file
     ier = nc_open(srcFilename.c_str(), NC_NOWRITE, &(*self)->srcNcid);
@@ -245,7 +244,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadSrcSlice(RegridEdges_t** self,
                                  double data[]) {
 
@@ -269,7 +268,7 @@ int mnt_regridedges_loadSrcSlice(RegridEdges_t** self,
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpDstSlice(RegridEdges_t** self,
                                  double data[]) {
 
@@ -294,7 +293,7 @@ int mnt_regridedges_dumpDstSlice(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_nextSlice(RegridEdges_t** self) {
 
     // increment the iterator
@@ -304,7 +303,7 @@ int mnt_regridedges_nextSlice(RegridEdges_t** self) {
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
@@ -315,8 +314,8 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
 
     // filter out the mesh name, if present (not used here)
-    std::size_t columnL = fileAndMeshName.find(':');
-    std::string filename = fileAndMeshName.substr(0, columnL);
+    auto fm = fileMeshNameExtractor(fileAndMeshName);
+    std::string filename = fm["filename"];
 
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
@@ -370,7 +369,7 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
@@ -381,10 +380,11 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
 
     std::size_t columnL = fileAndMeshName.find(':');
 
-    // get the file name
-    std::string filename = fileAndMeshName.substr(0, columnL);
-    // get the mesh name
-    std::string meshname = fileAndMeshName.substr(columnL + 1);
+
+    // get the file and mesh names
+    auto fm = fileMeshNameExtractor(fileAndMeshName);
+    std::string filename = fm["filename"];
+    std::string meshname = fm["meshname"];
 
     int ier;
     NcFieldWrite_t* wr = NULL;
@@ -432,7 +432,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
@@ -443,7 +443,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
@@ -454,7 +454,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug) {
 
     // checks
@@ -483,7 +483,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     std::size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
 
     // reserve some space for the weights and their cell/edge id arrays
-    std::size_t n = numDstCells * (*self)->numEdgesPerCell * 20;
+    std::size_t n = numDstCells * MNT_NUM_EDGES_PER_QUAD * 20;
     (*self)->weights.reserve(n);
     (*self)->weightSrcFaceEdgeIds.reserve(n);
     (*self)->weightDstFaceEdgeIds.reserve(n);
@@ -627,25 +627,25 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n) {
     *n = (*self)->srcGrid->GetNumberOfCells();
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n) {
     *n = (*self)->dstGrid->GetNumberOfCells();
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
-    *n = (*self)->numEdgesPerCell;
+    *n = MNT_NUM_EDGES_PER_QUAD;
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* nPtr) {
     if (!(*self)->srcGridObj) {
         std::cerr << "ERROR: source grid was not loaded\n";
@@ -655,7 +655,7 @@ int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* nPtr) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* nPtr) {
     if (!(*self)->dstGridObj) {
         std::cerr << "ERROR: destination grid was not loaded\n";
@@ -665,7 +665,7 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* nPtr) {
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_apply(RegridEdges_t** self, 
                           const double src_data[], double dst_data[]) {
 
@@ -729,7 +729,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
     // Fortran strings don't come with null-termination character. Copy string 
@@ -754,8 +754,6 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
         return 2;
     }
     ier = nc_inq_dimlen(ncid, numWeightsId, &numWeights);
-
-    // should check that numEdgesPerCell and (*self)->numEdgesPerCell match
 
     int dstCellIdsId, srcCellIdsId, dstFaceEdgeIdsId, srcFaceEdgeIdsId, weightsId;
 
@@ -848,7 +846,7 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
                                 const char* fort_filename, int n) {
 
@@ -878,7 +876,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     }    
 
     int numEdgesPerCellId;
-    ier = nc_def_dim(ncid, "num_edges_per_cell", (*self)->numEdgesPerCell, &numEdgesPerCellId);
+    ier = nc_def_dim(ncid, "num_edges_per_cell", MNT_NUM_EDGES_PER_QUAD, &numEdgesPerCellId);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not define dimension \"num_edges_per_cell\"! ier = " << ier << "\n";
         std::cerr << nc_strerror (ier);
@@ -969,11 +967,11 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         return 8;
     }
 
-    double edgeParamCoordBegs[(*self)->numEdgesPerCell * 3];
-    double edgeParamCoordEnds[(*self)->numEdgesPerCell * 3];
+    std::array<double, MNT_NUM_EDGES_PER_QUAD * 3> edgeParamCoordBegs;
+    std::array<double, MNT_NUM_EDGES_PER_QUAD * 3> edgeParamCoordEnds;
     double* xiBeg;
     double* xiEnd;
-    for (std::size_t e = 0; e < (*self)->numEdgesPerCell; ++e) {
+    for (std::size_t e = 0; e < MNT_NUM_EDGES_PER_QUAD; ++e) {
         (*self)->edgeConnectivity.getParamCoords(e, &xiBeg, &xiEnd);
         for (std::size_t j = 0; j < 3; ++j) { // always 3d
             edgeParamCoordBegs[e*3 + j] = xiBeg[j];
@@ -982,7 +980,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     }
 
     // write
-    ier = nc_put_var_double(ncid, edgeParamCoordBegId, edgeParamCoordBegs);
+    ier = nc_put_var_double(ncid, edgeParamCoordBegId, &edgeParamCoordBegs[0]);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not write variable \"edge_param_coord_beg\"\n";
         std::cerr << nc_strerror (ier);
@@ -990,7 +988,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         return 9;
     }
 
-    ier = nc_put_var_double(ncid, edgeParamCoordEndId, edgeParamCoordEnds);
+    ier = nc_put_var_double(ncid, edgeParamCoordEndId, &edgeParamCoordEnds[0]);
     if (ier != NC_NOERR) {
         std::cerr << "ERROR: could not write variable \"edge_param_coord_end\"\n";
         std::cerr << nc_strerror (ier);
@@ -1045,7 +1043,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_regridedges_print(RegridEdges_t** self) {
     std::size_t numWeights = (*self)->weights.size();
     std::cout << "edge to vertex connectivity:\n";

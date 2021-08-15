@@ -10,11 +10,7 @@ from pathlib import Path
 __version__ = "@VERSION@"
 
 # open shared library
-LIB = None
-for libfile in Path(__path__[0] + '/..').glob('libmint.cpython*'):
-    LIB = CDLL(libfile)
-    if LIB:
-        break
+LIB = CDLL(str(Path(__path__[0]).parent / Path('libmint.so')))
 
 __all__ = [LIB, 'regrid_edges', 'grid', 'polyline_integral', 'vector_interp']
 

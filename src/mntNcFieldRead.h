@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -29,14 +30,14 @@ struct NcFieldRead_t {
  * @param varid netcdf variable Id
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_del(NcFieldRead_t** self);
 
 
@@ -45,7 +46,7 @@ int mnt_ncfieldread_del(NcFieldRead_t** self);
  * @param ndims number (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_getNumDims(NcFieldRead_t** self, int* ndims);
 
 
@@ -55,7 +56,7 @@ int mnt_ncfieldread_getNumDims(NcFieldRead_t** self, int* ndims);
  * @param dimNameLen number of characters in dimName (excluding '\0')
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_getDimName(NcFieldRead_t** self, int iAxis, char* dimName, int dimNameLen);
 
 
@@ -64,7 +65,7 @@ int mnt_ncfieldread_getDimName(NcFieldRead_t** self, int iAxis, char* dimName, i
  * @param dim number (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, std::size_t* dim);
 
 /**
@@ -72,7 +73,7 @@ int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, std::size_t* dim);
  * @param data (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_data(NcFieldRead_t** self, 
                          double data[]);
 
@@ -83,7 +84,7 @@ int mnt_ncfieldread_data(NcFieldRead_t** self,
  * @param data (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_dataSlice(NcFieldRead_t** self, 
                               const std::size_t* startInds0, 
                               const std::size_t* counts, 

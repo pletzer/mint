@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <limits> // required by vtkUnstructuredGrid
 #include <vector>
 #include <map>
@@ -13,6 +14,8 @@
 
 #ifndef MNT_REGRID_EDGES
 #define MNT_REGRID_EDGES
+
+#define MNT_NUM_EDGES_PER_QUAD 4
 
 /**
  * @brief Edge-centred field regridding
@@ -45,12 +48,6 @@ struct RegridEdges_t {
 
     /** source face indices of the weights */
     std::vector<int> weightSrcFaceEdgeIds;
-
-    /** number of points per cell */
-    std::size_t numPointsPerCell;
-
-    /** number of edges per cell */
-    std::size_t numEdgesPerCell;
 
     /** destination grid object */
     Grid_t* dstGridObj;
@@ -104,7 +101,7 @@ struct RegridEdges_t {
  * @param self instance of the regridding object
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_new(RegridEdges_t** self);
 
 /**
@@ -112,7 +109,7 @@ int mnt_regridedges_new(RegridEdges_t** self);
  * @param self this instance
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_del(RegridEdges_t** self);
 
 /**
@@ -123,7 +120,7 @@ int mnt_regridedges_del(RegridEdges_t** self);
  * @return error code (0 = OK)
  * @note Longitudes are not uniquely defined at the poles
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole);
 
 /**
@@ -134,7 +131,7 @@ int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateli
  * @return error code (0 = OK)
  * @note Longitudes are not uniquely defined at the poles
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole);
 
 /** 
@@ -145,7 +142,7 @@ int mnt_regridedges_setDstGridFlags(RegridEdges_t** self, int fixLonAcrossDateli
  * @return error code (0 is OK)
  * @note Supplying the length of the filename string allows one to call this function from Fortran
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength);
 
@@ -157,7 +154,7 @@ int mnt_regridedges_dumpSrcGridVtk(RegridEdges_t** self,
  * @return error code (0 is OK)
  * @note Supplying the length of the filename string allows one to call this function from Fortran
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
                                    const char* fort_filename, int nFilenameLength);
 
@@ -177,7 +174,7 @@ int mnt_regridedges_dumpDstGridVtk(RegridEdges_t** self,
  * @note Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time, etc.). The same weights 
  *       can then be applied to each additional dimension of the field.
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_initSliceIter(RegridEdges_t** self,
                                   const char* src_fort_filename, int src_nFilenameLength,
                                   const char* dst_fort_filename, int dst_nFilenameLength,
@@ -195,7 +192,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
  * @note Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time, etc.). The same weights 
  *       can then be applied to each additional dimension of the field.
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadSrcSlice(RegridEdges_t** self, double data[]);
 
 
@@ -207,7 +204,7 @@ int mnt_regridedges_loadSrcSlice(RegridEdges_t** self, double data[]);
  * @note Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time, etc.). The same weights 
  *       can then be applied to each additional dimension of the field.
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpDstSlice(RegridEdges_t** self, double data[]);
 
 
@@ -218,7 +215,7 @@ int mnt_regridedges_dumpDstSlice(RegridEdges_t** self, double data[]);
  * @note Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time, etc.). The same weights 
  *       can then be applied to each additional dimension of the field.
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_nextSlice(RegridEdges_t** self);
 
 
@@ -236,7 +233,7 @@ int mnt_regridedges_nextSlice(RegridEdges_t** self);
  * @note Slicing allows one to iterate over non-horizontal dimensions (e.g. height, time, etc.). The same weights 
  *       can then be applied to each additional dimension of the field.
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
@@ -254,7 +251,7 @@ int mnt_regridedges_loadEdgeField(RegridEdges_t** self,
  * @return error code (0 is OK)
  * @note Supplying the length of the filename string allows one to call this function from Fortran
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
                                   const char* fort_filename, int nFilenameLength,
                                   const char* field_name, int nFieldNameLength,
@@ -268,7 +265,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
  * @return error code (0 is OK)
  * @note Supplying the length of the filename string allows one to call this function from Fortran
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadSrcGrid(RegridEdges_t** self, 
                                 const char* fort_filename, int n);
 
@@ -280,7 +277,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
  * @return error code (0 is OK)
  * @note Supplying the length of the filename string allows one to call this function from Fortran
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadDstGrid(RegridEdges_t** self, 
                                 const char* fort_filename, int n);
 
@@ -292,7 +289,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
  * @param debug 0=no debug info, 1=print debug info, 2=save bad edges in VTK file
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug);
 
 /**
@@ -300,7 +297,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
  * @param self instance of the regridding object
  * @param n number of cells
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n);
 
 /**
@@ -308,7 +305,7 @@ int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n);
  * @param self instance of the regridding object
  * @param n number of cells
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n);
 
 /**
@@ -316,7 +313,7 @@ int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n);
  * @param self instance of the regridding object
  * @param n number (output)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n);
 
 /**
@@ -325,7 +322,7 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n);
  * @param n number (output)
  * @note Most cells will share edges with their neighbours
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* n);
 
 /**
@@ -334,7 +331,7 @@ int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* n);
  * @param n number (output)
  * @note Most cells will share edges with their neighbours
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* n);
 
 /**
@@ -345,7 +342,7 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* n);
  * @return error code (0 is OK)
  * @note Edges go anticlockwise
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_apply(RegridEdges_t** self, 
                           const double src_data[], double dst_data[]);
 
@@ -358,7 +355,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
  * @note This does not create the object, user must call mnt_regridedges_new prior to this call
  * @note Supplying the length of the filename string allows one to call this function from Fortran
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 
                                 const char* fort_filename, int n);
 
@@ -370,7 +367,7 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
  * @return error code (0 is OK)
  * @note Supplying the length of the filename string allows one to call this function from Fortran
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_dumpWeights(RegridEdges_t** self, 
                                 const char* fort_filename, int n);
 
@@ -379,7 +376,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
  * @param self instance of the regridding object
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_regridedges_print(RegridEdges_t** self);
 
 

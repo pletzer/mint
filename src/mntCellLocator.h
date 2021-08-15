@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <limits> // required by vtkUnstructuredGrid
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLocator.h>
@@ -22,7 +23,7 @@ struct CellLocator_t {
  * Constructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_new(CellLocator_t** self);
 
 /**
@@ -32,14 +33,14 @@ int mnt_celllocator_new(CellLocator_t** self);
  * @return error code (0 is OK)
  * @note you must construct the object before using this method
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_load(CellLocator_t** self, const char* fort_filename, std::size_t n);
 
 /**
  * Destructor
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_del(CellLocator_t** self);
 
 /**
@@ -51,7 +52,7 @@ int mnt_celllocator_del(CellLocator_t** self);
  * @note the caller is responsible for managing the memory of the points array, which
  *       is expected to exist until the grid object is destroyed.
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::size_t ncells, 
                                  double points[]);
 
@@ -63,14 +64,14 @@ int mnt_celllocator_setPointsPtr(CellLocator_t** self, int nVertsPerCell, std::s
  * @return error code (0 is OK)
  * @note pointer badCellIds is invalid if numBadCells is zero
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_checkGrid(CellLocator_t** self, double tol, int* numBadCells);
 
 /**
  * Run grid diagnostics
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_runGridDiagnostics(CellLocator_t** self);
 
 /**
@@ -78,7 +79,7 @@ int mnt_celllocator_runGridDiagnostics(CellLocator_t** self);
  * @param num_cells_per_bucket number of cells per tree node (bucket)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket);
 
 /**
@@ -87,7 +88,7 @@ int mnt_celllocator_build(CellLocator_t** self, int num_cells_per_bucket);
  * @param n number of characters of fortr_filename
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, std::size_t n);
 
 /**
@@ -97,7 +98,7 @@ int mnt_celllocator_dumpGrid(CellLocator_t** self, const char* fort_filename, st
  * @param pcoords parametric coordinates in the unit cell (filled in if found)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* cellId, double pcoords[]);
 
 /**
@@ -107,10 +108,10 @@ int mnt_celllocator_find(CellLocator_t** self, const double point[], long long* 
  * @param point target point (output)
  * @return error code (0 is OK)
  */
-extern "C"
+LIBRARY_API
 int mnt_celllocator_interpPoint(CellLocator_t** self, long long cellId, const double pcoords[], double point[]);
 
-extern "C"
+LIBRARY_API
 void mnt_celllocator_printAddress(void* something);
 
 #endif // MNT_CELL_LOCATOR

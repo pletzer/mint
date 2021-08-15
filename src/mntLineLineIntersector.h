@@ -1,6 +1,7 @@
 #ifndef MNT_LINE_LINE_INTERSECTOR
 #define MNT_LINE_LINE_INTERSECTOR
 
+#include "mntLIBRARY_API.h"
 #include "mntMatMxN.h"
 #include "mntVecN.h"
 #include <iostream>

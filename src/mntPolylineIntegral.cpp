@@ -5,7 +5,7 @@
 
 //#define DEBUG
 
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     
     *self = new PolylineIntegral_t();
@@ -13,7 +13,7 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_del(PolylineIntegral_t** self) {
     int ier = 0;
 
@@ -24,7 +24,7 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, 
                                int npoints, const double xyz[], int counterclock, double periodX) {
 
@@ -120,7 +120,7 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
     return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[], double* result) {
 
     *result = 0;

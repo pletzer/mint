@@ -4,7 +4,7 @@
 #include <netcdf.h>
 #include <iostream>
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
 
   int ier;
@@ -44,21 +44,21 @@ int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_del(NcFieldRead_t** self) {
   delete *self;
   return 0;
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_getNumDims(NcFieldRead_t** self, int* ndims) {
   *ndims = (int) (*self)->dimSizes.size();
   return 0;
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_getDimName(NcFieldRead_t** self, 
                                int iAxis, char* dimName, int dimNameLen) {
   dimName = strncpy(dimName, (*self)->dimNames[iAxis].c_str(), dimNameLen);
@@ -66,13 +66,13 @@ int mnt_ncfieldread_getDimName(NcFieldRead_t** self,
 }
 
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, std::size_t* dim) {
   *dim = (*self)->dimSizes[iAxis];
   return 0;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_data(NcFieldRead_t** self, 
                          double data[]) {
 
@@ -80,7 +80,7 @@ int mnt_ncfieldread_data(NcFieldRead_t** self,
   return ier;
 }
 
-extern "C"
+LIBRARY_API
 int mnt_ncfieldread_dataSlice(NcFieldRead_t** self, 
                               const std::size_t startInds0[], 
                               const std::size_t counts[], 

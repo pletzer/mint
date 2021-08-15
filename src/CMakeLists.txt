@@ -4,6 +4,7 @@ include_directories(
 )
 
 set(LIB_FILES
+  mntFileMeshNameExtractor.cpp
   vmtCellLocator.cpp
   mntUgrid2D.cpp
   mntQuadEdgeIter.cpp
@@ -42,6 +43,8 @@ set(LIB_FILES
 )
 
 set(HEADER_FILES
+  mntLIBRARY_API.h
+  mntFileMeshNameExtractor.h
   vmtCellLocator.h
   mntUgrid2D.h
   mntQuadEdgeIter.h
