@@ -71,7 +71,9 @@ def test_apply_weights():
     # apply the weights to the src field, will fill in dst_data
     rg.apply(src_data, dst_data)
 
-    print(f'dst_data = {dst_data}')
+    check_sum = numpy.abs(dst_data).sum()
+    assert(abs(check_sum - 515.8441563902018) < 1.e-8)
+    print(f'check sum test passsed: {check_sum}')
 
 
 if __name__ == '__main__':
