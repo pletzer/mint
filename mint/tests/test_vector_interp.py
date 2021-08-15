@@ -189,12 +189,12 @@ def test_slanted():
 
                 # get the edge interpolated vectors
                 vectorData = vi.getEdgeVectors(data)
-                fileName = f"Edge{d}{sep}slanted_edgeVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk"
+                fileName = f"{d}{sep}slanted_edgeVectors_cellId{cellId}edgeIndex{edgeIndex}Edge.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # get the lateral face interpolated vectors
                 vectorData = vi.getFaceVectors(data)
-                fileName = f"Face{d}{sep}slanted_faceVectors_cellId{cellId}edgeIndex{edgeIndex}.vtk"
+                fileName = f"{d}{sep}slanted_faceVectors_cellId{cellId}edgeIndex{edgeIndex}Face.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # reset this edge's value back to its original
@@ -241,12 +241,12 @@ def test_degenerate():
 
                 # get the edge interpolated vectors
                 vectorData = vi.getEdgeVectors(data)
-                fileName = f"Edge{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}.vtk"
+                fileName = f"{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}Edge.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # get the face interpolated vectors
                 vectorData = vi.getFaceVectors(data)
-                fileName = f"Face{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}.vtk"
+                fileName = f"{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}Face.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # reset this edge's value back to its original
