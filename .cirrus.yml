@@ -142,7 +142,7 @@ win64_task:
       - echo "${MAMBA_CACHE_PACKAGES}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MAMBA_CACHE_BUILD}"
     populate_script:
-      - mambaforge.exe -b -p ${HOME}/mambaforge
+      - CMD.exe mambaforge.exe -b -p ${HOME}/mambaforge
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
