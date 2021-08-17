@@ -121,3 +121,48 @@ osx_task:
     - conda activate py${PY_VER} >/dev/null 2>&1
     - pip install --no-deps --editable .
     - pytest
+#
+# Testing (Windows)
+#
+win64_task:
+  auto_cancellation: true
+  matrix:
+    env:
+      PY_VER: "3.9"
+  name: "Windows: py${PY_VER}"
+  win64_instance:
+    image: cirrusci/windowsservercore:2019
+  env:
+    PATH: ${HOME}/mambaforge/bin:${PATH}
+  mamba_cache:
+    folder: ${HOME}/mambaforge
+    fingerprint_script:
+      - wget --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Windows-x86_64.sh -O mambaforge.sh
+      - echo "${CIRRUS_OS} $(shasum -a 256 mambaforge.sh)"
+      - echo "${MAMBA_CACHE_PACKAGES}"
+      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MAMBA_CACHE_BUILD}"
+    populate_script:
+      - bash mambaforge.sh -b -p ${HOME}/mambaforge
+      - conda config --set always_yes yes --set changeps1 no
+      - conda config --set show_channel_urls True
+      - conda config --add channels conda-forge
+      - conda install --quiet --name base ${MAMBA_CACHE_PACKAGES}
+  check_script:
+    - conda info --all
+    - conda list --name base
+  mint_cache:
+    folder: ${HOME}/mambaforge/envs/py${PY_VER}
+    fingerprint_script:
+      - echo "${CIRRUS_OS} py${PY_VER} tests"
+      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
+      - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+    populate_script:
+      - conda-lock --mamba --platform windows-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+      - mamba create --yes --name py${PY_VER} --quiet --file conda-windows-64.lock
+      - cp conda-windows-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
+  test_script:
+    - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-windows-64.lock >&2
+    - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
+    - conda activate py${PY_VER} >/dev/null 2>&1
+    - pip install --no-deps --editable .
+    - pytest
