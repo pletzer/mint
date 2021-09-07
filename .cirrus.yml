@@ -154,4 +154,6 @@ win_task:
     - pip install --no-deps --editable . 
 
   test_script:
+    - ls $ANACONDA_LOCATION\Library\bin
+    - ls $ANACONDA_LOCATION\Library\bin\vtkRenderingOpenGL2*
     - python mint\tests\test_grid.py
