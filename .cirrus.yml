@@ -28,12 +28,12 @@ env:
 linux_task:
   auto_cancellation: true
   matrix:
-    env:
-      PY_VER: "3.6"
-    env:
-      PY_VER: "3.7"
-    env:
-      PY_VER: "3.8"
+    # env:
+    #   PY_VER: "3.6"
+    # env:
+    #   PY_VER: "3.7"
+    # env:
+    #   PY_VER: "3.8"
     env:
       PY_VER: "3.9"
   name: "Linux: py${PY_VER}"
@@ -80,8 +80,8 @@ linux_task:
 osx_task:
   auto_cancellation: true
   matrix:
-    env:
-      PY_VER: "3.8"
+    # env:
+    #   PY_VER: "3.8"
     env:
       PY_VER: "3.9"
   name: "OSX: py${PY_VER}"
@@ -154,7 +154,5 @@ win_task:
     - pip install --no-deps --editable . 
 
   test_script:
-    - ps: ls $ANACONDA_LOCATION\Library\bin
-    - ps: ls $ANACONDA_LOCATION\Library\bin\vtkRenderingOpenGL2*
     - echo $PATH
     - python mint\tests\test_grid.py
