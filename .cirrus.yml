@@ -154,4 +154,4 @@ win_task:
     - pip install --no-deps --editable . 
 
   test_script:
-    - pytest
+    - python mint\tests\test_grid.py
