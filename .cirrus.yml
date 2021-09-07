@@ -151,8 +151,7 @@ win_task:
     - conda install --yes -c conda-forge vtk=9.0.3 numpy libnetcdf
 
   install_script:
-    - pip install --no-deps --editable . 
+    - pip install --editable . 
 
-  test_script:
-    - echo $PATH
-    - python mint\tests\test_grid.py
+  # test_script:
+  #   - pytest
