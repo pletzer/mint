@@ -148,7 +148,7 @@ win_task:
   conda_script:
     - choco install -y miniconda3 --params="'/D:%ANACONDA_LOCATION%'"
     - conda install --yes pytest
-    - conda install --yes -c conda-forge vtk=9.0.3 numpy libnetcdf cython
+    - conda install --yes -c conda-forge vtk=9.0.3 numpy libnetcdf cython tbb
 
   install_script:
     - python setup.py install 
