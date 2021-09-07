@@ -151,7 +151,7 @@ win_task:
     - conda install --yes -c conda-forge vtk=9.0.3 numpy libnetcdf
 
   install_script:
-    - pip install --editable . 
+    - python setup.py install 
 
   # test_script:
   #   - pytest
