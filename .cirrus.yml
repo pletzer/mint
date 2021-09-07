@@ -148,7 +148,7 @@ win_task:
   conda_script:
     - choco install -y miniconda3 --params="'/D:%ANACONDA_LOCATION%'"
     # https://github.com/napari/napari/pull/594#issuecomment-542475164
-    - conda install --yes --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+    - conda install --yes -c conda-forge vtk=9.0.3 numpy libnetcdf
 
   install_script:
     - pip install --no-deps --editable . 
