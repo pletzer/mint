@@ -126,10 +126,7 @@ osx_task:
 #
 win_task:
   auto_cancellation: true
-  matrix:
-    env:
-      PY_VER: "3.9"
-  name: "Windows: py${PY_VER}"
+  name: "Windows"
   windows_container:
     image: cirrusci/windowsservercore:cmake
     os_version: 2019
@@ -147,10 +144,11 @@ win_task:
 
   conda_script:
     - choco install -y miniconda3 --params="'/D:%ANACONDA_LOCATION%'"
-    - conda install --yes pytest
-    - conda install --yes -c conda-forge vtk=9.0.3 numpy libnetcdf cython tbb
+    - conda install --yes pytest tbb cython numpy
+    - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
 
   install_script:
+    - pip install tbb
     - python setup.py install 
 
   # test_script:
