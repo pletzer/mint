@@ -144,7 +144,7 @@ win_task:
     - choco install -y openssl.light
 
   conda_script:
-    - choco install -y miniconda3 --params="'/D:%ANACONDA_LOCATION%'"
+    - choco install -y miniconda3 --params="'/D:%ANACONDA_LOCATION%'" --version 4.10.3
     - conda install --yes pytest tbb cython numpy
     - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
     - python -c "import vtk"
