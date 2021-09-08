@@ -144,13 +144,13 @@ win_task:
     CIRRUS_WORKING_DIR: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build
     PYTHON_ARCH: 64
 
-  system_script:
-    # install OpenSSL
-    - choco install -y openssl.light
-    # install OpenGL
-    - ps: Invoke-RestMethod -Uri https://raw.githubusercontent.com/vispy/vispy/v0.5.3/make/install_opengl.ps1 -Method Get -OutFile opengl.ps1
-    - powershell ./opengl.ps1
-    - ps: rm opengl.ps1
+  # system_script:
+  #   # install OpenSSL
+  #   - choco install -y openssl.light
+  #   # install OpenGL
+  #   - ps: Invoke-RestMethod -Uri https://raw.githubusercontent.com/vispy/vispy/v0.5.3/make/install_opengl.ps1 -Method Get -OutFile opengl.ps1
+  #   - powershell ./opengl.ps1
+  #   - ps: rm opengl.ps1
 
   conda_script:
     - choco install -y miniconda3 --params="'/D:%CONDA_LOCATION%'"
@@ -159,6 +159,10 @@ win_task:
     - conda install --yes python=%PY_VER%
     - conda install --yes pytest tbb cython numpy
     - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
+
+  check_script:
+    - conda list
+    - python -c "import mint; print(mint.__version__)"
 
   test_script:
     - python -c "import vtk"
