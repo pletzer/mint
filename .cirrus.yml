@@ -133,7 +133,7 @@ win_task:
     os_version: 2019
   env:
     ANACONDA_LOCATION: $USERPROFILE\anaconda
-    PATH: $ANACONDA_LOCATION;$ANACONDA_LOCATION\Scripts;$ANACONDA_LOCATION\Library\bin;$PATH
+    PATH: $ANACONDA_LOCATION;$ANACONDA_LOCATION\Library\bin;$ANACONDA_LOCATION\Scripts;$ANACONDA_LOCATION\condabin;$PATH
     # must set this to its default since it doesn't work in env variables
     # see https://github.com/cirruslabs/cirrus-ci-docs/issues/423
     CIRRUS_WORKING_DIR: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build
