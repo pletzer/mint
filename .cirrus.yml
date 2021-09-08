@@ -121,6 +121,7 @@ osx_task:
     - conda activate py${PY_VER} >/dev/null 2>&1
     - pip install --no-deps --editable .
     - pytest
+
 #
 # Testing (Windows)
 #
@@ -147,9 +148,6 @@ win_task:
     - conda install --yes pytest tbb cython numpy
     - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
 
-  install_script:
-    - pip install tbb
-    - python setup.py install 
-
-  # test_script:
-  #   - pytest
+  test_script:
+    - pip install --no-deps --editable .
+    - pytest
