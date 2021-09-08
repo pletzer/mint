@@ -36,7 +36,7 @@ int mnt_ncdimensions_read(NcDimensions_t** self, int ncid, int varid) {
 
 LIBRARY_API
 int mnt_ncdimensions_getNumDims(NcDimensions_t** self, int* ndims) {
-  *ndims = (*self)->dims.size();
+  *ndims = (int) (*self)->dims.size();
   return 0;
 }
 

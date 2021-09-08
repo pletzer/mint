@@ -147,7 +147,9 @@ win_task:
     - choco install -y miniconda3 --params="'/D:%ANACONDA_LOCATION%'"
     - conda install --yes pytest tbb cython numpy
     - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
+    - python -c "import vtk"
 
   test_script:
+    - python -c "import vtk"
     - pip install --no-deps --editable .
     - pytest
