@@ -127,13 +127,18 @@ osx_task:
 #
 win_task:
   auto_cancellation: true
-  name: "Windows"
+  matrix:
+    # env:
+    #   PY_VER: "3.8"
+    env:
+      PY_VER: "3.9"
+  name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
     os_version: 2019
   env:
-    ANACONDA_LOCATION: $USERPROFILE\anaconda
-    PATH: $ANACONDA_LOCATION;$ANACONDA_LOCATION\Library\bin;$ANACONDA_LOCATION\Scripts;$ANACONDA_LOCATION\condabin;$PATH
+    CONDA_LOCATION: $USERPROFILE\miniconda3
+    PATH: $CONDA_LOCATION;$CONDA_LOCATION\Library\bin;$CONDA_LOCATION\Scripts;$CONDA_LOCATION\condabin;$PATH
     # must set this to its default since it doesn't work in env variables
     # see https://github.com/cirruslabs/cirrus-ci-docs/issues/423
     CIRRUS_WORKING_DIR: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build
@@ -142,12 +147,18 @@ win_task:
   system_script:
     # install OpenSSL
     - choco install -y openssl.light
+    # install OpenGL
+    - ps: Invoke-RestMethod -Uri https://raw.githubusercontent.com/vispy/vispy/v0.5.3/make/install_opengl.ps1 -Method Get -OutFile opengl.ps1
+    - powershell ./opengl.ps1
+    - ps: rm opengl.ps1
 
   conda_script:
-    - choco install -y miniconda3 --params="'/D:%ANACONDA_LOCATION%'" --version 4.10.3
+    - choco install -y miniconda3 --params="'/D:%CONDA_LOCATION%'"
+    - conda update -yn base conda
+    - conda install -c conda-forge setuptools
+    - conda install --yes python=%PY_VER%
     - conda install --yes pytest tbb cython numpy
     - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
-    - python -c "import vtk"
 
   test_script:
     - python -c "import vtk"
