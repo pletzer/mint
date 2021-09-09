@@ -28,12 +28,12 @@ env:
 linux_task:
   auto_cancellation: true
   matrix:
-    # env:
-    #   PY_VER: "3.6"
-    # env:
-    #   PY_VER: "3.7"
-    # env:
-    #   PY_VER: "3.8"
+    env:
+      PY_VER: "3.6"
+    env:
+      PY_VER: "3.7"
+    env:
+      PY_VER: "3.8"
     env:
       PY_VER: "3.9"
   name: "Linux: py${PY_VER}"
