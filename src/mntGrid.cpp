@@ -382,7 +382,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 else if (avgLon < lonMin) {
                     offsetLon = 360.0;
                 }
-                for (std::size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+                for (auto nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
                     (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] += offsetLon;
                 }
             }

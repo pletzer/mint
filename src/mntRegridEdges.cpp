@@ -378,9 +378,6 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-    std::size_t columnL = fileAndMeshName.find(':');
-
-
     // get the file and mesh names
     auto fm = fileMeshNameExtractor(fileAndMeshName);
     std::string filename = fm["filename"];
@@ -1057,7 +1054,7 @@ int mnt_regridedges_print(RegridEdges_t** self) {
     std::cout << "Number of weights: " << numWeights << '\n';
     printf("                 dst_cell  dst_face_edge     src_cell  src_face_edge       weight\n");
     for (std::size_t i = 0; i < numWeights; ++i) {
-    printf("%10zd       %8zd         %1d          %8zd         %1d   %15.5lg\n", 
+    printf("%10zd       %8zu         %1d          %8zu         %1d   %15.5lg\n", 
                i, 
                (*self)->weightDstCellIds[i], (*self)->weightDstFaceEdgeIds[i], 
                (*self)->weightSrcCellIds[i], (*self)->weightSrcFaceEdgeIds[i],
