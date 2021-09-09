@@ -1,4 +1,4 @@
-name: mint-dev
+#name: mint-dev
 
 channels:
   - conda-forge

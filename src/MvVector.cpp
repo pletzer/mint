@@ -2,6 +2,7 @@
  * $Id: MvVector.cpp 548 2013-10-23 16:11:22Z pletzer $
  */
 
+#include <cstddef> // std::size_t
 #include <complex>
 #include "MvVector.h"
 
