@@ -43,16 +43,16 @@ LIBRARY_API
 int mnt_cmdlineargparser_parse(CmdLineArgParser** self, int nargs, int n, char* args) {
 
 	char** argv = new char*[nargs];
-	for (std::size_t i = 0; i < (size_t) nargs; ++i) {
+	for (std::size_t i = 0; i < (std::size_t) nargs; ++i) {
 		argv[i] = new char[n];
-		// assumes args is contiguous in memorygs 
+		// assumes args is contiguous in memory
 		strncpy(argv[i], &args[n*i], n);
 	}
 
 	bool success = (*self)->parse(nargs, argv);
 
 	// clean up
-	for (std::size_t i = 0; i < (size_t) nargs; ++i) {
+	for (std::size_t i = 0; i < (std::size_t) nargs; ++i) {
 		delete[] argv[i];
 	}
 	delete[] argv;

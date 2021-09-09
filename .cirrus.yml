@@ -121,3 +121,47 @@ osx_task:
     - conda activate py${PY_VER} >/dev/null 2>&1
     - pip install --no-deps --editable .
     - pytest
+
+
+#
+# Testing (Windows)
+#
+win_task:
+  auto_cancellation: true
+  matrix:
+    env:
+      PY_VER: "3.8"
+      PY_VER: "3.9"
+  name: "Windows: py$PY_VER"
+  windows_container:
+    image: cirrusci/windowsservercore:cmake
+    os_version: 2019
+  env:
+    CONDA_LOCATION: $USERPROFILE\miniconda3
+    PATH: $CONDA_LOCATION;$CONDA_LOCATION\Library\bin;$CONDA_LOCATION\Scripts;$CONDA_LOCATION\condabin;$PATH
+    # must set this to its default since it doesn't work in env variables
+    # see https://github.com/cirruslabs/cirrus-ci-docs/issues/423
+    CIRRUS_WORKING_DIR: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build
+    PYTHON_ARCH: 64
+
+  conda_script:
+    - choco install -y miniconda3 --params="'/D:%CONDA_LOCATION%'"
+    - conda update -yn base conda
+    - conda install -c conda-forge setuptools
+    - conda install --yes python=%PY_VER%
+    - conda install --yes pytest tbb cython numpy
+    - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
+
+  install_script:
+    - conda list
+    - pip install --no-deps --editable .    
+    - python -c "import mint; print(dir(mint))"
+    # - ps: Get-Command python
+    # - echo %PATH%
+    # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin
+    # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin\vtkRendering*.dll
+    # - python -c "import vtk"
+
+  # test_script:
+  #   - pytest
+

@@ -22,11 +22,11 @@
  */
 inline
 double fixLongitude(double periodX, double lonBase, double lon) {
-    
+
     double diffLon = lon - lonBase;
 
     std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX),
-                                             std::abs(diffLon), 
+                                             std::abs(diffLon),
                                              std::abs(diffLon + periodX)};
 
     std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), diffLonMinusZeroPlus.end());
@@ -36,7 +36,7 @@ double fixLongitude(double periodX, double lonBase, double lon) {
     return lon + (indexMin - 1)*periodX;
 }
 
-LIBRARY_API 
+LIBRARY_API
 int mnt_grid_new(Grid_t** self) {
 
     *self = new Grid_t();
@@ -280,7 +280,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     ugrid.getRange(xmin, xmax);
     double lonMin = xmin[0];
 
-    // copy 
+    // copy
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
     (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
 
@@ -293,17 +293,17 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
 
     if ((*self)->faceEdgeConnectivity.size() == 0) {
-    
+
         // compute the face to edge connectivity from the edge-node and face-node connectivity
-        std::map< std::array<std::size_t, 2>, size_t > node2Edge;
+        std::map< std::array<std::size_t, 2>, std::size_t > node2Edge;
         for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
             // start node
             std::size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
             // end node
             std::size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
             // create two entries n0 -> n1 and n1 -> n0
-            std::pair< std::array<std::size_t, 2>, size_t > ne1({n0, n1}, iedge);
-            std::pair< std::array<std::size_t, 2>, size_t > ne2({n1, n0}, iedge);
+            std::pair< std::array<std::size_t, 2>, std::size_t > ne1({n0, n1}, iedge);
+            std::pair< std::array<std::size_t, 2>, std::size_t > ne2({n1, n0}, iedge);
             node2Edge.insert(ne1);
             node2Edge.insert(ne2);
         }
@@ -314,14 +314,14 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 // start and end node indices
                 std::size_t n0 = (*self)->faceNodeConnectivity[icell*4 + i0];
                 std::size_t n1 = (*self)->faceNodeConnectivity[icell*4 + i1];
-                std::size_t edgeId = node2Edge[std::array<size_t, 2>{n0, n1}];
+                std::size_t edgeId = node2Edge[std::array<std::size_t, 2>{n0, n1}];
                 // set the edge Id for these two nodes
                 (*self)->faceEdgeConnectivity[icell*4 + i0] = edgeId;
             }
         }
     }
 
-    // repackage the cell vertices as a flat array 
+    // repackage the cell vertices as a flat array
 
     if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
 
@@ -365,7 +365,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             }
             avgLon /= count;
 
-            // check if there if one of the cell nodes is at the north/south pole. In 
+            // check if there if one of the cell nodes is at the north/south pole. In
             // this case the longitude is ill-defined. Set the longitude there to the
             // average of the 3 other longitudes.
 
@@ -400,7 +400,7 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
     // check if the file exists
     if (!fstream(filename).good()) {
         std::cerr << "ERROR file " << filename << " does not exist\n";
-        return 1;        
+        return 1;
     }
 
     if ((*self)->grid) {
@@ -471,15 +471,15 @@ int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
         for (std::size_t i = 0; i < 3; ++i) {
             point1[i] = (*self)->verts[i + k0];
             point0[i] = (*self)->verts[i + k1];
-        }        
-    } 
+        }
+    }
 
     return 0;
 }
 
-LIBRARY_API 
+LIBRARY_API
 int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]) {
-    
+
     // nodeIndex0,1 are the local cell indices of the vertices in the range 0-3
     int nodeIndex0 = edgeIndex;
     // 4 vertices per cell
@@ -500,7 +500,7 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
     return 0;
 }
 
-LIBRARY_API 
+LIBRARY_API
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
                        std::size_t* edgeId, int* signEdge) {
 
@@ -552,7 +552,7 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
 }
 
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
-    
+
     *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
     return 0;
 }
