@@ -287,7 +287,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     std::size_t ncells = ugrid.getNumberOfFaces();
     std::size_t nedges = ugrid.getNumberOfEdges();
     std::size_t npoints = ugrid.getNumberOfPoints();
-    std::size_t numVertsPerCell = 4;
+    int numVertsPerCell = 4;
 
     // get the face to edge connectivity from the file
     (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
@@ -339,7 +339,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             double avgLon = 0;
             int poleNodeIdx = -1;
             int count = 0;
-            for (std::size_t nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+            for (auto nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
 
                 std::size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
                 double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
