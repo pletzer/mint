@@ -337,7 +337,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
             double lonBase = ugrid.getPoint(kBase)[LON_INDEX];
 
             double avgLon = 0;
-            int poleNodeIdx = -1;
+            long long poleNodeIdx = -1;
             int count = 0;
             for (auto nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
 

@@ -154,7 +154,8 @@ win_task:
 
   install_script:
     - conda list
-    - pip install --no-deps --editable .    
+    - python setup.py install
+    # - pip install --no-deps --editable .    
     - python -c "import mint; print(dir(mint))"
     # - ps: Get-Command python
     # - echo %PATH%
