@@ -9,7 +9,7 @@ struct TCmpFunctor {
     TCmpFunctor(const std::vector<double>& ts) {
         this->tVals = ts;
     }
-    bool operator()(std::size_t i, size_t j) {
+    bool operator()(std::size_t i, std::size_t j) {
         return (this->tVals[i] < this->tVals[j]);
     }
     std::vector<double> tVals;
@@ -17,11 +17,11 @@ struct TCmpFunctor {
 
 
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
-                                 vmtCellLocator* locator, 
+                                 vmtCellLocator* locator,
                                  const double p0In[], const double p1In[],
                                  double periodX) {
 
-    // small tolerances 
+    // small tolerances
     this->eps = 10 * std::numeric_limits<double>::epsilon();
     this->eps100 = 100. * this->eps;
 
@@ -105,13 +105,13 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
 }
 
 
-double 
+double
 PolysegmentIter::getIntegratedParamCoord() const {
     return this->totalT;
 }
 
 
-void 
+void
 PolysegmentIter::reset() {
     this->index = 0;
 }
@@ -127,7 +127,7 @@ PolysegmentIter::next() {
 }
 
 
-vtkIdType 
+vtkIdType
 PolysegmentIter::getCellId() const {
     return this->segCellIds[this->index];
 }
@@ -135,7 +135,7 @@ PolysegmentIter::getCellId() const {
 const Vec3& 
 PolysegmentIter::getBegCellParamCoord() const {
     return this->segXias[this->index];
-}        
+}
 
 
 const Vec3& 
@@ -150,13 +150,13 @@ PolysegmentIter::getBegLineParamCoord() const {
 }
         
 
-double 
+double
 PolysegmentIter::getEndLineParamCoord() const {
     return this->segTbs[this->index];
 }
      
 
-double 
+double
 PolysegmentIter::getCoefficient() const {
     return this->segCoeffs[this->index];
 }
@@ -220,7 +220,7 @@ PolysegmentIter::__assignCoefficientsToSegments() {
 
 }
 
-void  
+void
 PolysegmentIter::__makePeriodic(Vec3& v) {
 
     // fix start/end points if they fall outside the domain and the domain is periodic

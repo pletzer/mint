@@ -389,8 +389,8 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
     int ier;
     NcFieldWrite_t* wr = NULL;
 
-    int n1 = filename.size();
-    int n2 = fieldname.size();
+    int n1 = (int) filename.size();
+    int n2 = (int) fieldname.size();
     const int append = 0; // new file
     ier = mnt_ncfieldwrite_new(&wr, filename.c_str(), n1, fieldname.c_str(), n2, append);
     if (ier != 0) {
@@ -408,7 +408,7 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
 
     // add num_edges axis
     std::string axname = "num_edges";
-    int n3 = axname.size();
+    int n3 = (int) axname.size();
     ier = mnt_ncfieldwrite_setDim(&wr, 0, axname.c_str(), n3, ndata);
     if (ier != 0) {
         std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << ndata 
@@ -971,7 +971,7 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
     std::array<double, MNT_NUM_EDGES_PER_QUAD * 3> edgeParamCoordEnds;
     double* xiBeg;
     double* xiEnd;
-    for (std::size_t e = 0; e < MNT_NUM_EDGES_PER_QUAD; ++e) {
+    for (auto e = 0; e < MNT_NUM_EDGES_PER_QUAD; ++e) {
         (*self)->edgeConnectivity.getParamCoords(e, &xiBeg, &xiEnd);
         for (std::size_t j = 0; j < 3; ++j) { // always 3d
             edgeParamCoordBegs[e*3 + j] = xiBeg[j];
