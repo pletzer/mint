@@ -31,7 +31,7 @@ set(DEBUG_CMAKE TRUE)
 #
 # Find VTK
 #
-if (VTK_INCLUDE_DIR AND VTK_LIBRARY_DIR AND VTK_VERSION)
+if ((NOT VTK_INCLUDE_DIR STREQUAL "") AND (NOT VTK_LIBRARY_DIR STREQUAL "") AND (NOT VTK_VERSION STREQUAL ""))
     # allow the user to set the VTK libraries and include file location manually
     set(VTK_INCLUDE_DIR "" CACHE PATH "The directory containing the VTK include files")
     set(VTK_LIBRARY_DIR "" CACHE PATH "The directory containing the VTK library files")
