@@ -1,33 +1,33 @@
 subroutine test(filename, varname)
 
     use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
-    use netcdf
     use mnt_ncattributes_capi_mod
 
     implicit none
+    include 'netcdf.inc'
 
     character(len=*), intent(in) :: filename, varname
 
     integer :: ncid, varid, ier
     type(c_ptr) :: handle
 
-    ier = nf90_open(filename, NF90_NOWRITE, ncid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_open'
+    ier = nf__open(filename, NF_NOWRITE, ncid)
+    if (ier /= nf_NOERR) print*, 'ERROR after nf_open'
 
-    ier = nf90_inq_varid(ncid, varname, varid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_inq_varid'
+    ier = nf_inq_varid(ncid, varname, varid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf_inq_varid'
 
     ier = mnt_ncattributes_new(handle)
-    if (ier /= 0) print*, 'ERROR after mnt_ncattributes_new'
+    if (ier /= NF_NOERR) print*, 'ERROR after mnt_ncattributes_new'
 
     ier = mnt_ncattributes_read(handle, ncid, varid)
-    if (ier /= 0) print*, 'ERROR after mnt_ncattributes_new'
+    if (ier /= NF_NOERR) print*, 'ERROR after mnt_ncattributes_new'
 
     ier = mnt_ncattributes_del(handle)
-    if (ier /= 0) print*, 'ERROR after mnt_ncattributes_del'
+    if (ier /= NF_NOERR) print*, 'ERROR after mnt_ncattributes_del'
 
-    ier = nf90_close(ncid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_close ier = ', ier
+    ier = nf_close(ncid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf_close ier = ', ier
 
 end subroutine test
 
