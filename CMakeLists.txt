@@ -31,11 +31,11 @@ set(DEBUG_CMAKE TRUE)
 #
 # Find VTK
 #
-if ((NOT VTK_INCLUDE_DIR STREQUAL "") AND (NOT VTK_LIBRARY_DIR STREQUAL "") AND (NOT VTK_VERSION STREQUAL ""))
-    # allow the user to set the VTK libraries and include file location manually
-    set(VTK_INCLUDE_DIR "" CACHE PATH "The directory containing the VTK include files")
-    set(VTK_LIBRARY_DIR "" CACHE PATH "The directory containing the VTK library files")
-    set(VTK_VERSION "" CACHE STRING "The VTK version, will search for libraries vtkIOCore-VTK_VERSION")
+# allow the user to set the variables manually
+set(VTK_INCLUDE_DIR "" CACHE PATH "Directories containing the VTK header")
+set(VTK_LIBRARY_DIR "" CACHE PATH "Directories containing the VTK libraries")
+set(VTK_VERSION "" CACHE STRING "The VTK version, will search for libraries vtkXXX-VTK_VERSION")
+if ((NOT "${VTK_INCLUDE_DIR}" STREQUAL "") AND (NOT "${VTK_LIBRARY_DIR}" STREQUAL "") AND (NOT "${VTK_VERSION}" STREQUAL ""))
     set(VTK_LIBRARIES
         vtkIOCore-${VTK_VERSION}
         vtkIOLegacy-${VTK_VERSION}

@@ -29,8 +29,6 @@ linux_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.6"
-    env:
       PY_VER: "3.7"
     env:
       PY_VER: "3.8"
@@ -68,16 +66,13 @@ linux_task:
       - conda-lock --mamba --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
       - mamba create --name py${PY_VER} --quiet --file conda-linux-64.lock
       - cp conda-linux-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
-  test_script:
+  pytest_script:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-linux-64.lock >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
     - pip install --no-deps --editable .
     - pytest
   cmaketest_script:
-    - cat ${ENV_DIR}/conda-linux-64.lock >&2
-    - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
-    - conda activate py${PY_VER} >/dev/null 2>&1
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=$ENV_DIR/lib -DVTK_VERSION=9.0 ..

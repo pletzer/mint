@@ -16,8 +16,9 @@ dependencies:
 
 # Core dependencies.
   - libnetcdf
+  - netcdf-fortran
   - numpy
-  - vtk=9.0.1
+  - vtk=9.0.3
 
 # Test dependencies.
   - pytest
