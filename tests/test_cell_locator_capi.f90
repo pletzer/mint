@@ -47,32 +47,31 @@ program test_cell_locator_capi
     enddo
 
     ier = mnt_celllocator_new(handle)
-    if (ier /= 0) stop 1
+    if (ier /= 0) print *,'ERROR: mnt_celllocator_new'
 
     ier = mnt_celllocator_setpointsptr(handle, nverts_per_cell, &
                                        int(ncells, kind=c_size_t), verts(1))
-    if (ier /= 0) stop 3
+    if (ier /= 0) print *, 'ERROR: mnt_celllocator_setpointsptr'
 
     output_file = 'test_cell_locator_capi_grid.vtk'
     ier = mnt_celllocator_dumpgrid(handle, trim(output_file), int(len_trim(output_file), kind=8))
-    if (ier /= 0) stop 5
+    if (ier /= 0) print *, 'ERROR: mnt_celllocator_dumpgrid'
 
     num_cells_per_bucket = 1
     ier = mnt_celllocator_build(handle, num_cells_per_bucket)
-    if (ier /= 0) stop 4
+    if (ier /= 0) print *, 'ERROR: mnt_celllocator_build'
 
     point = (/10.0_8, 20.0_8, 0.0_8/)
     ier = mnt_celllocator_find(handle, point, cell_id, pcoords)
-    if (ier /= 0) stop 5
+    if (ier /= 0) print *, 'ERROR: mnt_celllocator_find'
 
     print*,'cell_id = ', cell_id, ' for point ', point, ' (pcoords = ', pcoords, ')'
     if (cell_id < 0) then
         print*,'ERROR: could not find point'
-        stop 7
     endif
 
     ier = mnt_celllocator_del(handle)
-    if (ier /= 0) stop 2
+    if (ier /= 0) print *, 'ERROR: mnt_celllocator_del'
 
     deallocate(verts)
 

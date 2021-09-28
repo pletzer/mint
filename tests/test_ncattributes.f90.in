@@ -11,7 +11,7 @@ subroutine test(filename, varname)
     integer :: ncid, varid, ier
     type(c_ptr) :: handle
 
-    ier = nf__open(filename, NF_NOWRITE, ncid)
+    ier = nf_open(filename, NF_NOWRITE, ncid)
     if (ier /= nf_NOERR) print*, 'ERROR after nf_open'
 
     ier = nf_inq_varid(ncid, varname, varid)

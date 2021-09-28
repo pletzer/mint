@@ -15,7 +15,6 @@ program test
 
     if (f_string2 /= f_string) then
         print *,'ERROR: f_string and f_string2 do not match'
-        stop 1
     endif
 
 end program

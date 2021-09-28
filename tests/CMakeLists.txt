@@ -278,6 +278,8 @@ set_tests_properties(test_ncfieldread PROPERTIES
 
 add_test(NAME test_cell_locator_capi
          COMMAND test_cell_locator_capi)
+set_tests_properties(test_cell_locator_capi PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR")
 
 add_test(NAME regridEdgesF
          COMMAND testRegridEdgesF 
@@ -326,6 +328,9 @@ add_test(NAME cmdLineArgParserFB
          COMMAND testCmdLineArgParserFB "-i" "in.vtk")
 add_test(NAME c2fString
          COMMAND testC2fString)
+set_tests_properties(c2fString PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR")
+
 
 add_test(NAME regridedges_edge_field_lfric_diag
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
