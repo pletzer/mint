@@ -157,7 +157,7 @@ win_task:
     - conda install -c conda-forge setuptools
     - conda install --yes python=%PY_VER%
     - conda install --yes pytest tbb cython numpy
-    - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf netcdf-fortran
+    - conda install --yes -c conda-forge vtk=9.0.3 libnetcdf
 
   install_script:
     - conda list

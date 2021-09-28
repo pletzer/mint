@@ -17,6 +17,7 @@ dependencies:
 # Core dependencies.
   - libnetcdf
   - netcdf-fortran
+  - libgfortran
   - numpy
   - vtk=9.0.3
 
