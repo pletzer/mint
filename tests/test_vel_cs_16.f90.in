@@ -1,10 +1,10 @@
 subroutine test1
 
-    use netcdf
     use mnt_ncfieldread_capi_mod
     use, intrinsic :: iso_c_binding, only: c_ptr, c_size_t, c_int
 
     implicit none
+    include 'netcdf.inc'
 
     integer :: src_ncid, src_varid, src_ndims, i, rc, xtype, dimids(10)
     integer(c_size_t), allocatable :: src_dims(:)
@@ -17,15 +17,15 @@ subroutine test1
 
     i = scan( src_ugrid_filename, ':' ) ! grab the filename, drop the mesh name
     print *, 'will open file with name"', trim(src_ugrid_filename(1:i - 1)), '"'
-    rc = nf90_open(trim(src_ugrid_filename(1:i - 1)), NF90_NOWRITE, src_ncid)
-    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_open'
+    rc = nf__open(trim(src_ugrid_filename(1:i - 1)), NF_NOWRITE, src_ncid)
+    if (rc /= NF_NOERR) print *, 'ERROR when calling nf__open'
 
-    rc = nf90_inq_varid(src_ncid, trim(src_field_name), src_varid)
-    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inq_varid'
+    rc = nf_inq_varid(src_ncid, trim(src_field_name), src_varid)
+    if (rc /= NF_NOERR) print *, 'ERROR when calling nf_inq_varid'
 
     print *,'...inquiring the number of dims for src_ncid = ', src_ncid, ' and src_varid = ', src_varid
-    rc = nf90_inquire_variable(src_ncid, src_varid, ndims=src_ndims)
-    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_inquire_variable'
+    rc = nf_inquire_variable(src_ncid, src_varid, ndims=src_ndims)
+    if (rc /= NF_NOERR) print *, 'ERROR when calling nf_inquire_variable'
 
     print *,'src_ndims = ', src_ndims
 
@@ -35,8 +35,8 @@ subroutine test1
     rc = mnt_ncfieldread_del(ncreader_h)
     if (rc /= 0) print *, 'ERROR when calling mnt_ncfieldread_del'
 
-    rc = nf90_close(src_ncid)
-    if (rc /= NF90_NOERR) print *, 'ERROR when calling nf_close'
+    rc = nf_close(src_ncid)
+    if (rc /= NF_NOERR) print *, 'ERROR when calling nf_close'
 
 end subroutine test1
 
@@ -44,8 +44,8 @@ subroutine test2
 
     use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
     use mnt_ncfieldread_capi_mod 
-    use netcdf
     implicit none
+    include 'netcdf.inc'
 
     character(len=512)             :: ncfile = '${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc' ! lfric_diag_ex.nc'
     character(len=32)              :: varname = 'line_integrated_velocity' ! 'physics_face_y' !  ! 'u1'
@@ -57,11 +57,11 @@ subroutine test2
     character(len=32)              :: dimName
     integer                        :: ncid, varid
 
-    ier = nf90_open(ncfile, NF90_NOWRITE, ncid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_open'
+    ier = nf__open(ncfile, NF_NOWRITE, ncid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf__open'
 
-    ier = nf90_inq_varid(ncid, varname, varid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_inq_varid'
+    ier = nf_inq_varid(ncid, varname, varid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf_inq_varid'
 
     ier = mnt_ncfieldread_new(handle, ncid, varid)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_new'
@@ -115,8 +115,8 @@ subroutine test2
     ier = mnt_ncfieldread_del(handle)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_del'
 
-    ier = nf90_close(ncid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_close ier = ', ier
+    ier = nf_close(ncid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf_close ier = ', ier
 
 end subroutine test2
 

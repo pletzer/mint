@@ -19,54 +19,126 @@ configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
 configure_file(test_ncattributes.f90.in test_ncattributes.f90)
 
 
-add_executable(test_ncattributes ${CMAKE_BINARY_DIR}/tests/test_ncattributes.f90)
-set_target_properties(test_ncattributes PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(test_ncattributes
-                      mint
-                      ${VTK_LIBRARIES}
-                      netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
+if (BUILD_FORTRAN)
+   add_executable(test_ncattributes ${CMAKE_BINARY_DIR}/tests/test_ncattributes.f90)
+   set_target_properties(test_ncattributes PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(test_ncattributes
+                         mint
+                         ${VTK_LIBRARIES}
+                         netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME test_ncattributesF
+            COMMAND test_ncattributes)
+   set_tests_properties(test_ncattributesF PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
 
-add_executable(test_ncdimensions ${CMAKE_BINARY_DIR}/tests/test_ncdimensions.f90)
-set_target_properties(test_ncdimensions PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(test_ncdimensions
-                      mint
-                      ${VTK_LIBRARIES}
-                      netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
+   add_executable(test_ncdimensions ${CMAKE_BINARY_DIR}/tests/test_ncdimensions.f90)
+   set_target_properties(test_ncdimensions PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(test_ncdimensions
+                         mint
+                         ${VTK_LIBRARIES}
+                         netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME test_ncdimensionsF
+            COMMAND test_ncdimensions)
+   set_tests_properties(test_ncdimensionsF PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
 
-add_executable(test_multiarrayiterF test_multiarrayiterF.f90)
-set_target_properties(test_multiarrayiterF PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(test_multiarrayiterF
-                      mint
-                      ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
+   add_executable(test_multiarrayiterF test_multiarrayiterF.f90)
+   set_target_properties(test_multiarrayiterF PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(test_multiarrayiterF
+                         mint
+                         ${VTK_LIBRARIES}
+                         ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME test_multiarrayiterF
+            COMMAND test_multiarrayiterF)
+   set_tests_properties(test_multiarrayiterF PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
 
 
-add_executable(test_ncfieldwrite test_ncfieldwrite.f90)
-set_target_properties(test_ncfieldwrite PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(test_ncfieldwrite
-                      mint
-                      ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
+   add_executable(test_ncfieldwrite test_ncfieldwrite.f90)
+   set_target_properties(test_ncfieldwrite PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(test_ncfieldwrite
+                         mint
+                         ${VTK_LIBRARIES}
+                         ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME test_ncfieldwrite
+            COMMAND test_ncfieldwrite)
+   set_tests_properties(test_ncfieldwrite PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
 
-add_executable(test_ncfieldread ${CMAKE_BINARY_DIR}/tests/test_ncfieldread.f90)
-set_target_properties(test_ncfieldread PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(test_ncfieldread
-                      mint
-                      ${VTK_LIBRARIES}
-                      netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
+   add_executable(test_ncfieldread ${CMAKE_BINARY_DIR}/tests/test_ncfieldread.f90)
+   set_target_properties(test_ncfieldread PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(test_ncfieldread
+                         mint
+                         ${VTK_LIBRARIES}
+                         netcdff ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME test_ncfieldread
+            COMMAND test_ncfieldread)
+   set_tests_properties(test_ncfieldread PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
 
-add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
-set_target_properties(test_cell_locator_capi PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(test_cell_locator_capi
-                      mint
-                      ${VTK_LIBRARIES}
-                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
+   add_executable(test_cell_locator_capi test_cell_locator_capi.f90)
+   set_target_properties(test_cell_locator_capi PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(test_cell_locator_capi
+                         mint
+                         ${VTK_LIBRARIES}
+                         ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME test_cell_locator_capi
+            COMMAND test_cell_locator_capi)
+   set_tests_properties(test_cell_locator_capi PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
+
+   add_executable(testRegridEdgesF testRegridEdgesF.f90)
+   set_target_properties(testRegridEdgesF PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(testRegridEdgesF
+                       mint
+                       ${VTK_LIBRARIES}
+                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME regridEdgesF
+            COMMAND testRegridEdgesF 
+            "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics" 
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" 
+            "-o" "weights.nc")
+   set_tests_properties(regridEdgesF PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
+
+   add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)
+   set_target_properties(testCmdLineArgParserF PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(testCmdLineArgParserF
+                         mint
+                         ${VTK_LIBRARIES}
+   )
+   add_test(NAME cmdLineArgParserF COMMAND testCmdLineArgParserF)
+   add_test(NAME cmdLineArgParserF2 
+            COMMAND testCmdLineArgParserF "-i" "input.vtk" "-o" "output.vtk" "-d" "-2.34" "-n" "100" "-v")
+
+   add_executable(testCmdLineArgParserFB testCmdLineArgParserFB.f90)
+   set_target_properties(testCmdLineArgParserFB PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(testCmdLineArgParserFB
+                         mint
+                         ${VTK_LIBRARIES}
+   )
+   add_test(NAME cmdLineArgParserFB
+            COMMAND testCmdLineArgParserFB "-i" "in.vtk")
+
+   add_executable(testC2fString testC2fString.f90)
+   set_target_properties(testC2fString PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(testC2fString
+                         mint
+                         ${VTK_LIBRARIES}
+   )
+   add_test(NAME c2fString
+            COMMAND testC2fString)
+   set_tests_properties(c2fString PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
+
+endif()
 
 add_executable(testVecMat testVecMat.cxx)
 target_link_libraries(testVecMat
@@ -197,14 +269,6 @@ target_link_libraries(testVectorInterp
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
-add_executable(testC2fString testC2fString.f90)
-set_target_properties(testC2fString PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(testC2fString
-                      mint
-                      ${VTK_LIBRARIES}
-)
-
-
 add_executable(testExprParser testExprParser.cxx)
 target_link_libraries(testExprParser
                       mint
@@ -223,69 +287,12 @@ target_link_libraries(testCmdLineArgParserC
                       ${VTK_LIBRARIES}
 )
 
-add_executable(testRegridEdgesF testRegridEdgesF.f90)
-set_target_properties(testRegridEdgesF PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(testRegridEdgesF
-                    mint
-                    ${VTK_LIBRARIES}
-                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
-)
-
-add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)
-set_target_properties(testCmdLineArgParserF PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(testCmdLineArgParserF
-                      mint
-                      ${VTK_LIBRARIES}
-)
-
-add_executable(testCmdLineArgParserFB testCmdLineArgParserFB.f90)
-set_target_properties(testCmdLineArgParserFB PROPERTIES LINKER_LANGUAGE Fortran)
-target_link_libraries(testCmdLineArgParserFB
-                      mint
-                      ${VTK_LIBRARIES}
-)
-
 add_executable(testRegridAxis testRegridAxis.cxx)
 target_link_libraries(testRegridAxis
                       mint
                       ${VTK_LIBRARIES}
 )
 
-add_test(NAME test_multiarrayiterF
-         COMMAND test_multiarrayiterF)
-set_tests_properties(test_multiarrayiterF PROPERTIES
-                     FAIL_REGULAR_EXPRESSION "ERROR")
-
-add_test(NAME test_ncattributesF
-         COMMAND test_ncattributes)
-set_tests_properties(test_ncattributesF PROPERTIES
-                     FAIL_REGULAR_EXPRESSION "ERROR")
-
-add_test(NAME test_ncdimensionsF
-         COMMAND test_ncdimensions)
-set_tests_properties(test_ncdimensionsF PROPERTIES
-                     FAIL_REGULAR_EXPRESSION "ERROR")
-
-add_test(NAME test_ncfieldwrite
-         COMMAND test_ncfieldwrite)
-set_tests_properties(test_ncfieldwrite PROPERTIES
-                     FAIL_REGULAR_EXPRESSION "ERROR")
-
-add_test(NAME test_ncfieldread
-         COMMAND test_ncfieldread)
-set_tests_properties(test_ncfieldread PROPERTIES
-                     FAIL_REGULAR_EXPRESSION "ERROR")
-
-add_test(NAME test_cell_locator_capi
-         COMMAND test_cell_locator_capi)
-
-add_test(NAME regridEdgesF
-         COMMAND testRegridEdgesF 
-         "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics" 
-         "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" 
-         "-o" "weights.nc")
-set_tests_properties(regridEdgesF PROPERTIES
-                     FAIL_REGULAR_EXPRESSION "ERROR")
 
 add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME netcdf COMMAND testNetcdf)
@@ -319,13 +326,7 @@ add_test(NAME size COMMAND testSize)
 add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC)
 add_test(NAME cmdLineArgParserC2 
         COMMAND testCmdLineArgParserC "-i" "-234" "-d" -2.34 "-s" "hi_there")
-add_test(NAME cmdLineArgParserF COMMAND testCmdLineArgParserF)
-add_test(NAME cmdLineArgParserF2 
-         COMMAND testCmdLineArgParserF "-i" "input.vtk" "-o" "output.vtk" "-d" "-2.34" "-n" "100" "-v")
-add_test(NAME cmdLineArgParserFB
-         COMMAND testCmdLineArgParserFB "-i" "in.vtk")
-add_test(NAME c2fString
-         COMMAND testC2fString)
+
 
 add_test(NAME regridedges_edge_field_lfric_diag
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"

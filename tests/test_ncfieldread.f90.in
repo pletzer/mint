@@ -2,8 +2,9 @@ program test
 
     use, intrinsic :: iso_c_binding, only: c_int, c_double, c_char, c_ptr, c_size_t
     use mnt_ncfieldread_capi_mod 
-    use netcdf
     implicit none
+    include 'netcdf.inc'
+
 
     character(len=512)             :: ncfile = '${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc'
     character(len=32)              :: varname = 'u1'
@@ -15,11 +16,11 @@ program test
     character(len=32)              :: dimName
     integer                        :: ncid, varid
 
-    ier = nf90_open(ncfile, NF90_NOWRITE, ncid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_open'
+    ier = nf_open(ncfile, NF_NOWRITE, ncid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf__open'
 
-    ier = nf90_inq_varid(ncid, varname, varid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_inq_varid'
+    ier = nf_inq_varid(ncid, varname, varid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf_inq_varid'
 
     ier = mnt_ncfieldread_new(handle, ncid, varid)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_new'
@@ -73,7 +74,7 @@ program test
     ier = mnt_ncfieldread_del(handle)
     if (ier /= 0) print*, 'ERROR after mnt_ncfieldread_del'
 
-    ier = nf90_close(ncid)
-    if (ier /= NF90_NOERR) print*, 'ERROR after nf90_close ier = ', ier
+    ier = nf_close(ncid)
+    if (ier /= NF_NOERR) print*, 'ERROR after nf_close ier = ', ier
 
 end program test

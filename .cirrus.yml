@@ -29,8 +29,6 @@ linux_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.6"
-    env:
       PY_VER: "3.7"
     env:
       PY_VER: "3.8"
@@ -40,6 +38,7 @@ linux_task:
   container:
     dockerfile: requirements/ci/linux/Dockerfile
   env:
+    ENV_DIR: ${HOME}/mambaforge/envs/py${PY_VER}
     PATH: ${HOME}/mambaforge/bin:${PATH}
   mamba_cache:
     folder: ${HOME}/mambaforge
@@ -67,12 +66,19 @@ linux_task:
       - conda-lock --mamba --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
       - mamba create --name py${PY_VER} --quiet --file conda-linux-64.lock
       - cp conda-linux-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
-  test_script:
+  pytest_script:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-linux-64.lock >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
+    - conda list
     - pip install --no-deps --editable .
     - pytest
+    - mkdir build-cmake
+    - cd build-cmake
+    - cmake -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib -DVTK_VERSION=9.0 ..
+    - make
+    - ctest
+
 
 #
 # Testing (macOS)
@@ -81,13 +87,12 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.8"
-    env:
       PY_VER: "3.9"
   name: "OSX: py${PY_VER}"
   osx_instance:
     image: big-sur-xcode
   env:
+    ENV_DIR: ${HOME}/mambaforge/envs/py${PY_VER}
     PATH: ${HOME}/mambaforge/bin:${PATH}
   mamba_cache:
     folder: ${HOME}/mambaforge
@@ -121,7 +126,11 @@ osx_task:
     - conda activate py${PY_VER} >/dev/null 2>&1
     - pip install --no-deps --editable .
     - pytest
-
+    - mkdir build-cmake
+    - cd build-cmake
+    - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib -DVTK_VERSION=9.0 ..
+    - make VERBOSE=1 # link error 
+    - ctest
 
 #
 # Testing (Windows)
@@ -161,6 +170,10 @@ win_task:
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin\vtkRendering*.dll
     # - python -c "import vtk"
+    # - mkdir build-cmake
+    # - cd build-cmake
+    # - cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR=%ENV_DIR%\include\vtk-9.0 -DVTK_LIBRARY_DIR=%ENV_DIR%\Library\bin -DVTK_VERSION=9.0 ..
+
 
   # test_script:
   #   - pytest

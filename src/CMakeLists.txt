@@ -30,17 +30,22 @@ set(LIB_FILES
   mntMultiArrayIter.cpp
   mntRegridAxis.cpp
   mntPolylineIntegral.cpp
-  mnt_ncfieldread_capi_mod.f90
-  mnt_ncfieldwrite_capi_mod.f90
-  mnt_celllocator_capi_mod.f90
-  mnt_regridedges_capi_mod.f90
-  mnt_cmdlineargparser_capi_mod.f90
-  mnt_multiarrayiter_capi_mod.f90
-  mnt_ncdimensions_capi_mod.f90
-  mnt_ncattributes_capi_mod.f90
   mntWeights.cpp
   mntVectorInterp.cpp
 )
+
+if (BUILD_FORTRAN)
+  set(LIB_FILES_FORTRAN
+    mnt_ncfieldread_capi_mod.f90
+    mnt_ncfieldwrite_capi_mod.f90
+    mnt_celllocator_capi_mod.f90
+    mnt_regridedges_capi_mod.f90
+    mnt_cmdlineargparser_capi_mod.f90
+    mnt_multiarrayiter_capi_mod.f90
+    mnt_ncdimensions_capi_mod.f90
+    mnt_ncattributes_capi_mod.f90
+ )
+endif()
 
 set(HEADER_FILES
   mntLIBRARY_API.h
@@ -75,16 +80,13 @@ set(HEADER_FILES
 
 if (VTK_VERSION VERSION_LESS "8.90.0")
     include(${VTK_USE_FILE})
-    add_library(mint ${LIB_FILES})
+    add_library(mint ${LIB_FILES} ${LIB_FILES_FORTRAN})
 else()
     message(STATUS "Using new VTK module system")
-    add_library(mint ${LIB_FILES})
+    add_library(mint ${LIB_FILES} ${LIB_FILES_FORTRAN})
     # may want to replace ${VTK_LIBRARIES} with VTK::vtksys VTK::CommonCore etc
     target_link_libraries(mint ${visibility} ${VTK_LIBRARIES})
-    vtk_module_autoinit(
-        TARGETS mint
-	      MODULES ${VTK_LIBRARIES}
-    )
+    #vtk_module_autoinit(TARGETS mint MODULES ${VTK_LIBRARIES})
 endif()
 
 # Install headers
