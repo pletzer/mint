@@ -94,9 +94,6 @@ osx_task:
   env:
     ENV_DIR: ${HOME}/mambaforge/envs/py${PY_VER}
     PATH: ${HOME}/mambaforge/bin:${PATH}
-    CELLAR: /usr/local/Cellar
-    VTK_VERSION: 9.0.3
-    NETCDF_VERSION: 4.8.0_2
   mamba_cache:
     folder: ${HOME}/mambaforge
     fingerprint_script:
