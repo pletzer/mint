@@ -129,10 +129,7 @@ osx_task:
     - pytest
     - mkdir build-cmake
     - cd build-cmake
-    - cmake -DBUILD_FORTRAN=OFF \
-            -DVTK_INCLUDE_DIR=${CELLAR}/vtk/${VTK_VERSION}/include/vtk-9.0 \
-            -DVTK_LIBRARY_DIR=${CELLAR}/vtk/${VTK_VERSION}/lib \
-            -DVTK_VERSION=9.0 ..
+    - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${CELLAR}/vtk/${VTK_VERSION}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${CELLAR}/vtk/${VTK_VERSION}/lib -DVTK_VERSION=9.0 ..
     - make VERBOSE=1 # link error 
     - ctest
 
