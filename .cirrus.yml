@@ -95,6 +95,8 @@ osx_task:
     CELLAR: /usr/local/Cellar
     VTK_VERSION: 9.0.3
     NETCDF_VERSION: 4.8.0_2
+  build_script:
+    - brew install vtk netcdf
   mamba_cache:
     folder: ${HOME}/mambaforge
     fingerprint_script:
@@ -128,7 +130,6 @@ osx_task:
     - pip install --no-deps --editable .
     - pytest
   cmake_script:
-    - brew install vtk netcdf
     - ls $CELLAR/vtk
     - ls $CELLAR/netcdf
     - mkdir build-cmake
