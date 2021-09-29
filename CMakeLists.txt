@@ -21,9 +21,13 @@ if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
-enable_language(Fortran)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
+
+option(BUILD_FORTRAN "Whether or not to build Fortran code" ON)
+if (BUILD_FORTRAN)
+    enable_language(Fortran)
+endif()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 
@@ -69,7 +73,7 @@ else ()
             CommonMath 
             CommonMisc 
             CommonTransforms 
-      	    CommonDataModel 
+            CommonDataModel 
             CommonExecutionModel
             CommonComputationalGeometry 
             IOLegacy
@@ -86,18 +90,22 @@ set(NETCDF_LIBRARIES "" CACHE STRING "List of netCDF libraries")
 # If not set then key off from nc-config and nf-config
 if (NETCDF_INCLUDE_DIRS STREQUAL "" OR NETCDF_LIBRARIES STREQUAL "")
     execute_process(COMMAND "nc-config" "--includedir"
-	    OUTPUT_VARIABLE C_NETCDF_INCLUDE_DIR)
+        OUTPUT_VARIABLE C_NETCDF_INCLUDE_DIR)
     execute_process(COMMAND "nc-config" "--libs"
-	    OUTPUT_VARIABLE C_NETCDF_LIBRARIES)
-    execute_process(COMMAND "nf-config" "--includedir"
-	    OUTPUT_VARIABLE FORTRAN_NETCDF_INCLUDE_DIR)
-    execute_process(COMMAND "nf-config" "--flibs"
-	    OUTPUT_VARIABLE FORTRAN_NETCDF_LIBRARIES)
+        OUTPUT_VARIABLE C_NETCDF_LIBRARIES)
     # remove \n at the end of the above variables
     string(STRIP "${C_NETCDF_INCLUDE_DIR}" C_NETCDF_INCLUDE_DIR)
     string(STRIP "${C_NETCDF_LIBRARIES}" C_NETCDF_LIBRARIES)
-    string(STRIP "${FORTRAN_NETCDF_INCLUDE_DIR}" FORTRAN_NETCDF_INCLUDE_DIR)
-    string(STRIP "${FORTRAN_NETCDF_LIBRARIES}" FORTRAN_NETCDF_LIBRARIES)
+
+    if (BUILD_FORTRAN)
+        execute_process(COMMAND "nf-config" "--includedir"
+            OUTPUT_VARIABLE FORTRAN_NETCDF_INCLUDE_DIR)
+        execute_process(COMMAND "nf-config" "--flibs"
+            OUTPUT_VARIABLE FORTRAN_NETCDF_LIBRARIES)
+        string(STRIP "${FORTRAN_NETCDF_INCLUDE_DIR}" FORTRAN_NETCDF_INCLUDE_DIR)
+        string(STRIP "${FORTRAN_NETCDF_LIBRARIES}" FORTRAN_NETCDF_LIBRARIES)
+    endif()
+
     set(NETCDF_INCLUDE_DIRS ${C_NETCDF_INCLUDE_DIR} ${FORTRAN_NETCDF_INCLUDE_DIR})
     set(NETCDF_LIBRARIES ${C_NETCDF_LIBRARIES} ${FORTRAN_NETCDF_LIBRARIES})
 endif()
