@@ -128,8 +128,9 @@ osx_task:
     - pip install --no-deps --editable .
     - pytest
   cmake_script:
-    - brew install gcc vtk netcdf
-    - ls $CELLAR
+    - brew install vtk netcdf
+    - ls $CELLAR/vtk
+    - ls $CELLAR/netcdf
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DVTK_INCLUDE_DIR=${CELLAR}/vtk/${VTK_VERSION}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${CELLAR}/vtk/${VTK_VERSION}/lib -DVTK_VERSION=9.0 ..
