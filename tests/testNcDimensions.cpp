@@ -32,7 +32,7 @@ void test(const std::string& filename, const std::string& varname) {
     assert(ier == NC_NOERR);
     assert(ndims == 3);
 
-    size_t dims[ndims];
+    std::vector<size_t> dims(ndims);
     for (int i = 0; i < ndims; ++i) {
         ier = mnt_ncdimensions_get(&ncdims, i, &dims[i]);
         assert(ier == NC_NOERR);

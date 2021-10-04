@@ -86,6 +86,13 @@ cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=/usr/local/Cellar/vtk/9.0.3/include/
 make -j 4
 ```
 
+On Windows, in the Anaconda prompt:
+```
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR="C:\Users\alexa\miniconda3\envs\mint-dev\Library\include\vtk-9.0" -DVTK_LIBRARY_DIR="C:\Users\alexa\miniconda3\envs\mint-dev\Library\lib" -DNETCDF_INCLUDE_DIRS="C:\Users\alexa\miniconda3\envs\mint-dev\Library\include" -DNETCDF_LIBRARIES="C:\Users\alexa\miniconda3\envs\mint-dev\Library\lib\netcdf.lib" ..
+nmake
+```
+
 You can check that the build was successful by typing:
 ```
 make test
