@@ -168,10 +168,10 @@ win_task:
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin\vtkRendering*.dll
     # - python -c "import vtk"
-  test_script:
-    - mkdir build-cmake
-    - cd build-cmake
-    - where cl
-    - cmake -G "NMake Makefiles" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=%ENV_DIR%\include\vtk-9.0 -DVTK_LIBRARY_DIR=%ENV_DIR%\Library\bin -DVTK_VERSION=9.0 ..
+  # test_script:
+    # - mkdir build-cmake
+    # - cd build-cmake
+    # - where cl
+    # - cmake -G "NMake Makefiles" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=%ENV_DIR%\include\vtk-9.0 -DVTK_LIBRARY_DIR=%ENV_DIR%\Library\bin -DVTK_VERSION=9.0 ..
     #   - pytest
 

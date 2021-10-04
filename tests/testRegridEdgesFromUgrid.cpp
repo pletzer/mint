@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntRegridEdges.h>
 #include <cmath>
 #undef NDEBUG // turn on asserts

@@ -38,6 +38,15 @@ See [Conservative interpolation of edge and face data on n dimensional structure
 We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type
 ```
 conda env create --file requirements/mint.yml
+```
+or
+```
+conda create -n mint-dev
+conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy
+```
+
+Activate your environment:
+```
 conda activate mint-dev
 ```
 
@@ -69,6 +78,12 @@ make -j 8
 You can specify the compiler with:
 ```
 FC=mpif90 CXX=mpicxx cmake ..; make -j 8
+```
+
+It is also possible to turn off Fortran code and specify the location of the `VTK` library:
+```
+cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=/usr/local/Cellar/vtk/9.0.3/include/vtk-9.0/ -DVTK_LIBRARY_DIR=/usr/local/Cellar/vtk/9.0.3/lib -DVTK_VERSION=9.0 ..
+make -j 4
 ```
 
 You can check that the build was successful by typing:

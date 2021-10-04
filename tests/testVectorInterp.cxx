@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntVectorInterp.h>

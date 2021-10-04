@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <limits> // required by vtkUnstructuredGrid
 #include <mntPolysegmentIter.h>
 #include <mntGrid.h>
