@@ -325,7 +325,7 @@ int main(int argc, char** argv) {
         ier = mnt_ncdimensions_read(&srcVarDimsObj, srcNcid, srcVarid);
         int srcNdims;
         ier = mnt_ncdimensions_getNumDims(&srcVarDimsObj, &srcNdims);
-        size_t srcDims[srcNdims];
+        std::vector<size_t> srcDims(srcNdims);
         for (int i = 0; i < srcNdims; ++i) {
             ier = mnt_ncdimensions_get(&srcVarDimsObj, i, &srcDims[i]); 
         }      
@@ -352,7 +352,7 @@ int main(int argc, char** argv) {
         if (dstEdgeDataFile.size() > 0) {
             // user provided a file name to store the regridded data
 
-            ier = setUpWriter(srcNdims, srcDims, numDstEdges, vname, dstEdgeDataFile, 
+            ier = setUpWriter(srcNdims, &srcDims[0], numDstEdges, vname, dstEdgeDataFile, 
                               attrs, &writer);
             if (ier != 0) {
                 return ier;
@@ -389,7 +389,7 @@ int main(int argc, char** argv) {
 
         MultiArrayIter_t* mai = NULL;
         // iterate over the non-edge indices only, hence srcNdims - 1
-        ier = mnt_multiarrayiter_new(&mai, srcNdims - 1, srcDims);
+        ier = mnt_multiarrayiter_new(&mai, srcNdims - 1, &srcDims[0]);
 
         // total number of elevation * time values
         size_t numIters;
