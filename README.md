@@ -33,30 +33,9 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 See [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub) for the corresponding methods in n dimensions.
 
 
-## Prerequisites
+## `MINT` as  a Python module
 
-To build the `MINT` Python module:
-
- * C++ compiler with C++11 support
- * Cython
- * NetCDF library
- * NumPy
- * VTK
-
-We recommend installing the above packages using `conda`.
-
-To build the `MINT` C++ library and the tools:
-
- * C++ compiler with C++11 support
- * Fortran compiler (e.g., gfortran 6.4)
- * NetCDF library
- * Doxygen
- * VTK
-
-## How to Build the MINT Python Module
-
-The `MINT` Python interface requires `VTK`, `netCDF` and the `tbb` libraries to 
-be installed. This is most easily done in a conda environment:
+We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type
 ```
 conda env create --file requirements/mint.yml
 conda activate mint-dev
@@ -79,7 +58,7 @@ pytest
  
 ## How to Build the MINT C++ Library
 
-Perform the following in order to call `MINT` from `Fortran`, `C` or `C++`:
+If you want to call `MINT` from `Fortran`, `C` or `C++`:
 ```
 mkdir build
 cd build
