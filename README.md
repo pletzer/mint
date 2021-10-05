@@ -80,7 +80,7 @@ FC=mpif90 CXX=mpicxx cmake ..; make -j 8
 
 It is also possible to turn off Fortran code and specify the location of the `VTK` library:
 ```
-cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=/usr/local/Cellar/vtk/9.0.3/include/vtk-9.0/ -DVTK_LIBRARY_DIR=/usr/local/Cellar/vtk/9.0.3/lib -DVTK_VERSION=9.0 ..
+cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=/usr/local/Cellar/vtk/9.0.3/include/vtk-9.0/ -DVTK_LIBRARY_DIR=/usr/local/Cellar/vtk/9.0.3/lib ..
 make -j 4
 ```
 
