@@ -4,20 +4,6 @@
 #include <cstring>
 #undef NDEBUG // turn on asserts
 
-
-int getFileMeshName(const std::string& fileMeshName, std::string& fileName, std::string& meshName) {
-    fileName = "";
-    meshName = "";
-    size_t columnPosL = fileMeshName.find(':');
-    size_t columnPosR = fileMeshName.rfind(':');
-    if (columnPosL == std::string::npos) {
-       return 1;
-    }
-    fileName = fileMeshName.substr(0, columnPosL);
-    meshName = fileMeshName.substr(columnPosR + 1, std::string::npos);
-    return 0;
-}
-
 int main(int argc, char** argv) {
 
     int ier;
