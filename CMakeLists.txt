@@ -76,16 +76,16 @@ else ()
         find_package(VTK REQUIRED)
     else()
         message(STATUS "Using new VTK module system")
-        find_package(VTK REQUIRED COMPONENTS 
+        find_package(VTK REQUIRED COMPONENTS
             vtksys
-            CommonCore 
-            CommonSystem 
-            CommonMath 
-            CommonMisc 
-            CommonTransforms 
-            CommonDataModel 
+            CommonCore
+            CommonSystem
+            CommonMath
+            CommonMisc
+            CommonTransforms
+            CommonDataModel
             CommonExecutionModel
-            CommonComputationalGeometry 
+            CommonComputationalGeometry
             IOLegacy
             IOCore
         )
@@ -163,3 +163,9 @@ endif (DOXYGEN_FOUND)
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(tools)
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "C++ compiler flags: ${CMAKE_CXX_FLAGS}")
+if (BUILD_FORTRAN)
+    message(STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS}")
+endif()
