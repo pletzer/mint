@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     // parse the command line. Note: we need to pass a string array where
     // each element is a character array without the termination character
 
-    const int string_len = 32; // max argument length
+    const std::size_t string_len = 32; // max argument length
     char* args = new char[argc * string_len];
     for (size_t i = 0; i < (size_t) argc; ++i) {
         strncpy(&args[i * string_len], argv[i], string_len);
