@@ -432,7 +432,7 @@ set_tests_properties(regrid_edgesLATLON100x50ToCS4_1cellPerBucket PROPERTIES
 
 add_test(NAME regrid_edgesLATLON100x50ToCS4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc:latlon"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc$latlon"
                  "-S" "0" 
                  "-v" "edge_integrated_velocity" 
                  "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
@@ -473,8 +473,8 @@ set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
 # of the cell edges there. Just checking that we don't have more than 32 warnings.
 add_test(NAME regrid_upstream
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test" "-S" "1"
-                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc:unit_test" "-D" "1"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc$unit_test" "-S" "1"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc$unit_test" "-D" "1"
                  "-N" "128" "-P" "360"
                  "-debug" "2")
 set_tests_properties(regrid_upstream PROPERTIES
