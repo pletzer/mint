@@ -265,8 +265,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     // extract the filename and the mesh name from "filename:meshname"
     auto fm = fileMeshNameExtractor(fileAndMeshName);
 
-    std::string filename = fm["filename"];
-    std::string meshname = fm["meshname"];
+    std::string filename = fm.first;
+    std::string meshname = fm.second;
 
     Ugrid2D ugrid;
     int ier = ugrid.load(filename, meshname);
