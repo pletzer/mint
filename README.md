@@ -103,29 +103,29 @@ The above `CMake` build will compile a number of tools. To run the tools, set
 
  1. Compute the interpolation weights from a lat-lon grid to the cubed sphere:
  ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
                       -w weights.nc
  ```
 
  2. Regrid field `edge_integrated_velocity` from lat-lon to cubed-sphere by loading the previously generated weights:
  ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
                       -v edge_integrated_velocity -W weights.nc -o edge_integrated_velocity.vtk
  ```
 
  3. Compute the weights and regrid in one step:
  ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
                       -v edge_integrated_velocity -W -o edge_integrated_velocity.vtk
  ```
 
  4. Regrid a time dependent field with elevation:
  ```
-./tools/regrid_edges -s $MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc:mesh2d -S 0 \
-                     -d $MINT_SRC_DIR/data/c24_u_integrated.nc:physics -D 1 \
+./tools/regrid_edges -s $MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc$mesh2d -S 0 \
+                     -d $MINT_SRC_DIR/data/c24_u_integrated.nc$physics -D 1 \
                      -v u@$MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc \
                      -O regridedges_xyzt.nc -o regridedges_xyzt.vtk
 
