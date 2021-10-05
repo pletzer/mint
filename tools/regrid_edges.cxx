@@ -109,8 +109,8 @@ int setUpWriter(int srcNdims, const size_t* srcDims, size_t numDstEdges,
     // get the dst file name
     std::string dstFileName = fm.first;
 
-    int n1 = dstFileName.size();
-    int n2 = vname.size();
+    int n1 = (int) dstFileName.size();
+    int n2 = (int) vname.size();
     const int append = 0; // new file
     ier = mnt_ncfieldwrite_new(writer, dstFileName.c_str(), n1, vname.c_str(), n2, append);
     if (ier != 0) {
@@ -132,7 +132,7 @@ int setUpWriter(int srcNdims, const size_t* srcDims, size_t numDstEdges,
 
     // add num_edges axis. WE SHOULD GET THIS FROM THE DEST FILE?
     std::string axname = "num_edges";
-    int n3 = axname.size();
+    int n3 = (int) axname.size();
     ier = mnt_ncfieldwrite_setDim(writer, srcNdims - 1, axname.c_str(), n3, numDstEdges);
     if (ier != 0) {
         std::cerr << "ERROR: setting dimension 0 (" << axname << ") to " << numDstEdges
@@ -144,7 +144,7 @@ int setUpWriter(int srcNdims, const size_t* srcDims, size_t numDstEdges,
     // add the remaining axes, ASSUME THE ADDITIONAL DST AXES TO MATCH THE SRC AXES
     for (int i = 0; i < srcNdims - 1; ++i) {
         axname = "n_" + toString(srcDims[i]);
-        ier = mnt_ncfieldwrite_setDim(writer, i, axname.c_str(), axname.size(), srcDims[i]);
+        ier = mnt_ncfieldwrite_setDim(writer, i, axname.c_str(), (int) axname.size(), srcDims[i]);
     }
 
     // add the attributes
@@ -238,14 +238,14 @@ int main(int argc, char** argv) {
     ier = mnt_regridedges_setDstGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
 
     // read the source grid
-    ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), srcFile.size());
+    ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), (int) srcFile.size());
     if (ier != 0) {
         std::cerr << "ERROR: could not read file \"" << srcFile << "\"\n";
         return 4;
     }
 
     // read the destination grid
-    ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), dstFile.size());
+    ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
     if (ier != 0) {
         std::cerr << "ERROR: could not read file \"" << dstFile << "\"\n";
         return 5;
