@@ -33,21 +33,19 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 See [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub) for the corresponding methods in n dimensions.
 
 
-## `MINT` as  a Python module
+## Build `MINT` as  a Python module
 
-We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type
+We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type (Unix)
 ```
 conda env create --file requirements/mint.yml
-```
-or
-```
-conda create -n mint-dev
-conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy
+conda activate mint-dev
 ```
 
-Activate your environment:
+On Windows and in the Anaconda prompt terminal, repace the above command with:
 ```
+conda create -n mint-dev
 conda activate mint-dev
+conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy
 ```
 
 In the root `MINT` directory then type:
@@ -86,10 +84,10 @@ cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=/usr/local/Cellar/vtk/9.0.3/include/
 make -j 4
 ```
 
-On Windows, in the Anaconda prompt:
+On Windows 10 Entreprise, in the Anaconda prompt terminal I do:
 ```
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR="C:\Users\alexa\miniconda3\envs\mint-dev\Library\include\vtk-9.0" -DVTK_LIBRARY_DIR="C:\Users\alexa\miniconda3\envs\mint-dev\Library\lib" -DNETCDF_INCLUDE_DIRS="C:\Users\alexa\miniconda3\envs\mint-dev\Library\include" -DNETCDF_LIBRARIES="C:\Users\alexa\miniconda3\envs\mint-dev\Library\lib\netcdf.lib" ..
+cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\include\vtk-9.0" -DVTK_LIBRARY_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\lib" -DVTK_VERSION=9.0 -DNETCDF_INCLUDE_DIRS="%userprofile%\miniconda3\envs\mint-dev\Library\include" -DNETCDF_LIBRARIES="C:%userprofile%\miniconda3\envs\mint-dev\Library\lib\netcdf.lib" ..
 nmake
 ```
 
