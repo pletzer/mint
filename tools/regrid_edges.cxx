@@ -5,6 +5,7 @@
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
 #include <mntGrid.h>
+#include <mntFileMeshNameExtractor.h>
 #include <CmdLineArgParser.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkAbstractArray.h>
@@ -33,8 +34,8 @@ std::string toString (T arg) {
 
 /**
  * Split string by separator
- * @param fmname string, eg "filename:meshname"
- * @param separator separator, eg ':'
+ * @param fmname string, eg "x@y"
+ * @param separator separator, eg '@'
  * @return filename, meshname pair
  */
 std::pair<std::string, std::string> split(const std::string& fmname, char separator) {
@@ -105,7 +106,7 @@ int setUpWriter(int srcNdims, const size_t* srcDims, size_t numDstEdges,
 
     int ier;
 
-    std::pair<std::string, std::string> fm = split(dstEdgeDataFile, ':');
+    std::pair<std::string, std::string> fm = fileMeshNameExtractor(dstEdgeDataFile);
     // get the dst file name
     std::string dstFileName = fm.first;
 
@@ -290,7 +291,7 @@ int main(int argc, char** argv) {
         if (vfm.second.size() > 0) {
             srcFileMeshName = vfm.second;
         }
-        std::pair<std::string, std::string> fm = split(srcFileMeshName, ':');
+        std::pair<std::string, std::string> fm = fileMeshNameExtractor(srcFileMeshName);
         std::string srcFileName = fm.first;
 
         // get the ncid and varid's so we can read the attributes and dimensions
