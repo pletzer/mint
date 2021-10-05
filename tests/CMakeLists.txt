@@ -340,7 +340,7 @@ set_tests_properties(regridedges_edge_field_lfric_diag PROPERTIES
 
 add_test(NAME regridedges_xyzt
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/lonlatzt_8x4x3x2.nc:mesh2d" "-S" "0"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lonlatzt_8x4x3x2.nc$mesh2d" "-S" "0"
             "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc$physics" "-D" "1"
             "-v" "u@${CMAKE_SOURCE_DIR}/data/lonlatzt_8x4x3x2.nc"
             "-O" "regridedges_xyzt.nc"
@@ -360,7 +360,7 @@ set_tests_properties(regridedges_xyzt2 PROPERTIES
 
 add_test(NAME regridedges_axes
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc$Mesh2d_half_levels" "-S" "1"
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "u1@${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
             "-O" "regridedges_axes.nc"
