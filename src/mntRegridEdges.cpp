@@ -378,9 +378,6 @@ int mnt_regridedges_dumpEdgeField(RegridEdges_t** self,
     std::string fileAndMeshName = std::string(fort_filename, nFilenameLength);
     std::string fieldname = std::string(field_name, nFieldNameLength);
 
-    std::size_t columnL = fileAndMeshName.find(':');
-
-
     // get the file and mesh names
     auto fm = fileMeshNameExtractor(fileAndMeshName);
     std::string filename = fm.first;
