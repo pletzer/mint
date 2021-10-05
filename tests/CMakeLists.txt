@@ -371,7 +371,7 @@ add_test(NAME regridedges_axes
 
 add_test(NAME regridedges_0
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon" "-S" "0"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/latlon4x2.nc"
             "-O" "regridedges_0_data.nc"
@@ -381,7 +381,7 @@ set_tests_properties(regridedges_0 PROPERTIES
 
 add_test(NAME regridedges_1
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon" "-S" "0"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-w" "regridedges_1_weights.nc")
 set_tests_properties(regridedges_1 PROPERTIES
@@ -392,7 +392,7 @@ add_test(NAME regridedges_3
             "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/latlon4x2.nc"
-            "-O" "regridedges_0_data.nc")
+            "-O" "regridedges_3_data.nc")
 set_tests_properties(regridedges_3 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
