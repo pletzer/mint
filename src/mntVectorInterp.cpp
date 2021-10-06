@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include <mntVectorInterp.h>
 #include <vtkGenericCell.h>
 
@@ -40,7 +41,8 @@ LIBRARY_API
 int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX) {
 
     if (!(*self)->grid) {
-        std::cerr << "ERROR: must call setGrid before invoking buildLocator\n";
+        std::string msg ="must call setGrid before invoking buildLocator";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -1;
     }
 
@@ -58,8 +60,11 @@ LIBRARY_API
 int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints, 
                                     const double targetPoints[], double tol2) {
 
+    std::string msg;
+
     if (!(*self)->locator) {
-        std::cerr << "ERROR: must call either setLocator or buildLocator before invoking findPoints\n";
+        msg ="must call either setLocator or buildLocator before invoking findPoints";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -1;
     }
 
@@ -78,9 +83,12 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
                                                          cell, pcoords, weights);
         if ((*self)->cellIds[i] < 0) {
             // outside the domain?
-            std::cerr << "Warning: target point " << 
-                          targetPoints[3*i] << ',' << targetPoints[3*i + 1] << ',' << targetPoints[3*i + 2] << 
-                          " is outside of the domain\n";
+            msg ="target point " + 
+                 std::to_string(targetPoints[3*i    ]) + ',' + 
+                 std::to_string(targetPoints[3*i + 1]) + ',' + 
+                 std::to_string(targetPoints[3*i + 2]) + 
+                 " is outside of the domain";
+            mntlog::warn(__FILE__, __func__, __LINE__, msg);
             numFailures++;
             continue;
         }
@@ -101,17 +109,22 @@ LIBRARY_API
 int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self, 
                                     const double data[], double vectors[]) {
 
+    std::string msg;
+
     if (!(*self)->calledFindPoints) {
-        std::cerr << "ERROR: must call findPoints before calling getEdgeVectors\n";
+        msg ="must call findPoints before calling getEdgeVectors";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -1;
     }
     if (!(*self)->grid) {
-        std::cerr << "ERROR: must set the grid before calling getEdgeVectors\n";
+        msg ="must set the grid before calling getEdgeVectors";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -2;
     }
 
     if ((*self)->pcoords.size() == 0) {
-        std::cerr << "Warning: there is no target point in the domain\n";
+        msg ="there is no target point in the domain";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
         return 2;
     }
 
@@ -167,17 +180,22 @@ LIBRARY_API
 int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self, 
                                     const double data[], double vectors[]) {
 
+    std::string msg;
+
     if (!(*self)->calledFindPoints) {
-        std::cerr << "ERROR: must call findPoints before calling getFaceVectors\n";
+        msg ="must call findPoints before calling getFaceVectors";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -1;
     }
     if (!(*self)->grid) {
-        std::cerr << "ERROR: must set the grid before calling getFaceVectors\n";
+        msg ="must set the grid before calling getFaceVectors";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -2;
     }
 
     if ((*self)->pcoords.size() == 0) {
-        std::cerr << "Warning: there is no target point in the domain\n";
+        msg ="there is no target point in the domain";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
         return 2;
     }
 
