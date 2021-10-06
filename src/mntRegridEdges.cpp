@@ -577,8 +577,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                 const double coeff = polySegIter.getCoefficient();
 
                 if (debug == 3) {
-                    msg.resize(1024);
-                    char* buffer = &msg[0];
+                    char buffer[1024];
                     sprintf(buffer, "%12zu %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
                         dstCellId, dstEdgeIndex, 
                         dstEdgePt0[0], dstEdgePt0[1], 
@@ -587,7 +586,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
                         xia[0], xia[1], xib[0], xib[1], 
                         polySegIter.getBegLineParamCoord(), polySegIter.getEndLineParamCoord(),
                         polySegIter.getIntegratedParamCoord());
-                    mntlog::info(__FILE__, __func__, __LINE__, msg);
+                    mntlog::info(__FILE__, __func__, __LINE__, buffer);
                 }
 
                 vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
@@ -652,7 +651,7 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     if (debug == 2 && badPtId > 0) {
         vtkUnstructuredGridWriter* wr = vtkUnstructuredGridWriter::New();
         std::string fname = "badSegments.vtk";
-        msg + "Warning: saving segments that are not fully contained in the source grid in file " + fname;
+        msg = "saving segments that are not fully contained in the source grid in file " + fname;
         mntlog::warn(__FILE__, __func__, __LINE__, msg);
         wr->SetFileName(fname.c_str());
         wr->SetInputData(badSegmentsGrid);
