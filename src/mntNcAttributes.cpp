@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include "mntNcAttributes.h"
 #include <cstdio>
 #include <cstring>
@@ -28,7 +29,8 @@ int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid) {
   int natts = 0;
   ier = nc_inq_var(ncid, varid, NULL, NULL, NULL, NULL, &natts);
   if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not inquire about variable with Id " << varid << '\n';
+    std::string msg = "could not inquire about variable with Id " + std::to_string(varid);
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
     return 3;
   }
 
@@ -55,10 +57,14 @@ int mnt_ncattributes_read(NcAttributes_t** self, int ncid, int varid) {
       (*self)->attStr.insert(std::pair<std::string, std::string>(std::string(attname), val.c_str()));
     }
     else {
-      std::cerr << "Warning: unsupported attribute type " << xtype << " of length " << n << '\n';
+      std::string msg = "unsupported attribute type " + 
+                        std::to_string(xtype) + " of length " + std::to_string(n);
+      mntlog::warn(__FILE__, __func__, __LINE__, msg);
     }
     if (ier != NC_NOERR) {
-      std::cerr << "Warning: failed to read attribute " << attname << " of variable with Id " << varid << '\n';
+      std::string msg = "failed to read attribute " + std::string(attname) + 
+                        " of variable with Id " + std::to_string(varid);
+      mntlog::warn(__FILE__, __func__, __LINE__, msg);
     }
   }
 
@@ -74,8 +80,8 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
     ier = nc_put_att_text(ncid, varid, 
                           it->first.c_str(), it->second.size(), it->second.c_str());
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not put attribute " 
-                << it->first << " = " << it->second << '\n';
+      std::string msg = "could not put attribute " + it->first + " = " + it->second;
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 4;
     }
 
@@ -84,8 +90,9 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
     ier = nc_put_att_int(ncid, varid, 
                          it->first.c_str(), NC_INT, 1, &it->second);
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not put attribute " 
-                << it->first << " = " << it->second << '\n';
+      std::string msg = "could not put attribute " + it->first + " = " + 
+                        std::to_string(it->second);
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 5;
     }
   }
@@ -93,8 +100,9 @@ int mnt_ncattributes_write(NcAttributes_t** self, int ncid, int varid) {
     ier = nc_put_att_double(ncid, varid, 
                             it->first.c_str(), NC_DOUBLE, 1, &it->second);
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not put attribute " 
-                << it->first << " = " << it->second << '\n';
+      std::string msg = "could not put attribute " + it->first + " = " + 
+                        std::to_string(it->second);
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 6;
     }
   }

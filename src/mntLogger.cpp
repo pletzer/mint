@@ -1,7 +1,11 @@
 #include <mntLogger.h>
 
 
-void mntlog::logging(const std::string& severity, const char* file, const char* function, int lineno, const char* msg) {
+void mntlog::logging(const std::string& severity, 
+                     const char* file, 
+                     const char* function, 
+                     int lineno, 
+                     const std::string& msg) {
     std::string message = severity + ' ' + std::string(file) + 
                           std::string(" in function ") + std::string(function) + 
                           std::string(" (line ") + std::to_string(lineno) + 
@@ -9,18 +13,20 @@ void mntlog::logging(const std::string& severity, const char* file, const char* 
     MNT_LOGS.push_back(message);
 }
 
-void mntlog::info(const char* file, const char* function, int lineno, const char* msg) {
+void mntlog::info(const char* file, const char* function, int lineno,
+                  const std::string& msg) {
     logging("info    === ", file, function, lineno, msg);
 }
 
-void mntlog::warn(const char* file, const char* function, int lineno, const char* msg) {
+void mntlog::warn(const char* file, const char* function, int lineno,
+                  const std::string& msg) {
     logging("Warning === ", file, function, lineno, msg);
 }
 
-void mntlog::error(const char* file, const char* function, int lineno, const char* msg) {
+void mntlog::error(const char* file, const char* function, int lineno,
+                   const std::string& msg) {
     logging("ERROR   === ", file, function, lineno, msg);
 }
-
 
 LIBRARY_API
 void mnt_printLogMessages() {

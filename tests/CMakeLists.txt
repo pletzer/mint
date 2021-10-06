@@ -25,6 +25,7 @@ if (BUILD_FORTRAN)
    target_link_libraries(test_loggerF
                          mint
    )
+   add_test(NAME loggerF COMMAND test_loggerF)
 
    add_executable(test_ncattributes ${CMAKE_BINARY_DIR}/tests/test_ncattributes.f90)
    set_target_properties(test_ncattributes PROPERTIES LINKER_LANGUAGE Fortran)
@@ -307,7 +308,6 @@ target_link_libraries(testRegridAxis
 
 
 add_test(NAME logger COMMAND testLogger)
-add_test(NAME loggerF COMMAND test_loggerF)
 add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)

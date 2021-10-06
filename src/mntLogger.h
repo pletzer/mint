@@ -15,7 +15,7 @@ namespace mntlog {
     	         const char* file, 
     	         const char* function, 
     	         int lineno, 
-    	         const char* msg);
+    	         const std::string& msg);
 
     /** 
      * Log info message
@@ -24,7 +24,7 @@ namespace mntlog {
      * @param lineno line number
      * @param msg message
      */
-    void info(const char* file, const char* function, int lineno, const char* msg);
+    void info(const char* file, const char* function, int lineno, const std::string& msg);
 
     /** 
      * Log warning message
@@ -33,7 +33,7 @@ namespace mntlog {
      * @param lineno line number
      * @param msg message
      */
-    void warn(const char* file, const char* function, int lineno, const char* msg);
+    void warn(const char* file, const char* function, int lineno, const std::string& msg);
     
     /** 
      * Log error message
@@ -42,7 +42,7 @@ namespace mntlog {
      * @param lineno line number
      * @param msg message
      */
-    void error(const char* file, const char* function, int lineno, const char* msg);
+    void error(const char* file, const char* function, int lineno, const std::string& msg);
 
 }
 
