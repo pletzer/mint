@@ -139,6 +139,12 @@ if (BUILD_FORTRAN)
 
 endif()
 
+add_executable(testLogger testLogger.cxx)
+target_link_libraries(testLogger
+                      mint
+)
+
+
 add_executable(testVecMat testVecMat.cxx)
 target_link_libraries(testVecMat
                       mint
@@ -293,6 +299,7 @@ target_link_libraries(testRegridAxis
 )
 
 
+add_test(NAME logger COMMAND testLogger)
 add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME netcdf COMMAND testNetcdf)
 add_test(NAME attributes COMMAND testNcAttributes)

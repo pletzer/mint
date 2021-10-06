@@ -49,6 +49,7 @@ endif()
 
 set(HEADER_FILES
   mntLIBRARY_API.h
+  mntLogger.h
   mntFileMeshNameExtractor.h
   vmtCellLocator.h
   mntUgrid2D.h
