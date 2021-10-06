@@ -164,7 +164,7 @@ win_task:
     - conda list
     - pip install --no-deps --editable .    
     - python -c "import mint; print(dir(mint))"
-    - cd mint\test
+    - cd mint\tests
     - python test_grid.py
     - python test_polyline_integral.py
     - python test_regrid_edges.py
