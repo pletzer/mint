@@ -283,8 +283,8 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 std::vector< std::pair<vtkIdType, Vec4> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
+    std::cerr << "&&&& 0\n";
     Vec3 direction;
-
     Vec3 p0 = pBeg;
     Vec3 p1 = pEnd;
 
@@ -292,6 +292,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     // store result
     std::vector< std::pair<vtkIdType, Vec4> > res;
+    std::cerr << "&&&& 1\n";    
 
     const double eps = 10 * std::numeric_limits<double>::epsilon();
 
@@ -315,6 +316,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
             foldAtPole(&p0[0]);
             foldAtPole(&p1[0]);
         }
+        std::cerr << "&&&& 2\n";
 
         direction = p1 - p0;
         double distSq = dot(direction, direction);
@@ -331,17 +333,26 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
             p1[0] += modPx;
 
             // collect the cell Ids intersected by the line  
+            std::cerr << "&&&& 3\n";
             this->FindCellsAlongLine(&p0[0], &p1[0], eps, cellIds);
+            std::cerr << "&&&& 4\n";
 
             // iterate over the intersected cells
             for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
 
+                std::cerr << "&&&& 4.1\n";
                 vtkIdType cellId = cellIds->GetId(i);
 
+                std::cerr << "&&&& 4.2\n";
                 std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+                std::cerr << "&&&& 4.3\n";
                 std::size_t nLam = lambdas.size();
-                double lamBeg = lambdas.front();
-                double lamEnd = lambdas.back();
+                double lamBeg = -1;
+                double lamEnd = -1;
+                if (lambdas.size() > 0) {
+                    lamBeg = lambdas.front();
+                    lamEnd = lambdas.back();
+                }
 
                 if (nLam >= 2 && std::abs(lamEnd - lamBeg) > eps) {
 
@@ -360,11 +371,13 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
             p1[0] = lam1; p1[1] = the1;
         }
     }
+    std::cerr << "&&&& 5\n";
 
     cellIds->Delete();
 
     // sort by starting lambda
     std::sort(res.begin(), res.end(), LambdaBegFunctor());
+    std::cerr << "&&&& 6\n";
 
     // to avoid double counting, shift lambda entry to be always >= to 
     // the preceding lambda exit and make sure lambda exit >= lambda entry
@@ -379,6 +392,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
         // reset lambda entry
         res[i].second[0] = thisLambdaBeg;
     }
+    std::cerr << "&&&& 7\n";
 
     return res;
 }
