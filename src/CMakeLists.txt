@@ -4,6 +4,7 @@ include_directories(
 )
 
 set(LIB_FILES
+  mntLogger.cpp
   mntFileMeshNameExtractor.cpp
   vmtCellLocator.cpp
   mntUgrid2D.cpp
@@ -36,6 +37,7 @@ set(LIB_FILES
 
 if (BUILD_FORTRAN)
   set(LIB_FILES_FORTRAN
+    mnt_logger_capi_mod.f90
     mnt_ncfieldread_capi_mod.f90
     mnt_ncfieldwrite_capi_mod.f90
     mnt_celllocator_capi_mod.f90
