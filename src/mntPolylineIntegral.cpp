@@ -143,13 +143,17 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
 
         // add the contribution
 #ifdef DEBUG
-        std::cout << "adding weight = " << wght << " * edge integral = " << data[cellId*4 + edgeIndex] << " to the flux (" << 
-                     *result << " so far) for cellId = " << cellId << " edgeIndex = " << edgeIndex << "\n";
+        std::string msg = "adding weight = " + std::to_string(wght) + " * edge integral = " + 
+                          std::to_string(data[cellId*4 + edgeIndex]) + " to the flux (" +
+                          std::to_string(*result) + " so far) for cellId = " + 
+                          std::to_string(cellId) + " edgeIndex = " + std::to_string(edgeIndex);
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
         *result += wght * data[cellId*4 + edgeIndex];
     }
 #ifdef DEBUG
-    std::cout << "total flux = " << *result << '\n';
+    std::string msg = "total flux = " + std::to_string(*result);
+    mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
 
     return 0;
