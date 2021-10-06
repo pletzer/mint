@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <limits> // required by vtkUnstructuredGrid
 #include <mntPolysegmentIter.h>
 #include <mntGrid.h>
@@ -49,13 +50,13 @@ int main(int argc, char** argv) {
     {
         const double p0[] = {M_PI/2.          , 0., 0.};
         const double p1[] = {M_PI/2. + M_PI/8., 0., 0.};
-        test1("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", p0, p1, 0.1);
-        test1("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", p0, p1, 1.e-10);
+        test1("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", p0, p1, 0.1);
+        test1("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", p0, p1, 1.e-10);
     }
     {
         const double p0[] = {1.9634954084936207, 0.36548975596819283, 0.};
         const double p1[] = {1.5707963267948966, 0.39269908169872414, 0.};
-        test1("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", p0, p1, 1.e-10);
+        test1("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", p0, p1, 1.e-10);
     }
 
     return 0;

@@ -33,33 +33,19 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 See [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub) for the corresponding methods in n dimensions.
 
 
-## Prerequisites
+## Build `MINT` as  a Python module
 
-To build the `MINT` Python module:
-
- * C++ compiler with C++11 support
- * Cython
- * NetCDF library
- * NumPy
- * VTK
-
-We recommend installing the above packages using `conda`.
-
-To build the `MINT` C++ library and the tools:
-
- * C++ compiler with C++11 support
- * Fortran compiler (e.g., gfortran 6.4)
- * NetCDF library
- * Doxygen
- * VTK
-
-## How to Build the MINT Python Module
-
-The `MINT` Python interface requires `VTK`, `netCDF` and the `tbb` libraries to 
-be installed. This is most easily done in a conda environment:
+We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type (Unix)
 ```
 conda env create --file requirements/mint.yml
 conda activate mint-dev
+```
+
+On Windows and in the Anaconda prompt terminal, replace the above command with:
+```
+conda create -n mint-dev
+conda activate mint-dev
+conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy pytest
 ```
 
 In the root `MINT` directory then type:
@@ -79,7 +65,7 @@ pytest
  
 ## How to Build the MINT C++ Library
 
-Perform the following in order to call `MINT` from `Fortran`, `C` or `C++`:
+If you want to call `MINT` from `Fortran`, `C` or `C++`:
 ```
 mkdir build
 cd build
@@ -90,6 +76,19 @@ make -j 8
 You can specify the compiler with:
 ```
 FC=mpif90 CXX=mpicxx cmake ..; make -j 8
+```
+
+It is also possible to turn off Fortran code and specify the location of the `VTK` library:
+```
+cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=/usr/local/Cellar/vtk/9.0.3/include/vtk-9.0/ -DVTK_LIBRARY_DIR=/usr/local/Cellar/vtk/9.0.3/lib ..
+make -j 4
+```
+
+On Windows 10 Entreprise, in the Anaconda prompt terminal I do:
+```
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\include\vtk-9.0" -DVTK_LIBRARY_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\lib" -DNETCDF_INCLUDE_DIRS="%userprofile%\miniconda3\envs\mint-dev\Library\include" -DNETCDF_LIBRARIES="%userprofile%\miniconda3\envs\mint-dev\Library\lib\netcdf.lib" ..
+nmake
 ```
 
 You can check that the build was successful by typing:
@@ -104,29 +103,29 @@ The above `CMake` build will compile a number of tools. To run the tools, set
 
  1. Compute the interpolation weights from a lat-lon grid to the cubed sphere:
  ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
                       -w weights.nc
  ```
 
  2. Regrid field `edge_integrated_velocity` from lat-lon to cubed-sphere by loading the previously generated weights:
  ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
                       -v edge_integrated_velocity -W weights.nc -o edge_integrated_velocity.vtk
  ```
 
  3. Compute the weights and regrid in one step:
  ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc:latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc:physics -D 1 \
+ ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
+                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
                       -v edge_integrated_velocity -W -o edge_integrated_velocity.vtk
  ```
 
  4. Regrid a time dependent field with elevation:
  ```
-./tools/regrid_edges -s $MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc:mesh2d -S 0 \
-                     -d $MINT_SRC_DIR/data/c24_u_integrated.nc:physics -D 1 \
+./tools/regrid_edges -s $MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc$mesh2d -S 0 \
+                     -d $MINT_SRC_DIR/data/c24_u_integrated.nc$physics -D 1 \
                      -v u@$MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc \
                      -O regridedges_xyzt.nc -o regridedges_xyzt.vtk
 

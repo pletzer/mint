@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntPolylineIntegral.h>
 #include <mntGrid.h>
 #undef NDEBUG // turn on asserts
@@ -115,7 +116,7 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
     assert(ier == 0);
 
     // set the (open) contour to integrate the flux over
-    int npoints = xyz.size() / 3;
+    int npoints = (int) xyz.size() / 3;
     int counterclock = 0;
     double periodX = 0;
     ier = mnt_polylineintegral_build(&pli, grd, npoints, 

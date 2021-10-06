@@ -19,7 +19,7 @@ def test_compute_weights():
     src_file = str(DATA_DIR / Path('latlon4x2.nc'))
     # load the src grid, latlon is the name of the mesh stored in
     # the netcdf file
-    rg.loadSrcGrid(f'{src_file}:latlon')
+    rg.loadSrcGrid(f'{src_file}$latlon')
 
     # dst is cubed-sphere. Cells at the poles need to be fixed to
     # make them as compact as possible. Use flags 1, 1
@@ -29,7 +29,7 @@ def test_compute_weights():
     dst_file = str(DATA_DIR / Path('cs_4.nc'))
     # load the dst grid, physics is the name of the mesh stored in
     # the netcdf file
-    rg.loadDstGrid(f'{dst_file}:physics')
+    rg.loadDstGrid(f'{dst_file}$physics')
 
     # compute the regridding weights. numCellsPerBucket is used to
     # accelerate the cell search. The smaller numCellPerBucket the
@@ -49,11 +49,11 @@ def test_apply_weights():
 
     # src is lon-lat grid
     rg.setSrcGridFlags(0, 0)
-    rg.loadSrcGrid(f'{DATA_DIR}/latlon4x2.nc:latlon')
+    rg.loadSrcGrid(f'{DATA_DIR}/latlon4x2.nc$latlon')
 
     # dst is cubed-sphere
     rg.setDstGridFlags(1, 1)
-    rg.loadDstGrid(f'{DATA_DIR}/cs_4.nc:physics')
+    rg.loadDstGrid(f'{DATA_DIR}/cs_4.nc$physics')
 
     # load the weights
     rg.loadWeights('test_regrid_edges_py.nc')

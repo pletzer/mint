@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntRegridEdges.h>
 #include <cmath>
 #undef NDEBUG // turn on asserts
@@ -11,8 +12,8 @@ double streamFunc(const double p[]) {
 void test1() {
 
     int ier;
-    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/vel_cs_16.nc:physics";
-    std::string dstFile = "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics";
+    std::string srcFile = "@CMAKE_SOURCE_DIR@/data/vel_cs_16.nc$physics";
+    std::string dstFile = "@CMAKE_SOURCE_DIR@/data/cs_4.nc$physics";
     std::string outputFile = "weights.nc";
 
     RegridEdges_t* rg;
@@ -209,12 +210,12 @@ int main() {
     test1();
 
     // crashes when building the cell locator
-    //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc:physics", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics");
-    //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc:physics", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc:physics");
+    //regridTest("tiny1x2_1x1", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc$physics", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc$physics");
+    //regridTest("tiny1x1_1x2", "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc$physics", "@CMAKE_SOURCE_DIR@/data/tiny1x2.nc$physics");
 
-    regridEdgeFieldTest("edgeField_4->4", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics");
-    regridEdgeFieldTest("edgeField_16->4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc:physics"); 
-    regridEdgeFieldTest("edgeField_16->16", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics", "@CMAKE_SOURCE_DIR@/data/cs_16.nc:physics"); 
+    regridEdgeFieldTest("edgeField_4_4", "@CMAKE_SOURCE_DIR@/data/cs_4.nc$physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc$physics");
+    regridEdgeFieldTest("edgeField_16_4", "@CMAKE_SOURCE_DIR@/data/cs_16.nc$physics", "@CMAKE_SOURCE_DIR@/data/cs_4.nc$physics"); 
+    regridEdgeFieldTest("edgeField_16_16", "@CMAKE_SOURCE_DIR@/data/cs_16.nc$physics", "@CMAKE_SOURCE_DIR@/data/cs_16.nc$physics"); 
 
     return 0;
 }   

@@ -284,7 +284,6 @@ std::vector< std::pair<vtkIdType, Vec4> >
 vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     Vec3 direction;
-
     Vec3 p0 = pBeg;
     Vec3 p1 = pEnd;
 
@@ -338,10 +337,16 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
                 vtkIdType cellId = cellIds->GetId(i);
 
-                std::vector<double> lambdas = this->collectIntersectionPoints(cellId, p0, direction);
+                std::vector<double> lambdas = 
+                     this->collectIntersectionPoints(cellId, p0, direction);
+
                 std::size_t nLam = lambdas.size();
-                double lamBeg = lambdas.front();
-                double lamEnd = lambdas.back();
+                double lamBeg = -1;
+                double lamEnd = -1;
+                if (lambdas.size() > 0) {
+                    lamBeg = lambdas.front();
+                    lamEnd = lambdas.back();
+                }
 
                 if (nLam >= 2 && std::abs(lamEnd - lamBeg) > eps) {
 

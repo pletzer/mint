@@ -69,7 +69,7 @@ def test_load_from_ugrid_file():
     gr = Grid()
     gr.setFlags(1, 1)
     filename = str(DATA_DIR / Path('cs_4.nc'))
-    gr.loadFrom2DUgrid(f'{filename}:physics')
+    gr.loadFrom2DUgrid(f'{filename}$physics')
     nedges = gr.getNumberOfEdges()
     print(f'nedges = {nedges}')
     assert(nedges == 192)
@@ -89,7 +89,7 @@ def test_edge_arc_lengths():
     gr = Grid()
     gr.setFlags(1, 1)
     filename = str(DATA_DIR / Path('cs_4.nc'))
-    gr.loadFrom2DUgrid(f'{filename}:physics')
+    gr.loadFrom2DUgrid(f'{filename}$physics')
     gr.computeEdgeArcLengths()
     ncells = gr.getNumberOfCells()
     for icell in range(ncells):

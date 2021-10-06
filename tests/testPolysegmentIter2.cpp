@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <limits> // required by vtkUnstructuredGrid
 #include <mntPolysegmentIter.h>
 #include <mntGrid.h>
@@ -132,69 +133,69 @@ int main(int argc, char** argv) {
     // {
     //     const double points[] = {    0., 1.4, 0.,
     //                              2*M_PI, 1.4, 0.};
-    //     test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+    //     test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     // }
 
     {
         const double points[] = {    0., 1., 0.,
                                  2*M_PI, 1., 0.};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {M_PI/2.              , 0.-eps, 0.,
                                  M_PI/2. + 2.*M_PI/16., 0.+eps, 0.};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {0., 1.1, 0.,
                                  1., 1.1, 0.};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {0., 0.1, 0.,
                                  2., 0.1, 0.};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {0., 1.1, 0.,
                                  2., 1.1, 0.};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {0., 1., 0.,
                                  0., -1., 0.,
                                  2*M_PI, -1., 0.};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 3, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 3, points);
     }
     {
         const double points[] = {3.9269908169872414, -0.6154797086703874, 0.0,
                                  3.5342917352885173, -0.7458526607730738, 0.0};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {3.5342917352885173, 0.7458526607730737, 0.0,
                                  3.9269908169872414, 0.6154797086703873, 0.0};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {0.7853981633974483, -1.04089353704597, 0.0,
                                  0.3926990816987242, -0.7458526607730738, 0.0};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {-0.0, -1.1780972450961724, 0.0,
                                  0.7853981633974483, -1.04089353704597, 0.0};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {0.0, 1.1780972450961724, 0.0,
                                  0.7853981633974483, 1.04089353704597, 0.0};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }
     {
         const double points[] = {3.9269908169872414, 1.04089353704597, 0.0,
                                  3.141592653589793, 1.1780972450961724, 0.0};
-        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc:unit_test", 2, points);
+        test("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", 2, points);
     }    
 
     return 0;

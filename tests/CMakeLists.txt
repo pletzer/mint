@@ -11,7 +11,6 @@ configure_file(testNcDimensions.cpp testNcDimensions.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
-configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testPolysegmentIter2.cpp testPolysegmentIter2.cxx)
 configure_file(testFindCellsAlongLine.cpp testFindCellsAlongLine.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
@@ -102,8 +101,8 @@ if (BUILD_FORTRAN)
    )
    add_test(NAME regridEdgesF
             COMMAND testRegridEdgesF 
-            "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics" 
-            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" 
+            "-s" "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics" 
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" 
             "-o" "weights.nc")
    set_tests_properties(regridEdgesF PROPERTIES
                         FAIL_REGULAR_EXPRESSION "ERROR")
@@ -300,13 +299,13 @@ add_test(NAME attributes COMMAND testNcAttributes)
 add_test(NAME dimensions COMMAND testNcDimensions)
 add_test(NAME multiarrayiter COMMAND testMultiArrayIter)
 add_test(NAME ugrid2D_1 COMMAND testUgrid2D 
-                        "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
+                        "-s" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
                         "-vtk" "cs_4.vtk")
 add_test(NAME ugrid2D_2 COMMAND testUgrid2D 
-                        "-s" "${CMAKE_SOURCE_DIR}/data/output_UGRID.nc:Mesh2d"
+                        "-s" "${CMAKE_SOURCE_DIR}/data/output_UGRID.nc$Mesh2d"
                         "-vtk" "output_UGRID.vtk")
 add_test(NAME ugrid2D_xyz COMMAND testUgrid2D 
-                        "-s" "${CMAKE_SOURCE_DIR}/data/cs_4_xyz.nc:physics"
+                        "-s" "${CMAKE_SOURCE_DIR}/data/cs_4_xyz.nc$physics"
                         "-vtk" "cs_4_xyz.vtk")
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
@@ -330,8 +329,8 @@ add_test(NAME cmdLineArgParserC2
 
 add_test(NAME regridedges_edge_field_lfric_diag
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
-            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc$Mesh2d_half_levels" "-S" "1"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "edge_field@${CMAKE_SOURCE_DIR}/data/edge_field_lfric_diag_ex.nc"
             "-O" "regridedges_edge_field_lfric_diag_ex.nc"
             "-o" "regridedges_edge_field_lfric_diag_ex.vtk")
@@ -340,8 +339,8 @@ set_tests_properties(regridedges_edge_field_lfric_diag PROPERTIES
 
 add_test(NAME regridedges_xyzt
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/lonlatzt_8x4x3x2.nc:mesh2d" "-S" "0"
-            "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc:physics" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lonlatzt_8x4x3x2.nc$mesh2d" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc$physics" "-D" "1"
             "-v" "u@${CMAKE_SOURCE_DIR}/data/lonlatzt_8x4x3x2.nc"
             "-O" "regridedges_xyzt.nc"
             "-o" "regridedges_xyzt.vtk")
@@ -350,8 +349,8 @@ set_tests_properties(regridedges_xyzt PROPERTIES
 
 add_test(NAME regridedges_xyzt2
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc:mesh2d" "-S" "0"
-            "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc:physics" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc$mesh2d" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc$physics" "-D" "1"
             "-v" "u@${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc"
             "-O" "regridedges_xyzt2.nc"
             "-o" "regridedges_xyzt2.vtk")
@@ -360,8 +359,8 @@ set_tests_properties(regridedges_xyzt2 PROPERTIES
 
 add_test(NAME regridedges_axes
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc:Mesh2d_half_levels" "-S" "1"
-            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc$Mesh2d_half_levels" "-S" "1"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "u1@${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
             "-O" "regridedges_axes.nc"
             "-o" "regridedges_axes.vtk")
@@ -371,8 +370,8 @@ add_test(NAME regridedges_axes
 
 add_test(NAME regridedges_0
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon" "-S" "0"
-            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/latlon4x2.nc"
             "-O" "regridedges_0_data.nc"
             "-o" "regridedges_0.vtk")
@@ -381,25 +380,25 @@ set_tests_properties(regridedges_0 PROPERTIES
 
 add_test(NAME regridedges_1
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon" "-S" "0"
-            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-w" "regridedges_1_weights.nc")
 set_tests_properties(regridedges_1 PROPERTIES
                      PASS_REGULAR_EXPRESSION "info: saving weights in file")
 
 add_test(NAME regridedges_3
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon" "-S" "0"
-            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/latlon4x2.nc"
-            "-O" "regridedges_0_data.nc")
+            "-O" "regridedges_3_data.nc")
 set_tests_properties(regridedges_3 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regridedges_2
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
-            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon"
-            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon"
+            "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
             "-W" "${CMAKE_SOURCE_DIR}/data/regridedges_1_weights.nc"
             "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/latlon4x2.nc"
             "-O" "regridedges_2_data.nc"
@@ -412,19 +411,19 @@ add_test(NAME regrid_edgesLATLON4x2ToCS4
                  "-S" "0"
                  "-D" "1"
                  "-N" "1"
-                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc:latlon"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon"
                  "-v" "edge_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
                  "-o" "regrid_edges_output_LATLON4x2ToCS4.vtk")
 set_tests_properties(regrid_edgesLATLON4x2ToCS4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regrid_edgesLATLON100x50ToCS4_1cellPerBucket
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc:latlon"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc$latlon"
                  "-S" "0" 
                  "-v" "edge_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
                  "-o" "regrid_edges_output_LATLON100x50ToCS4.vtk"
                  "-N" "1")
 set_tests_properties(regrid_edgesLATLON100x50ToCS4_1cellPerBucket PROPERTIES
@@ -432,10 +431,10 @@ set_tests_properties(regrid_edgesLATLON100x50ToCS4_1cellPerBucket PROPERTIES
 
 add_test(NAME regrid_edgesLATLON100x50ToCS4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc:latlon"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc$latlon"
                  "-S" "0" 
                  "-v" "edge_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
                  "-o" "regrid_edges_output_LATLON100x50ToCS4.vtk")
 set_tests_properties(regrid_edgesLATLON100x50ToCS4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
@@ -443,28 +442,28 @@ set_tests_properties(regrid_edgesLATLON100x50ToCS4 PROPERTIES
 add_test(NAME regrid_edgesLATLON100x50ToCS16
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
                  "-N" "20"
-                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc:latlon"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc$latlon"
                  "-S" "0" 
                  "-v" "edge_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics"
                  "-o" "regrid_edges_output_LATLON100x50ToCS16.vtk")
 set_tests_properties(regrid_edgesLATLON100x50ToCS4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regrid_edgesUgrid16To4
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc:physics" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc$physics" 
                  "-v" "line_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc:physics"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
                  "-o" "regrid_edges_output_Ugrid16To4.vtk")
 set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
 add_test(NAME regrid_edgesUgrid16To16
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc:physics" 
+                 "-s" "${CMAKE_SOURCE_DIR}/data/vel_cs_16.nc$physics" 
                  "-v" "line_integrated_velocity" 
-                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics"
                  "-o" "regrid_edges_output_Ugrid16To4.vtk")
 set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
@@ -473,8 +472,8 @@ set_tests_properties(regrid_edgesUgrid16To4 PROPERTIES
 # of the cell edges there. Just checking that we don't have more than 32 warnings.
 add_test(NAME regrid_upstream
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test" "-S" "1"
-                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc:unit_test" "-D" "1"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc$unit_test" "-S" "1"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc$unit_test" "-D" "1"
                  "-N" "128" "-P" "360"
                  "-debug" "2")
 set_tests_properties(regrid_upstream PROPERTIES
@@ -482,8 +481,8 @@ set_tests_properties(regrid_upstream PROPERTIES
 
 add_test(NAME regrid_nan
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc:physics" "-S" "1"
-                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream.nc:physics" "-D" "1"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc$physics" "-S" "1"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream.nc$physics" "-D" "1"
                  "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/input_data_initial.nc"
                  "-o" "regrid_nan.vtk"
                  "-O" "regrid_nan_data.nc"
@@ -493,8 +492,8 @@ set_tests_properties(regrid_nan PROPERTIES
 
 add_test(NAME regrid_nan_load_weights
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc:physics" "-S" "1"
-                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream.nc:physics" "-D" "1"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid.nc$physics" "-S" "1"
+                 "-d" "${CMAKE_SOURCE_DIR}/data/upstream.nc$physics" "-D" "1"
                  "-W" "${CMAKE_SOURCE_DIR}/data/weights.nc"
                  "-v" "edge_integrated_velocity@${CMAKE_SOURCE_DIR}/data/input_data_initial.nc"
                  "-o" "regrid_nan_load_weights.vtk"
@@ -582,7 +581,7 @@ set_tests_properties(flux_line_3pts PROPERTIES
 
 add_test(NAME polySegmentIter1
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc$unit_test"
                  "-p0" "264.5516205224688520,78.7115408475241338"
                  "-p1" "260.0320543712643939,81.4423909253333420"
                  "-N" "128")
@@ -592,7 +591,7 @@ set_tests_properties(polySegmentIter1 PROPERTIES
 # this case touches the north pole so maybe ok to lose conservation
 #add_test(NAME polySegmentIter2
 #         COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
-#                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+#                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc$unit_test"
 #                 "-p0" "278.6826289904774967,87.1548675645703099"
 #                 "-p1" "230.0564621638624203,90.0000000000000000")
 #set_tests_properties(polySegmentIter2 PROPERTIES
@@ -600,7 +599,7 @@ set_tests_properties(polySegmentIter1 PROPERTIES
 
 add_test(NAME polySegmentIter3
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc$unit_test"
                  "-p0" "134.2695194548424524,67.4474784907345395"
                  "-p1" "129.1629029515314357,65.6845621777749642"
                  "-N" "128")
@@ -609,7 +608,7 @@ set_tests_properties(polySegmentIter3 PROPERTIES
 
 add_test(NAME polySegmentIter4
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc:unit_test"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc$unit_test"
                  "-p0" "309.1629029515316347,-65.6845621777749500" 
                  "-p1" "314.2695194548423387,-67.4474784907345111"
                  "-N" "128")
@@ -619,7 +618,7 @@ set_tests_properties(polySegmentIter4 PROPERTIES
 
 add_test(NAME polySegmentIter5
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc:physics"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc$physics"
                  "-p0" "360,-30" 
                  "-p1" "360,30"
                  "-N" "128")
@@ -628,7 +627,7 @@ set_tests_properties(polySegmentIter5 PROPERTIES
 
 add_test(NAME polySegmentIter6
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
-                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc:physics"
+                 "-s" "${CMAKE_SOURCE_DIR}/data/upstream0.nc$physics"
                  "-p0" "360,-30" 
                  "-p1" "360,30"
                  "-N" "128"

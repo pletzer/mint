@@ -39,7 +39,17 @@ set(DEBUG_CMAKE TRUE)
 set(VTK_INCLUDE_DIR "" CACHE PATH "Directories containing the VTK header")
 set(VTK_LIBRARY_DIR "" CACHE PATH "Directories containing the VTK libraries")
 set(VTK_VERSION "" CACHE STRING "The VTK version, will search for libraries vtkXXX-VTK_VERSION")
-if ((NOT "${VTK_INCLUDE_DIR}" STREQUAL "") AND (NOT "${VTK_LIBRARY_DIR}" STREQUAL "") AND (NOT "${VTK_VERSION}" STREQUAL ""))
+if ((NOT "${VTK_INCLUDE_DIR}" STREQUAL "") AND (NOT "${VTK_LIBRARY_DIR}" STREQUAL ""))
+
+    # infer the VTK version from the library names, expecting *vtkIOCore-VTK_VERSION.*
+    # fetch a library file
+    file(GLOB_RECURSE f "${VTK_LIBRARY_DIR}/*vtkIOCore-[0-9].[0-9].[a-zA-Z]*")
+    # get rid of the directory
+    get_filename_component(bf "${f}" NAME)
+    # search for the version string, X.Y in libvtkIOCore-X.Y.dylib
+    string(REGEX MATCH "[0-9]\.[0-9]+" VTK_VERSION "${bf}")
+    message(STATUS "VTK_VERSION = ${VTK_VERSION}")
+
     set(VTK_LIBRARIES
         vtkIOCore-${VTK_VERSION}
         vtkIOLegacy-${VTK_VERSION}
@@ -66,16 +76,16 @@ else ()
         find_package(VTK REQUIRED)
     else()
         message(STATUS "Using new VTK module system")
-        find_package(VTK REQUIRED COMPONENTS 
+        find_package(VTK REQUIRED COMPONENTS
             vtksys
-            CommonCore 
-            CommonSystem 
-            CommonMath 
-            CommonMisc 
-            CommonTransforms 
-            CommonDataModel 
+            CommonCore
+            CommonSystem
+            CommonMath
+            CommonMisc
+            CommonTransforms
+            CommonDataModel
             CommonExecutionModel
-            CommonComputationalGeometry 
+            CommonComputationalGeometry
             IOLegacy
             IOCore
         )
@@ -153,3 +163,9 @@ endif (DOXYGEN_FOUND)
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(tools)
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "C++ compiler flags: ${CMAKE_CXX_FLAGS}")
+if (BUILD_FORTRAN)
+    message(STATUS "Fortran compiler flags: ${CMAKE_Fortran_FLAGS}")
+endif()

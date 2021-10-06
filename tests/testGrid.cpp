@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntGrid.h>
 #undef NDEBUG // turn on asserts
 #include <cassert>
@@ -15,7 +16,7 @@ void testUgrid() {
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
     // one or more ":" to discriminate file and mesh names
-    ier = mnt_grid_loadFrom2DUgrid(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc:physics");
+    ier = mnt_grid_loadFrom2DUgrid(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
     assert(ier == 0);
     ier = mnt_grid_print(&grd);
     assert(ier == 0);

@@ -337,7 +337,7 @@ Ugrid2D::getFacePointsRegularized(std::size_t faceId) const {
         res[i][LON_INDEX] += (indexMin - 1)*360.0;
    }
 
-    int indexPole = -1;
+    std::size_t indexPole = std::numeric_limits<size_t>::max();
     double avgLon = 0.;
     for (std::size_t i = 0; i < res.size(); ++i) {
         // detect if node is on/near pole
@@ -350,7 +350,7 @@ Ugrid2D::getFacePointsRegularized(std::size_t faceId) const {
     }
     avgLon /= 3.;
 
-    if (indexPole >= 0) {
+    if (indexPole < std::numeric_limits<size_t>::max()) {
         // longitude at the pole is ill defined - we can set it to any
         // value.
         if (avgLon > 180.0) {
