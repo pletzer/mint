@@ -139,21 +139,22 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.8"
       PY_VER: "3.9"
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
     os_version: 2019
   env:
-    CONDA_LOCATION: $USERPROFILE\miniconda3
-    PATH: $CONDA_LOCATION;$CONDA_LOCATION\Library\bin;$CONDA_LOCATION\Scripts;$CONDA_LOCATION\condabin;$PATH
+    # use $VAR not %VAR%
+    CONDA_DIR: $USERPROFILE\miniconda3
+    CONDA_LIB: $CONDA_DIR\Library
+    PATH: $CONDA_DIR;$CONDA_LIB\bin;$CONDA_DIR\Scripts;$CONDA_DIR\condabin;$PATH
     # must set this to its default since it doesn't work in env variables
     # see https://github.com/cirruslabs/cirrus-ci-docs/issues/423
     CIRRUS_WORKING_DIR: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build
     PYTHON_ARCH: 64
   conda_script:
-    - choco install -y miniconda3 --params="'/D:%CONDA_LOCATION%'"
+    - choco install -y miniconda3 --params="'/D:%CONDA_DIR%'"
     - conda update -yn base conda
     - conda install -c conda-forge setuptools
     - conda install --yes python=%PY_VER%
@@ -168,10 +169,10 @@ win_task:
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin\vtkRendering*.dll
     # - python -c "import vtk"
-  # test_script:
-    # - mkdir build-cmake
-    # - cd build-cmake
-    # - where cl
-    # - cmake -G "NMake Makefiles" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=%ENV_DIR%\include\vtk-9.0 -DVTK_LIBRARY_DIR=%ENV_DIR%\Library\bin -DVTK_VERSION=9.0 ..
-    #   - pytest
-
+  test_script:
+    - mkdir build-cmake
+    - cd build-cmake
+    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\"
+    - where cl
+    - cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=%CONDA_DIR%\Library\include\vtk-9.0 -DVTK_LIBRARY_DIR=%CONDA_DIR%\Library\bin -DNETCDF_INCLUDE_DIRS="%CONDA_DIR%\Library\include" -DNETCDF_LIBRARIES="%CONDA_DIR%\Library\lib\netcdf.lib" ..
+    - ctest
