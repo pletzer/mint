@@ -41,11 +41,11 @@ conda env create --file requirements/mint.yml
 conda activate mint-dev
 ```
 
-On Windows and in the Anaconda prompt terminal, repace the above command with:
+On Windows and in the Anaconda prompt terminal, replace the above command with:
 ```
 conda create -n mint-dev
 conda activate mint-dev
-conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy
+conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy pytest
 ```
 
 In the root `MINT` directory then type:
