@@ -181,4 +181,5 @@ win_task:
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     - where cl
     - cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=%CONDA_DIR%\Library\include\vtk-9.0 -DVTK_LIBRARY_DIR=%CONDA_DIR%\Library\bin -DNETCDF_INCLUDE_DIRS="%CONDA_DIR%\Library\include" -DNETCDF_LIBRARIES="%CONDA_DIR%\Library\lib\netcdf.lib" ..
+    - nmake
     - ctest
