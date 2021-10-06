@@ -21,7 +21,6 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
                                  const double p0In[], const double p1In[],
                                  double periodX) {
 
-    std::cerr << "**** 0\n";
     // small tolerances
     this->eps = 10 * std::numeric_limits<double>::epsilon();
     this->eps100 = 100. * this->eps;
@@ -36,14 +35,11 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->__makePeriodic(p0);
     Vec3 p1(p1In);
     this->__makePeriodic(p1);
-    std::cerr << "**** 0.1\n";
 
     Vec3 dp = p1 - p0;
-    std::cerr << "**** 0.11\n";
 
     std::vector< std::pair<vtkIdType, Vec4> > 
       cellIdLambdasPeriodFold = this->locator->findIntersectionsWithLine(p0, p1);
-    std::cerr << "**** 0.12\n";
 
     // arrays of cell Ids, start/end "t" values, start/end "xi" param coords, and 
     // duplicity coefficients for each subsegment
@@ -53,7 +49,6 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->segXias.resize(0);
     this->segXibs.resize(0);
     this->segCoeffs.resize(0);
-    std::cerr << "**** 0.2\n";
 
     double closestPoint[3];
     int subId;
@@ -68,7 +63,6 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
         double tb = cIdLamPF.second[1];
         double periodOffset = cIdLamPF.second[2];
         //double fold = cIdLamPF.second[3]; // not c urrently used
-        std::cerr << "**** 0.3\n";
 
         Vec3 pa = p0 + dp*ta;
         Vec3 pb = p0 + dp*tb;
@@ -77,11 +71,9 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
 
         // compute the cell parametric coords
         vtkCell* cell = this->grid->GetCell(cId);
-        std::cerr << "**** 1\n";
         cell->EvaluatePosition(&pa[0], closestPoint, subId, &xia[0], dist2, weights);
         cell->EvaluatePosition(&pb[0], closestPoint, subId, &xib[0], dist2, weights);
 
-        std::cerr << "**** 2\n";
         // fill in
         this->segCellIds.push_back(cId);
         this->segTas.push_back(ta);
