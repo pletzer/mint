@@ -625,9 +625,10 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
             if (debug > 0) {
                 double totalT = polySegIter.getIntegratedParamCoord();
                 if (std::abs(totalT - 1.0) > 1.e-10) {
-                    printf("Warning: [%d] total t of segment: %lf != 1 (diff=%lg) dst cell %zu points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)",
+                    char buffer[1024];
+                    sprintf(buffer, "[%d] total t of segment: %lf != 1 (diff=%lg) dst cell %zu points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)",
                        numBadSegments, totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
-                    mntlog::warn(__FILE__, __func__, __LINE__, msg);
+                    mntlog::warn(__FILE__, __func__, __LINE__, buffer);
                     numBadSegments++;
 
                     if (debug == 2) {
