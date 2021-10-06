@@ -164,6 +164,12 @@ win_task:
     - conda list
     - pip install --no-deps --editable .    
     - python -c "import mint; print(dir(mint))"
+    - cd mint\test
+    - python test_grid.py
+    - python test_polyline_integral.py
+    - python test_regrid_edges.py
+    - python test_vector_interp.py
+    - pytest
     # - ps: Get-Command python
     # - echo %PATH%
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin
@@ -180,6 +186,6 @@ win_task:
     - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     - where cl
-    - cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=%CONDA_DIR%\Library\include\vtk-9.0 -DVTK_LIBRARY_DIR=%CONDA_DIR%\Library\bin -DNETCDF_INCLUDE_DIRS="%CONDA_DIR%\Library\include" -DNETCDF_LIBRARIES="%CONDA_DIR%\Library\lib\netcdf.lib" ..
+    - cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=%CONDA_DIR%\Library\include\vtk-9.0 -DVTK_LIBRARY_DIR=%CONDA_DIR%\Library\lib -DNETCDF_INCLUDE_DIRS="%CONDA_DIR%\Library\include" -DNETCDF_LIBRARIES="%CONDA_DIR%\Library\lib\netcdf.lib" ..
     - nmake
     - ctest
