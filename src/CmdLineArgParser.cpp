@@ -36,7 +36,7 @@ CmdLineArgParser::set(const std::string& name, bool defaultVal, const std::strin
 
 template <class T>
 T CmdLineArgParser::get(const std::string& name) const {
-  std::cerr << "ERROR. Invalid type, use get<TYPE>(...)\n";
+  std::cerr << "ERROR: Invalid type, use get<TYPE>(...)\n";
 }
 
 template <>

@@ -123,15 +123,15 @@ int mnt_ncattributes_print(NcAttributes_t** self) {
 
   std::cout << "string attributes:\n";
   for (auto it = (*self)->attStr.cbegin(); it != (*self)->attStr.cend(); ++it) {
-    std::cerr << it->first << " -> \"" << it->second << "\"\n";
+    std::cout << it->first << " -> \"" << it->second << "\"\n";
   }
   std::cout << "int attributes   :\n";
   for (auto it = (*self)->attInt.cbegin(); it != (*self)->attInt.cend(); ++it) {
-    std::cerr << it->first << " -> \"" << it->second << "\"\n";
+    std::cout << it->first << " -> \"" << it->second << "\"\n";
   }
   std::cout << "double attributes:\n";
   for (auto it = (*self)->attDbl.cbegin(); it != (*self)->attDbl.cend(); ++it) {
-    std::cerr << it->first << " -> \"" << it->second << "\"\n";
+    std::cout << it->first << " -> \"" << it->second << "\"\n";
   }
 
   return 0;
