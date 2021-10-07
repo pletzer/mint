@@ -275,7 +275,7 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     int ier = ugrid.load(filename, meshname);
     if (ier != 0) {
         mntlog::error(__FILE__, __func__, __LINE__, 
-            "could not read mesh \"" + meshname << "\" in UGRID file \"" + filename + "\"");
+            "could not read mesh \"" + meshname + "\" in UGRID file \"" + filename + "\"");
         return 1;
     }
 
@@ -403,7 +403,7 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
     // check if the file exists
     if (!fstream(filename).good()) {
         mntlog::error(__FILE__, __func__, __LINE__, 
-                     "file " + filename + "does not exist");
+                     "file " + std::string(filename) + "does not exist");
         return 1;
     }
 
