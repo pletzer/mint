@@ -1,3 +1,4 @@
+#include <mntLogger.h>
 #include <mntRegridEdges.h>
 #include <mntNcAttributes.h>
 #include <mntNcDimensions.h>
@@ -182,6 +183,7 @@ int main(int argc, char** argv) {
     args.set("-D", 1, "Set to zero to disable destination grid regularization, -S 0 is required for uniform lon-lat grid");
     args.set("-N", 128, "Average number of cells per bucket");
     args.set("-debug", 1, "0=no checks, 1=print outside segments, 2=save outside segments");
+    args.set("-verbose", false, "Turn on verbosity");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -481,6 +483,10 @@ int main(int argc, char** argv) {
 
     // clean up
     mnt_regridedges_del(&rg);
+
+    if (args.get<bool>("-verbose")) mnt_printLogMessages();
+    std::string logname = "regridedges_logs.txt";
+    mnt_writeLogMessages(logname.c_str(), logname.size());
 
     return 0;
 }

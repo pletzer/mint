@@ -1,3 +1,4 @@
+#include <mntLogger.h>
 #include <GrExprParser.h>
 #include <GrExprAdaptor.h>
 #include <mntGrid.h>
@@ -23,6 +24,7 @@ int main(int argc, char** argv) {
     args.set("-nline", 2, "Number of points defining the line (>= 2)");
     args.set("-counter", false, "Whether the edge values correspond to edges oriented in counterclockwise direction");
     args.set("-P", 0.0, "Periodicity length of x (0 if not periodic)");
+    args.set("-verbose", false, "Turn on verbosity");
 
 
     bool success = args.parse(argc, argv);
@@ -126,6 +128,10 @@ int main(int argc, char** argv) {
     else {
         std::cerr << "ERROR when parsing command line arguments\n";
     }
+
+    if (args.get<bool>("-verbose")) mnt_printLogMessages();
+    std::string logname = "flux_logs.txt";
+    mnt_writeLogMessages(logname.c_str(), logname.size());
 
     return 0;
 }
