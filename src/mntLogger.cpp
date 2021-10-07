@@ -1,12 +1,17 @@
 #include <mntLogger.h>
+#include <ctime>
 
+
+static char STRTIME[32];
 
 void mntlog::logging(const std::string& severity, 
                      const char* file, 
                      const char* function, 
                      int lineno, 
                      const std::string& msg) {
-    std::string message = severity + ' ' + std::string(file) + 
+    std::time_t now = std::time(nullptr);
+    std::strftime(STRTIME, sizeof(STRTIME), "[%c ", std::localtime(&now));
+    std::string message = std::string(STRTIME) + severity + ' ' + std::string(file) + 
                           std::string(" in function ") + std::string(function) + 
                           std::string(" (line ") + std::to_string(lineno) + 
                           std::string("): ") + std::string(msg) + '\n';
@@ -15,17 +20,17 @@ void mntlog::logging(const std::string& severity,
 
 void mntlog::info(const char* file, const char* function, int lineno,
                   const std::string& msg) {
-    logging("info    === ", file, function, lineno, msg);
+    logging("info    ] ", file, function, lineno, msg);
 }
 
 void mntlog::warn(const char* file, const char* function, int lineno,
                   const std::string& msg) {
-    logging("Warning === ", file, function, lineno, msg);
+    logging("Warning ] ", file, function, lineno, msg);
 }
 
 void mntlog::error(const char* file, const char* function, int lineno,
                    const std::string& msg) {
-    logging("ERROR   === ", file, function, lineno, msg);
+    logging("ERROR   ] ", file, function, lineno, msg);
 }
 
 LIBRARY_API
