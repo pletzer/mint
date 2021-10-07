@@ -1,18 +1,28 @@
-# -*- python -*- 
+# -*- python -*-
 
 """
-__init__.py is automatically generated from __init__.py.in, DO NOT EDIT __init__.py
+MINT - Mimetic INTerpolation on the Sphere
+
+MINT computes line/flux integrals of edge/face staggered vector fields. The line and flux integrals 
+are conserved in the sense that closed line integrals of a vector field deriving from a potential
+or streamfunction are zero to near machine accuracy. MINT can also be applied to regrid vector
+fields from source to destination grids.
 """
+
+#
+#__init__.py is automatically generated from __init__.py.in, DO NOT EDIT __init__.py
+#
 
 from ctypes import CDLL
 from pathlib import Path
 
 __version__ = "@VERSION@"
 
-# open shared library
+# open shared library, the name of the shared object is always libmint.so 
+# even on Windows
 MINTLIB = CDLL(str(Path(__path__[0]).parent / Path('libmint.so')))
 
-__all__ = [MINTLIB, 'message_handler', 'regrid_edges', 'grid', 'polyline_integral', 'vector_interp']
+__all__ = ('regrid_edges', 'grid', 'polyline_integral', 'vector_interp', 'message_handler', MINTLIB)
 
 from .message_handler import error_handler, warning_handler, printLogMessages, writeLogMessages
 from .regrid_edges import RegridEdges
