@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include <mntUgrid2D.h>
 #include <mntLineLineIntersector.h>
 #include <netcdf.h>
@@ -75,11 +76,13 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
 
     int ier = 0;
     int ncid;
+    std::string msg;
 
     // open the file
     ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: cannot open \"" << filename << "\"\n";
+        msg = "cannot open \"" + filename + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
 
@@ -87,7 +90,8 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     int meshid;
     ier = nc_inq_varid(ncid, meshname.c_str(), &meshid);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: cannot find variable named \"" << meshname << "\"\n";
+        msg = "cannot find variable named \"" + meshname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 2;
     }
@@ -95,8 +99,8 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readConnectivityData(ncid, meshid, 
                 "face_node_connectivity", this->face2Points);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: variable \"" << meshname
-        << "\" does not have attribute \"face_node_connectivity\"\n";
+        msg = "variable \"" + meshname + "\" does not have attribute \"face_node_connectivity\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 3;
     }
@@ -105,8 +109,8 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
                 "face_edge_connectivity", this->face2Edges);
     /* no longer an error
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: variable \"" << meshname
-        << "\" does not have attribute \"face_edge_connectivity\"\n";
+        msg = "variable \"" + meshname + "\" does not have attribute \"face_edge_connectivity\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 4;
     }
@@ -115,8 +119,8 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readConnectivityData(ncid, meshid, 
                 "edge_node_connectivity", this->edge2Points);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: variable \"" << meshname
-        << "\" does not have attribute \"edge_node_connectivity\"\n";
+        msg = "variable \"" + meshname + "\" does not have attribute \"edge_node_connectivity\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 5;
     }
@@ -124,8 +128,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     // read the node coordinates
     ier = this->readPoints(ncid, meshid);
     if (ier != NC_NOERR) {
-        std::cerr << "ERROR: cannot read node coordinates for mesh \"" 
-        << meshname << "\"\n";
+        msg = "cannot read node coordinates for mesh \"" + meshname + "\"";
         nc_close(ncid);
         return 6;
     }
@@ -211,6 +214,7 @@ int
 Ugrid2D::readPoints(int ncid, int meshid) {
 
     int ier;
+    std::string msg;
 
     // get the lengths of the attribute string
     std::size_t len;
@@ -228,8 +232,8 @@ Ugrid2D::readPoints(int ncid, int meshid) {
     std::size_t spaceR = val.rfind(' ');
     if (spaceL >= n) {
         // could not find space
-        std::cerr << "ERROR: node_coordinates attribute \""
-        << val << "\" should contain space separated list of coordinate names\n";
+        msg = "node_coordinates attribute \"" + val + "\" should contain a space-separated list of coordinate names";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 19;
     }
     std::string varx = val.substr(0, spaceL);
@@ -253,8 +257,8 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         // get the attribute length
         ier = nc_inq_attlen(ncid, varid, "standard_name", &len);
         if (ier != NC_NOERR) {
-            std::cerr << "ERROR: variable with varid = " << varid
-            << " has no attribute \"standard_name\"\n";
+            msg = "variable with varid = " + std::to_string(varid) + " has no attribute \"standard_name\"";
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
             return 14;
         }
         std::string var_stdn(len, ' ');
@@ -279,8 +283,8 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         // read the data
         ier = nc_get_var_double(ncid, varid, &data[0]);
         if (ier != NC_NOERR) {
-            std::cerr << "ERROR: could not read \""
-            << varx << "\"\n";
+            msg = "could not read \"" + varx + "\"";
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
             return 18;
         }
         
@@ -303,8 +307,8 @@ Ugrid2D::readPoints(int ncid, int meshid) {
             j = Z_INDEX;
         }
         else {
-            std::cerr << "ERROR: unknown coordinate with standard_name \""
-            << var_stdn << "\"\n";
+            msg = "unknown coordinate with standard_name \"" + var_stdn;
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
             return 19; 
         }
         for (std::size_t i = 0; i < this->numPoints; ++i) {
