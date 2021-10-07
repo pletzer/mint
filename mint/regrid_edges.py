@@ -83,7 +83,7 @@ class RegridEdges(object):
         """
         Load a source grid from a 2D UGRID file.
 
-        :param filename: string in the format filename:meshname
+        :param filename: string in the format filename$meshname
         """
         MINTLIB.mnt_regridedges_loadSrcGrid.argtypes = [POINTER(c_void_p),
                                                     c_char_p, c_int]
@@ -96,7 +96,7 @@ class RegridEdges(object):
         """
         Load a destination grid from a 2D UGRID file.
 
-        :param filename: string in the format filename:meshname
+        :param filename: string in the format filename$meshname
         """
         MINTLIB.mnt_regridedges_loadDstGrid.argtypes = [POINTER(c_void_p),
                                                     c_char_p, c_int]

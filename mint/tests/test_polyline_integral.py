@@ -1,4 +1,4 @@
-from mint import Grid, PolylineIntegral
+from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
 import numpy
 import pytest
 
@@ -149,6 +149,11 @@ def test_partially_outside(nx, ny, potFunc):
     exactFlux = potentialFunc(xyz[-1, :]) - potentialFunc(xyz[0, :])
     print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
     assert abs(flux - exactFlux) < 1.e-10
+
+    # print all the log messages 
+    printLogMessages()
+    # write the logs to file
+    writeLogMessages("test_partially_outside_log.txt")
 
 
 @pytest.mark.parametrize("nx", [3])

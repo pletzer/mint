@@ -14,7 +14,7 @@ MINTLIB = CDLL(str(Path(__path__[0]).parent / Path('libmint.so')))
 
 __all__ = [MINTLIB, 'message_handler', 'regrid_edges', 'grid', 'polyline_integral', 'vector_interp']
 
-from .message_handler import error_handler, warning_handler
+from .message_handler import error_handler, warning_handler, printLogMessages, writeLogMessages
 from .regrid_edges import RegridEdges
 from .grid import Grid
 from .polyline_integral import PolylineIntegral
