@@ -46,10 +46,9 @@ We're looking for contributions, particularly in the areas of:
 
 Any help will be greatly appreciated.
 
-
 ## How to install or build `MINT` as  a Python module
 
-This the most user friendly access to the MINT package. Not all the functionality from C++ is exposed but it contains the most important parts. (Additional features can be added on request.)
+This is the most user friendly access to the MINT package. Not all the functionality from C++ is exposed but it contains the most important parts. (Additional features can be added on request.)
 
 We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type (Unix)
 ```
@@ -90,7 +89,7 @@ in the top `MINT` diretory.
 
 ### Documentation
 
-Documentation of the API can be obtained by typing:
+Documentation of the Python API can be obtained by typing:
 ```
 pydoc mint
 pydoc mint.regrid_edges
