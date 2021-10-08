@@ -141,7 +141,7 @@ make test
 https://pletzer.github.io/mint/html/
 
 
-## Examples
+## Examples and applications
 
 ### Conservation Error
 
@@ -160,3 +160,9 @@ Gulf Stream:
 
 Around New Zealand:
 ![Around New Zealand](https://raw.githubusercontent.com/pletzer/mint/master/figures/nz.png) 
+
+### Advection of a vector field
+
+[How do you transport a vector field in a conservative way?](https://www.youtube.com/watch?v=jYRZQ8k01zI&ab_channel=AlexPletzer). The Lie operator governs the evolution of differential forms (nodal, edge, face and cell discretised fields). The integral of the form over its supporting element is invariant in time. For vertical fluxes or 1-forms, the line integrals of the field don't change as the field is carried by the vector field. 
+
+The movie shows the edges of a cubed-sphere grid, which are colour coded according the intensity of the fluxes on the edges. Initially, the field is zero everywhere except over a small rectangular region in longitude-latitude space. The advecting vector field is shown as an arrow plot. Over time the field gets transported, spreading and spiralling. `MINT` was used to set the new field field values by interpolating the field at the previous time step on the edge geometry at the previous time step.
