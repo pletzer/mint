@@ -11,12 +11,12 @@ DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 
 class Grid(object):
     """
-    A class to represent a collection of quad cells
+    A class to represent a collection of quad cells.
     """
 
     def __init__(self):
         """
-        Regrid edge field constructor.
+        Constructor.
         """
 
         self.ptr = c_void_p()
@@ -31,7 +31,7 @@ class Grid(object):
 
     def __del__(self):
         """
-        Regrid edge field destructor.
+        Destructor.
         """
         MINTLIB.mnt_grid_del.argtypes = [POINTER(c_void_p)]
         ier = MINTLIB.mnt_grid_del(self.obj)
@@ -95,7 +95,7 @@ class Grid(object):
 
     def setPoints(self, points):
         """
-        Set the points coordinates and build the connectivity
+        Set the point (vertices) and build the connectivity.
 
         :param points: numpy contiguous array of shape (ncells,
                        num_verts_per_cell, 3)
@@ -115,7 +115,7 @@ class Grid(object):
 
     def getEdgeId(self, cellId, edgeIndex):
         """
-        Get the edge Id and direction of a cellId, edgeIndex pair
+        Get the edge Id and direction of a cellId, edgeIndex pair.
 
         :param cellId: Id of the cell
         :param edgeIndex: edge index of the cell (0...3)
@@ -135,7 +135,7 @@ class Grid(object):
 
     def getNodeIds(self, cellId, edgeIndex):
         """
-        Get the node Ids of a cellId, edgeIndex pair
+        Get the node Ids of a cellId, edgeIndex pair.
 
         :param cellId: Id of the cell
         :param edgeIndex: edge index of the cell (0...3)
@@ -152,7 +152,7 @@ class Grid(object):
 
     def computeEdgeArcLengths(self):
         """
-        Compute and store edge arc lengths
+        Compute and store edge arc lengths.
         :note assumes the sphere radius to be one
         """
         MINTLIB.mnt_grid_computeEdgeArcLengths.argtypes = [POINTER(c_void_p)]
@@ -162,7 +162,7 @@ class Grid(object):
 
     def getEdgeArcLength(self, cellId, edgeIndex):
         """
-        Get the arch length for given cell and edge
+        Get the arc length for given cell and edge.
         :param cellId: cell Id
         :param edgeIndex: edge index (0...3)
         :returns length assuming radius of one
@@ -199,7 +199,7 @@ class Grid(object):
 
     def getNumberOfCells(self):
         """
-        Get the number of cells
+        Get the number of cells.
 
         :returns number
         """

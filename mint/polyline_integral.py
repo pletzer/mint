@@ -10,12 +10,12 @@ DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 
 class PolylineIntegral(object):
     """
-    A class to compute line or flux integrals
+    A class to compute line or flux integrals.
     """
 
     def __init__(self):
         """
-        Regrid edge field constructor
+        Constructor.
         """
 
         self.obj = byref(c_void_p())
@@ -27,7 +27,7 @@ class PolylineIntegral(object):
 
     def __del__(self):
         """
-        Regrid edge field destructor
+        Destructor.
         """
         MINTLIB.mnt_polylineintegral_del.argtypes = [POINTER(c_void_p)]
         ier = MINTLIB.mnt_polylineintegral_del(self.obj)
@@ -36,7 +36,7 @@ class PolylineIntegral(object):
 
     def build(self, grid, xyz, counterclock, periodX):
         """
-        Build the flux calculator
+        Build the flux calculator.
 
         :param grid: instance of Grid
         :param xyz: numpy array with npoints rows and 3 columns
@@ -61,12 +61,12 @@ class PolylineIntegral(object):
 
     def getIntegral(self, data):
         """
-        Get the flux integral over the polyline
+        Get the flux integral over the polyline.
 
         :param data: edge field data. This array is expected to be
-                     dimensioned (ncells, 4). Each value is a scalar
+                     dimensioned (numCells, 4). Each value is a scalar
                      representing the integral of the field over the
-                     edge. The directions of the edge are
+                     edge. The directions of the edges are
                      (0, 0) -> (1, 0),
                      (1, 0) -> (1, 1),
                      (0, 1) -> (1, 1) and

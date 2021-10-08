@@ -16,7 +16,7 @@ class RegridEdges(object):
 
     def __init__(self):
         """
-        Regrid edge field constructor.
+        Constructor.
         """
 
         self.obj = byref(c_void_p())
@@ -27,7 +27,7 @@ class RegridEdges(object):
 
     def __del__(self):
         """
-        Regrid edge field destructor.
+        Destructor.
         """
         ier = MINTLIB.mnt_regridedges_del(self.obj)
         if ier:
@@ -58,7 +58,7 @@ class RegridEdges(object):
 
     def setDstGridFlags(self, fixLonAcrossDateline, averageLonAtPole):
         """
-        Set the destrination grid flags.
+        Set the destination grid flags.
 
         :param fixLonAcrossDateline: set to 1 if a periodicity length
                                      should be added/subtracted
@@ -111,7 +111,7 @@ class RegridEdges(object):
 
     def getNumSrcEdges(self):
         """
-        Get the number of unique edges of the source grid.
+        Get the number of unique edges in the source grid.
 
         :returns number
         """
@@ -125,7 +125,7 @@ class RegridEdges(object):
 
     def getNumDstEdges(self):
         """
-        Get the number of unique edges of the destination grid.
+        Get the number of unique edges in the destination grid.
 
         :returns number
         """
@@ -160,7 +160,8 @@ class RegridEdges(object):
 
     def dumpWeights(self, filename):
         """
-        Dump the weights to a file
+        Dump the weights to a file.
+
         :param filename: file name
         """
         MINTLIB.mnt_regridedges_dumpWeights.argtypes = [POINTER(c_void_p),
@@ -172,7 +173,8 @@ class RegridEdges(object):
 
     def loadWeights(self, filename):
         """
-        Load the weights from a file
+        Load the weights from a file.
+
         :param filename: file name
         """
         MINTLIB.mnt_regridedges_loadWeights.argtypes = [POINTER(c_void_p),

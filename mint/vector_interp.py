@@ -16,7 +16,7 @@ class VectorInterp(object):
 
     def __init__(self):
         """
-        Vector interpolator constructor.
+        Constructor.
         """
 
         self.ptr = c_void_p()
@@ -30,7 +30,7 @@ class VectorInterp(object):
 
     def __del__(self):
         """
-        Vector interpolator destructor.
+        Destructor.
         """
         MINTLIB.mnt_vectorinterp_del.argtypes = [POINTER(c_void_p)]
         ier = MINTLIB.mnt_vectorinterp_del(self.obj)
@@ -41,7 +41,7 @@ class VectorInterp(object):
         """
         Set the grid.
 
-        :param grid: instance of a Grid
+        :param grid: instance of Grid
         """
         MINTLIB.mnt_vectorinterp_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
         ier = MINTLIB.mnt_vectorinterp_setGrid(self.obj, grid.ptr)
