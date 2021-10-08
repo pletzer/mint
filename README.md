@@ -19,12 +19,16 @@
 
 ## Overview
 
-This project contains code to interpolate and regrid edge/face centred fields from a source to a destination grid. The grid is stored as a collection of 
-grid cells, which have four vertices (i.e. the cells are quadrilaterals). The edge field is stored as integrals of a vector field 
-along each edge. The vertex coordinates are stored in longitude-latitude space.
+This project aims to provide interpolating and regridding capability for horizontal edge/face centred fields on the sphere. 
+The source and destination grids are stored as a collection of grid cells, which have four vertices (i.e. the cells are quadrilaterals). Thus, the grids 
+can be quite general - we support both structured and unstructured grids. `MINT` can read data stored in the 2D [Ugrid](https://ugrid-conventions.github.io/ugrid-conventions/) format.
 
 The regridding method is mimetic in the sense that Stokes's theorem is satisfied to near machine precision. In particular, the 
 loop integrals of an interpolated vector field deriving from a gradient is zero.
+
+## Thank you
+
+The development of the numerical method and its implementation are supported by the [Next Generation Modelling Systems](https://www.metoffice.gov.uk/research/approach/modelling-systems/next-gen-modelling-systems) effort at the [UK Met Office](https://www.metoffice.gov.uk/), the National Insitute for Water and Atmospheric (NIWA) research and the New Zealand eScience Infrastructure (NeSI).
 
 ## References
 
@@ -33,13 +37,12 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 This is a particular case of the more general family of methods described in[Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
 
-
 ## Want to contribute?
 
 We're looking for contributions, particularly in the areas of:
  * code documentation
  * creating Jupyter notebooks or code examples
- * finding scientific applications
+ * identifying scientific applications that can leverage `MINT`
 
 Any help will be greatly appreciated.
 
