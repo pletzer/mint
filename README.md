@@ -33,7 +33,9 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 See [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub) for the corresponding methods in n dimensions.
 
 
-## Build `MINT` as  a Python module
+## How to build `MINT` as  a Python module
+
+This the most user friendly access to the MINT package. Not all the functionality from C++ is exposed but it contains the most important parts. (Addition features can be added on request.)
 
 We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type (Unix)
 ```
@@ -41,7 +43,7 @@ conda env create --file requirements/mint.yml
 conda activate mint-dev
 ```
 
-On Windows and in the Anaconda prompt terminal, replace the above command with:
+If you find the above commands to fail on Windows, you can try instead (in the Anaconda prompt terminal):
 ```
 conda create -n mint-dev
 conda activate mint-dev
@@ -62,6 +64,15 @@ To run the tests type:
 ```
 pytest
 ```
+
+Documentation of the API can be obtained by typing:
+```
+pydoc mint
+pydoc mint.regrid_edges
+pydoc mint.polyline_integral
+```
+for instance.
+
  
 ## How to Build the MINT C++ Library
 
@@ -96,41 +107,6 @@ You can check that the build was successful by typing:
 make test
 ```
 
-### Binary Tools
-
-The above `CMake` build will compile a number of tools. To run the tools, set
-`MINT_SRC_DIR` to the location of the `MINT` source directory (e.g. `export MINT_SRC_DIR=..`).
-
- 1. Compute the interpolation weights from a lat-lon grid to the cubed sphere:
- ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
-                      -w weights.nc
- ```
-
- 2. Regrid field `edge_integrated_velocity` from lat-lon to cubed-sphere by loading the previously generated weights:
- ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
-                      -v edge_integrated_velocity -W weights.nc -o edge_integrated_velocity.vtk
- ```
-
- 3. Compute the weights and regrid in one step:
- ```
- ./tools/regrid_edges -s $MINT_SRC_DIR/data/latlon4x2.nc$latlon -S 0 \
-                      -d $MINT_SRC_DIR/data/cs_4.nc$physics -D 1 \
-                      -v edge_integrated_velocity -W -o edge_integrated_velocity.vtk
- ```
-
- 4. Regrid a time dependent field with elevation:
- ```
-./tools/regrid_edges -s $MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc$mesh2d -S 0 \
-                     -d $MINT_SRC_DIR/data/c24_u_integrated.nc$physics -D 1 \
-                     -v u@$MINT_SRC_DIR/data/lonlatzt_8x4x3x2.nc \
-                     -O regridedges_xyzt.nc -o regridedges_xyzt.vtk
-
- ```
-
 
 ## API Documentation
 
@@ -139,8 +115,15 @@ This is useful if you would like to call `MINT` from `C`, `Python` or `Fortran`:
 https://pletzer.github.io/mint/html/
 
 
-## Conservation Error
+## Examples
+
+### Conservation Error
 
 The plot below shows the error of mimetic regridding error obtained by computing the 
-closed line integral for each cell. 
+closed line integral for each cell on the cubed-sphere. 
 ![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
+
+### Computing the water flow across irregular boundaries
+
+![alt Gulf Stream](https://raw.githubusercontent.com/pletzer/mint/master/figures/gulfStream.png)
+![Around New Zealand](https://raw.githubusercontent.com/pletzer/mint/master/figures/nz.png) 
