@@ -129,7 +129,7 @@ osx_task:
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib -DVTK_VERSION=9.0 ..
-    - make VERBOSE=1 # link error 
+    - make VERBOSE=1 # link error
     - ctest
 
 #
@@ -164,6 +164,7 @@ win_task:
     - conda list
     - pip install --no-deps --editable .    
     - python -c "import mint; print(dir(mint))"
+    # - pytest mint\tests
     # - ps: Get-Command python
     # - echo %PATH%
     # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin
