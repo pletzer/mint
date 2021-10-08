@@ -28,7 +28,7 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 
 ## Thank you
 
-The development of the numerical method and its implementation are supported by the [Next Generation Modelling Systems](https://www.metoffice.gov.uk/research/approach/modelling-systems/next-gen-modelling-systems) effort at the [UK Met Office](https://www.metoffice.gov.uk/), the National Insitute for Water and Atmospheric (NIWA) research and the New Zealand eScience Infrastructure (NeSI).
+The development of the numerical method and its implementation are supported by the [Next Generation Modelling Systems](https://www.metoffice.gov.uk/research/approach/modelling-systems/next-gen-modelling-systems) effort at the [UK Met Office](https://www.metoffice.gov.uk/), the National Institute for Water and Atmospheric ([NIWA](https://niwa.co.nz/)) research and the New Zealand eScience Infrastructure ([NeSI](https://www.nesi.org.nz/)).
 
 ## References
 
