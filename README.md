@@ -142,7 +142,7 @@ closed line integral for each cell on the cubed-sphere, which can have highly di
 
 ### Computing flux integrals across irregular boundaries
 
-The two plots below show ocean data computed with the NEMO code (courtesy of Erik Behrens, NIWA). The `u` and `v` velocities are staggered according to Arakawa C. From these components, integrated fluxes are assigned to each horizontal cell face while integrating vertically over the depth of the ocean. The absolute value of the cell flux intensities are shown on a grey scale. 
+The two plots below show monthly averaged ocean data computed with the NEMO code (courtesy of Erik Behrens, NIWA). The `u` and `v` velocities are staggered according to Arakawa C. From these components, integrated fluxes are assigned to each horizontal cell face while integrating vertically over the depth of the ocean. The absolute value of the cell flux intensities are shown on a grey scale. 
 
 Open and closed target lines are shown as blue lines. These represent surfaces extruding vertically. The total flux (water flow) is displayed at the bottom left of each picture in millions of cubic metres per second. The direction of the flow is indicated by the arrows. Note that the target lines can interesect land without the need for any form of masking - land has simply the property of zero flux (beige edges). 
 
