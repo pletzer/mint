@@ -19,7 +19,7 @@
 
 ## Overview
 
-This project contains code to regrid 2D edge/face centred fields from a source to a destination grid. The grid is stored as a collection of 
+This project contains code to regrid edge/face centred fields from a source to a destination grid. The grid is stored as a collection of 
 grid cells, which have four vertices (i.e. the cells are quadrilaterals). The edge field is stored as integrals of a vector field 
 along each edge. The vertex coordinates are stored in longitude-latitude space.
 
@@ -86,7 +86,7 @@ pydoc mint.polyline_integral
 for instance.
 
  
-## How to Build the MINT C++ Library
+## How to build the MINT C++ Library
 
 If you want to call `MINT` from `Fortran`, `C` or `C++` we recommend that you build the `mint` library. In addition to the C++ and, optionally, the Fortran compilers you will need
 
