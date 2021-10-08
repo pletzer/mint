@@ -34,6 +34,16 @@ loop integrals of an interpolated vector field deriving from a gradient is zero.
 This is a particular case of the more general family of methods described in[Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
 
 
+## Want to contribute?
+
+We're looking for contributions, particularly in the areas of:
+ * code documentation
+ * creating Jupyter notebooks or code examples
+ * finding scientific applications
+
+Any help will be greatly appreciated.
+
+
 ## How to install or build `MINT` as  a Python module
 
 This the most user friendly access to the MINT package. Not all the functionality from C++ is exposed but it contains the most important parts. (Additional features can be added on request.)
