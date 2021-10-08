@@ -35,13 +35,13 @@ The development of the numerical method and its implementation are supported by 
 `MINT` implements the 2D+1D (horizontal plus a vertical axis) interpolation and regridding method described in 
 [Mimetic Interpolation of Vector Fields on Arakawa C/D Grids](https://journals.ametsoc.org/view/journals/mwre/147/1/mwr-d-18-0146.1.xml).
 
-This is a particular case of the more general family of methods described in[Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
+This is a particular case of the more general family of methods described in [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
 
 ## Want to contribute?
 
 We're looking for contributions, particularly in the areas of:
  * code documentation
- * creating Jupyter notebooks or code examples
+ * creating Jupyter notebooks and/or code examples
  * identifying scientific applications that can leverage `MINT`
 
 Any help will be greatly appreciated.
@@ -74,7 +74,7 @@ pip install --no-deps --editable .
 ```
 You will require a C++ compiler for the above step.
 
-### Testing
+### Testing the Python module
 
 Check that you can import the mint module:
 ```
@@ -87,9 +87,8 @@ pytest
 ```
 in the top `MINT` diretory.
 
-### Documentation
+### Python module documentation
 
-Documentation of the Python API can be obtained by typing:
 ```
 pydoc mint
 pydoc mint.regrid_edges
@@ -122,9 +121,9 @@ FC=pgfortran CXX=pgcxx cmake ..
 make -j 8
 ```
 
-The locations of the NetCDF library and headers will be inferred from the `nc-config` and `nf-config` commands but these paths can be overriden. Likewise, the location of VTK can be specified manually.
+The locations of the NetCDF library and headers are inferred from the `nc-config` and `nf-config` commands but these paths can be overriden. Likewise, the location of VTK can be specified manually.
 
-For instance, in the Anaconda prompt terminal on Windows 10 Entreprise,  I do:
+For instance, in the Anaconda prompt terminal on Windows 10 Entreprise:
 ```
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\include\vtk-9.0" -DVTK_LIBRARY_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\lib" -DNETCDF_INCLUDE_DIRS="%userprofile%\miniconda3\envs\mint-dev\Library\include" -DNETCDF_LIBRARIES="%userprofile%\miniconda3\envs\mint-dev\Library\lib\netcdf.lib" ..
@@ -137,9 +136,7 @@ make test
 ```
 
 
-### API Documentation
-
-This is useful if you would like to call `MINT` from `C`, `Python` or `Fortran`:
+### C++ and Fortran API documentation
 
 https://pletzer.github.io/mint/html/
 
@@ -149,14 +146,14 @@ https://pletzer.github.io/mint/html/
 ### Conservation Error
 
 The plot below shows the error of mimetic regridding error obtained by computing the 
-closed line integral for each cell on the cubed-sphere, which can have highly distorted cells near the poles when using longitude-latitude coordinates. 
+closed line integral for each cell on the cubed-sphere, which have highly distorted cells near the poles in longitude-latitude coordinates. 
 ![alt Error of mimetic regridding](https://raw.githubusercontent.com/pletzer/mint/master/figures/regrid_edgesError.png)
 
 ### Computing flux integrals across irregular boundaries
 
-The two plots below show monthly averaged ocean data computed with the NEMO code (courtesy of Erik Behrens, NIWA). The `u` and `v` velocities are staggered according to Arakawa C. From these components, integrated fluxes are assigned to each horizontal cell face while integrating vertically over the depth of the ocean. The absolute value of the cell flux intensities are shown on a grey scale. 
+The two plots below show monthly averaged ocean data computed with the [NEMO](https://www.nemo-ocean.eu/) code (courtesy of Erik Behrens, NIWA). The `u` and `v` velocities are staggered according to Arakawa C. From these components, vertically integrated fluxes are assigned to each horizontal cell face. The absolute value of the cell flux intensities are shown on a grey scale on the cell edges.
 
-Open and closed target lines are shown as blue lines. These represent surfaces extruding vertically. The total flux (water flow) is displayed at the bottom left of each picture in millions of cubic metres per second. The direction of the flow is indicated by the arrows. Note that the target lines can interesect land without the need for any form of masking - land has simply the property of zero flux (beige edges). 
+Open and closed target lines are shown as blue, representing vertically extruded surfaces. The total flux (water flow) is displayed at the bottom left of each picture in millions of cubic metres per second. The direction of the flow is indicated by the arrows. Note that the target lines can interesect land without the need for any form of masking - land has simply the property of zero flux (beige edges). 
 
 Gulf Stream:
 ![alt Gulf Stream](https://raw.githubusercontent.com/pletzer/mint/master/figures/gulfStream.png)
