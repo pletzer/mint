@@ -1,47 +1,35 @@
-from ctypes import c_void_p, c_double, c_int, byref, POINTER,\
-                   c_char_p, c_size_t
-from . import LIB
+from ctypes import (c_void_p, c_double, c_int, byref, POINTER,
+                   c_char_p, c_size_t)
+from . import MINTLIB
+from . import error_handler, warning_handler
 import numpy
-import logging
 
 
 FILE = 'regrid_edges.py'
 DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 
 
-def error_handler(filename, methodname, ier):
-    msg = f'ier={ier} after calling {methodname} in {filename}!'
-    logging.error(msg)
-    raise RuntimeError(msg)
-
-
-def warning_handler(filename, methodname, ier, detailedmsg=''):
-    msg = f'ier={ier} after calling {methodname} in {filename}!\n'
-    msg += detailedmsg
-    logging.warning(msg)
-
-
 class RegridEdges(object):
     """
-    A class to interpolate a 1 form from a grid to another grid
+    A class to interpolate a 1 form from a grid to another grid.
     """
 
     def __init__(self):
         """
-        Regrid edge field constructor.
+        Constructor.
         """
 
         self.obj = byref(c_void_p())
 
-        ier = LIB.mnt_regridedges_new(self.obj)
+        ier = MINTLIB.mnt_regridedges_new(self.obj)
         if ier:
             error_handler(FILE, '__init__', ier)
 
     def __del__(self):
         """
-        Regrid edge field destructor.
+        Destructor.
         """
-        ier = LIB.mnt_regridedges_del(self.obj)
+        ier = MINTLIB.mnt_regridedges_del(self.obj)
         if ier:
             error_handler(FILE, '__del__', ier)
 
@@ -60,9 +48,9 @@ class RegridEdges(object):
         note:: a lon-lat grid requires 0, 0 and a cubed sphere grid
                requires 1, 1
         """
-        LIB.mnt_regridedges_setSrcGridFlags.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_regridedges_setSrcGridFlags.argtypes = [POINTER(c_void_p),
                                                         c_int, c_int]
-        ier = LIB.mnt_regridedges_setSrcGridFlags(self.obj,
+        ier = MINTLIB.mnt_regridedges_setSrcGridFlags(self.obj,
                                                   fixLonAcrossDateline,
                                                   averageLonAtPole)
         if ier:
@@ -70,7 +58,7 @@ class RegridEdges(object):
 
     def setDstGridFlags(self, fixLonAcrossDateline, averageLonAtPole):
         """
-        Set the destrination grid flags.
+        Set the destination grid flags.
 
         :param fixLonAcrossDateline: set to 1 if a periodicity length
                                      should be added/subtracted
@@ -83,9 +71,9 @@ class RegridEdges(object):
         note:: a lon-lat grid requires 0, 0 and a cubed sphere grid
                requires 1, 1
         """
-        LIB.mnt_regridedges_setDstGridFlags.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_regridedges_setDstGridFlags.argtypes = [POINTER(c_void_p),
                                                         c_int, c_int]
-        ier = LIB.mnt_regridedges_setDstGridFlags(self.obj,
+        ier = MINTLIB.mnt_regridedges_setDstGridFlags(self.obj,
                                                   fixLonAcrossDateline,
                                                   averageLonAtPole)
         if ier:
@@ -95,12 +83,14 @@ class RegridEdges(object):
         """
         Load a source grid from a 2D UGRID file.
 
-        :param filename: string in the format filename:meshname
+        :param filename: string in the format filename$meshname, 
+                         filename should be a NetCDF file storing data in the UGRID format
+                         and meshname is the name of the grid inside the file.
         """
-        LIB.mnt_regridedges_loadSrcGrid.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_regridedges_loadSrcGrid.argtypes = [POINTER(c_void_p),
                                                     c_char_p, c_int]
         fn = filename.encode('utf-8')
-        ier = LIB.mnt_regridedges_loadSrcGrid(self.obj, fn, len(fn))
+        ier = MINTLIB.mnt_regridedges_loadSrcGrid(self.obj, fn, len(fn))
         if ier:
             error_handler(FILE, 'loadSrcGrid', ier)
 
@@ -108,56 +98,61 @@ class RegridEdges(object):
         """
         Load a destination grid from a 2D UGRID file.
 
-        :param filename: string in the format filename:meshname
+        :param filename: string in the format filename$meshname,
+                         filename should be a NetCDF file storing data in the UGRID format
+                         and meshname is the name of the grid inside the file.
         """
-        LIB.mnt_regridedges_loadDstGrid.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_regridedges_loadDstGrid.argtypes = [POINTER(c_void_p),
                                                     c_char_p, c_int]
         fn = filename.encode('utf-8')
-        ier = LIB.mnt_regridedges_loadDstGrid(self.obj, fn, len(fn))
+        ier = MINTLIB.mnt_regridedges_loadDstGrid(self.obj, fn, len(fn))
         if ier:
             error_handler(FILE, 'loadDstGrid', ier)
 
     def getNumSrcEdges(self):
         """
-        Get the number of unique edges of the source grid.
+        Get the number of unique edges in the source grid.
 
         :returns number
         """
-        LIB.mnt_regridedges_getNumSrcEdges.argtypes = [POINTER(c_void_p)]
-        LIB.mnt_regridedges_getNumSrcEdges.restype = c_size_t
+        MINTLIB.mnt_regridedges_getNumSrcEdges.argtypes = [POINTER(c_void_p)]
+        MINTLIB.mnt_regridedges_getNumSrcEdges.restype = c_size_t
         n = c_size_t()
-        ier = LIB.mnt_regridedges_getNumSrcEdges(self.obj, byref(n))
+        ier = MINTLIB.mnt_regridedges_getNumSrcEdges(self.obj, byref(n))
         if ier:
             error_handler(FILE, 'getNumSrcEdges', ier)
         return n.value
 
     def getNumDstEdges(self):
         """
-        Get the number of unique edges of the destination grid.
+        Get the number of unique edges in the destination grid.
 
         :returns number
         """
-        LIB.mnt_regridedges_getNumDstEdges.argtypes = [POINTER(c_void_p)]
-        LIB.mnt_regridedges_getNumDstEdges.restype = c_size_t
+        MINTLIB.mnt_regridedges_getNumDstEdges.argtypes = [POINTER(c_void_p)]
+        MINTLIB.mnt_regridedges_getNumDstEdges.restype = c_size_t
         n = c_size_t()
-        ier = LIB.mnt_regridedges_getNumDstEdges(self.obj, byref(n))
+        ier = MINTLIB.mnt_regridedges_getNumDstEdges(self.obj, byref(n))
         if ier:
             error_handler(FILE, 'getNumDstEdges', ier)
         return n.value
 
     def build(self, numCellsPerBucket, periodX, debug):
         """
-        Build the regridder and compute the regridding weights
+        Build the regridder and compute the regridding weights.
 
-        :param numCellsPerBucket: average number of cells per bucket
-                                  (performance only)
+        :param numCellsPerBucket: average number of cells per bucket,
+                                  performance typically improves with a higher
+                                  number of cells per bucket
         :param periodX: periodicity length (set to 0 if non-periodic)
         :param debug: 0=no debug info, 1=print debug info, 2=save bad
                       edges in VTK file
+        :warning: There are cases at very coarse resolution where the regridding
+                  may fail for some edges if the number of cells per bucket is too small
         """
-        LIB.mnt_regridedges_build.argtypes = [POINTER(c_void_p), c_int,
+        MINTLIB.mnt_regridedges_build.argtypes = [POINTER(c_void_p), c_int,
                                               c_double, c_int]
-        ier = LIB.mnt_regridedges_build(self.obj, numCellsPerBucket,
+        ier = MINTLIB.mnt_regridedges_build(self.obj, numCellsPerBucket,
                                         periodX, debug)
         if ier:
             msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
@@ -165,25 +160,27 @@ class RegridEdges(object):
 
     def dumpWeights(self, filename):
         """
-        Dump the weights to a file
+        Dump the weights to a file.
+
         :param filename: file name
         """
-        LIB.mnt_regridedges_dumpWeights.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_regridedges_dumpWeights.argtypes = [POINTER(c_void_p),
                                                     c_char_p, c_int]
         fn = filename.encode('utf-8')
-        ier = LIB.mnt_regridedges_dumpWeights(self.obj, fn, len(fn))
+        ier = MINTLIB.mnt_regridedges_dumpWeights(self.obj, fn, len(fn))
         if ier:
             error_handler(FILE, 'dumpWeights', ier)
 
     def loadWeights(self, filename):
         """
-        Load the weights from a file
+        Load the weights from a file.
+
         :param filename: file name
         """
-        LIB.mnt_regridedges_loadWeights.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_regridedges_loadWeights.argtypes = [POINTER(c_void_p),
                                                     c_char_p, c_int]
         fn = filename.encode('utf-8')
-        ier = LIB.mnt_regridedges_loadWeights(self.obj, fn, len(fn))
+        ier = MINTLIB.mnt_regridedges_loadWeights(self.obj, fn, len(fn))
         if ier:
             error_handler(FILE, 'loadWeights', ier)
 
@@ -191,12 +188,14 @@ class RegridEdges(object):
         """
         Apply the regridding weights to an edge field with unique edge Ids
 
-        :param srcdata: contiguous arrays of source field data
-        :param dstdata: contiguous arrays of destination field data (output)
+        :param srcdata: contiguous arrays of source field data, dimensioned
+                        number of source grid edges
+        :param dstdata: contiguous arrays of destination field data (output),
+                        dimensioned number of destination grid edges
         """
-        LIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p),
                                               DOUBLE_ARRAY_PTR,
                                               DOUBLE_ARRAY_PTR]
-        ier = LIB.mnt_regridedges_apply(self.obj, srcdata, dstdata)
+        ier = MINTLIB.mnt_regridedges_apply(self.obj, srcdata, dstdata)
         if ier:
             error_handler(FILE, 'apply', ier)

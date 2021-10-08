@@ -1,3 +1,4 @@
+#include <mntLogger.h>
 #include <mntVecN.h>
 #include <mntPolylineParser.h>
 #include <mntGrid.h>
@@ -23,7 +24,7 @@ int main(int argc, char** argv) {
     args.set("-v", std::string("edgeData"), "Edge variable name.");
     args.set("-N", 1, "Average number of cells per bucket.");
     args.set("-P", 0.0, "Periodicity length of x (0 if not periodic)");
-    args.set("-verbose", false, "Verbose mode.");
+    args.set("-verbose", false, "Turn on verbosity");
     args.set("-counter", false, "Whether the edge values correspond to edges oriented in counterclockwise direction");
 
     bool success = args.parse(argc, argv);
@@ -123,6 +124,10 @@ int main(int argc, char** argv) {
         std::cerr << "ERROR when parsing command line arguments\n";
         return 3;
     }
+
+    if (args.get<bool>("-verbose")) mnt_printLogMessages();
+    std::string logname = "line_proj_logs.txt";
+    mnt_writeLogMessages(logname.c_str(), logname.size());
 
     return 0;
 }

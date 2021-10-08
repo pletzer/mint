@@ -1,6 +1,8 @@
+
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <cmath>
 
+#include "mntLogger.h"
 #include <mntGrid.h>
 #include <vtkCellData.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -245,7 +247,8 @@ LIBRARY_API
 int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, double* res) {
 
     if ((*self)->edgeArcLengths.size() == 0) {
-        std::cerr << "ERROR: you need to call mnt_grid_computeEdgeArcLengths before invoking mnt_grid_getEdgeArcLength\n";
+        mntlog::error(__FILE__, __func__, __LINE__, 
+            "you need to call mnt_grid_computeEdgeArcLengths before invoking mnt_grid_getEdgeArcLength");
         return 1;
     }
     std::size_t k = cellId*4 + edgeIndex;
@@ -271,8 +274,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     Ugrid2D ugrid;
     int ier = ugrid.load(filename, meshname);
     if (ier != 0) {
-        std::cerr << "ERROR: could not read mesh \""
-                  << meshname << "\" in UGRID file \"" << filename << "\"\n";
+        mntlog::error(__FILE__, __func__, __LINE__, 
+            "could not read mesh \"" + meshname + "\" in UGRID file \"" + filename + "\"");
         return 1;
     }
 
@@ -399,7 +402,8 @@ LIBRARY_API
 int mnt_grid_load(Grid_t** self, const char* filename) {
     // check if the file exists
     if (!fstream(filename).good()) {
-        std::cerr << "ERROR file " << filename << " does not exist\n";
+        mntlog::error(__FILE__, __func__, __LINE__, 
+                     "file " + std::string(filename) + "does not exist");
         return 1;
     }
 
@@ -428,10 +432,10 @@ int mnt_grid_print(Grid_t** self) {
 
     vtkPoints* points = (*self)->grid->GetPoints();
     vtkIdType npoints = points->GetNumberOfPoints();
-    std::cerr << "Number of points: " << npoints << '\n';
+    std::cout << "Number of points: " << npoints << '\n';
 
     vtkIdType ncells = (*self)->grid->GetNumberOfCells();
-    std::cerr << "Number of cells: " << ncells << '\n';
+    std::cout << "Number of cells: " << ncells << '\n';
 
     std::vector<double> pt(3);
 

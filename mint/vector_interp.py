@@ -1,24 +1,12 @@
 from ctypes import (c_void_p, c_int, byref, POINTER,
                     c_double, c_size_t)
-from . import LIB
+from . import MINTLIB
+from . import error_handler, warning_handler
 import numpy
-import logging
 
 
 FILE = 'vectorinterp.py'
 DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
-
-
-def error_handler(filename, methodname, ier):
-    msg = f'ier={ier} after calling {methodname} in {filename}!'
-    logging.error(msg)
-    raise RuntimeError(msg)
-
-
-def warning_handler(filename, methodname, ier, detailedMsg=''):
-    msg = f'ier={ier} after calling {methodname} in {filename}!\n'
-    msg += detailedMsg
-    logging.warning(msg)
 
 
 class VectorInterp(object):
@@ -28,24 +16,24 @@ class VectorInterp(object):
 
     def __init__(self):
         """
-        Vector interpolator constructor.
+        Constructor.
         """
 
         self.ptr = c_void_p()
         self.obj = byref(self.ptr)
         self.numTargetPoints = 0
 
-        LIB.mnt_vectorinterp_new.argtypes = [POINTER(c_void_p)]
-        ier = LIB.mnt_vectorinterp_new(self.obj)
+        MINTLIB.mnt_vectorinterp_new.argtypes = [POINTER(c_void_p)]
+        ier = MINTLIB.mnt_vectorinterp_new(self.obj)
         if ier:
             error_handler(FILE, '__init__', ier)
 
     def __del__(self):
         """
-        Vector interpolator destructor.
+        Destructor.
         """
-        LIB.mnt_vectorinterp_del.argtypes = [POINTER(c_void_p)]
-        ier = LIB.mnt_vectorinterp_del(self.obj)
+        MINTLIB.mnt_vectorinterp_del.argtypes = [POINTER(c_void_p)]
+        ier = MINTLIB.mnt_vectorinterp_del(self.obj)
         if ier:
             error_handler(FILE, '__del__', ier)
 
@@ -53,10 +41,10 @@ class VectorInterp(object):
         """
         Set the grid.
 
-        :param grid: instance of a Grid
+        :param grid: instance of Grid
         """
-        LIB.mnt_vectorinterp_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
-        ier = LIB.mnt_vectorinterp_setGrid(self.obj, grid.ptr)
+        MINTLIB.mnt_vectorinterp_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
+        ier = MINTLIB.mnt_vectorinterp_setGrid(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
@@ -68,9 +56,9 @@ class VectorInterp(object):
         :param periodX: periodicity in x (set to 0 if non-periodic)
         :note: call this after setGrid
         """
-        LIB.mnt_vectorinterp_buildLocator.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_vectorinterp_buildLocator.argtypes = [POINTER(c_void_p),
                                                       c_int, c_double]
-        ier = LIB.mnt_vectorinterp_buildLocator(self.obj,
+        ier = MINTLIB.mnt_vectorinterp_buildLocator(self.obj,
                                                 numCellsPerBucket, periodX)
         if ier:
             error_handler(FILE, 'buildLocator', ier)
@@ -91,12 +79,12 @@ class VectorInterp(object):
             msg = "ERROR: targetPoints' last dimension should be 3,"\
                    f" got {targetPoints.shape[-1]}"
             raise RuntimeError(msg)
-        LIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_vectorinterp_findPoints.argtypes = [POINTER(c_void_p),
                                                     c_size_t,
                                                     DOUBLE_ARRAY_PTR,
                                                     c_double]
         self.numTargetPoints = targetPoints.shape[0]
-        numBad = LIB.mnt_vectorinterp_findPoints(self.obj,
+        numBad = MINTLIB.mnt_vectorinterp_findPoints(self.obj,
                                                  self.numTargetPoints,
                                                  targetPoints, tol2)
         return numBad
@@ -109,11 +97,11 @@ class VectorInterp(object):
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
-        LIB.mnt_vectorinterp_getEdgeVectors.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_vectorinterp_getEdgeVectors.argtypes = [POINTER(c_void_p),
                                                         DOUBLE_ARRAY_PTR,
                                                         DOUBLE_ARRAY_PTR]
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = LIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, res)
+        ier = MINTLIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, res)
         if ier:
             msg = "Some target lines fall outside the grid."
             warning_handler(FILE, 'getEdgeVectors', ier, detailedMsg=msg)
@@ -127,11 +115,11 @@ class VectorInterp(object):
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
-        LIB.mnt_vectorinterp_getFaceVectors.argtypes = [POINTER(c_void_p),
+        MINTLIB.mnt_vectorinterp_getFaceVectors.argtypes = [POINTER(c_void_p),
                                                         DOUBLE_ARRAY_PTR,
                                                         DOUBLE_ARRAY_PTR]
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = LIB.mnt_vectorinterp_getFaceVectors(self.obj, data, res)
+        ier = MINTLIB.mnt_vectorinterp_getFaceVectors(self.obj, data, res)
         if ier:
             msg = "Some target lines fall outside the grid."
             warning_handler(FILE, 'getFaceVectors', ier, detailedMsg=msg)

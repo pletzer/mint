@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include <mntPolylineIntegral.h>
 #include <mntPolysegmentIter.h>
 #include <mntWeights.h>
@@ -29,9 +30,11 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
                                int npoints, const double xyz[], int counterclock, double periodX) {
 
     int ier = 0;
+    std::string msg;
 
     if (npoints <= 0) {
-        std::cerr << "Warning: need at least one point\n";
+        std::string mgs = "need at least one point";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
 
@@ -94,7 +97,8 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
 
                 double weight = computeWeight(xi0, xi1, xia, xib);
 #ifdef DEBUG
-                std::cout << "cellId: " << cellId << " edgeIndex: " << edgeIndex << " weight: " << weight << '\n';
+                msg = "cellId: " + std::to_string(cellId) + " edgeId: " + std::to_string(edgeIndex) + " weight: " + std::to_string(weight);
+                mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
                 // increment the weight. note the default value is 0 for numeric values
                 std::pair<vtkIdType, int> ce(cellId, edgeIndex);
@@ -109,7 +113,9 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
         double tTotal = polyseg.getIntegratedParamCoord();
         const double tol = 1.e-10;
         if (std::abs(tTotal - 1.0) > tol) {
-            std::cout << "Warning: total integrated length for segment " << ip0 << " is " << tTotal << " != 1 (diff=" << tTotal - 1. << ")\n";
+            msg = "total integrated length for segment " + std::to_string(ip0) + " is " + 
+                  std::to_string(tTotal) + " != 1 (diff=" + std::to_string(tTotal - 1.) + ")";
+            mntlog::warn(__FILE__, __func__, __LINE__, msg);
             ier++;
         }
 
@@ -137,13 +143,17 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
 
         // add the contribution
 #ifdef DEBUG
-        std::cout << "adding weight = " << wght << " * edge integral = " << data[cellId*4 + edgeIndex] << " to the flux (" << 
-                     *result << " so far) for cellId = " << cellId << " edgeIndex = " << edgeIndex << "\n";
+        std::string msg = "adding weight = " + std::to_string(wght) + " * edge integral = " + 
+                          std::to_string(data[cellId*4 + edgeIndex]) + " to the flux (" +
+                          std::to_string(*result) + " so far) for cellId = " + 
+                          std::to_string(cellId) + " edgeIndex = " + std::to_string(edgeIndex);
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
         *result += wght * data[cellId*4 + edgeIndex];
     }
 #ifdef DEBUG
-    std::cout << "total flux = " << *result << '\n';
+    std::string msg = "total flux = " + std::to_string(*result);
+    mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
 
     return 0;

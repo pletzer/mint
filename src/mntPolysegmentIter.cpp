@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include <mntPolysegmentIter.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
@@ -223,18 +224,22 @@ PolysegmentIter::__assignCoefficientsToSegments() {
 void
 PolysegmentIter::__makePeriodic(Vec3& v) {
 
+    std::string msg;
+
     // fix start/end points if they fall outside the domain and the domain is periodic
     if (this->periodX > 0.) {
         double xmin = this->grid->GetBounds()[0];
         double xmax = this->grid->GetBounds()[1];
         if (v[0] < xmin) {
-            std::cerr << "Warning: adding x periodicity length " << this->periodX << 
-                         " to point " << v << "\n";
+            msg = "adding x periodicity length " + std::to_string(this->periodX) +
+                         " to point " + std::to_string(v[0]) + "," + std::to_string(v[1]) + "," + std::to_string(v[2]);
+            mntlog::info(__FILE__, __func__, __LINE__, msg);
             v[0] += this->periodX;
         }
         else if (v[0] > xmax) {
-            std::cerr << "Warning: subtracting x periodicity length " << this->periodX << 
-                         " from point " << v << "\n";
+            msg = "subtracting x periodicity length " + std::to_string(this->periodX) + 
+                         " from point " + std::to_string(v[0]) + "," + std::to_string(v[1]) + "," + std::to_string(v[2]);
+            mntlog::info(__FILE__, __func__, __LINE__, msg);
             v[0] -= this->periodX;
         }
     }

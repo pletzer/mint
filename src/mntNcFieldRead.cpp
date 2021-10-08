@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include "mntNcFieldRead.h"
 #include <cstdio>
 #include <cstring>
@@ -8,6 +9,7 @@ LIBRARY_API
 int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
 
   int ier;
+  std::string msg;
 
   *self = new NcFieldRead_t();
   (*self)->ncid = ncid;
@@ -17,16 +19,20 @@ int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
   int ndims = 0;
   ier = nc_inq_varndims(ncid, varid, &ndims);
   if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not inquire ndims for variable with Id " 
-              << varid << " in netcdf file with Id " << ncid << " ier = " << ier << '\n';
+    msg = "could not inquire ndims for variable with Id " 
+              + std::to_string(varid) + " in netcdf file with Id "
+              + std::to_string(ncid) + " ier = " + std::to_string(ier);
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
     return 3;
   }
 
   int dimIds[NC_MAX_VAR_DIMS];
   ier = nc_inq_vardimid(ncid, varid, dimIds);
   if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not inquire dim ids for variable with Id " 
-              << varid << " in netcdf file with Id " << ncid << " ier = " << ier << '\n';
+    msg = "could not inquire dim ids for variable with Id " 
+              + std::to_string(varid) + " in netcdf file with Id "
+              + std::to_string(ncid) + " ier = " + std::to_string(ier);
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
     return 4;
   }
 
@@ -75,8 +81,11 @@ int mnt_ncfieldread_getDim(NcFieldRead_t** self, int iAxis, std::size_t* dim) {
 LIBRARY_API
 int mnt_ncfieldread_data(NcFieldRead_t** self, 
                          double data[]) {
-
   int ier = nc_get_var_double((*self)->ncid, (*self)->varid, data);
+  if (ier != NC_NOERR) {
+    std::string msg = "could not read data";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+  }
   return ier;
 }
 
@@ -87,6 +96,10 @@ int mnt_ncfieldread_dataSlice(NcFieldRead_t** self,
                               double data[]) {
   int ier = nc_get_vara_double((*self)->ncid, (*self)->varid, 
                                startInds0, counts, data);
+  if (ier != NC_NOERR) {
+    std::string msg = "could not read data slice";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+  }
   return ier;
 }
 

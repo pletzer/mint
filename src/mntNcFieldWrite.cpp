@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include "mntNcFieldWrite.h"
 #include <cstdio>
 #include <cstring>
@@ -9,6 +10,7 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
                         const char* fileName, int fileNameLen, 
                         const char* varName, int varNameLen,
                         int append) {
+  std::string msg;
 
   *self = new NcFieldWrite_t();
   (*self)->ncid = -1;
@@ -28,15 +30,17 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
     // append data to existing file
     int ier = nc_open(fname.c_str(), NC_WRITE, &(*self)->ncid);
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not open file " << fname << " in write access mode\n";
+      msg = "could not open file " + fname + " in write access mode";
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 1;
     }
 
     // load the attributes and dimensions if in append mode
     ier = mnt_ncfieldwrite_inquire(self);
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: failed to inquire the attributes and dimensions for variable " 
-                << varName << " in file " << fname << '\n';
+      msg = "failed to inquire the attributes and dimensions for variable " 
+            + std::string(varName) + " in file " + fname;
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 2;
     }
 
@@ -45,7 +49,8 @@ int mnt_ncfieldwrite_new(NcFieldWrite_t** self,
     // create a new file
     int ier = nc_create(fname.c_str(), NC_CLOBBER, &(*self)->ncid);
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not create file " << fname << '\n';
+      msg = "could not create file " + fname;
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 1;
     }
   }
@@ -114,13 +119,16 @@ int mnt_ncfieldwrite_dataSlice(NcFieldWrite_t** self,
 LIBRARY_API
 int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
 
+  std::string msg;
+
   if ((*self)->defined) {
     // nothing to do
     return 0;
   }
 
   if ((*self)->append) {
-    std::cerr << "ERROR: can define only in non-append mode\n";
+    msg = "can define only in non-append mode\n";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
     return 1;
   }  
 
@@ -131,8 +139,10 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
     ier = nc_def_dim((*self)->ncid, (*self)->dimNames[i].c_str(),
                                     (*self)->dimSizes[i], &dimIds[i]);
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not define dimension " 
-                << (*self)->dimNames[i] << " = " << (*self)->dimSizes[i] << '\n';
+      msg = "could not define dimension " 
+                + (*self)->dimNames[i] + " = " 
+                + std::to_string((*self)->dimSizes[i]);
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 2;
     }
   }
@@ -141,8 +151,8 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
   ier = nc_def_var((*self)->ncid, (*self)->varName.c_str(), NC_DOUBLE, ndims, 
                    &dimIds[0], &(*self)->varid);
     if (ier != NC_NOERR) {
-      std::cerr << "ERROR: could not define variable " 
-                << (*self)->varName << '\n';
+      msg = "could not define variable " + (*self)->varName;
+      mntlog::error(__FILE__, __func__, __LINE__, msg);
       return 3;
     }
 
@@ -156,26 +166,30 @@ LIBRARY_API
 int mnt_ncfieldwrite_inquire(NcFieldWrite_t** self) {
 
   int ier;
+  std::string msg;
 
   if (!(*self)->append) {
-    std::cerr << "ERROR: can inquire only in append mode\n";
+    msg = "can inquire only in append mode\n";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
     return 1;
   }
 
   // get the variable Id
   ier = nc_inq_varid((*self)->ncid, (*self)->varName.c_str(), &(*self)->varid);
   if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not find variable " << (*self)->varName << '\n';
+    msg = "could not find variable " + (*self)->varName;
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
     return 2;
   }
 
-  // inquire about the variable
+  // enquire about the variable
   int ndims = 0;
   int dimIds[NC_MAX_VAR_DIMS];
   int natts = 0;
   ier = nc_inq_var((*self)->ncid, (*self)->varid, NULL, NULL, &ndims, dimIds, &natts);
   if (ier != NC_NOERR) {
-    std::cerr << "ERROR: could not inquire about variable " << (*self)->varName << '\n';
+    msg = "could not inquire about variable " + (*self)->varName;
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
     return 3;
   }
 

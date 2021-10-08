@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include <mntLatLon.h>
 #include <netcdf.h>
 #include <iostream>
@@ -86,48 +87,48 @@ int mnt_latlon_dump(LatLon_t** self, const std::string& filename) {
     std::size_t numLon0 = numLon;
 
     ier = nc_create(filename.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when creating the file\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "creating the file");
 
     // latitude dimension
     ier = nc_def_dim(ncid, "latitude_0", numLat0, &latitude_0_dim);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when defining dim latitude0\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "defining dim latitude0");
     ier = nc_def_dim(ncid, "latitude", numLat, &latitude_dim);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when defining dim latitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "defining dim latitude");
 
     // longitude dimension
     ier = nc_def_dim(ncid, "longitude_0", numLon0, &longitude_0_dim);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when defining dim longitude0\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "defining dim longitude0");
     ier = nc_def_dim(ncid, "longitude", numLon, &longitude_dim);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when defining dim longitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "defining dim longitude");
 
     // variables
     dims_lat[0] = latitude_dim;
     ier = nc_def_var(ncid, "latitude", NC_DOUBLE, 1, dims_lat, &latitude_var);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when defining var latitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "defining var latitude");
     ier = nc_put_att_text(ncid, latitude_var, "axis", 1, "Y");
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when adding att axis to var latitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "adding att axis to var latitude");
     ier = nc_put_att_text(ncid, latitude_var, "units", 13, "degrees_north");
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when adding att units to var latitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "adding att units to var latitude");
 
     dims_lon[0] = longitude_dim;
     ier = nc_def_var(ncid, "longitude", NC_DOUBLE, 1, dims_lon, &longitude_var);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when defining var longitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "defining var longitude");
     ier = nc_put_att_text(ncid, longitude_var, "axis", 1, "X");
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when adding att axis to var longitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "adding att axis to var longitude");
     ier = nc_put_att_text(ncid, longitude_var, "units", 12, "degrees_east");
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when adding att units to var longitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "adding att units to var longitude");
 
     ier = nc_enddef(ncid);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when ending define mode\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "ending define mode");
 
     // write data
     ier = nc_put_var_double(ncid, latitude_var, &(*self)->lats[0]);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when writing var latitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "writing var latitude");
     ier = nc_put_var_double(ncid, longitude_var, &(*self)->lons[0]);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when writing var longitude\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "writing var longitude");
 
     ier = nc_close(ncid);
-    if (ier != 0) std::cerr << "mnt_latlon_dump: ERROR when closing file\n";
+    if (ier != NC_NOERR) mntlog::error(__FILE__, __func__, __LINE__, "closing file");
 
     return 0;
 }

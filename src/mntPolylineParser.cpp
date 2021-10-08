@@ -1,3 +1,4 @@
+#include "mntLogger.h"
 #include "mntPolylineParser.h"
 #include <cstdlib>
 #include <iostream>
@@ -14,7 +15,8 @@ PolylineParser::parsePosition(const std::string& posStr) const {
         double number = std::atof( posStr.substr(posBeg, posEnd - posBeg).c_str() );
         res[i] = number;
         if (posEnd == std::string::npos && i < (this->ndims) - 1) {
-            std::cerr << "Warning: missing comma in \"" << posStr << "\"\n";
+            std::string msg = "missing comma in \"" + posStr + "\"";
+            mntlog::warn(__FILE__, __func__, __LINE__, msg);
             break;
         }
         posBeg = posEnd + 1;
