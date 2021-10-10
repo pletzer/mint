@@ -70,12 +70,13 @@ linux_task:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-linux-64.lock >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
+    - conda install --yes -c conda-forge netcdf-fortran doxygen 2>&1
     - conda list
     - pip install --no-deps --editable .
     - pytest
     - mkdir build-cmake
     - cd build-cmake
-    - cmake -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib -DVTK_VERSION=9.0 ..
+    - cmake -DBUILD_FORTRAN=ON -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
     - make
     - ctest
 
@@ -124,12 +125,13 @@ osx_task:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-osx-64.lock >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
+    - conda install --yes -c conda-forge netcdf-fortran doxygen 2>&1
     - pip install --no-deps --editable .
     - pytest
     - mkdir build-cmake
     - cd build-cmake
-    - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib -DVTK_VERSION=9.0 ..
-    - make VERBOSE=1 # link error
+    - cmake -DBUILD_FORTRAN=ON -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.0 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
+    - make
     - ctest
 
 #
@@ -167,22 +169,16 @@ win_task:
     # - pytest mint\tests
     # - ps: Get-Command python
     # - echo %PATH%
-    # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin
-    # - dir C:\Users\ContainerAdministrator\miniconda3\Library\bin\vtkRendering*.dll
-    # - python -c "import vtk"
+    # - dir C:%CONDA_LIB%\bin\vtkRendering*.dll
+    # - python -c "import vtk" fails
   test_script:
     - mkdir build-cmake
     - cd build-cmake
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-    - where cl
-    - dir "%CONDA_LIB%\lib
-    - dir "%CONDA_LIB%\include\vtk-9.0"
-    - cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR="%CONDA_LIB%\include\vtk-9.0" -DVTK_LIBRARY_DIR="%CONDA_LIB%\lib" -DNETCDF_INCLUDE_DIRS="%CONDA_LIB%\include" -DNETCDF_LIBRARIES="%CONDA_LIB%\lib\netcdf.lib" ..
+    # - where cl
+    # - dir "%CONDA_LIB%\lib
+    # - dir "%CONDA_LIB%\include\vtk-9.0"
+    - cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%CONDA_LIB%\include\vtk-9.0" -DVTK_LIBRARY_DIR="%CONDA_LIB%\lib" -DNETCDF_INCLUDE_DIRS="%CONDA_LIB%\include" -DNETCDF_LIBRARIES="%CONDA_LIB%\lib\netcdf.lib" ..
     - nmake
     - ctest
+    - cd ../
