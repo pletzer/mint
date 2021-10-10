@@ -693,32 +693,6 @@ template Vector<double> operator/(const Vector<double>&, const Vector<double>&);
 template Vector<double> operator/(const Vector<double>&, double);
 template Vector<double> operator/(double, const Vector<double>&);
 
-// std::size_t
-template class Vector<std::size_t>;
-template Vector<std::size_t> range(std::size_t, std::size_t);
-template Vector<std::size_t> space(std::size_t, std::size_t, std::size_t);
-template std::size_t max(const Vector<std::size_t>&);
-template Vector<std::size_t> max(const Vector<std::size_t>&, std::size_t);
-template Vector<std::size_t> max(std::size_t, const Vector<std::size_t>&);
-template Vector<std::size_t> max(const Vector<std::size_t>&, const Vector<std::size_t>&);
-template std::size_t min(const Vector<std::size_t>&);
-template Vector<std::size_t> min(const Vector<std::size_t>&, std::size_t);
-template Vector<std::size_t> min(std::size_t, const Vector<std::size_t>&);
-template Vector<std::size_t> min(const Vector<std::size_t>&, const Vector<std::size_t>&);
-template std::size_t dot(const Vector<std::size_t>&, const Vector<std::size_t>&);
-template std::size_t sum(const Vector<std::size_t>&);
-template std::ostream& operator<<(std::ostream& s, const Vector<std::size_t>&);
-template Vector<std::size_t> cat(const Vector<std::size_t>&, const Vector<std::size_t>&);
-template Vector<std::size_t> operator+(const Vector<std::size_t>&, std::size_t);
-template Vector<std::size_t> operator+(std::size_t, const Vector<std::size_t>&);
-template Vector<std::size_t> operator+(const Vector<std::size_t>&, const Vector<std::size_t>&);
-template Vector<std::size_t> operator-(const Vector<std::size_t>&, std::size_t);
-template Vector<std::size_t> operator-(std::size_t, const Vector<std::size_t>&);
-template Vector<std::size_t> operator-(const Vector<std::size_t>&, const Vector<std::size_t>&);
-template Vector<std::size_t> operator-(const Vector<std::size_t>&);
-template Vector<std::size_t> operator*(const Vector<std::size_t>&, std::size_t);
-template Vector<std::size_t> operator*(std::size_t, const Vector<std::size_t>&);
-template Vector<std::size_t> operator*(const Vector<std::size_t>&, const Vector<std::size_t>&);
 
 // int
 template class Vector<int>;
@@ -746,7 +720,7 @@ template Vector<int> operator*(const Vector<int>&, int);
 template Vector<int> operator*(int, const Vector<int>&);
 template Vector<int> operator*(const Vector<int>&, const Vector<int>&);
 
-
+// complex
 template class Vector< std::complex<double> >;
 template Vector< std::complex<double> > space( std::complex<double> ,  std::complex<double> , std::size_t);
 template std::complex<double>  dot(const Vector< std::complex<double> >&, const Vector< std::complex<double> >&);
