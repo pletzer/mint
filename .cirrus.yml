@@ -125,7 +125,6 @@ osx_task:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-osx-64.lock >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
-    - conda install --yes -c conda-forge netcdf-fortran doxygen 2>&1
     - pip install --no-deps --editable .
     - pytest
     - mkdir build-cmake
