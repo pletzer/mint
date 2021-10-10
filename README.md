@@ -32,7 +32,7 @@ The development of the numerical method and its implementation are supported by 
 
 ## References
 
-`MINT` implements the 2D+1D (horizontal plus a vertical axis) interpolation and regridding method described in 
+`MINT` implements the (2 + 1)D (horizontal plus a vertical axis) interpolation and regridding method described in 
 [Mimetic Interpolation of Vector Fields on Arakawa C/D Grids](https://journals.ametsoc.org/view/journals/mwre/147/1/mwr-d-18-0146.1.xml).
 
 This is a particular case of the more general family of methods described in [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
