@@ -1,7 +1,8 @@
-#include <mntCmdLineArgParser.h>
-#include <cassert>
 #include <cstring>
+#include <cassert>
 #include <iostream>
+
+#include <mntCmdLineArgParser.h>
 
 int main(int argc, char** argv) {
 

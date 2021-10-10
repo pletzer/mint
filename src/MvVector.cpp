@@ -65,8 +65,7 @@ std::size_t Vector<T>::bra(T elem)
 {
   return static_cast<std::size_t>(
                  std::upper_bound(this->begin() + 1, 
-                          this->end(), 
-                          elem) - 
+                                  this->end(), elem) - 
                  this->begin() - 1);
 }
 
@@ -188,11 +187,10 @@ Vector<T> &Vector<T>::operator/=(const Vector<T> &w)
 
 
 template<class T>
-Vector<T> Vector<T>::operator()(const Vector<std::size_t> &I) const
+Vector<T> Vector<T>::operator()(const Vector<int> &I) const
 {
   Vector<T> y(I.size());
-
-  for (std::size_t i = I.size(); i--;)
+  for (std::size_t i = 0; i < I.size(); i++)
     y[i] = (*this)[ I[i] ];
   return y;
 }

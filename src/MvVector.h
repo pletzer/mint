@@ -213,7 +213,7 @@ public:
     return (*this)[i];
   }
 
-  Vector<T> operator()(const Vector<std::size_t> &I) const;
+  Vector<T> operator()(const Vector<int> &I) const;
 };
 
 typedef Vector<double> Vec;
