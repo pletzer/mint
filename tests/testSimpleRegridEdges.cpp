@@ -39,7 +39,7 @@ int main() {
     assert(ier == 0);
     
     std::string outputFilename = "simpleRegridEdgesWeights.nc";
-    ier = mnt_regridedges_dumpWeights(&rg, outputFilename.c_str(), outputFilename.size());
+    ier = mnt_regridedges_dumpWeights(&rg, outputFilename.c_str(), (int) outputFilename.size());
     assert(ier == 0);
 
     // edges point in the positive direction

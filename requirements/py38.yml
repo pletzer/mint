@@ -4,19 +4,17 @@ channels:
   - conda-forge
 
 dependencies:
-  - python=3.9
+  - python=3.8
 
 # Setup dependencies.
   - cmake
   - cython
-  - doxygen
   - setuptools
   - tbb-devel
   - pip
 
 # Core dependencies.
   - libnetcdf
-  - netcdf-fortran
   - numpy
   - vtk=9.0.3
 

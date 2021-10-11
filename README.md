@@ -32,7 +32,7 @@ The development of the numerical method and its implementation are supported by 
 
 ## References
 
-`MINT` implements the 2D+1D (horizontal plus a vertical axis) interpolation and regridding method described in 
+`MINT` implements the (2 + 1)D (horizontal plus a vertical axis) interpolation and regridding method described in 
 [Mimetic Interpolation of Vector Fields on Arakawa C/D Grids](https://journals.ametsoc.org/view/journals/mwre/147/1/mwr-d-18-0146.1.xml).
 
 This is a particular case of the more general family of methods described in [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
@@ -102,7 +102,7 @@ for instance.
 If you want to call `MINT` from `Fortran`, `C` or `C++` we recommend that you build the `mint` library. In addition to the C++ and, optionally, the Fortran compilers you will need
 
  * CMake 
- * NetCDF with Fortran 77 bindings (libnetcdf and libnetcdff)
+ * C NetCDF and optionally Fortran NetCDF (libnetcdff)
  * VTK >= 8
 
 installed.
@@ -121,18 +121,21 @@ FC=pgfortran CXX=pgcxx cmake ..
 make -j 8
 ```
 
-The locations of the NetCDF library and headers are inferred from the `nc-config` and `nf-config` commands but these paths can be overriden. Likewise, the location of VTK can be specified manually.
-
+The locations of the NetCDF library and headers can be inferred from the `nc-config`. Use
+```
+cmake -D BUILD_FORTRAN=ON ..
+```
+to build the Fortran interface (requires libnetcdff to be installed). You can also specify the location of VTK and NetCDF manually.
 For instance, in the Anaconda prompt terminal on Windows 10 Entreprise:
 ```
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
-cmake -G "NMake Makefiles" -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\include\vtk-9.0" -DVTK_LIBRARY_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\lib" -DNETCDF_INCLUDE_DIRS="%userprofile%\miniconda3\envs\mint-dev\Library\include" -DNETCDF_LIBRARIES="%userprofile%\miniconda3\envs\mint-dev\Library\lib\netcdf.lib" ..
+cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\include\vtk-9.0" -DVTK_LIBRARY_DIR="%userprofile%\miniconda3\envs\mint-dev\Library\lib" -DNETCDF_INCLUDE_DIRS="%userprofile%\miniconda3\envs\mint-dev\Library\include" -DNETCDF_LIBRARIES="%userprofile%\miniconda3\envs\mint-dev\Library\lib\netcdf.lib" ..
 nmake
 ```
 
 You can check that the build was successful by typing:
 ```
-make test
+ctest
 ```
 
 

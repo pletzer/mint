@@ -132,7 +132,7 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
     return 1;
   }  
 
-  std::size_t ndims = (*self)->dimSizes.size();
+  int ndims = (int) (*self)->dimSizes.size();
   std::vector<int> dimIds(ndims);
   int ier;
   for (std::size_t i = 0; i < ndims; ++i) {

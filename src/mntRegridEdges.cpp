@@ -489,12 +489,12 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     std::string msg;
     // checks
     if (!(*self)->srcGrid) {
-        msg + "must set source grid";
+        msg = "must set source grid";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
     if (!(*self)->dstGrid) {
-        msg + "must set destination grid\n";
+        msg = "must set destination grid\n";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 2;
     }
@@ -1109,4 +1109,3 @@ int mnt_regridedges_print(RegridEdges_t** self) {
     }
     return 0;
 }
-
