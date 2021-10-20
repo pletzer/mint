@@ -32,10 +32,9 @@ The development of the numerical method and its implementation are supported by 
 
 ## References
 
-`MINT` implements the (2 + 1)D (horizontal plus a vertical axis) interpolation and regridding method described in 
-[Mimetic Interpolation of Vector Fields on Arakawa C/D Grids](https://journals.ametsoc.org/view/journals/mwre/147/1/mwr-d-18-0146.1.xml).
-
-This is a particular case of the more general family of methods described in [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
+Please refer to the following publications when using `MINT`.
+ * [Mimetic Interpolation of Vector Fields on Arakawa C/D Grids](https://journals.ametsoc.org/view/journals/mwre/147/1/mwr-d-18-0146.1.xml).
+ * [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
 
 ## Want to contribute?
 
@@ -48,9 +47,22 @@ Any help will be greatly appreciated.
 
 ## How to install or build `MINT` as  a Python module
 
-This is the most user friendly access to the MINT package. Not all the functionality from C++ is exposed but it contains the most important parts. (Additional features can be added on request.)
+Not all the functionality from C++ is exposed but it contains the most important parts. (Additional features can be added on request.)
 
-We recommend you install `Miniconda3`. Once you have `Miniconda3` installed, type (Unix)
+We recommend you install `Miniconda3`. Miniconda installers can be downloaded for Windows, Linux and Mac OS X (here)[https://docs.conda.io/en/latest/miniconda.html].
+
+### Conda installation
+
+Once Miniconda3 is installed, type
+```
+conda install -c conda-forge python-mint
+```
+Note that you will need to have OpenGL installed. On Ubuntu, do `apt-get install libgl1-mesa-glx`. 
+
+### Building from source
+
+This requires a recent C++ compiler (Visual C++ 2019, gcc 10 or clang 12 or later).
+
 ```
 conda env create --file requirements/mint.yml
 conda activate mint-dev
@@ -63,12 +75,7 @@ conda activate mint-dev
 conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy pytest
 ```
 
-Then type either 
-```
-conda install -c conda-forge python-mint
-```
-
-or, if you prefer to build from source, in the root `MINT` directory:
+Then type:
 ```
 pip install --no-deps --editable .
 ```
@@ -102,8 +109,8 @@ for instance.
 If you want to call `MINT` from `Fortran`, `C` or `C++` we recommend that you build the `mint` library. In addition to the C++ and, optionally, the Fortran compilers you will need
 
  * CMake 
- * C NetCDF and optionally Fortran NetCDF (libnetcdff)
- * VTK >= 8
+ * NetCDF (libnetcdf) and optionally Fortran NetCDF (libnetcdff)
+ * VTK >= 9
 
 installed.
 
