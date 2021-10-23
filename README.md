@@ -20,11 +20,11 @@
 ## Overview
 
 This project aims to provide interpolating and regridding capability for horizontal edge/face centred fields on the sphere. 
-The source and destination grids are stored as a collection of grid cells, which have four vertices (i.e. the cells are quadrilaterals). Thus, the grids 
+The source and destination grids are stored as a collection of grid cells with four vertices each (i.e. the cells are quadrilaterals). Thus, the grids 
 can be quite general - we support both structured and unstructured grids. `MINT` can read data stored in a 2D subset version of the [UGRID](https://ugrid-conventions.github.io/ugrid-conventions/) format.
 
-The regridding method is mimetic in the sense that Stokes's theorem is satisfied to near machine precision. In particular, the 
-loop integrals of an interpolated vector field deriving from a gradient is zero.
+MINT conserves lateral fluxes. The regridding method is mimetic in the sense that Stokes's or the divergence theorems are satisfied to near machine precision. In particular, the 
+loop integrals of an interpolated vector field deriving from a gradient or streamfunction is zero.
 
 ## Thank you
 
@@ -40,14 +40,13 @@ Please refer to the following publications when using `MINT`.
 
 We're looking for contributions, particularly in the areas of:
  * code documentation
- * creating Jupyter notebooks and/or code examples
  * identifying scientific applications that can leverage `MINT`
 
 Any help will be greatly appreciated.
 
 ## How to install or build `MINT` as  a Python module
 
-Not all the functionality from C++ is exposed but it contains the most important parts. (Additional features can be added on request.)
+This lets you evaluate `MINT` with minimal fuss. Note: not all the functionality from C++ is exposed in the Python module -- additional features can be added on request.
 
 We recommend you install `Miniconda3`. Miniconda installers can be downloaded for Windows, Linux and Mac OS X (here)[https://docs.conda.io/en/latest/miniconda.html].
 
@@ -57,18 +56,18 @@ Once Miniconda3 is installed, type
 ```
 conda install -c conda-forge python-mint
 ```
-Note that you will need to have OpenGL installed. On Ubuntu, do `apt-get install libgl1-mesa-glx`. 
+Note that you will need to have OpenGL, a core dependency of VTK, installed. On Ubuntu, you might have to type `apt-get install libgl1-mesa-glx`. 
 
 ### Building from source
 
-This requires a recent C++ compiler (Visual C++ 2019, gcc 10 or clang 12 or later).
+This requires a recent C++ compiler (Visual C++ 2019, gcc 10, clang 12 or later).
 
 ```
 conda env create --file requirements/mint.yml
 conda activate mint-dev
 ```
 
-If you find the above commands to fail on Windows, you can try instead (in the Anaconda prompt terminal):
+If you find the above commands to fail on Windows, try (in the Anaconda prompt terminal):
 ```
 conda create -n mint-dev
 conda activate mint-dev
@@ -79,7 +78,6 @@ Then type:
 ```
 pip install --no-deps --editable .
 ```
-You will require a C++ compiler for the above step.
 
 ### Testing the Python module
 
@@ -132,7 +130,9 @@ The locations of the NetCDF library and headers can be inferred from the `nc-con
 ```
 cmake -D BUILD_FORTRAN=ON ..
 ```
-to build the Fortran interface (requires libnetcdff to be installed). You can also specify the location of VTK and NetCDF manually.
+to build the Fortran interface (requires libnetcdff to be installed). 
+
+You can also specify the location of VTK and NetCDF manually.
 For instance, in the Anaconda prompt terminal on Windows 10 Entreprise:
 ```
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
@@ -140,7 +140,7 @@ cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%userprofile%\miniconda3\envs\mint
 nmake
 ```
 
-You can check that the build was successful by typing:
+Check that the build was successful by typing:
 ```
 ctest
 ```
