@@ -56,7 +56,7 @@ Once Miniconda3 is installed, type
 ```
 conda install -c conda-forge python-mint
 ```
-Note that you will need to have OpenGL, a core dependency of VTK, installed. On Ubuntu, you might have to type `apt-get install libgl1-mesa-glx`. 
+Note that you will need to have OpenGL, a core dependency of VTK, installed. On Ubuntu, you might have to `apt-get install libgl1-mesa-glx`. 
 
 ### Building from source
 
