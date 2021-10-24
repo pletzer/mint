@@ -11,11 +11,11 @@ dependencies:
   - cython
   - setuptools
   - tbb-devel
+  - numpy
   - pip
 
 # Core dependencies.
-  - libnetcdf
-  - numpy
+  - libnetcdf=4.8.1
   - vtk=9.0.3
 
 # Test dependencies.
