@@ -146,7 +146,7 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
 /**
  * Load a grid from a 2D Ugrid file
  * @param self instance of Grid_t
- * @param fileAndMeshName column separated file and mesh name (e.g. cs_4.nc:physics)
+ * @param fileAndMeshName column separated file and mesh name (e.g. cs_4.nc$physics)
  * @return error code (0 = OK)
  * @note user should invoke mnt_grid_del to free memory when disposing of the grid
  * @note call mnt_grid_new prior to this call

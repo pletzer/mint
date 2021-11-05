@@ -61,7 +61,7 @@ class Grid(object):
         """
         Load a grid from a 2D UGRID file.
 
-        :param fileAndMeshName: string in the format filename:meshname
+        :param fileAndMeshName: string in the format filename$meshname
         """
         MINTLIB.mnt_grid_loadFrom2DUgrid.argtypes = [POINTER(c_void_p), c_char_p]
         fm = fileAndMeshName.encode('utf-8')
