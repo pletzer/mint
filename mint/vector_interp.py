@@ -48,7 +48,7 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
-    def buildLocator(self, numCellsPerBucket, periodX):
+    def buildLocator(self, numCellsPerBucket=1, periodX=360.):
         """
         Build the cell locator.
 
@@ -63,7 +63,7 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'buildLocator', ier)
 
-    def findPoints(self, targetPoints, tol2):
+    def findPoints(self, targetPoints, tol2=1.e-12):
         """
         Find the cells containing the target points.
 
@@ -104,7 +104,7 @@ class VectorInterp(object):
         ier = MINTLIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, res)
         if ier:
             msg = "Some target lines fall outside the grid."
-            warning_handler(FILE, 'getEdgeVectors', ier, detailedMsg=msg)
+            warning_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
         return res
 
     def getFaceVectors(self, data):
@@ -122,5 +122,5 @@ class VectorInterp(object):
         ier = MINTLIB.mnt_vectorinterp_getFaceVectors(self.obj, data, res)
         if ier:
             msg = "Some target lines fall outside the grid."
-            warning_handler(FILE, 'getFaceVectors', ier, detailedMsg=msg)
+            warning_handler(FILE, 'getFaceVectors', ier, detailedmsg=msg)
         return res

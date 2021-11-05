@@ -156,7 +156,7 @@ class RegridEdges(object):
                                         periodX, debug)
         if ier:
             msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
-            warning_handler(FILE, 'build', ier, detailedMsg=msg)
+            warning_handler(FILE, 'build', ier, detailedmsg=msg)
 
     def dumpWeights(self, filename):
         """
