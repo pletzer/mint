@@ -6,6 +6,25 @@
 #include <iostream>
 
 LIBRARY_API
+int mnt_openNc(const char* filename, const char* varname, int* ncid, int* varid) {
+  int ier = nc_open(filename, NC_NOWRITE, ncid);
+  if (ier != NC_NOERR) {
+    return 1;
+  }
+  ier = nc_inq_varid(*ncid, varname, varid);
+  if (ier != NC_NOERR) {
+    return 2;
+  }
+  return 0;
+}
+
+LIBRARY_API
+int mnt_closeNc(int ncid) {
+  int ier = nc_close(ncid);
+  return ier;
+}
+
+LIBRARY_API
 int mnt_ncfieldread_new(NcFieldRead_t** self, int ncid, int varid) {
 
   int ier;

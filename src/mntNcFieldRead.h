@@ -6,6 +6,28 @@
 #ifndef MNT_NC_FIELD_READ
 #define MNT_NC_FIELD_READ
 
+
+/**
+ * Opens a NetCDF file and gets the Id of the file and the variable
+ * @param filename NetCDF file name
+ * @param varname variable name
+ * @param ncid file Id (ouput)
+ * @param varid variable Id (ouput)
+ * @return 0 = no error, 1 = could not open the file, 2 = could not find the variable
+ * @note use mnt_closeNc to close the file
+ */
+LIBRARY_API
+int mnt_openNc(const char* filename, const char* varname, int* ncid, int* varid);
+
+/**
+ * Closes a NetCDF file
+ * @param ncid file Id
+ * @return 0 = no error
+ * @note use mnt_openNc to open the file
+ */
+LIBRARY_API
+int mnt_closeNc(int ncid);
+
 /**
  * A class to read and edge fields from netcdf files
  */
