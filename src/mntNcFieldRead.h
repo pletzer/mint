@@ -7,7 +7,7 @@
 #define MNT_NC_FIELD_READ
 
 /**
- * A class to read and write edge fields to/from netcdf files
+ * A class to read and edge fields from netcdf files
  */
 
 struct NcFieldRead_t {
