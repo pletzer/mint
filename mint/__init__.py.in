@@ -23,12 +23,11 @@ __version__ = "@VERSION@"
 MINTLIB = CDLL(str(Path(__path__[0]).parent / Path('libmint.so')))
 
 __all__ = ('regrid_edges', 'grid', 'polyline_integral', 
-           'vector_interp', 'nc_field_read', 'message_handler', MINTLIB)
+           'vector_interp', 'message_handler', MINTLIB)
 
 from .message_handler import error_handler, warning_handler, printLogMessages, writeLogMessages
 from .regrid_edges import RegridEdges
 from .grid import Grid
 from .polyline_integral import PolylineIntegral
 from .vector_interp import VectorInterp
-from .nc_field_read import NcFieldRead
 
