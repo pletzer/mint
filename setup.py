@@ -121,7 +121,8 @@ if cxx_flags is not None:
     extra_compile_args = cxx_flags.split()
 elif cpp_flags is not None:
     extra_compile_args = cpp_flags.split()
-elif os.name != 'nt':
+
+if os.name != 'nt':
     extra_compile_args.append("-std=c++11")
 
 print(f'VTK_VERSION          = {vtklib["VTK_VERSION"]}')
