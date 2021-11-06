@@ -437,7 +437,7 @@ int mnt_grid_print(Grid_t** self) {
     vtkIdType ncells = (*self)->grid->GetNumberOfCells();
     std::cout << "Number of cells: " << ncells << '\n';
 
-    std::vector<double> pt(3);
+    Vec3 pt;
 
     for (vtkIdType i = 0; i < ncells; ++i) {
 
@@ -555,8 +555,40 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
     return 0;
 }
 
+LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
 
     *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
+    return 0;
+}
+
+LIBRARY_API
+int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
+
+    *numBadCells = 0;
+
+    vtkIdType ncells = (*self)->grid->GetNumberOfCells();
+
+    std::vector<Vec3> pts(4); // 2D
+
+    for (vtkIdType i = 0; i < ncells; ++i) {
+
+        vtkCell* cell = (*self)->grid->GetCell(i);
+
+        for (int j = 0; j < cell->GetNumberOfPoints(); ++j) {
+            vtkIdType k = cell->GetPointId(j);
+            (*self)->points->GetPoint(k, &pts[j][0]);
+        }
+        Vec3 d10 = pts[1] - pts[0];
+        Vec3 d30 = pts[3] - pts[0];
+        double area013 = d10[0]*d30[1] - d10[1]*d30[0];
+        Vec3 d32 = pts[3] - pts[2];
+        Vec3 d12 = pts[1] - pts[2];
+        double area231 = d32[0]*d12[1] - d32[1]*d12[0];
+        if (area013 < 0. || area231 < 0.) {
+            (*numBadCells)++;
+        }
+    }
+
     return 0;
 }

@@ -138,7 +138,6 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     n = this->edge2Points.size();
     this->numEdges = n / 2; // 2 points per edge
 
-
     // compute min/max values after regularizing the coords across the faces
     // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
     this->xmin = +std::numeric_limits<double>::max();

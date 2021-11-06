@@ -239,5 +239,13 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells);
 LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges);
 
+/**
+ * Check
+ * @param self instance of Grid_t
+ * @param numBadCells number of bad cells (output)
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_grid_check(Grid_t** self, std::size_t* numBadCells);
 
 #endif // MNT_GRID
