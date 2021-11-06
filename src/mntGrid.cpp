@@ -16,7 +16,7 @@
 #include "mntFileMeshNameExtractor.h"
 
 /**
- * Fix the longitude by adding/subtracting a period to reduce the edge distances
+ * Fix the longitude by adding/subtracting a period to reduce the edge lengths
  * @param periodX periodicity length in x
  * @param lonBase base/reference longitude
  * @param lon longitude
@@ -376,14 +376,14 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
             }
 
-            // make sure the cell is within the lonMin to lonMin + 360.0 range
+            // make sure the cell is within the lonMin to lonMin + periodX range
             double offsetLon = 0.0;
             if ((*self)->fixLonAcrossDateline) {
-                if (avgLon > lonMin + 360.) {
-                    offsetLon = -360.0;
+                if (avgLon > lonMin + (*self)->periodX) {
+                    offsetLon = -(*self)->periodX;
                 }
                 else if (avgLon < lonMin) {
-                    offsetLon = 360.0;
+                    offsetLon = (*self)->periodX;
                 }
                 for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
                     (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*numVertsPerCell*3] += offsetLon;

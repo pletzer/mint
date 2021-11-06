@@ -75,6 +75,7 @@ int mnt_grid_del(Grid_t** self);
  * @param fixLonAcrossDateline set this to 0 if periodicity length should NOT be added/subtracted to nodes in order to make the cell as compact as possible
  * @param averageLonAtPole set this to 0 if longitudes at the poles should NOT take the average value of the node cell node's longitudes
  * @param degrees set this to 0 if the coordinates are in radians
+ * @note call this before reading the grid from file
  * @return error code (0 = OK)
  */
 LIBRARY_API

@@ -49,6 +49,7 @@ class Grid(object):
                                  be the average of the cell's longitudes
 
         note:: a lon-lat grid requires 0, 0 and cubed sphere grid requires 1, 1
+        note:: call this before reading the grid from file
         """
         MINTLIB.mnt_grid_setFlags.argtypes = [POINTER(c_void_p), c_int, c_int]
         ier = MINTLIB.mnt_grid_setFlags(self.obj,
