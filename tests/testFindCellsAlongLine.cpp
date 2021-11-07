@@ -21,7 +21,7 @@ void test1(const std::string& filename, const double p0[], const double p1[], do
     ier = mnt_grid_setFlags(&grid, 1, 1, 0);
     assert(ier == 0);
 
-    ier = mnt_grid_loadFrom2DUgrid(&grid, filename.c_str());
+    ier = mnt_grid_loadFromUgrid2D(&grid, filename.c_str());
     assert(ier == 0);
 
     vtkUnstructuredGrid* ugrid = NULL;

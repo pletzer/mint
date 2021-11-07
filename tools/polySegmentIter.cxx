@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     Grid_t* grd;
     ier = mnt_grid_new(&grd);
-    ier = mnt_grid_loadFrom2DUgrid(&grd, srcFileMesh.c_str());
+    ier = mnt_grid_loadFromUgrid2D(&grd, srcFileMesh.c_str());
     if (ier != 0) {
         std::cerr << "ERROR: failed to read " << srcFileMesh << '\n';
         return 2;        

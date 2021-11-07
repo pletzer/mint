@@ -281,7 +281,7 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 }
 
 LIBRARY_API
-int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
+int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename:meshname"
     auto fm = fileMeshNameExtractor(fileAndMeshName);

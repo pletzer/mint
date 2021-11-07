@@ -14,7 +14,7 @@ var searchData=
   ['mnt_5fgrid_5fgetnumberofedges_11',['mnt_grid_getNumberOfEdges',['../mnt_grid_8h.html#aab7b4f890cd1bb0d59c0b68daf8f9732',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fgetpoints_12',['mnt_grid_getPoints',['../mnt_grid_8h.html#a78460c4de03af0177fc5630a21539862',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fload_13',['mnt_grid_load',['../mnt_grid_8h.html#a1f4970fa8e13ba40510be5dd5158935a',1,'mntGrid.h']]],
-  ['mnt_5fgrid_5floadfrom2dugrid_14',['mnt_grid_loadFrom2DUgrid',['../mnt_grid_8h.html#a808d74b5d591ca84691993778ae32bf2',1,'mntGrid.h']]],
+  ['mnt_5fgrid_5floadfromugrid2d_14',['mnt_grid_loadFromUgrid2D',['../mnt_grid_8h.html#a776817560a76f57c60ee0aadcc59f974',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fnew_15',['mnt_grid_new',['../mnt_grid_8h.html#a08f391acad052fb4a4d4ac63ff7bacab',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fprint_16',['mnt_grid_print',['../mnt_grid_8h.html#a6ed4234f6ece38eb7b8d5d0e21b589ac',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fsetflags_17',['mnt_grid_setFlags',['../mnt_grid_8h.html#a6f668c467a208f2dd9ca22b035d27d3a',1,'mntGrid.h']]],

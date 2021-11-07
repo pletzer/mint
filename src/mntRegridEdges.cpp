@@ -467,7 +467,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
-    int ier = mnt_grid_loadFrom2DUgrid(&((*self)->srcGridObj), filename.c_str());
+    int ier = mnt_grid_loadFromUgrid2D(&((*self)->srcGridObj), filename.c_str());
     (*self)->srcGrid = (*self)->srcGridObj->grid;
     return ier;
 }
@@ -478,7 +478,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
-    int ier = mnt_grid_loadFrom2DUgrid(&((*self)->dstGridObj), filename.c_str());
+    int ier = mnt_grid_loadFromUgrid2D(&((*self)->dstGridObj), filename.c_str());
     (*self)->dstGrid = (*self)->dstGridObj->grid;
     return ier;
 }

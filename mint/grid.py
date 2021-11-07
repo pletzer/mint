@@ -58,17 +58,17 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'setFlags', ier)
 
-    def loadFrom2DUgrid(self, fileAndMeshName):
+    def loadFromUgrid2D(self, fileAndMeshName):
         """
         Load a grid from a 2D UGRID file.
 
         :param fileAndMeshName: string in the format filename$meshname
         """
-        MINTLIB.mnt_grid_loadFrom2DUgrid.argtypes = [POINTER(c_void_p), c_char_p]
+        MINTLIB.mnt_grid_loadFromUgrid2D.argtypes = [POINTER(c_void_p), c_char_p]
         fm = fileAndMeshName.encode('utf-8')
-        ier = MINTLIB.mnt_grid_loadFrom2DUgrid(self.obj, fm)
+        ier = MINTLIB.mnt_grid_loadFromUgrid2D(self.obj, fm)
         if ier:
-            error_handler(FILE, 'loadFrom2DUgrid', ier)
+            error_handler(FILE, 'loadFromUgrid2D', ier)
 
     def load(self, filename):
         """

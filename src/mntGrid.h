@@ -153,7 +153,7 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
  * @note call mnt_grid_new prior to this call
  */
 LIBRARY_API
-int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName);
+int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName);
 
 /**
  * Load a grid from a VTK file
