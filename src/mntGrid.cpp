@@ -1,6 +1,7 @@
 
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <cmath>
+#include <sstream>
 
 #include "mntLogger.h"
 #include <mntGrid.h>
@@ -562,6 +563,12 @@ int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
     return 0;
 }
 
+double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
+    Vec3 d10 = p1 - p0;
+    Vec3 d20 = p2 - p0;
+    return d10[0]*d20[1] - d10[1]*d20[0];
+}
+
 LIBRARY_API
 int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
 
@@ -579,19 +586,28 @@ int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
             vtkIdType k = cell->GetPointId(j);
             (*self)->points->GetPoint(k, &pts[j][0]);
         }
-        Vec3 d10 = pts[1] - pts[0];
-        Vec3 d30 = pts[3] - pts[0];
-        double area013 = d10[0]*d30[1] - d10[1]*d30[0];
-        Vec3 d32 = pts[3] - pts[2];
-        Vec3 d12 = pts[1] - pts[2];
-        double area231 = d32[0]*d12[1] - d32[1]*d12[0];
-        if (area013 < 0. || area231 < 0.) {
+
+        std::size_t badCell = 0;
+        double area = getArea2D(pts[0], pts[1], pts[3]);
+        if (area < 0.) {
+            std::stringstream ss;
+            ss << pts[0] << ';' << pts[1] << ';' << pts[3];
             mntlog::warn(__FILE__, __func__, __LINE__, 
             "cell " + std::to_string(i) + 
-            " has negative area for points 0-1-3 = " + std::to_string(area013)  + 
-            " or points 2-3-1 = " + std::to_string(area231) + "\n");
-            (*numBadCells)++;
+            " has negative area for points 0-1-3 " + ss.str() + "\n");
+            badCell = 1;            
         }
+
+        area = getArea2D(pts[2], pts[3], pts[1]);
+        if (area < 0.) {
+            std::stringstream ss;
+            ss << pts[2] << ';' << pts[3] << ';' << pts[1];
+            mntlog::warn(__FILE__, __func__, __LINE__, 
+            "cell " + std::to_string(i) + 
+            " has negative area for points 2-3-1 " + ss.str() + "\n");
+            badCell = 1;            
+        }
+        (*numBadCells) += badCell;
     }
 
     return 0;
