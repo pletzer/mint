@@ -43,6 +43,12 @@ void testUgrid() {
         }
     }
 
+    // check that each face a positive area
+    std::size_t numBadCells = 0;
+    ier = mnt_grid_check(&grd, &numBadCells);
+    assert(ier == 0);
+    assert(numBadCells == 0);
+
     // attach a field
     std::vector<double> cellByCellData(numCells * 4);
     for (size_t cellId = 0; cellId < numCells; ++cellId) {
