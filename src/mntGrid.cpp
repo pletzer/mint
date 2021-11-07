@@ -594,7 +594,8 @@ int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
             ss << pts[0] << ';' << pts[1] << ';' << pts[3];
             mntlog::warn(__FILE__, __func__, __LINE__, 
             "cell " + std::to_string(i) + 
-            " has negative area for points 0-1-3 " + ss.str() + "\n");
+            " has negative area = " + std::to_string(area) +
+            " for points 0-1-3 " + ss.str() + "\n");
             badCell = 1;            
         }
 
@@ -604,7 +605,8 @@ int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
             ss << pts[2] << ';' << pts[3] << ';' << pts[1];
             mntlog::warn(__FILE__, __func__, __LINE__, 
             "cell " + std::to_string(i) + 
-            " has negative area for points 2-3-1 " + ss.str() + "\n");
+            " has negative area = " + std::to_string(area) +
+            " for points 2-3-1 " + ss.str() + "\n");
             badCell = 1;            
         }
         (*numBadCells) += badCell;
