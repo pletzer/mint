@@ -586,6 +586,10 @@ int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
         Vec3 d12 = pts[1] - pts[2];
         double area231 = d32[0]*d12[1] - d32[1]*d12[0];
         if (area013 < 0. || area231 < 0.) {
+            mntlog::warn(__FILE__, __func__, __LINE__, 
+            "cell " + std::to_string(i) + 
+            " has negative area for points 0-1-3 = " + std::to_string(area013)  + 
+            " or points 2-3-1 = " + std::to_string(area231) + "\n");
             (*numBadCells)++;
         }
     }
