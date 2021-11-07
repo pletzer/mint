@@ -2,6 +2,7 @@
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <cmath>
 #include <sstream>
+#include <limits>
 
 #include "mntLogger.h"
 #include <mntGrid.h>
@@ -16,6 +17,20 @@
 #include "mntUgrid2D.h"
 #include "mntFileMeshNameExtractor.h"
 
+
+/**
+ * Get the 2D area
+ * @param p0 base point
+ * @param p1 point 1
+ * @param p2 point 2
+ * @return area
+ */
+double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
+    Vec3 d10 = p1 - p0;
+    Vec3 d20 = p2 - p0;
+    return d10[0]*d20[1] - d10[1]*d20[0];
+}
+
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge lengths
  * @param periodX periodicity length in x
@@ -27,10 +42,12 @@ inline
 double fixLongitude(double periodX, double lonBase, double lon) {
 
     double diffLon = lon - lonBase;
+    const double eps = 100 * std::numeric_limits<double>::epsilon();
 
-    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX),
+    // favour leaving lon as is if lon == 0
+    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX - eps),
                                              std::abs(diffLon),
-                                             std::abs(diffLon + periodX)};
+                                             std::abs(diffLon + periodX + eps)};
 
     std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), diffLonMinusZeroPlus.end());
     int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
@@ -561,12 +578,6 @@ int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
 
     *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
     return 0;
-}
-
-double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
-    Vec3 d10 = p1 - p0;
-    Vec3 d20 = p2 - p0;
-    return d10[0]*d20[1] - d10[1]*d20[0];
 }
 
 LIBRARY_API
