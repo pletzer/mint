@@ -83,6 +83,8 @@ def test_load_from_ugrid_file():
     # attaching a 3 components field to the grid
     data = numpy.array(range(ncells*4*3), numpy.float64)
     gr.attach('myData', data)
+    num_bad_cells = gr.check()
+    assert(num_bad_cells == 0)
 
 
 def test_edge_arc_lengths():

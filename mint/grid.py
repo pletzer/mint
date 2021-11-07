@@ -224,3 +224,18 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'getNumberOfEdges', ier)
         return n.value
+
+    def check(self):
+        """
+        Check that the cells have positive area.
+
+        :returns number of bad cells
+        """
+        num_bad_cells = c_size_t()
+        MINTLIB.mnt_grid_check.argtypes = [POINTER(c_void_p), POINTER(c_size_t)]
+        ier = MINTLIB.mnt_grid_check(self.obj, byref(num_bad_cells))
+        if ier:
+            error_handler(FILE, 'check', ier)
+        return num_bad_cells.value
+
+
