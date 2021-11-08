@@ -45,7 +45,7 @@ class VectorInterp(object):
 
         :param grid: instance of Grid
         """
-        self.numGridedges = grid.getNumberOfEdges()
+        self.numGridEdges = grid.getNumberOfEdges()
         self.numGridCells = grid.getNumberOfCells()
         MINTLIB.mnt_vectorinterp_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
         ier = MINTLIB.mnt_vectorinterp_setGrid(self.obj, grid.ptr)
