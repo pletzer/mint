@@ -19,13 +19,13 @@
 
 
 /**
- * Get the 2D area
+ * Get the paralleleliped 2D area
  * @param p0 base point
  * @param p1 point 1
  * @param p2 point 2
  * @return area
  */
-double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
+inline double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
     Vec3 d10 = p1 - p0;
     Vec3 d20 = p2 - p0;
     return d10[0]*d20[1] - d10[1]*d20[0];
@@ -65,6 +65,7 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->grid = NULL;
     (*self)->reader = NULL;
     (*self)->doubleArrays.resize(0);
+    (*self)->numEdges = 0;
 
     (*self)->fixLonAcrossDateline = true;
     (*self)->averageLonAtPole = true;
@@ -246,10 +247,12 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
             double cos_the1 = cos(the1);
             double sin_the1 = sin(the1);
 
-
             // edge length is angle between the two points. Assume radius = 1. Angle is
             // acos of dot product in Cartesian space.
-            double r0DotR1 = cos_the0*cos_lam0*cos_the1*cos_lam1 + cos_the0*sin_lam0*cos_the1*sin_lam1 + sin_the0*sin_the1;
+            double r0DotR1 = cos_the0*cos_lam0*cos_the1*cos_lam1 +
+                             cos_the0*sin_lam0*cos_the1*sin_lam1 +
+                             sin_the0*sin_the1;
+
             std::size_t k = 4*cellId + edgeIndex;
             (*self)->edgeArcLengths[k] = std::abs( acos(r0DotR1) );
         }
@@ -300,6 +303,8 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     double xmin[3], xmax[3];
     ugrid.getRange(xmin, xmax);
     double lonMin = xmin[0];
+
+    (*self)->numEdges = ugrid.getNumberOfEdges();
 
     // copy
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
@@ -576,7 +581,7 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
 LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
 
-    *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
+    *numEdges = (*self)->numEdges;
     return 0;
 }
 

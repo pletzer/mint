@@ -87,6 +87,16 @@ def test_load_from_ugrid_file():
     assert(num_bad_cells == 0)
 
 
+def test_load_from_ugrid_file2():
+    gr = Grid()
+    gr.setFlags(1, 1)
+    filename = str(DATA_DIR / Path('lfric_diag_wind.nc'))
+    gr.loadFromUgrid2D(f'{filename}$Mesh2d')
+    nedges = gr.getNumberOfEdges()
+    print(f'nedges = {nedges}')
+    assert(nedges == 3072)
+
+
 def test_edge_arc_lengths():
     gr = Grid()
     gr.setFlags(1, 1)

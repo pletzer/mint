@@ -2,14 +2,15 @@ from ctypes import (c_char_p, c_size_t)
 from . import MINTLIB
 import logging
 
-def error_handler(filename, methodname, ier):
+def error_handler(filename, methodname, ier, detailedmsg=''):
     """
     Error handler
     @param filename file name
     @param methodname method or function name
     @param ier error code
     """
-    msg = f'ier={ier} after calling {methodname} in {filename}!'
+    msg = f'ier={ier} after calling {methodname} in {filename}!\n'
+    msg += detailedmsg
     logging.error(msg)
     raise RuntimeError(msg)
 

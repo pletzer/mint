@@ -205,7 +205,7 @@ class Grid(object):
         :returns number
         """
         MINTLIB.mnt_grid_getNumberOfCells.argtypes = [POINTER(c_void_p),
-                                                  POINTER(c_size_t)]
+                                                      POINTER(c_size_t)]
         n = c_size_t()
         ier = MINTLIB.mnt_grid_getNumberOfCells(self.obj, byref(n))
         if ier:
@@ -218,7 +218,8 @@ class Grid(object):
 
         :returns number
         """
-        MINTLIB.mnt_grid_getNumberOfEdges.argtypes = [POINTER(c_void_p)]
+        MINTLIB.mnt_grid_getNumberOfEdges.argtypes = [POINTER(c_void_p),
+                                                      POINTER(c_size_t)]
         n = c_size_t()
         ier = MINTLIB.mnt_grid_getNumberOfEdges(self.obj, byref(n))
         if ier:
