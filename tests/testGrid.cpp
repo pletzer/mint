@@ -107,8 +107,8 @@ void testUgrid() {
 int main(int argc, char** argv) {
 
     testLFRic();
-    // testUgrid();
-    // testVTK();
+    testUgrid();
+    testVTK();
 
     return 0;
 }
