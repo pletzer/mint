@@ -709,7 +709,6 @@ LIBRARY_API
 int mnt_regridedges_apply(RegridEdges_t** self, 
                           const double src_data[], double dst_data[]) {
 
-
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
     if (!(*self)->srcGridObj ||
         (*self)->srcGridObj->faceNodeConnectivity.size() == 0 || 
@@ -736,7 +735,7 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     // the two faces). edgeMultiplicity tracks the number of adjacent faces. 
     std::vector<int> edgeMultiplicity(numDstEdges, 0);
 
-    // add the contributions from each cell overlaps
+    // add the contributions from each cell overlap
     for (std::size_t i = 0; i < (*self)->weights.size(); ++i) {
 
         vtkIdType dstCellId = (*self)->weightDstCellIds[i];

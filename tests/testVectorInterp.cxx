@@ -97,7 +97,8 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+                                                            &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.0) < 1.e-10 && fabs(resVec[1] - 3.0) < 1.e-10);
@@ -107,7 +108,8 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+                                                            &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.0) < 1.e-10 && fabs(resVec[1] - 1.0) < 1.e-10);
@@ -117,7 +119,8 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+                                                            &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 2.0) < 1.e-10 && fabs(resVec[1] - 1.0) < 1.e-10);
@@ -127,7 +130,8 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+                                                            &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 2.0) < 1.e-10 && fabs(resVec[1] - 3.0) < 1.e-10);
@@ -205,11 +209,11 @@ void testRotated() {
     target[2] = points[2];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
     // note negative sign because area is pointing down
@@ -220,11 +224,11 @@ void testRotated() {
     target[2] = points[5];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
     // negative because area is pointing down
@@ -235,7 +239,7 @@ void testRotated() {
     target[2] = points[8];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0) < 1.e-12 && fabs(resVec[1] - 0) < 1.e-12);
@@ -245,7 +249,7 @@ void testRotated() {
     target[2] = points[11];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0) < 1.e-12 && fabs(resVec[1] - 0) < 1.e-12);
@@ -257,11 +261,11 @@ void testRotated() {
     target[2] = 0.5*(points[5] + points[8]);
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " east edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] + 0.5) < 1.e-12 && fabs(resVec[1] - 0.8660254037844) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " east face vector is " << resVec << '\n';
     assert(fabs(resVec[1] - 0.5) < 1.e-12 && fabs(resVec[0] - 0.8660254037844) < 1.e-12);
@@ -273,11 +277,11 @@ void testRotated() {
     target[2] = 0.5*(points[11] + points[2]);
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " west edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] + 0.5) < 1.e-12 && fabs(resVec[1] - 0.8660254037844) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " west face vector is " << resVec << '\n';
     assert(fabs(resVec[1] - 0.5) < 1.e-12 && fabs(resVec[0] - 0.8660254037844) < 1.e-12);
@@ -289,11 +293,11 @@ void testRotated() {
     target[2] = 0.5*(points[ 8] + points[11]);
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " north edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " north face vector is " << resVec << '\n';
     // note area is pointing down
@@ -348,9 +352,9 @@ void testUniformGrid(int nx, int ny) {
     mnt_vectorinterp_setLocator(&vp, cloc);
     double tol2 = 1.e-10;
     mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
-    mnt_vectorinterp_getEdgeVectors(&vp, &data[0], &resVec[0]);
+    mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
-    mnt_vectorinterp_getFaceVectors(&vp, &data[0], &resVec[0]);
+    mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
 
     // destroy
