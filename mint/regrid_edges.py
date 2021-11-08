@@ -137,7 +137,7 @@ class RegridEdges(object):
             error_handler(FILE, 'getNumDstEdges', ier)
         return n.value
 
-    def build(self, numCellsPerBucket, periodX, debug):
+    def build(self, numCellsPerBucket=10, periodX=360., debug=0):
         """
         Build the regridder and compute the regridding weights.
 

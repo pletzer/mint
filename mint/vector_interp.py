@@ -48,7 +48,7 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
-    def buildLocator(self, numCellsPerBucket=1, periodX=360.):
+    def buildLocator(self, numCellsPerBucket=10, periodX=360.):
         """
         Build the cell locator.
 

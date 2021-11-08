@@ -48,6 +48,11 @@ void test1(const std::string& filename, const double p0[], const double p1[], do
 int main(int argc, char** argv) {
 
     {
+        const double p0[] = {-180., 80., 0.};
+        const double p1[] = { 180., 80., 0.};
+        test1("@CMAKE_SOURCE_DIR@/data/lfric_diag_wind.nc$Mesh2d", p0, p1, 0.1);
+    }
+    {
         const double p0[] = {M_PI/2.          , 0., 0.};
         const double p1[] = {M_PI/2. + M_PI/8., 0., 0.};
         test1("@CMAKE_SOURCE_DIR@/data/mesh_C4.nc$unit_test", p0, p1, 0.1);

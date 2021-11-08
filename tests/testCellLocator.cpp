@@ -1,4 +1,5 @@
 #include <limits> // required by vtkUnstructuredGrid
+#include <mntGrid.h>
 #include <vmtCellLocator.h>
 #include <vtkDoubleArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -63,6 +64,36 @@ void createUniformGrid(int nx, int ny,
     }
     ptIds->Delete();
 
+}
+
+void testNetCDFFile(const std::string& fileNameAndMesh, const Vec3& point) {
+    int ier;
+    Grid_t* grd;
+    ier = mnt_grid_new(&grd);
+    assert(ier == 0);
+    std::string path = "${CMAKE_SOURCE_DIR}/data/" + fileNameAndMesh;
+    ier = mnt_grid_loadFromUgrid2D(&grd, path.c_str());
+    assert(ier == 0);
+    vtkUnstructuredGrid* vtkUGrid = NULL;
+    ier = mnt_grid_get(&grd, &vtkUGrid);
+    assert(ier == 0);
+
+    // create locator
+    vmtCellLocator* cloc = vmtCellLocator::New();
+    cloc->SetDataSet(vtkUGrid);
+    cloc->SetNumberOfCellsPerBucket(10);
+    cloc->BuildLocator();
+    cloc->setPeriodicityLengthX(360.0);
+
+    const double tol2 = 1.e-10;
+    vtkGenericCell *cell = NULL;
+    Vec3 pcoords;
+    std::vector<double> weights(8); // 8 vertices
+    vtkIdType cellId = cloc->FindCell(&point[0], tol2, cell, &pcoords[0], &weights[0]);
+    assert(cellId >= 0);
+
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
 }
 
 void testContainsPoint(int nx, int ny) {
@@ -566,6 +597,11 @@ void testFolding(int nx, int ny) {
 
 int main(int argc, char** argv) {
 
+    Vec3 point;
+    point[0] = 10.;
+    point[1] = 20.;
+    point[2] = 0.;
+    testNetCDFFile("lfric_diag_wind.nc$Mesh2d", point);
     testContainsPoint(10, 5);
     test1Quad(1);
     test1Quad(10);

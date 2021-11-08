@@ -1,5 +1,6 @@
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntRegridEdges.h>
+#include <mntLogger.h>
 #include <cmath>
 #undef NDEBUG // turn on asserts
 #include <cassert>
@@ -93,7 +94,6 @@ void test1() {
         ier = mnt_regridedges_nextSlice(&rg);
         assert(ier == 0);
     }
-
 
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
@@ -210,6 +210,7 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
 
 int main() {
 
+    // CURRENTLY FAILS
     // regridEdgeFieldTest("lfric_diag_wind", "@CMAKE_SOURCE_DIR@/data/lfric_diag_wind.nc$Mesh2d", "@CMAKE_SOURCE_DIR@/data/cs_4.nc$physics");
 
     // crashes when building the cell locator
