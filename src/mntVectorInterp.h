@@ -140,6 +140,42 @@ int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
+/**
+ * Get the edge vectors at given target points
+ * @param self instance of VectorInterp_t
+ * @param data edge data
+ * @param vectors array of output vectors, size numPoints*3
+ * @param placement 0 if data are cell by cell (size num cells * 4),
+ *                  data are assumed to be on unique edges 
+ *                  otherwise (size num edges)
+ * @return error code (0 = OK)
+ * @note call this after mnt_vectorinterp_findPoints. The returned vectors
+ *       will not be touched if the point falls out of the domain.
+ */
+LIBRARY_API
+int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
+                                    const double data[],
+                                    double vectors[], 
+                                    int placement);
+
+/**
+ * Get the Face vectors at given target points
+ * @param self instance of VectorInterp_t
+ * @param data edge data
+ * @param vectors array of output vectors, size numPoints*3
+ * @param placement 0 if data are cell by cell (size num cells * 4),
+ *                  data are assumed to be on unique edges 
+ *                  otherwise (size num edges)
+ * @return error code (0 = OK)
+ * @note call this after mnt_vectorinterp_findPoints. The returned vectors
+ *       will not be touched if the point falls out of the domain.
+ */
+LIBRARY_API
+int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
+                                    const double data[],
+                                    double vectors[], 
+                                    int placement);
+
 /* private */
 
 inline double crossDotZHat(const Vec3& a, const Vec3& b) {

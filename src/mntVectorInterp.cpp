@@ -393,4 +393,32 @@ int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
     return numFailures;
 }
 
+LIBRARY_API
+int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self, 
+                                    const double data[],
+                                    double vectors[],
+                                    int placement) {
+    int ier;
+    if (placement == 0) {
+        ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(self, data, vectors);
+    }
+    else {
+        ier = mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(self, data, vectors);
+    }
+    return ier;
+}
+
+int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self, 
+                                    const double data[],
+                                    double vectors[],
+                                    int placement) {
+    int ier;
+    if (placement == 0) {
+        ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(self, data, vectors);
+    }
+    else {
+        ier = mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(self, data, vectors);
+    }
+    return ier;
+}
 

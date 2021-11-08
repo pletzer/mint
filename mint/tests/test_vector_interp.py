@@ -134,12 +134,12 @@ def test_rectilinear():
             data[cellId, edgeIndex] = 1.0
 
             # get the edge interpolated vectors
-            vectorData = vi.getEdgeVectorsFromCellByCellData(data)
+            vectorData = vi.getEdgeVectors(data, placement=0)
             assert(abs(vectorData.max() - 1.) < 1.e-12)
             assert(abs(vectorData.min() - 0.) < 1.e-12)
 
             # get the lateral flux interpolated vectors
-            vectorData = vi.getFaceVectorsFromCellByCellData(data)
+            vectorData = vi.getFaceVectors(data, placement=0)
             # face vectors take the sign of the area vector,
             # negative if pointing down
             assert(abs(numpy.fabs(vectorData).max() - 1.) < 1.e-12)
@@ -188,12 +188,12 @@ def test_slanted():
                 data[cellId, edgeIndex] = 1.0
 
                 # get the edge interpolated vectors
-                vectorData = vi.getEdgeVectorsFromCellByCellData(data)
+                vectorData = vi.getEdgeVectors(data, placement=0)
                 fileName = f"{d}{sep}slanted_edgeVectors_cellId{cellId}edgeIndex{edgeIndex}Edge.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # get the lateral face interpolated vectors
-                vectorData = vi.getFaceVectorsFromCellByCellData(data)
+                vectorData = vi.getFaceVectors(data, placement=0)
                 fileName = f"{d}{sep}slanted_faceVectors_cellId{cellId}edgeIndex{edgeIndex}Face.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
@@ -240,12 +240,12 @@ def test_degenerate():
                 data[cellId, edgeIndex] = 1.0
 
                 # get the edge interpolated vectors
-                vectorData = vi.getEdgeVectorsFromCellByCellData(data)
+                vectorData = vi.getEdgeVectors(data, placement=0)
                 fileName = f"{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}Edge.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # get the face interpolated vectors
-                vectorData = vi.getFaceVectorsFromCellByCellData(data)
+                vectorData = vi.getFaceVectors(data, placement=0)
                 fileName = f"{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}Face.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 

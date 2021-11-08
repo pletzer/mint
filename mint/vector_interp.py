@@ -22,6 +22,8 @@ class VectorInterp(object):
         self.ptr = c_void_p()
         self.obj = byref(self.ptr)
         self.numTargetPoints = 0
+        self.numGridEdges = 0
+        self.numGridCells = 0
 
         MINTLIB.mnt_vectorinterp_new.argtypes = [POINTER(c_void_p)]
         ier = MINTLIB.mnt_vectorinterp_new(self.obj)
@@ -43,6 +45,8 @@ class VectorInterp(object):
 
         :param grid: instance of Grid
         """
+        self.numGridedges = grid.getNumberOfEdges()
+        self.numGridCells = grid.getNumberOfCells()
         MINTLIB.mnt_vectorinterp_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
         ier = MINTLIB.mnt_vectorinterp_setGrid(self.obj, grid.ptr)
         if ier:
@@ -89,86 +93,80 @@ class VectorInterp(object):
                                                  targetPoints, tol2)
         return numBad
 
-    def getEdgeVectorsFromCellByCellData(self, data):
-        """
-        Get the edge vectors at given target points.
-
-        :param data: edge data array of size numCells times 4
-        :returns vector array of size numTargetPoints times 3
-        :note: call this after invoking findPoints.
-        """
-        MINTLIB.mnt_vectorinterp_getEdgeVectorsFromCellByCellData.argtypes = [
-                                                        POINTER(c_void_p),
-                                                        DOUBLE_ARRAY_PTR,
-                                                        DOUBLE_ARRAY_PTR]
-        res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = MINTLIB.mnt_vectorinterp_getEdgeVectorsFromCellByCellData(self.obj,
-                                                                        data, res)
-        if ier:
-            msg = "Some target lines fall outside the grid."
-            warning_handler(FILE, 'getEdgeVectorsFromCellByCellData', ier,
-                            detailedmsg=msg)
-        return res
-
-    def getFaceVectorsFromCellByCellData(self, data):
-        """
-        Get the lateral face vectors at given target points.
-
-        :param data: edge data array of size numCells times 4
-        :returns vector array of size numTargetPoints times 3
-        :note: call this after invoking findPoints.
-        """
-        MINTLIB.mnt_vectorinterp_getFaceVectorsFromCellByCellData.argtypes = [
-                                                        POINTER(c_void_p),
-                                                        DOUBLE_ARRAY_PTR,
-                                                        DOUBLE_ARRAY_PTR]
-        res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = MINTLIB.mnt_vectorinterp_getFaceVectorsFromCellByCellData(self.obj,
-                                                                        data, res)
-        if ier:
-            msg = "Some target lines fall outside the grid."
-            warning_handler(FILE, 'getFaceVectorsFromCellByCellData', ier,
-                            detailedmsg=msg)
-        return res
-
-    def getEdgeVectorsFromUniqueEdgeData(self, data):
+    def getEdgeVectors(self, data, placement):
         """
         Get the edge vectors at given target points.
 
         :param data: edge data array of size number of unique edges
+        :param placement: 0 if data are cell by cell (size num cells * 4), 
+                          assume unique edge Id data otherwise (size num 
+                          edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
-        MINTLIB.mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData.argtypes = [
+
+        # check data size
+        n = data.shape[-1]
+        if placement == 0 and n != self.numGridCells * 4:
+            msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
+            ier = 10
+            error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
+            return
+        elif placement != 0 and n != self.numGridEdges:
+            msg = f"data has wrong size (= {n}), num edges = {self.numGridEdges}"
+            ier = 11
+            error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
+            return
+
+        MINTLIB.mnt_vectorinterp_getEdgeVectors.argtypes = [
                                                         POINTER(c_void_p),
                                                         DOUBLE_ARRAY_PTR,
-                                                        DOUBLE_ARRAY_PTR]
+                                                        DOUBLE_ARRAY_PTR,
+                                                        c_int]
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = MINTLIB.mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(self.obj,
-                                                                        data, res)
+        ier = MINTLIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, res,
+                                                      placement)
         if ier:
             msg = "Some target lines fall outside the grid."
-            warning_handler(FILE, 'getEdgeVectorsFromUniqueEdgeData', ier,
+            warning_handler(FILE, 'getEdgeVectors', ier,
                             detailedmsg=msg)
         return res
 
-    def getFaceVectorsFromFromUniqueEdgeData(self, data):
+    def getFaceVectors(self, data, placement):
         """
         Get the lateral face vectors at given target points.
 
         :param data: edge data array of size number of unique edges
+        :param placement: 0 if data are cell by cell (size num cells * 4), 
+                          assume unique edge Id data otherwise (size num 
+                          edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
-        MINTLIB.mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData.argtypes = [
+
+        # check data size
+        n = data.shape[-1]
+        if placement == 0 and n != self.numGridCells * 4:
+            msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
+            ier = 10
+            error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
+            return
+        elif placement != 0 and n != self.numGridEdges:
+            msg = f"data has wrong size (= {n}), num edges = {self.numGridEdges}"
+            ier = 11
+            error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
+            return
+
+        MINTLIB.mnt_vectorinterp_getFaceVectors.argtypes = [
                                                         POINTER(c_void_p),
                                                         DOUBLE_ARRAY_PTR,
-                                                        DOUBLE_ARRAY_PTR]
+                                                        DOUBLE_ARRAY_PTR,
+                                                        c_int]
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = MINTLIB.mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(self.obj,
-                                                                        data, res)
+        ier = MINTLIB.mnt_vectorinterp_getFaceVectors(self.obj, data, res,
+                                                      placement)
         if ier:
             msg = "Some target lines fall outside the grid."
-            warning_handler(FILE, 'getFaceVectorsFromFromUniqueEdgeData', ier,
+            warning_handler(FILE, 'getFaceVectors', ier,
                             detailedmsg=msg)
         return res
