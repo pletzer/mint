@@ -101,6 +101,10 @@ pydoc mint.polyline_integral
 ```
 for instance.
 
+## Python jupyter notebooks
+
+[Example showing how to use MINT from Python can be found here](https://github.com/pletzer/mint/notebooks)
+
  
 ## How to build the MINT C++ Library
 
@@ -144,7 +148,6 @@ Check that the build was successful by typing:
 ```
 ctest
 ```
-
 
 ### C++ and Fortran API documentation
 
