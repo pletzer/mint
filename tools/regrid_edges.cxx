@@ -171,8 +171,8 @@ int main(int argc, char** argv) {
 
     CmdLineArgParser args;
     args.setPurpose("Regrid an edge centred field.");
-    args.set("-s", std::string(""), "UGRID source grid file and mesh name, specified as \"filename:meshname\"");
-    args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file, varname[@filename:meshname]");
+    args.set("-s", std::string(""), "UGRID source grid file and mesh name, specified as \"filename$meshname\"");
+    args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file, varname[@filename$meshname]");
     args.set("-P", 0.0, "Specify the periodicity length in longitudes (default is non-periodic)");
     args.set("-d", std::string(""), "UGRID destination grid file name");
     args.set("-w", std::string(""), "Write interpolation weights to file");
