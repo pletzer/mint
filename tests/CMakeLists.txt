@@ -343,14 +343,21 @@ add_test(NAME cmdLineArgParserC2
         COMMAND testCmdLineArgParserC "-i" "-234" "-d" -2.34 "-s" "hi_there")
 
 
-add_test(NAME regridedges_edge_field_lfric_diag
+add_test(NAME regridedges_latlon4x2_to_lfric
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" "-debug" "-P"
+            "-d" "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d" "-D" "1"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
+         )
+set_tests_properties(regridedges_latlon4x2_to_lfric PROPERTIES
+                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-0[8-9]")
+add_test(NAME regridedges_field_lfric_diag
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
             "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc$Mesh2d_half_levels" "-S" "1"
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "edge_field@${CMAKE_SOURCE_DIR}/data/edge_field_lfric_diag_ex.nc"
-            "-O" "regridedges_edge_field_lfric_diag_ex.nc"
-            "-o" "regridedges_edge_field_lfric_diag_ex.vtk")
-set_tests_properties(regridedges_edge_field_lfric_diag PROPERTIES
+            "-O" "regridedges_field_lfric_diag_ex.nc"
+            "-o" "regridedges_field_lfric_diag_ex.vtk")
+set_tests_properties(regridedges_field_lfric_diag PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-0[8-9]")
 
 add_test(NAME regridedges_xyzt

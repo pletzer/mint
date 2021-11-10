@@ -300,14 +300,16 @@ int main(int argc, char** argv) {
         int srcNcid;
         ier = nc_open(srcFileName.c_str(), NC_NOWRITE, &srcNcid);
         if (ier != 0) {
-            std::cerr << "ERROR: could not open file \"" << srcFileName << "\"\n";
+            mntlog::error(__FILE__, __func__, __LINE__, 
+                "could not open file \"" + srcFileName + "\"");
             return 8;
         }
 
         int srcVarid;
         ier = nc_inq_varid(srcNcid, vname.c_str(), &srcVarid);
         if (ier != 0) {
-            std::cerr << "ERROR: could not find variable \"" << vname << "\" in file \"" << srcFileName << "\"\n";
+            mntlog::error(__FILE__, __func__, __LINE__, 
+                "could not find variable \"" + vname + "\" in file \"" + srcFileName + "\"");
             return 9;
         }
 
@@ -317,8 +319,9 @@ int main(int argc, char** argv) {
         // read the attributes
         ier = mnt_ncattributes_read(&attrs, srcNcid, srcVarid);
         if (ier != 0) {
-            std::cerr << "ERROR: could not extract attributes for variable \"" 
-                      << vname << "\" in file \"" << srcFileName << "\"\n";
+            mntlog::error(__FILE__, __func__, __LINE__, 
+                "could not extract attributes for variable \"" +
+                vname + "\" in file \"" + srcFileName + "\"");
             return 11;
         }
 
@@ -341,16 +344,20 @@ int main(int argc, char** argv) {
         size_t numSrcEdges, numDstEdges;
         mnt_regridedges_getNumSrcEdges(&rg, &numSrcEdges);
         mnt_regridedges_getNumDstEdges(&rg, &numDstEdges);
-        std::cout << "info: number of src edges: " << numSrcEdges << '\n';
-        std::cout << "info: number of dst edges: " << numDstEdges << '\n';
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "number of src edges: " + std::to_string(numSrcEdges));
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "number of dst edges: " + std::to_string(numDstEdges));
         std::vector<double> srcEdgeData(numSrcEdges);
         std::vector<double> dstEdgeData(numDstEdges);
 
         size_t numSrcCells, numDstCells;
         mnt_regridedges_getNumSrcCells(&rg, &numSrcCells);
         mnt_regridedges_getNumDstCells(&rg, &numDstCells);
-        std::cout << "info: number of src cells: " << numSrcCells << '\n';
-        std::cout << "info: number of dst cells: " << numDstCells << '\n';
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "number of src cells: " + std::to_string(numSrcCells));
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "number of dst cells: " + std::to_string(numDstCells));
 
         if (dstEdgeDataFile.size() > 0) {
             // user provided a file name to store the regridded data
@@ -405,17 +412,21 @@ int main(int argc, char** argv) {
             ier = mnt_multiarrayiter_getIndices(&mai, &dstIndices[0]);
 
             // read a slice of the data from file
-            std::cout << "info: reading slice " << iter << " of field " << vname << " from file \"" << srcFileName << "\"\n";
+            mntlog::info(__FILE__, __func__, __LINE__, 
+                "reading slice " + std::to_string(iter) + " of field " + 
+                vname + " from file \"" + srcFileName + "\"");
             ier = mnt_ncfieldread_dataSlice(&reader, &srcIndices[0], &srcCounts[0], &srcEdgeData[0]);
             if (ier != 0) {
-                std::cerr << "ERROR: could not read variable \"" << vname << "\" from file \"" << srcFileName << "\"\n";
+                mntlog::error(__FILE__, __func__, __LINE__,
+                        "could not read variable \"" + vname + "\" from file \"" + srcFileName + "\"");
                 return 12;
             }
 
             // apply the weights to the src field
             ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
             if (ier != 0) {
-                std::cerr << "ERROR: failed to apply weights to dst field \"" << vname << "\"\n";
+                mntlog::error(__FILE__, __func__, __LINE__, 
+                    "failed to apply weights to dst field \"" + vname + "\"");
                 return 13;
             }
 
@@ -441,7 +452,8 @@ int main(int argc, char** argv) {
                     }
                 }
 
-                std::cout << "info: writing \"" << vname << "\" to " << vtkFilename << '\n';
+                mntlog::info(__FILE__, __func__, __LINE__, "writing \"" + 
+                             vname + "\" to " + vtkFilename);
                 mnt_grid_dump(&rg->dstGridObj, vtkFilename.c_str());
             }
 
@@ -450,8 +462,9 @@ int main(int argc, char** argv) {
                 // write the slice of data to a netcdf file
                 ier = mnt_ncfieldwrite_dataSlice(&writer, &dstIndices[0], &dstCounts[0], &dstEdgeData[0]);
                 if (ier != 0) {
-                    std::cerr << "ERROR: writing slice " << iter << " of data for field " 
-                              << vname << " in file " << dstEdgeDataFile << '\n';
+                    std::string msg = "failed writing slice " + std::to_string(iter) + " of field " + 
+                                      vname + " in file " + dstEdgeDataFile;
+                    mntlog::error(__FILE__, __func__, __LINE__, msg);
                     ier = mnt_ncfieldwrite_del(&writer);
                     return 18;
                 }
@@ -478,13 +491,17 @@ int main(int argc, char** argv) {
 
     } // has variable 
     else {
-        std::cout << "info: no variable name was provided, thus only computing weights\n";
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "no variable name was provided, only computing weights");
     }
 
     // clean up
     mnt_regridedges_del(&rg);
 
-    if (args.get<bool>("-verbose")) mnt_printLogMessages();
+    // handle log messages
+    if (args.get<bool>("-verbose")) {
+        mnt_printLogMessages();
+    }
     std::string logname = "regridedges_logs.txt";
     mnt_writeLogMessages(logname.c_str(), logname.size());
 
