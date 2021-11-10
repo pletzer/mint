@@ -7,7 +7,7 @@
 #define MNT_NC_FIELD_WRITE
 
 /**
- * A class to write and write edge fields to/from netcdf files
+ * A class to write edge fields to netcdf files
  */
 
 struct NcFieldWrite_t {

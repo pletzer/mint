@@ -71,7 +71,7 @@ If you find the above commands to fail on Windows, try (in the Anaconda prompt t
 ```
 conda create -n mint-dev
 conda activate mint-dev
-conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy pytest
+conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy pytest netcdf4
 ```
 
 Then type:

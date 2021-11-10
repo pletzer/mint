@@ -39,11 +39,13 @@ struct Grid_t {
     // flat array of size numEdges * 2
     std::vector<std::size_t> edgeNodeConnectivity;
 
+    // edge arc lengths
     std::vector<double> edgeArcLengths;
 
-    bool fixLonAcrossDateline;
-    bool averageLonAtPole;
+    // number of unique edges, if loading from Ugrid2D
+    std::size_t numEdges;
 
+    // periodicity length, 360 if using degrees
     double periodX;
 
     // vertex raw data
@@ -51,6 +53,14 @@ struct Grid_t {
 
     // whether or not the vertices are owned by this instance
     bool ownsVerts;
+
+    // whether we allow for a multiplicity of longitudes, useful 
+    // for global domains
+    bool fixLonAcrossDateline;
+
+    // whether the longitudes should be adjusted at the poles to
+    // minimize the cell sizes in lon-lat coordinates
+    bool averageLonAtPole;
 };
 
 /**
@@ -75,6 +85,7 @@ int mnt_grid_del(Grid_t** self);
  * @param fixLonAcrossDateline set this to 0 if periodicity length should NOT be added/subtracted to nodes in order to make the cell as compact as possible
  * @param averageLonAtPole set this to 0 if longitudes at the poles should NOT take the average value of the node cell node's longitudes
  * @param degrees set this to 0 if the coordinates are in radians
+ * @note call this before reading the grid from file
  * @return error code (0 = OK)
  */
 LIBRARY_API
@@ -146,13 +157,13 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
 /**
  * Load a grid from a 2D Ugrid file
  * @param self instance of Grid_t
- * @param fileAndMeshName column separated file and mesh name (e.g. cs_4.nc:physics)
+ * @param fileAndMeshName column separated file and mesh name (e.g. cs_4.nc$physics)
  * @return error code (0 = OK)
  * @note user should invoke mnt_grid_del to free memory when disposing of the grid
  * @note call mnt_grid_new prior to this call
  */
 LIBRARY_API
-int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName);
+int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName);
 
 /**
  * Load a grid from a VTK file
@@ -238,5 +249,13 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells);
 LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges);
 
+/**
+ * Check
+ * @param self instance of Grid_t
+ * @param numBadCells number of bad cells (output)
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_grid_check(Grid_t** self, std::size_t* numBadCells);
 
 #endif // MNT_GRID

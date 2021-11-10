@@ -137,7 +137,7 @@ class RegridEdges(object):
             error_handler(FILE, 'getNumDstEdges', ier)
         return n.value
 
-    def build(self, numCellsPerBucket, periodX, debug):
+    def build(self, numCellsPerBucket=10, periodX=360., debug=0):
         """
         Build the regridder and compute the regridding weights.
 
@@ -156,7 +156,7 @@ class RegridEdges(object):
                                         periodX, debug)
         if ier:
             msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
-            warning_handler(FILE, 'build', ier, detailedMsg=msg)
+            warning_handler(FILE, 'build', ier, detailedmsg=msg)
 
     def dumpWeights(self, filename):
         """

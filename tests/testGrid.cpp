@@ -1,5 +1,6 @@
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntGrid.h>
+#include <mntLogger.h>
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
@@ -10,13 +11,27 @@ void testVTK() {
     mnt_grid_del(&grd);
 }
 
-void testUgrid() {
-	int ier;
+
+void testLFRic() {
+    int ier;
     Grid_t* grd;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
     // one or more ":" to discriminate file and mesh names
-    ier = mnt_grid_loadFrom2DUgrid(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
+    ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
+    assert(ier == 0);
+    std::size_t numBadCells = 0;
+    ier = mnt_grid_check(&grd, &numBadCells);
+    assert(numBadCells == 0);
+    mnt_printLogMessages();
+}
+
+void testUgrid() {
+    int ier;
+    Grid_t* grd;
+    ier = mnt_grid_new(&grd);
+    assert(ier == 0);
+    ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
     assert(ier == 0);
     ier = mnt_grid_print(&grd);
     assert(ier == 0);
@@ -43,6 +58,12 @@ void testUgrid() {
         }
     }
 
+    // check that each face a positive area
+    std::size_t numBadCells = 0;
+    ier = mnt_grid_check(&grd, &numBadCells);
+    assert(ier == 0);
+    assert(numBadCells == 0);
+
     // attach a field
     std::vector<double> cellByCellData(numCells * 4);
     for (size_t cellId = 0; cellId < numCells; ++cellId) {
@@ -63,11 +84,11 @@ void testUgrid() {
     // check that we can retrieve the edge arc lengths
     for (auto cellId : cellIds) {
         for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
-        	double arcLength;
-        	ier = mnt_grid_getEdgeArcLength(&grd, cellId, edgeIndex, &arcLength);
-        	assert(ier == 0);
-        	assert(arcLength >= 0);
-        	assert(arcLength <= M_PI);
+            double arcLength;
+            ier = mnt_grid_getEdgeArcLength(&grd, cellId, edgeIndex, &arcLength);
+            assert(ier == 0);
+            assert(arcLength >= 0);
+            assert(arcLength <= M_PI);
         }
     }
 
@@ -85,7 +106,8 @@ void testUgrid() {
 
 int main(int argc, char** argv) {
 
-	testUgrid();
+    testLFRic();
+    testUgrid();
     testVTK();
 
     return 0;

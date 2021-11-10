@@ -86,30 +86,95 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
                                 const double targetPoints[], double tol2);
 
 /**
- * Get the edge vectors at given target points
+ * Get the edge vectors at given target points from cell by cell data
  * @param self instance of VectorInterp_t
  * @param data edge data, array of size numCells*4
  * @param vectors array of output vectors, size numPoints*3
+ * @return error code (0 = OK)
+ * @note call this after mnt_vectorinterp_findPoints. The returned vectors
+ *       will not be touched if the point falls out of the domain.
+ */
+LIBRARY_API
+int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
+                                                      const double data[],
+                                                      double vectors[]);
+
+/**
+ * Get the face vectors at given target points from cell by cell data
+ * @param self instance of VectorInterp_t
+ * @param data edge data, array of size numCells*4
+ * @param vectors array of output vectors, size numPoints*3
+ * @return error code (0 = OK)
+ * @note call this after mnt_vectorinterp_findPoints. The returned vectors
+ *       will not be touched if the point falls out of the domain.
+ */
+LIBRARY_API
+int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
+                                                      const double data[],
+                                                      double vectors[]);
+/**
+ * Get the edge vectors at given target points from unique edge Id data
+ * @param self instance of VectorInterp_t
+ * @param data edge data, array of size numCells*4
+ * @param vectors array of output vectors, size numPoints*3
+ * @return error code (0 = OK)
+ * @note call this after mnt_vectorinterp_findPoints. The returned vectors
+ *       will not be touched if the point falls out of the domain.
+ */
+LIBRARY_API
+int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
+                                                      const double data[],
+                                                      double vectors[]);
+
+/**
+ * Get the face vectors at given target points from unique edge Id data
+ * @param self instance of VectorInterp_t
+ * @param data edge data, array of size numCells*4
+ * @param vectors array of output vectors, size numPoints*3
+ * @return error code (0 = OK)
+ * @note call this after mnt_vectorinterp_findPoints. The returned vectors
+ *       will not be touched if the point falls out of the domain.
+ */
+LIBRARY_API
+int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
+                                                      const double data[],
+                                                      double vectors[]);
+
+/**
+ * Get the edge vectors at given target points
+ * @param self instance of VectorInterp_t
+ * @param data edge data
+ * @param vectors array of output vectors, size numPoints*3
+ * @param placement 0 if data are cell by cell (size num cells * 4),
+ *                  data are assumed to be on unique edges 
+ *                  otherwise (size num edges)
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
 int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
-                                    const double data[], double vectors[]);
+                                    const double data[],
+                                    double vectors[], 
+                                    int placement);
 
 /**
- * Get the face vectors at given target points
+ * Get the Face vectors at given target points
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data
  * @param vectors array of output vectors, size numPoints*3
+ * @param placement 0 if data are cell by cell (size num cells * 4),
+ *                  data are assumed to be on unique edges 
+ *                  otherwise (size num edges)
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
 int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
-                                    const double data[], double vectors[]);
+                                    const double data[],
+                                    double vectors[], 
+                                    int placement);
 
 /* private */
 

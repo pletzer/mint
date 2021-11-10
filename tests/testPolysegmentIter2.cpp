@@ -21,7 +21,7 @@ void test(const std::string& filename, size_t npoints, const double points[]) {
     ier = mnt_grid_setFlags(&grid, 1, 1, 0);
     assert(ier == 0);
 
-    ier = mnt_grid_loadFrom2DUgrid(&grid, filename.c_str());
+    ier = mnt_grid_loadFromUgrid2D(&grid, filename.c_str());
     assert(ier == 0);
 
     vtkUnstructuredGrid* ugrid = NULL;
@@ -79,7 +79,7 @@ void testUM(const std::string& filename, size_t npoints, const double points[]) 
     ier = mnt_grid_setFlags(&grid, 0, 0, 1);
     assert(ier == 0);
 
-    ier = mnt_grid_loadFrom2DUgrid(&grid, filename.c_str());
+    ier = mnt_grid_loadFromUgrid2D(&grid, filename.c_str());
     assert(ier == 0);
 
     vtkUnstructuredGrid* ugrid = NULL;

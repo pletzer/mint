@@ -49,6 +49,7 @@ class Grid(object):
                                  be the average of the cell's longitudes
 
         note:: a lon-lat grid requires 0, 0 and cubed sphere grid requires 1, 1
+        note:: call this before reading the grid from file
         """
         MINTLIB.mnt_grid_setFlags.argtypes = [POINTER(c_void_p), c_int, c_int]
         ier = MINTLIB.mnt_grid_setFlags(self.obj,
@@ -57,17 +58,17 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'setFlags', ier)
 
-    def loadFrom2DUgrid(self, fileAndMeshName):
+    def loadFromUgrid2D(self, fileAndMeshName):
         """
         Load a grid from a 2D UGRID file.
 
-        :param fileAndMeshName: string in the format filename:meshname
+        :param fileAndMeshName: string in the format filename$meshname
         """
-        MINTLIB.mnt_grid_loadFrom2DUgrid.argtypes = [POINTER(c_void_p), c_char_p]
+        MINTLIB.mnt_grid_loadFromUgrid2D.argtypes = [POINTER(c_void_p), c_char_p]
         fm = fileAndMeshName.encode('utf-8')
-        ier = MINTLIB.mnt_grid_loadFrom2DUgrid(self.obj, fm)
+        ier = MINTLIB.mnt_grid_loadFromUgrid2D(self.obj, fm)
         if ier:
-            error_handler(FILE, 'loadFrom2DUgrid', ier)
+            error_handler(FILE, 'loadFromUgrid2D', ier)
 
     def load(self, filename):
         """
@@ -204,7 +205,7 @@ class Grid(object):
         :returns number
         """
         MINTLIB.mnt_grid_getNumberOfCells.argtypes = [POINTER(c_void_p),
-                                                  POINTER(c_size_t)]
+                                                      POINTER(c_size_t)]
         n = c_size_t()
         ier = MINTLIB.mnt_grid_getNumberOfCells(self.obj, byref(n))
         if ier:
@@ -217,9 +218,25 @@ class Grid(object):
 
         :returns number
         """
-        MINTLIB.mnt_grid_getNumberOfEdges.argtypes = [POINTER(c_void_p)]
+        MINTLIB.mnt_grid_getNumberOfEdges.argtypes = [POINTER(c_void_p),
+                                                      POINTER(c_size_t)]
         n = c_size_t()
         ier = MINTLIB.mnt_grid_getNumberOfEdges(self.obj, byref(n))
         if ier:
             error_handler(FILE, 'getNumberOfEdges', ier)
         return n.value
+
+    def check(self):
+        """
+        Check that the cells have positive area.
+
+        :returns number of bad cells
+        """
+        num_bad_cells = c_size_t()
+        MINTLIB.mnt_grid_check.argtypes = [POINTER(c_void_p), POINTER(c_size_t)]
+        ier = MINTLIB.mnt_grid_check(self.obj, byref(num_bad_cells))
+        if ier:
+            error_handler(FILE, 'check', ier)
+        return num_bad_cells.value
+
+

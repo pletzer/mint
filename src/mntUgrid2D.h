@@ -34,7 +34,6 @@ Ugrid2D() {
 ~Ugrid2D() {
 }
 
-
 /**
  * Load from Ugrid file 
  * @param filename file name
@@ -42,7 +41,6 @@ Ugrid2D() {
  * @return error (0=OK)
  */
 int load(const std::string& filename, const std::string& meshname);
-
 
 /**
  * Dump the grid to a Vtk file
@@ -188,7 +186,6 @@ private:
     void fixPeriodicity();
 
     bool isCartesian;
-
 };
 
 #endif // MNT_UGRID_2D

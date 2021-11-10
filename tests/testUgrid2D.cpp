@@ -3,6 +3,7 @@
 #include <CmdLineArgParser.h>
 #include <cstring>
 #undef NDEBUG // turn on asserts
+#include <cassert>
 
 int main(int argc, char** argv) {
 

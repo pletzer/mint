@@ -69,7 +69,7 @@ def test_load_from_ugrid_file():
     gr = Grid()
     gr.setFlags(1, 1)
     filename = str(DATA_DIR / Path('cs_4.nc'))
-    gr.loadFrom2DUgrid(f'{filename}$physics')
+    gr.loadFromUgrid2D(f'{filename}$physics')
     nedges = gr.getNumberOfEdges()
     print(f'nedges = {nedges}')
     assert(nedges == 192)
@@ -83,13 +83,25 @@ def test_load_from_ugrid_file():
     # attaching a 3 components field to the grid
     data = numpy.array(range(ncells*4*3), numpy.float64)
     gr.attach('myData', data)
+    num_bad_cells = gr.check()
+    assert(num_bad_cells == 0)
+
+
+def test_load_from_ugrid_file2():
+    gr = Grid()
+    gr.setFlags(1, 1)
+    filename = str(DATA_DIR / Path('lfric_diag_wind.nc'))
+    gr.loadFromUgrid2D(f'{filename}$Mesh2d')
+    nedges = gr.getNumberOfEdges()
+    print(f'nedges = {nedges}')
+    assert(nedges == 3072)
 
 
 def test_edge_arc_lengths():
     gr = Grid()
     gr.setFlags(1, 1)
     filename = str(DATA_DIR / Path('cs_4.nc'))
-    gr.loadFrom2DUgrid(f'{filename}$physics')
+    gr.loadFromUgrid2D(f'{filename}$physics')
     gr.computeEdgeArcLengths()
     ncells = gr.getNumberOfCells()
     for icell in range(ncells):

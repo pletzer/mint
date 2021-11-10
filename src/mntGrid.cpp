@@ -1,6 +1,8 @@
 
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <cmath>
+#include <sstream>
+#include <limits>
 
 #include "mntLogger.h"
 #include <mntGrid.h>
@@ -15,8 +17,22 @@
 #include "mntUgrid2D.h"
 #include "mntFileMeshNameExtractor.h"
 
+
 /**
- * Fix the longitude by adding/subtracting a period to reduce the edge distances
+ * Get the paralleleliped 2D area
+ * @param p0 base point
+ * @param p1 point 1
+ * @param p2 point 2
+ * @return area
+ */
+inline double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
+    Vec3 d10 = p1 - p0;
+    Vec3 d20 = p2 - p0;
+    return d10[0]*d20[1] - d10[1]*d20[0];
+}
+
+/**
+ * Fix the longitude by adding/subtracting a period to reduce the edge lengths
  * @param periodX periodicity length in x
  * @param lonBase base/reference longitude
  * @param lon longitude
@@ -26,10 +42,12 @@ inline
 double fixLongitude(double periodX, double lonBase, double lon) {
 
     double diffLon = lon - lonBase;
+    const double eps = 100 * std::numeric_limits<double>::epsilon();
 
-    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX),
+    // favour leaving lon as is if lon == 0
+    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX - eps),
                                              std::abs(diffLon),
-                                             std::abs(diffLon + periodX)};
+                                             std::abs(diffLon + periodX + eps)};
 
     std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), diffLonMinusZeroPlus.end());
     int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
@@ -47,6 +65,7 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->grid = NULL;
     (*self)->reader = NULL;
     (*self)->doubleArrays.resize(0);
+    (*self)->numEdges = 0;
 
     (*self)->fixLonAcrossDateline = true;
     (*self)->averageLonAtPole = true;
@@ -228,10 +247,12 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
             double cos_the1 = cos(the1);
             double sin_the1 = sin(the1);
 
-
             // edge length is angle between the two points. Assume radius = 1. Angle is
             // acos of dot product in Cartesian space.
-            double r0DotR1 = cos_the0*cos_lam0*cos_the1*cos_lam1 + cos_the0*sin_lam0*cos_the1*sin_lam1 + sin_the0*sin_the1;
+            double r0DotR1 = cos_the0*cos_lam0*cos_the1*cos_lam1 +
+                             cos_the0*sin_lam0*cos_the1*sin_lam1 +
+                             sin_the0*sin_the1;
+
             std::size_t k = 4*cellId + edgeIndex;
             (*self)->edgeArcLengths[k] = std::abs( acos(r0DotR1) );
         }
@@ -263,7 +284,7 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 }
 
 LIBRARY_API
-int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
+int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename:meshname"
     auto fm = fileMeshNameExtractor(fileAndMeshName);
@@ -282,6 +303,8 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
     double xmin[3], xmax[3];
     ugrid.getRange(xmin, xmax);
     double lonMin = xmin[0];
+
+    (*self)->numEdges = ugrid.getNumberOfEdges();
 
     // copy
     (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
@@ -376,14 +399,14 @@ int mnt_grid_loadFrom2DUgrid(Grid_t** self, const char* fileAndMeshName) {
                 (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
             }
 
-            // make sure the cell is within the lonMin to lonMin + 360.0 range
+            // make sure the cell is within the lonMin to lonMin + periodX range
             double offsetLon = 0.0;
             if ((*self)->fixLonAcrossDateline) {
-                if (avgLon > lonMin + 360.) {
-                    offsetLon = -360.0;
+                if (avgLon > lonMin + (*self)->periodX) {
+                    offsetLon = -(*self)->periodX;
                 }
                 else if (avgLon < lonMin) {
-                    offsetLon = 360.0;
+                    offsetLon = (*self)->periodX;
                 }
                 for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
                     (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*numVertsPerCell*3] += offsetLon;
@@ -437,7 +460,7 @@ int mnt_grid_print(Grid_t** self) {
     vtkIdType ncells = (*self)->grid->GetNumberOfCells();
     std::cout << "Number of cells: " << ncells << '\n';
 
-    std::vector<double> pt(3);
+    Vec3 pt;
 
     for (vtkIdType i = 0; i < ncells; ++i) {
 
@@ -555,8 +578,55 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
     return 0;
 }
 
+LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
 
-    *numEdges = (*self)->edgeNodeConnectivity.size() / 2;
+    *numEdges = (*self)->numEdges;
+    return 0;
+}
+
+LIBRARY_API
+int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
+
+    *numBadCells = 0;
+
+    vtkIdType ncells = (*self)->grid->GetNumberOfCells();
+
+    std::vector<Vec3> pts(4); // 2D
+
+    for (vtkIdType i = 0; i < ncells; ++i) {
+
+        vtkCell* cell = (*self)->grid->GetCell(i);
+
+        for (int j = 0; j < cell->GetNumberOfPoints(); ++j) {
+            vtkIdType k = cell->GetPointId(j);
+            (*self)->points->GetPoint(k, &pts[j][0]);
+        }
+
+        std::size_t badCell = 0;
+        double area = getArea2D(pts[0], pts[1], pts[3]);
+        if (area < 0.) {
+            std::stringstream ss;
+            ss << pts[0] << ';' << pts[1] << ';' << pts[3];
+            mntlog::warn(__FILE__, __func__, __LINE__, 
+            "cell " + std::to_string(i) + 
+            " has negative area = " + std::to_string(area) +
+            " for points 0-1-3 " + ss.str() + "\n");
+            badCell = 1;            
+        }
+
+        area = getArea2D(pts[2], pts[3], pts[1]);
+        if (area < 0.) {
+            std::stringstream ss;
+            ss << pts[2] << ';' << pts[3] << ';' << pts[1];
+            mntlog::warn(__FILE__, __func__, __LINE__, 
+            "cell " + std::to_string(i) + 
+            " has negative area = " + std::to_string(area) +
+            " for points 2-3-1 " + ss.str() + "\n");
+            badCell = 1;            
+        }
+        (*numBadCells) += badCell;
+    }
+
     return 0;
 }
