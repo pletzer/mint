@@ -35,8 +35,10 @@ def getIntegralsInLonLat(lon, lat, edge_node_connect, u1, u2, w1=True, earth_rad
     # convert ds to metres
     ds *= earth_radius * numpy.pi / 180.
     if w1:
+        # integral u . dl
         return u1[:]*ds[:, 0] + u2[:]*ds[:, 1]
     else:
+        # integral (zhat x u) . dl
         return u1[:]*ds[:, 1] - u2[:]*ds[:, 0]
 
 def getIntegralsInXYZ(lon, lat, edge_node_connect, u1, u2, w1=True, earth_radius=6371e3):
@@ -93,6 +95,8 @@ def getIntegralsInXYZ(lon, lat, edge_node_connect, u1, u2, w1=True, earth_radius
     theta_hat[:, 2] = numpy.cos(latmid*deg2rad)
     
     if w1:
+        # integral u . dl
         return u1*numpy.sum(lambda_hat*ds, axis=1) + u2*numpy.sum(theta_hat*ds, axis=1)
     else:
+        # integral (zhat x u) . dl
         return u1*numpy.sum(theta_hat*ds, axis=1) - u2*numpy.sum(lambda_hat*ds, axis=1)
