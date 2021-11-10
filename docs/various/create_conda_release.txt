@@ -1,2 +1,15 @@
 # Creating a conda release
 
+ 1. Merge mint development branch to master
+ 2. cd python-mint-feedstock
+ 3. git pull origin master
+ 4. git remote set-url –push upstream READ_ONLY
+ 5. git fetch upstream
+ 6. git checkout -b release-xxx upstream/master
+ 7. in recipe/meta.yaml:
+    * update version
+    * check dependencies versions
+    * update the checksum (sha256sum on linux, shasum -a 256 on mac os x)
+    * update build number
+ 8. git push origin HEAD
+
