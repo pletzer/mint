@@ -103,7 +103,9 @@ for instance.
 
 ## Python jupyter notebooks
 
-[Example showing how to use MINT from Python can be found here](https://github.com/pletzer/mint/notebooks)
+Below are examples showing how to use MINT from Python.
+
+[Interpolating a vector field from cubed-sphere to uniform lon-lat](https://github.com/pletzer/mint/blob/master/mint/notebooks/interpVectorField.ipynb)
 
  
 ## How to build the MINT C++ Library
