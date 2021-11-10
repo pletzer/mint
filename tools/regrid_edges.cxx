@@ -160,6 +160,15 @@ int setUpWriter(int srcNdims, const size_t* srcDims, size_t numDstEdges,
     return 0;
 }
 
+int finalize(int ier, bool verbose) {
+    if (verbose) {
+        mnt_printLogMessages();
+    }
+    std::string logname = "regridedges_logs.txt";
+    mnt_writeLogMessages(logname.c_str(), logname.size());
+    return ier;   
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -195,7 +204,7 @@ int main(int argc, char** argv) {
 
     if (!success) {
         std::cerr << "ERROR when parsing command line arguments\n";
-        return 1;
+        return finalize(1, args.get<bool>("-verbose"));
     }
 
     // extract the command line arguments
@@ -209,11 +218,11 @@ int main(int argc, char** argv) {
     // run some checks
     if (srcFile.size() == 0) {
         std::cerr << "ERROR: must specify a source grid file (-s)\n";
-        return 2;
+        return finalize(2, args.get<bool>("-verbose"));
     }
     if (dstFile.size() == 0) {
         std::cerr << "ERROR: must specify a destination grid file (-d)\n";
-        return 3;
+        return finalize(3, args.get<bool>("-verbose"));
     }
 
     // create regridder 
@@ -244,14 +253,14 @@ int main(int argc, char** argv) {
     ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), (int) srcFile.size());
     if (ier != 0) {
         std::cerr << "ERROR: could not read file \"" << srcFile << "\"\n";
-        return 4;
+        return finalize(4, args.get<bool>("-verbose"));
     }
 
     // read the destination grid
     ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
     if (ier != 0) {
         std::cerr << "ERROR: could not read file \"" << dstFile << "\"\n";
-        return 5;
+        return finalize(5, args.get<bool>("-verbose"));
     }
 
     if (loadWeightsFile.size() == 0) {
@@ -261,7 +270,7 @@ int main(int argc, char** argv) {
         ier = mnt_regridedges_build(&rg, args.get<int>("-N"), 
                                          args.get<double>("-P"), args.get<int>("-debug"));
         if (ier != 0) {
-            return 6;
+            return finalize(6, args.get<bool>("-verbose"));
         }
     
         // save the weights to file
@@ -277,7 +286,7 @@ int main(int argc, char** argv) {
         std::cout << "info: loading weights from file " << loadWeightsFile << '\n';
         ier = mnt_regridedges_loadWeights(&rg, loadWeightsFile.c_str(), (int) loadWeightsFile.size());
         if (ier != 0) {
-            return 7;
+            return finalize(7, args.get<bool>("-verbose"));
         }
 
     }
@@ -302,7 +311,7 @@ int main(int argc, char** argv) {
         if (ier != 0) {
             mntlog::error(__FILE__, __func__, __LINE__, 
                 "could not open file \"" + srcFileName + "\"");
-            return 8;
+            return finalize(8, args.get<bool>("-verbose"));
         }
 
         int srcVarid;
@@ -310,7 +319,7 @@ int main(int argc, char** argv) {
         if (ier != 0) {
             mntlog::error(__FILE__, __func__, __LINE__, 
                 "could not find variable \"" + vname + "\" in file \"" + srcFileName + "\"");
-            return 9;
+            return finalize(9, args.get<bool>("-verbose"));
         }
 
         // get the attributes of the variable from the netcdf file
@@ -322,7 +331,7 @@ int main(int argc, char** argv) {
             mntlog::error(__FILE__, __func__, __LINE__, 
                 "could not extract attributes for variable \"" +
                 vname + "\" in file \"" + srcFileName + "\"");
-            return 11;
+            return finalize(10, args.get<bool>("-verbose"));
         }
 
         // read the dimensions
@@ -365,7 +374,7 @@ int main(int argc, char** argv) {
             ier = setUpWriter(srcNdims, &srcDims[0], numDstEdges, vname, dstEdgeDataFile, 
                               attrs, &writer);
             if (ier != 0) {
-                return ier;
+                return finalize(12, args.get<bool>("-verbose"));
             }
 
         }
@@ -419,7 +428,7 @@ int main(int argc, char** argv) {
             if (ier != 0) {
                 mntlog::error(__FILE__, __func__, __LINE__,
                         "could not read variable \"" + vname + "\" from file \"" + srcFileName + "\"");
-                return 12;
+                return finalize(13, args.get<bool>("-verbose"));
             }
 
             // apply the weights to the src field
@@ -427,7 +436,7 @@ int main(int argc, char** argv) {
             if (ier != 0) {
                 mntlog::error(__FILE__, __func__, __LINE__, 
                     "failed to apply weights to dst field \"" + vname + "\"");
-                return 13;
+                return finalize(14, args.get<bool>("-verbose"));
             }
 
             // compute loop integrals for each cell
@@ -466,7 +475,7 @@ int main(int argc, char** argv) {
                                       vname + " in file " + dstEdgeDataFile;
                     mntlog::error(__FILE__, __func__, __LINE__, msg);
                     ier = mnt_ncfieldwrite_del(&writer);
-                    return 18;
+                    return finalize(15, args.get<bool>("-verbose"));
                 }
 
             }
@@ -498,12 +507,5 @@ int main(int argc, char** argv) {
     // clean up
     mnt_regridedges_del(&rg);
 
-    // handle log messages
-    if (args.get<bool>("-verbose")) {
-        mnt_printLogMessages();
-    }
-    std::string logname = "regridedges_logs.txt";
-    mnt_writeLogMessages(logname.c_str(), logname.size());
-
-    return 0;
+    return finalize(0, args.get<bool>("-verbose"));
 }
