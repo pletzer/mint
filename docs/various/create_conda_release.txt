@@ -3,13 +3,18 @@
  1. Merge mint development branch and create a release xxx
  2. cd python-mint-feedstock
  3. git pull origin master
- 4. git remote set-url –push upstream READ_ONLY
- 5. git fetch upstream
- 6. git checkout -b release-xxx upstream/master
- 7. in recipe/meta.yaml:
+    (git remote set-url –push upstream READ_ONLY)
+    (git fetch upstream)
+ 4. git checkout -b release-xxx upstream/master
+ 5. in recipe/meta.yaml:
+    * be sure to reset build->number
     * update version
     * check dependencies versions
+    * make sure the python versions are correct
     * update the checksum (sha256sum on linux, shasum -a 256 on mac os x)
-    * update build number
- 8. git push origin HEAD
+    * (may need to run `conda smithy rerender -c auto` when the python version changes)
+ 6. git commit -a
+ 7. git push origin HEAD
+ 8. Create pull request
+ 9. Check that the build worked by clicking on https://dev.azure.com/conda-forge/feedstock-builds/_build
 
