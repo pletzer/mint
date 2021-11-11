@@ -81,7 +81,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     // open the file
     ier = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
     if (ier != NC_NOERR) {
-        msg = "cannot open \"" + filename + "\"";
+        msg = "cannot open netCDF file \"" + filename + "\"";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
@@ -90,7 +90,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     int meshid;
     ier = nc_inq_varid(ncid, meshname.c_str(), &meshid);
     if (ier != NC_NOERR) {
-        msg = "cannot find variable named \"" + meshname + "\"";
+        msg = "cannot find mesh name, netCDF variable \"" + meshname + "\"";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 2;

@@ -23,7 +23,7 @@
 
 LIBRARY_API
 int mnt_regridedges_new(RegridEdges_t** self) {
-    
+
     *self = new RegridEdges_t();
     (*self)->srcGrid = NULL;
     (*self)->dstGrid = NULL;
@@ -52,7 +52,7 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 
     // destroy the cell locator
     (*self)->srcLoc->Delete();
-   
+
     // destroy the source and destination grids
     mnt_grid_del(&((*self)->srcGridObj));
     mnt_grid_del(&((*self)->dstGridObj));
@@ -116,7 +116,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
                                   const char* src_fort_filename, int src_nFilenameLength,
                                   const char* dst_fort_filename, int dst_nFilenameLength,
                                   int append,
-                                  const char* field_name, int nFieldNameLength, 
+                                  const char* field_name, int nFieldNameLength,
                                   std::size_t* numSlices) {
 
     int ier = 0;
@@ -164,7 +164,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     (*self)->dimNames.resize((*self)->ndims);
     // slice has dimension one except for the edge axis
     (*self)->srcCounts.resize((*self)->ndims, 1);
-    (*self)->dstCounts.resize((*self)->ndims, 1); 
+    (*self)->dstCounts.resize((*self)->ndims, 1);
     (*self)->srcDims.resize((*self)->ndims, 0);
     (*self)->dstDims.resize((*self)->ndims, 0);
 
@@ -179,18 +179,16 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
             mntlog::error(__FILE__, __func__, __LINE__, msg);
         }
 
-        
         (*self)->dimNames[i].resize(256);
 
-
-        ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i, 
+        ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i,
                                          &(*self)->dimNames[i][0], (int) (*self)->dimNames[i].size());
         if (ier != 0) {
             msg =  "getting the dimension name " + std::to_string(i) + " from the source file";
             mntlog::error(__FILE__, __func__, __LINE__, msg);
         }
 
-        // all except last dimensions are the same 
+        // all except last dimensions are the same
         (*self)->dstDims[i] = (*self)->srcDims[i];
     }
 
@@ -205,14 +203,14 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     (*self)->srcDims[i] = numSrcEdges;
     (*self)->dstDims[i] = numDstEdges;
     (*self)->dimNames[i].resize(128);
-    ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i, 
+    ier = mnt_ncfieldread_getDimName(&(*self)->srcReader, i,
                                      &(*self)->dimNames[i][0], (int) (*self)->dimNames[i].size());
 
     // initialize the writer
-    ier = mnt_ncfieldwrite_new(&(*self)->dstWriter, dstFilename.c_str(), (int) dstFilename.size(), 
+    ier = mnt_ncfieldwrite_new(&(*self)->dstWriter, dstFilename.c_str(), (int) dstFilename.size(),
                                 fieldname.c_str(), (int) fieldname.size(), append);
     if (ier != 0) {
-        msg = "occurred when creating/opening file " + dstFilename + " with field " 
+        msg = "occurred when creating/opening file " + dstFilename + " with field "
                   + fieldname + " in append mode " + std::to_string(append);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
@@ -273,7 +271,7 @@ int mnt_regridedges_loadSrcSlice(RegridEdges_t** self,
     int ier = mnt_multiarrayiter_getIndices(&(*self)->mai, &(*self)->startIndices[0]);
 
 
-    ier = mnt_ncfieldread_dataSlice(&(*self)->srcReader, 
+    ier = mnt_ncfieldread_dataSlice(&(*self)->srcReader,
                                     &(*self)->startIndices[0], 
                                     &(*self)->srcCounts[0], data);
     if (ier != 0) {
@@ -467,6 +465,8 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
+    mntlog::info(__FILE__, __func__, __LINE__, 
+                 "loading src grid from file \"" + filename + "\"");
     int ier = mnt_grid_loadFromUgrid2D(&((*self)->srcGridObj), filename.c_str());
     (*self)->srcGrid = (*self)->srcGridObj->grid;
     return ier;
@@ -478,6 +478,8 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     // Fortran strings don't come with null-termination character. Copy string 
     // into a new one and add '\0'
     std::string filename = std::string(fort_filename, n);
+    mntlog::info(__FILE__, __func__, __LINE__, 
+                 "loading dst grid from file \"" + filename + "\"");
     int ier = mnt_grid_loadFromUgrid2D(&((*self)->dstGridObj), filename.c_str());
     (*self)->dstGrid = (*self)->dstGridObj->grid;
     return ier;

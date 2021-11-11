@@ -2,8 +2,8 @@
  * @brief Parse command line arguments
  * @author Alexander Pletzer
  *
- * This software is provided with the hope that it will be 
- * useful. It comes with no warranty whatsoever. 
+ * This software is provided with the hope that it will be
+ * useful. It comes with no warranty whatsoever.
  * Please send bug reports to alexander@gokliya.net.
  */
 
@@ -29,9 +29,9 @@ class CmdLineArgParser {
   CmdLineArgParser() {
     // always activate -h
     this->set("-h", false, "Print help.");
-    this->footer = "\n";    
+    this->footer = "\n";
   }
-  
+
   // Setters
   /**
    * Set command line argument
@@ -39,14 +39,15 @@ class CmdLineArgParser {
    * @param defaultVal default value
    * @param help help string
    */
-  void set(const std::string& name, double defaultVal, 
+  void set(const std::string& name, double defaultVal,
            const std::string& help);
-  void set(const std::string& name, int defaultVal, 
+  void set(const std::string& name, int defaultVal,
            const std::string& help);
   void set(const std::string& name, const std::string& defaultVal, 
            const std::string& help);
-  void set(const std::string& name, bool defaultVal, 
-           const std::string& help);  
+  void set(const std::string& name, bool defaultVal,
+           const std::string& help);
+
   /**
    * Parse command line arguments
    * @param argc number of arguments
@@ -64,6 +65,11 @@ class CmdLineArgParser {
   }
 
   /**
+   * Print the arguments
+   */
+  void print() const;
+
+  /**
    * Print help to stdout
    */
   void help() const;
@@ -77,7 +83,7 @@ class CmdLineArgParser {
   }
 
   // Accessors
-  
+
   /**
    * Get parameter value by name
    * @param name
@@ -87,7 +93,7 @@ class CmdLineArgParser {
   T get(const std::string& name) const;
 
  private:
-  
+
   /** containers for parameters */
   std::map<std::string, double> doubleArg;
   std::map<std::string, int> intArg;
