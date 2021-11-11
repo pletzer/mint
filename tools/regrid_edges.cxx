@@ -165,6 +165,7 @@ int finalize(int ier, bool verbose) {
         mnt_printLogMessages();
     }
     std::string logname = "regridedges_logs.txt";
+    std::cout << "info: writing log in file " << logname << '\n';
     mnt_writeLogMessages(logname.c_str(), logname.size());
     return ier;   
 }
@@ -235,7 +236,8 @@ int main(int argc, char** argv) {
     if (args.get<int>("-S") == 0) {
         fixLonAcrossDateline = 0;
         averageLonAtPole = 0;
-        std::cout << "info: no regularization applied to source grid\n";
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "no regularization applied to source grid");
     }
     ier = mnt_regridedges_setSrcGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
 
@@ -245,21 +247,24 @@ int main(int argc, char** argv) {
     if (args.get<int>("-D") == 0) {
         fixLonAcrossDateline = 0;
         averageLonAtPole = 0;
-        std::cout << "info: no regularization applied to destination grid\n";
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "no regularization applied to destination grid");
     }
     ier = mnt_regridedges_setDstGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
 
     // read the source grid
     ier = mnt_regridedges_loadSrcGrid(&rg, srcFile.c_str(), (int) srcFile.size());
     if (ier != 0) {
-        std::cerr << "ERROR: could not read file \"" << srcFile << "\"\n";
+        mntlog::error(__FILE__, __func__, __LINE__, 
+                      "could not read source grid file \"" + srcFile + "\"");
         return finalize(4, args.get<bool>("-verbose"));
     }
 
     // read the destination grid
     ier = mnt_regridedges_loadDstGrid(&rg, dstFile.c_str(), (int) dstFile.size());
     if (ier != 0) {
-        std::cerr << "ERROR: could not read file \"" << dstFile << "\"\n";
+        mntlog::error(__FILE__, __func__, __LINE__, 
+                      "could not read destination grid file \"" + dstFile + "\"");
         return finalize(5, args.get<bool>("-verbose"));
     }
 
@@ -501,7 +506,7 @@ int main(int argc, char** argv) {
     } // has variable 
     else {
         mntlog::info(__FILE__, __func__, __LINE__, 
-            "no variable name was provided, only computing weights");
+            "no variable name was provided, computing weights only");
     }
 
     // clean up
