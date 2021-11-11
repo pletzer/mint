@@ -208,6 +208,8 @@ int main(int argc, char** argv) {
         return finalize(1, args.get<bool>("-verbose"));
     }
 
+    args.print();
+
     // extract the command line arguments
     std::string srcFile = args.get<std::string>("-s");
     std::string dstFile = args.get<std::string>("-d");

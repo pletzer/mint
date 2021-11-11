@@ -295,6 +295,12 @@ target_link_libraries(testSize
                       ${VTK_LIBRARIES}
 )
 
+add_executable(testCmdLineArgParser testCmdLineArgParser.cxx)
+target_link_libraries(testCmdLineArgParser
+                      mint
+                      ${VTK_LIBRARIES}
+)
+
 add_executable(testCmdLineArgParserC testCmdLineArgParserC.cxx)
 target_link_libraries(testCmdLineArgParserC
                       mint
@@ -342,14 +348,20 @@ add_test(NAME cmdLineArgParserC COMMAND testCmdLineArgParserC)
 add_test(NAME cmdLineArgParserC2 
         COMMAND testCmdLineArgParserC "-i" "-234" "-d" -2.34 "-s" "hi_there")
 
+add_test(NAME cmdLineArgParser
+         COMMAND testCmdLineArgParser 
+         "-debug" "-P" "-verbose"
+            "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d" "-D" "1"
+            "-w" "regridedges_latlon4x2_to_lfric_weights.nc")
 
 add_test(NAME regridedges_latlon4x2_to_lfric
-         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" "-debug" "-P"
-            "-d" "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d" "-D" "1"
+         COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" "-debug" "2" "-P" "360."
             "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
+            "-d" "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d" "-D" "1"
+            "-w" "regridedges_latlon4x2_to_lfric_weights.nc"
          )
-set_tests_properties(regridedges_latlon4x2_to_lfric PROPERTIES
-                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-0[8-9]")
+
 add_test(NAME regridedges_field_lfric_diag
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
             "-s" "${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc$Mesh2d_half_levels" "-S" "1"

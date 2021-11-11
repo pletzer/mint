@@ -10,28 +10,28 @@
 
 #include "CmdLineArgParser.h"
 
-void 
+void
 CmdLineArgParser::set(const std::string& name, double defaultVal, const std::string& help) {
     this->doubleArg[name] = defaultVal;
     this->doubleArgHelp[name] = help;
 }
-  
-void 
+
+void
 CmdLineArgParser::set(const std::string& name, int defaultVal, const std::string& help) {
     this->intArg[name] = defaultVal;
     this->intArgHelp[name] = help;
 }
-  
-void 
+
+void
 CmdLineArgParser::set(const std::string& name, const std::string& defaultVal, const std::string& help) {
     this->stringArg[name] = defaultVal;
     this->stringArgHelp[name] = help;
 }
-  
-void 
+
+void
 CmdLineArgParser::set(const std::string& name, bool defaultVal, const std::string& help) {
     this->boolArg[name] = defaultVal;
-    this->boolArgHelp[name] = help;    
+    this->boolArgHelp[name] = help;
 }
 
 template <class T>
@@ -58,7 +58,7 @@ int CmdLineArgParser::get(const std::string& name) const {
   }
   return res;
 }
-  
+
 template <>
 std::string CmdLineArgParser::get(const std::string& name) const {
   std::string res = "";
@@ -69,8 +69,8 @@ std::string CmdLineArgParser::get(const std::string& name) const {
   }
   return res;
 }
-  
-bool 
+
+bool
 CmdLineArgParser::parse(int argc, char *argv[]) {
 
   bool isArgVal;
@@ -138,7 +138,7 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
       }
     }
   }
-    
+
   // strings
   for (std::map<std::string, std::string>::iterator
        i = this->stringArg.begin();
@@ -176,9 +176,27 @@ CmdLineArgParser::parse(int argc, char *argv[]) {
 
   return true;
 }
-  
 
-void 
+void
+CmdLineArgParser::print() const {
+  for (auto i = this->doubleArg.begin(); i != this->doubleArg.end(); ++i) {
+    std::cout << i->first << ": " << i->second << '\n';
+  }
+
+  for (auto i = this->intArg.begin(); i != this->intArg.end(); ++i) {
+    std::cout << i->first << ": " << i->second << '\n';
+  }
+
+  for (auto i = this->stringArg.begin(); i != this->stringArg.end(); ++i) {
+    std::cout << i->first << ": " << i->second << '\n';
+  }
+
+  for (auto i = this->boolArg.begin(); i != this->boolArg.end(); ++i) {
+    std::cout << i->first << ": " << i->second << '\n';
+  }
+}
+
+void
 CmdLineArgParser::help() const {
   std::cout << this->purpose << std::endl;
   std::cout << this->execName << " [options]\n";
@@ -211,7 +229,7 @@ CmdLineArgParser::help() const {
     std::cout << "\t" << i->first << ' ' << hlp
               << " (" << i->second << ")\n";
   }
-  std::cout << this->footer << std::endl;    
+  std::cout << this->footer << std::endl;
 }
 
 
