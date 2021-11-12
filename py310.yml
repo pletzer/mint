@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python=3.9
+  - python=3.10
 
 # Setup dependencies.
   - cmake
@@ -20,4 +20,4 @@ dependencies:
 
 # Test dependencies.
   - pytest
-  - netcdf4=1.5.8
+  - netcdf4

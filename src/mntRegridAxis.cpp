@@ -1,4 +1,5 @@
 #include <mntRegridAxis.h>
+#include <cmath>
 
 LIBRARY_API
 int mnt_regridaxis_new(RegridAxis_t** self) {
@@ -47,8 +48,8 @@ int mnt_regridaxis_build(RegridAxis_t** self, int numValues, const double srcVal
         (*self)->increasing = false;
     }
 
-    // construct the spline object. Note that the spline object maps the 
-    // axis values to indices. This will allow us to quickly find the 
+    // construct the spline object. Note that the spline object maps the
+    // axis values to indices. This will allow us to quickly find the
     // float index of a target axis value.
     int ier = 0;
     for (int i = 0; i < numValues - 1; ++i) {
