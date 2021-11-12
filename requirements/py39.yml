@@ -20,4 +20,4 @@ dependencies:
 
 # Test dependencies.
   - pytest
-  - netcdf4
+  - netcdf4=1.5.8
