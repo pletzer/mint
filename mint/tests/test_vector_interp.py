@@ -95,6 +95,7 @@ def saveVectorsVTKFile(spts, vectors, filename):
     writer.Update()
 
 
+# noinspection SpellCheckingInspection
 def test_rectilinear():
 
     nx, ny, nxTarget, nyTarget = 1, 1, 2, 3
@@ -148,6 +149,56 @@ def test_rectilinear():
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
 
+
+# noinspection SpellCheckingInspection
+def test_rectilinear2():
+
+    nx, ny, nxTarget, nyTarget = 1, 2, 1, 2
+
+    v0 = numpy.array((0., 0., 0.))
+    v1 = numpy.array((nx, 0., 0.))
+    v2 = numpy.array((nx, ny, 0.))
+    v3 = numpy.array((0., ny, 0.))
+    # create the grid
+    gr = Grid()
+    cellPoints = getCellByCellPoints(generateStructuredGridPoints(nx, ny,
+                                                                  v0, v1,
+                                                                  v2, v3))
+    gr.setPoints(cellPoints)
+    numCells = cellPoints.shape[0]
+
+    # create the interpolator
+    vi = VectorInterp()
+    vi.setGrid(gr)
+    vi.buildLocator(numCellsPerBucket=10, periodX=0.)
+
+    # generate targets point for the above grid
+    dx = numpy.array((0.1, 0., 0.))
+    dy = numpy.array((0., 0.1, 0.))
+    targetPoints = generateStructuredGridPoints(nxTarget, nyTarget,
+                                                v0 + dx + dy, v1 - dx + dy,
+                                                v2 - dx - dy, v3 + dx - dy).reshape((-1, 3))
+    numBad = vi.findPoints(targetPoints, tol2=1.e-10)
+    # all points fall within the source grid so numBad == 0
+    assert(numBad == 0)
+
+    # generate edge data
+    data = numpy.zeros((numCells, 4), numpy.float64)
+    for cellId in range(numCells):
+        # iterate over the edges of the source grid cells
+        for edgeIndex in range(4):
+
+            # set one edge to 1, all other edges to zero
+            data[cellId, edgeIndex] = 1.0
+
+            # get the edge interpolated vectors
+            vectorData = vi.getEdgeVectors(data, placement=0)
+
+            # get the lateral flux interpolated vectors
+            vectorData = vi.getFaceVectors(data, placement=0)
+
+            # reset this edge's value back to its original
+            data[cellId, edgeIndex] = 0.0
 
 def test_slanted():
 
@@ -255,5 +306,6 @@ def test_degenerate():
 
 if __name__ == '__main__':
     test_rectilinear()
+    test_rectilinear2()
     test_slanted()
     test_degenerate()

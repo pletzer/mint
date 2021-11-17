@@ -106,7 +106,7 @@ class VectorInterp(object):
         """
 
         # check data size
-        n = data.shape[-1]
+        n = numpy.prod(data.shape)
         if placement == 0 and n != self.numGridCells * 4:
             msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
             ier = 10
@@ -145,7 +145,7 @@ class VectorInterp(object):
         """
 
         # check data size
-        n = data.shape[-1]
+        n = numpy.prod(data.shape)
         if placement == 0 and n != self.numGridCells * 4:
             msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
             ier = 10
