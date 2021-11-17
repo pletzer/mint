@@ -32,6 +32,8 @@ linux_task:
       PY_VER: "3.8"
     env:
       PY_VER: "3.9"
+    env:
+      PY_VER: "3.10"
   name: "Linux: py${PY_VER}"
   container:
     dockerfile: requirements/ci/linux/Dockerfile
@@ -86,7 +88,7 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
   name: "OSX: py${PY_VER}"
   osx_instance:
     image: big-sur-xcode
@@ -138,7 +140,7 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
