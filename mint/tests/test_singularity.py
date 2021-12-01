@@ -5,8 +5,10 @@ from matplotlib import pylab
 
 
 def streamFunction(p):
+    # singularity is at (0, 0)
     x, y = p[:2]
-    return numpy.arctan2(y, x)/(numpy.pi/2.)
+    angle = numpy.arctan2(y, x)
+    return angle/(2*numpy.pi)
 
 
 def createGridAndData(nx, ny, xymin, xymax, streamFunc):
@@ -30,10 +32,9 @@ def createGridAndData(nx, ny, xymin, xymax, streamFunc):
             y0 = xymin[1] + j*dy
             y1 = y0 + dy
 
-            # node indexing
-            #  3-->--2
+            #  3--<--2
             #  |     |
-            #  ^     ^
+            #  v     ^
             #  |     |
             #  0-->--1
             points[k, 0, :] = x0, y0, 0.
@@ -49,10 +50,28 @@ def createGridAndData(nx, ny, xymin, xymax, streamFunc):
             #  |     |
             #  +-->--+
             #     0
-            data[k, 0] = streamFunc(points[k, 1, :]) - streamFunc(points[k, 0, :])
-            data[k, 1] = streamFunc(points[k, 2, :]) - streamFunc(points[k, 1, :])
-            data[k, 2] = streamFunc(points[k, 2, :]) - streamFunc(points[k, 3, :])
-            data[k, 3] = streamFunc(points[k, 3, :]) - streamFunc(points[k, 0, :])
+            s0 = streamFunc(points[k, 0, :])
+            s1 = streamFunc(points[k, 1, :])
+            s2 = streamFunc(points[k, 2, :])
+            s3 = streamFunc(points[k, 3, :])
+
+            data[k, 0] = s1 - s0
+
+            data[k, 1] = s2 - s1
+            if data[k, 1] > 0.5:
+                # points 2 and 1 are on either side of the branch
+                data[k, 1] -= 1.
+            elif data[k, 1] < -0.5:
+                data[k, 1] += 1.
+
+            data[k, 2] = s2 - s3
+
+            data[k, 3] = s3 - s0
+            if data[k, 3] > 0.5:
+                # points 3 and 0 are on either side of the branch
+                data[k, 3] -= 1.
+            elif data[k, 3] < -0.5:
+                data[k, 3] += 1.
 
             # increment the cell counter
             k += 1
@@ -62,12 +81,24 @@ def createGridAndData(nx, ny, xymin, xymax, streamFunc):
     return gr, data
 
 
-def createTarget(xycenter, nt, radius):
+def createLoop(xybeg, xyend, nt):
+
+    xyzbeg = list(xybeg) + [0.]
+    xyzend = list(xyend) + [0.]
+    xyz = [xyzbeg, (0., xyzbeg[1], 0.)] + \
+          [(a*numpy.cos(t), a*numpy.sin(t), 0.) for t in numpy.linspace(-numpy.pi/2. + dt, numpy.pi - dt, nt-1)] + \
+          [(0., xyzend[1], 0.), xyzend]
+
+    return numpy.array(xyz)
+
+
+
+def createCircle(xycenter, nt, radius):
 
     nt1 = nt + 1
 
     xyz = numpy.zeros((nt1, 3), numpy.float64)
-    ts = numpy.linspace(0., numpy.pi/2., nt1)
+    ts = numpy.linspace(0., 2*numpy.pi, nt1)
     xyz[:, 0] = xycenter[0] + radius*numpy.cos(ts)
     xyz[:, 1] = xycenter[1] + radius*numpy.sin(ts)
 
@@ -93,7 +124,7 @@ def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
     for i in range(ncontours):
 
         xycenter = (0.0, 0.0)
-        xyz = createTarget(xycenter, nt, radii[i])
+        xyz = createCircle(xycenter, nt, radii[i])
 
         # if plot:
         #     pylab.plot(xyz[:, 0], xyz[:, 1], 'g-')
@@ -104,6 +135,7 @@ def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
 
         fluxes[i] = pli.getIntegral(data)
 
+    print(fluxes)
     if plot:
 
         # pylab.axes().set_aspect('equal', 'datalim')
@@ -121,6 +153,5 @@ def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
 
 
 if __name__ == '__main__':
-    eps = 1.23e-15
-    amax = 4.
-    test_fluxes(nx=4, ny=4, xymin=(0.+eps, 0.+eps), xymax=(amax, amax), radius=amax, nt=32, ncontours=40, plot=True)
+    amax = 1.
+    test_fluxes(nx=11, ny=11, xymin=(-amax, -amax), xymax=(amax, amax), radius=amax, nt=8, ncontours=5, plot=True)
