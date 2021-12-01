@@ -1,6 +1,7 @@
 from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
 import numpy
 import pytest
+from matplotlib import pylab
 
 
 def streamFunction(p):
@@ -76,7 +77,16 @@ def createTarget(xycenter, nt, radius):
 def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
 
     grid, data = createGridAndData(nx, ny, xymin, xymax, streamFunction)
-    h = min( (xymax[0] - xymin[0])/float(nx), (xymax[1] - xymin[1])/float(ny) )
+    dx = (xymax[0] - xymin[0])/float(nx)
+    dy = (xymax[1] - xymin[1])/float(ny)
+    h = min(dx, dy)
+
+    # if plot:
+    #     for i in range(nx + 1):
+    #         pylab.plot([i*dx, i*dx], [xymin[1], xymax[1]], 'k--')
+    #     for j in range(ny + 1):
+    #         pylab.plot([xymin[0], xymax[0]], [j*dy, j*dy], 'k--')
+    # pylab.show()
 
     radii = radius * numpy.linspace(1./float(ncontours), 1., ncontours)
     fluxes = numpy.zeros((ncontours,), numpy.float64)
@@ -84,6 +94,9 @@ def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
 
         xycenter = (0.0, 0.0)
         xyz = createTarget(xycenter, nt, radii[i])
+
+        # if plot:
+        #     pylab.plot(xyz[:, 0], xyz[:, 1], 'g-')
     
         pli = PolylineIntegral()
         # no periodicity in x
@@ -92,10 +105,9 @@ def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
         fluxes[i] = pli.getIntegral(data)
 
     if plot:
-        from matplotlib import pylab
 
-        # plot the grid and the integration path
-
+        # pylab.axes().set_aspect('equal', 'datalim')
+        # pylab.show()
 
         # plot the flux and its error
         pylab.plot(radii/h, fluxes, 'b-')
