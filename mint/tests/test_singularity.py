@@ -76,7 +76,7 @@ def createTarget(xycenter, nt, radius):
 def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
 
     grid, data = createGridAndData(nx, ny, xymin, xymax, streamFunction)
-    h = numpy.sqrt((xymax[0] - xymin[0])**2 + (xymax[1] - xymin[1])**2)
+    h = min( (xymax[0] - xymin[0])/float(nx), (xymax[1] - xymin[1])/float(ny) )
 
     radii = radius * numpy.linspace(1./float(ncontours), 1., ncontours)
     fluxes = numpy.zeros((ncontours,), numpy.float64)
