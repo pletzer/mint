@@ -167,7 +167,9 @@ def saveLineVTK(xyz, filename):
     writer.Update()
 
 
-def test_fluxes(nx, ny):
+def test_fluxes():
+
+    nx, ny = 11, 11
 
     # the singularity must fall inside a cell
     assert(nx % 2 == 1)
@@ -217,7 +219,10 @@ def test_fluxes(nx, ny):
 
         print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]}')
 
+    for case in 'A', 'B', 'C':
+        assert(abs(results[case]['flux'] - results[case]['exact']) < 1.e-10)
+    assert(abs(results['D']['flux'] - results['D']['exact']) < 0.03)
+
 
 if __name__ == '__main__':
-    amax = 1.
-    test_fluxes(nx=11, ny=11)
+    test_fluxes()
