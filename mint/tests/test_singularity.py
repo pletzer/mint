@@ -1,7 +1,7 @@
 from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
 import numpy
 import pytest
-from matplotlib import pylab
+import vtk
 
 
 def streamFunction(p):
@@ -77,20 +77,21 @@ def createGridAndData(nx, ny, xymin, xymax, streamFunc):
             k += 1
 
     gr.setPoints(points)
+    gr.dump('grid.vtk')
 
     return gr, data
 
 
 def createLoop(xybeg, xyend, nt):
 
-    xyzbeg = list(xybeg) + [0.]
-    xyzend = list(xyend) + [0.]
-    xyz = [xyzbeg, (0., xyzbeg[1], 0.)] + \
-          [(a*numpy.cos(t), a*numpy.sin(t), 0.) for t in numpy.linspace(-numpy.pi/2. + dt, numpy.pi - dt, nt-1)] + \
-          [(0., xyzend[1], 0.), xyzend]
+    dt = numpy.pi/float(nt)
+    a = (xyend[1] - xybeg[1])/2.
+    xyz = [(xybeg[0], xybeg[1], 0.), (0., xybeg[1], 0.)] + \
+          [(a*numpy.cos(t), a*numpy.sin(t), 0.) \
+               for t in numpy.linspace(-numpy.pi/2. + dt, numpy.pi/2. - dt, nt-1)] + \
+          [(0., xyend[1], 0.), (xyend[0], xyend[1], 0.)]
 
     return numpy.array(xyz)
-
 
 
 def createCircle(xycenter, nt, radius):
@@ -105,53 +106,76 @@ def createCircle(xycenter, nt, radius):
     return xyz
 
 
-def test_fluxes(nx, ny, xymin, xymax, radius, nt, ncontours, plot=False):
+def saveLineVTK(xyz, filename):
 
-    grid, data = createGridAndData(nx, ny, xymin, xymax, streamFunction)
+    n = xyz.shape[0]
+    ptsData = vtk.vtkDoubleArray()
+    ptsData.SetNumberOfComponents(3)
+    ptsData.SetNumberOfTuples(n)
+    ptsData.SetVoidArray(xyz, n*3, 1)
+
+    pts = vtk.vtkPoints()
+    pts.SetData(ptsData)
+
+    sgrid = vtk.vtkStructuredGrid()
+    sgrid.SetDimensions((n, 1, 1))
+    sgrid.SetPoints(pts)
+
+    writer = vtk.vtkStructuredGridWriter()
+    writer.SetFileName(filename)
+    writer.SetInputData(sgrid)
+    writer.Update()
+
+
+def test_fluxes(nx, ny):
+
+    # the singularity must fall inside a cell
+    assert(nx % 2 == 1)
+    assert(ny % 2 == 1)
+
+    xymin = (-1., -1.)
+    xymax = (1., 1.)
+
     dx = (xymax[0] - xymin[0])/float(nx)
     dy = (xymax[1] - xymin[1])/float(ny)
     h = min(dx, dy)
 
-    # if plot:
-    #     for i in range(nx + 1):
-    #         pylab.plot([i*dx, i*dx], [xymin[1], xymax[1]], 'k--')
-    #     for j in range(ny + 1):
-    #         pylab.plot([xymin[0], xymax[0]], [j*dy, j*dy], 'k--')
-    # pylab.show()
+    grid, data = createGridAndData(nx=nx, ny=ny, xymin=xymin, xymax=xymax,
+                                   streamFunc=streamFunction)
 
-    radii = radius * numpy.linspace(1./float(ncontours), 1., ncontours)
-    fluxes = numpy.zeros((ncontours,), numpy.float64)
-    for i in range(ncontours):
+    results = {
+        'A': {'xyz': createCircle(xycenter=(0., 0.), nt=8, radius=h),
+                      'flux': float('nan'),
+                      'exact': 1.0,
+                     },
+        'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.7),
+                       'flux': float('nan'),
+                       'exact': 1.0,
+                     },
+        'C': {'xyz': createLoop(xybeg=(1., 1.5*h), xyend=(1., -1.5*h), nt=15),
+                       'flux': float('nan'),
+                       'exact': streamFunction((1., -1.5*h)) - streamFunction((1., 1.5*h)) + 1.,
+                     },
+        'D': {'xyz': createLoop(xybeg=(0.91, 0.55), xyend=(0.91, -0.55), nt=15),
+                       'flux': float('nan'),
+                       'exact': streamFunction((1., -0.55)) - streamFunction((1., 0.55)) + 1.,
+                     },
+    }
 
-        xycenter = (0.0, 0.0)
-        xyz = createCircle(xycenter, nt, radii[i])
+    for case in results:
 
-        # if plot:
-        #     pylab.plot(xyz[:, 0], xyz[:, 1], 'g-')
-    
         pli = PolylineIntegral()
         # no periodicity in x
-        pli.build(grid, xyz, counterclock=False, periodX=0.0)
+        pli.build(grid, results[case]['xyz'], counterclock=False, periodX=0.0)
 
-        fluxes[i] = pli.getIntegral(data)
+        results[case]['flux'] = pli.getIntegral(data)
 
-    print(fluxes)
-    if plot:
+        # save the contour in VTK file
+        saveLineVTK(results[case]['xyz'], case + '.vtk')
 
-        # pylab.axes().set_aspect('equal', 'datalim')
-        # pylab.show()
-
-        # plot the flux and its error
-        pylab.plot(radii/h, fluxes, 'b-')
-        error = fluxes - 1.
-        print(f'error = {error}')
-        pylab.plot(radii/h, error, 'r--')
-        pylab.xlabel('a/h')
-        pylab.legend(['computed flux', 'numerical error'])
-        pylab.plot(radii/h, fluxes, 'ko', radii/h, error, 'kx', markerfacecolor='none')
-        pylab.show()
+        print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]}')
 
 
 if __name__ == '__main__':
     amax = 1.
-    test_fluxes(nx=11, ny=11, xymin=(-amax, -amax), xymax=(amax, amax), radius=amax, nt=8, ncontours=5, plot=True)
+    test_fluxes(nx=11, ny=11)
