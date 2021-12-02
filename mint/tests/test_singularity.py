@@ -12,116 +12,6 @@ def streamFunction(p):
     return angle/(2*numpy.pi)
 
 
-def saveVectorField(grid, data):
-
-    nxv, nyv = 101, 101
-    vi = VectorInterp()
-    vi.setGrid(grid)
-    vi.buildLocator(numCellsPerBucket=10, periodX=0.)
-    xx, yy = numpy.meshgrid(numpy.linspace(-1., 1., nxv), 
-                            numpy.linspace(-1., 1., nyv))
-    xyz = numpy.zeros((nxv*nyv, 3), numpy.float64)
-    xyz[:, 0] = xx.flat
-    xyz[:, 1] = yy.flat
-    vi.findPoints(xyz)
-    vectors = vi.getFaceVectors(data, placement=0)
-
-    ptsData = vtk.vtkDoubleArray()
-    ptsData.SetNumberOfComponents(3)
-    ptsData.SetNumberOfTuples(nxv * nyv)
-    ptsData.SetVoidArray(xyz, nxv*nyv*3, 1)
-
-    pts = vtk.vtkPoints()
-    pts.SetData(ptsData)
-
-    # add vector field
-    vecData = vtk.vtkDoubleArray()
-    vecData.SetNumberOfComponents(3)
-    vecData.SetNumberOfTuples(nxv * nyv)
-    vecData.SetVoidArray(vectors, nxv*nyv*3, 1)
-
-    sgrid = vtk.vtkStructuredGrid()
-    sgrid.SetDimensions((nxv, nyv, 1))
-    sgrid.SetPoints(pts)
-    sgrid.GetPointData().AddArray(vecData)
-
-    writer = vtk.vtkStructuredGridWriter()
-    writer.SetFileName('vectors.vtk')
-    writer.SetInputData(sgrid)
-    writer.Update()
-
-
-def createGridAndData(nx, ny, xymin, xymax, streamFunc):
-
-    # make sure the singularity falls inside a cell since the 
-    # streamfunction would be ill defined there
-    # assert(nx % 2 != 0)
-    # assert(ny % 2 != 0)
-
-    gr = Grid()
-
-    points = numpy.zeros((nx*ny, 4, 3), numpy.float64)
-    data = numpy.zeros((nx*ny, 4))
-    dx = (xymax[0] - xymin[0]) / float(nx)
-    dy = (xymax[1] - xymin[1]) / float(ny)
-    k = 0
-    for i in range(nx):
-        x0 = xymin[0] + i*dx
-        x1 = x0 + dx
-        for j in range(ny):
-            y0 = xymin[1] + j*dy
-            y1 = y0 + dy
-
-            #  3--<--2
-            #  |     |
-            #  v     ^
-            #  |     |
-            #  0-->--1
-            points[k, 0, :] = x0, y0, 0.
-            points[k, 1, :] = x1, y0, 0.
-            points[k, 2, :] = x1, y1, 0.
-            points[k, 3, :] = x0, y1, 0.
-
-            # edge indexing
-            #     2
-            #  +-->--+
-            #  |     |
-            # 3^     ^1
-            #  |     |
-            #  +-->--+
-            #     0
-            s0 = streamFunc(points[k, 0, :])
-            s1 = streamFunc(points[k, 1, :])
-            s2 = streamFunc(points[k, 2, :])
-            s3 = streamFunc(points[k, 3, :])
-
-            data[k, 0] = s1 - s0
-
-            data[k, 1] = s2 - s1
-            if data[k, 1] > 0.5:
-                # points 2 and 1 are on either side of the branch
-                data[k, 1] -= 1.
-            elif data[k, 1] < -0.5:
-                data[k, 1] += 1.
-
-            data[k, 2] = s2 - s3
-
-            data[k, 3] = s3 - s0
-            if data[k, 3] > 0.5:
-                # points 3 and 0 are on either side of the branch
-                data[k, 3] -= 1.
-            elif data[k, 3] < -0.5:
-                data[k, 3] += 1.
-
-            # increment the cell counter
-            k += 1
-
-    gr.setPoints(points)
-    gr.dump('grid.vtk')
-
-    return gr, data
-
-
 def createLoop(xybeg, xyend, nt):
 
     dt = numpy.pi/float(nt)
@@ -167,62 +57,168 @@ def saveLineVTK(xyz, filename):
     writer.Update()
 
 
-def test_fluxes():
+class ContourFluxes:
 
-    nx, ny = 11, 11
+    def __init__(self, nx, ny):
 
-    # the singularity must fall inside a cell
-    assert(nx % 2 == 1)
-    assert(ny % 2 == 1)
+        # the singularity must fall inside a cell
+        assert(nx % 2 == 1)
+        assert(ny % 2 == 1)
 
-    xymin = (-1., -1.)
-    xymax = (1., 1.)
+        self.nx, self.ny = nx, ny
+        self.xymin = (-1., -1.)
+        self.xymax = (1., 1.)
 
-    dx = (xymax[0] - xymin[0])/float(nx)
-    dy = (xymax[1] - xymin[1])/float(ny)
-    h = min(dx, dy)
+        # create grid and data
 
-    grid, data = createGridAndData(nx=nx, ny=ny, xymin=xymin, xymax=xymax,
-                                   streamFunc=streamFunction)
+        dx = (self.xymax[0] - self.xymin[0]) / float(nx)
+        dy = (self.xymax[1] - self.xymin[1]) / float(ny)
 
-    saveVectorField(grid, data)
+        self.points = numpy.zeros((nx*ny, 4, 3), numpy.float64)
+        self.data = numpy.zeros((nx*ny, 4))
 
-    results = {
-        'A': {'xyz': createCircle(xycenter=(0., 0.), nt=8, radius=h),
-                      'flux': float('nan'),
-                      'exact': 1.0,
-                     },
-        'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.9),
-                       'flux': float('nan'),
-                       'exact': 1.0,
-                     },
-        'C': {'xyz': createLoop(xybeg=(1., 1.5*h), xyend=(1., -1.5*h), nt=15),
-                       'flux': float('nan'),
-                       'exact': streamFunction((1., -1.5*h)) - streamFunction((1., 1.5*h)) + 1.,
-                     },
-        'D': {'xyz': createLoop(xybeg=(0.91, 0.55), xyend=(0.91, -0.55), nt=15),
-                       'flux': float('nan'),
-                       'exact': streamFunction((1., -0.55)) - streamFunction((1., 0.55)) + 1.,
-                     },
-    }
+        k = 0
+        for i in range(nx):
+            x0 = self.xymin[0] + i*dx
+            x1 = x0 + dx
+            for j in range(ny):
+                y0 = self.xymin[1] + j*dy
+                y1 = y0 + dy
 
-    for case in results:
+                # node indexing
+                #  3-->--2
+                #  |     |
+                #  ^     ^
+                #  |     |
+                #  0-->--1
+                self.points[k, 0, :] = x0, y0, 0.
+                self.points[k, 1, :] = x1, y0, 0.
+                self.points[k, 2, :] = x1, y1, 0.
+                self.points[k, 3, :] = x0, y1, 0.
 
-        pli = PolylineIntegral()
-        # no periodicity in x
-        pli.build(grid, results[case]['xyz'], counterclock=False, periodX=0.0)
+                # edge indexing
+                #     2
+                #  +-->--+
+                #  |     |
+                # 3^     ^1
+                #  |     |
+                #  +-->--+
+                #     0
+                s0 = streamFunction(self.points[k, 0, :])
+                s1 = streamFunction(self.points[k, 1, :])
+                s2 = streamFunction(self.points[k, 2, :])
+                s3 = streamFunction(self.points[k, 3, :])
 
-        results[case]['flux'] = pli.getIntegral(data)
+                self.data[k, 0] = s1 - s0
 
-        # save the contour in VTK file
-        saveLineVTK(results[case]['xyz'], case + '.vtk')
+                self.data[k, 1] = s2 - s1
+                if self.data[k, 1] > 0.5:
+                    # points 2 and 1 are on either side of the branch
+                    self.data[k, 1] -= 1.
+                elif self.data[k, 1] < -0.5:
+                    self.data[k, 1] += 1.
 
-        print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]}')
+                self.data[k, 2] = s2 - s3
 
-    for case in 'A', 'B', 'C':
-        assert(abs(results[case]['flux'] - results[case]['exact']) < 1.e-10)
-    assert(abs(results['D']['flux'] - results['D']['exact']) < 0.03)
+                self.data[k, 3] = s3 - s0
+                if self.data[k, 3] > 0.5:
+                    # points 3 and 0 are on either side of the branch
+                    self.data[k, 3] -= 1.
+                elif self.data[k, 3] < -0.5:
+                    self.data[k, 3] += 1.
+
+                # increment the cell counter
+                k += 1
+
+        self.grid = Grid()
+        self.grid.setPoints(self.points)
+        self.saveVectorField()
+
+
+    def compute(self):
+
+        dx = (self.xymax[0] - self.xymin[0])/float(self.nx)
+        dy = (self.xymax[1] - self.xymin[1])/float(self.ny)
+        h = min(dx, dy)
+
+        results = {
+            'A': {'xyz': createCircle(xycenter=(0., 0.), nt=8, radius=h),
+                          'flux': float('nan'),
+                          'exact': 1.0,
+                         },
+            'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.9),
+                           'flux': float('nan'),
+                           'exact': 1.0,
+                         },
+            'C': {'xyz': createLoop(xybeg=(1., 1.5*h), xyend=(1., -1.5*h), nt=15),
+                           'flux': float('nan'),
+                           'exact': streamFunction((1., -1.5*h)) - streamFunction((1., 1.5*h)) + 1.,
+                         },
+            'D': {'xyz': createLoop(xybeg=(0.91, 0.55), xyend=(0.91, -0.55), nt=15),
+                           'flux': float('nan'),
+                           'exact': streamFunction((1., -0.55)) - streamFunction((1., 0.55)) + 1.,
+                         },
+        }
+
+        for case in results:
+
+            pli = PolylineIntegral()
+            # no periodicity in x
+            pli.build(self.grid, results[case]['xyz'], counterclock=False, periodX=0.0)
+
+            results[case]['flux'] = pli.getIntegral(self.data)
+
+            # save the contour in VTK file
+            saveLineVTK(results[case]['xyz'], case + '.vtk')
+
+            print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]}')
+
+        for case in 'A', 'B', 'C':
+            assert(abs(results[case]['flux'] - results[case]['exact']) < 1.e-10)
+        assert(abs(results['D']['flux'] - results['D']['exact']) < 0.03)
+
+
+
+    def saveVectorField(self):
+
+        nxv, nyv = 101, 101
+        vi = VectorInterp()
+        vi.setGrid(self.grid)
+        vi.buildLocator(numCellsPerBucket=10, periodX=0.)
+        xx, yy = numpy.meshgrid(numpy.linspace(self.xymin[0], self.xymax[0], nxv), 
+                                numpy.linspace(self.xymin[1], self.xymax[1], nyv))
+        xyz = numpy.zeros((nxv*nyv, 3), numpy.float64)
+        xyz[:, 0] = xx.flat
+        xyz[:, 1] = yy.flat
+        vi.findPoints(xyz)
+        vectors = vi.getFaceVectors(self.data, placement=0)
+
+        ptsData = vtk.vtkDoubleArray()
+        ptsData.SetNumberOfComponents(3)
+        ptsData.SetNumberOfTuples(nxv * nyv)
+        ptsData.SetVoidArray(xyz, nxv*nyv*3, 1)
+
+        pts = vtk.vtkPoints()
+        pts.SetData(ptsData)
+
+        # add vector field
+        vecData = vtk.vtkDoubleArray()
+        vecData.SetNumberOfComponents(3)
+        vecData.SetNumberOfTuples(nxv * nyv)
+        vecData.SetVoidArray(vectors, nxv*nyv*3, 1)
+
+        sgrid = vtk.vtkStructuredGrid()
+        sgrid.SetDimensions((nxv, nyv, 1))
+        sgrid.SetPoints(pts)
+        sgrid.GetPointData().AddArray(vecData)
+
+        writer = vtk.vtkStructuredGridWriter()
+        writer.SetFileName('vectors.vtk')
+        writer.SetInputData(sgrid)
+        writer.Update()
+
 
 
 if __name__ == '__main__':
-    test_fluxes()
+    cf = ContourFluxes(nx=11, ny=11)
+    cf.compute()
