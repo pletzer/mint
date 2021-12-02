@@ -1,4 +1,5 @@
 from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
+from mint import VectorInterp
 import numpy
 import pytest
 import vtk
@@ -9,6 +10,45 @@ def streamFunction(p):
     x, y = p[:2]
     angle = numpy.arctan2(y, x)
     return angle/(2*numpy.pi)
+
+
+def saveVectorField(grid, data):
+
+    nxv, nyv = 101, 101
+    vi = VectorInterp()
+    vi.setGrid(grid)
+    vi.buildLocator(numCellsPerBucket=10, periodX=0.)
+    xx, yy = numpy.meshgrid(numpy.linspace(-1., 1., nxv), 
+                            numpy.linspace(-1., 1., nyv))
+    xyz = numpy.zeros((nxv*nyv, 3), numpy.float64)
+    xyz[:, 0] = xx.flat
+    xyz[:, 1] = yy.flat
+    vi.findPoints(xyz)
+    vectors = vi.getFaceVectors(data, placement=0)
+
+    ptsData = vtk.vtkDoubleArray()
+    ptsData.SetNumberOfComponents(3)
+    ptsData.SetNumberOfTuples(nxv * nyv)
+    ptsData.SetVoidArray(xyz, nxv*nyv*3, 1)
+
+    pts = vtk.vtkPoints()
+    pts.SetData(ptsData)
+
+    # add vector field
+    vecData = vtk.vtkDoubleArray()
+    vecData.SetNumberOfComponents(3)
+    vecData.SetNumberOfTuples(nxv * nyv)
+    vecData.SetVoidArray(vectors, nxv*nyv*3, 1)
+
+    sgrid = vtk.vtkStructuredGrid()
+    sgrid.SetDimensions((nxv, nyv, 1))
+    sgrid.SetPoints(pts)
+    sgrid.GetPointData().AddArray(vecData)
+
+    writer = vtk.vtkStructuredGridWriter()
+    writer.SetFileName('vectors.vtk')
+    writer.SetInputData(sgrid)
+    writer.Update()
 
 
 def createGridAndData(nx, ny, xymin, xymax, streamFunc):
@@ -143,12 +183,14 @@ def test_fluxes(nx, ny):
     grid, data = createGridAndData(nx=nx, ny=ny, xymin=xymin, xymax=xymax,
                                    streamFunc=streamFunction)
 
+    saveVectorField(grid, data)
+
     results = {
         'A': {'xyz': createCircle(xycenter=(0., 0.), nt=8, radius=h),
                       'flux': float('nan'),
                       'exact': 1.0,
                      },
-        'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.7),
+        'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.9),
                        'flux': float('nan'),
                        'exact': 1.0,
                      },
