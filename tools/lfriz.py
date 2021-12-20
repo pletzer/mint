@@ -3,12 +3,18 @@ import defopt
 import mint
 import netCDF4
 import vtk
+from scipy.integrate import odeint
 
 A_EARTH = 6371e3 # metres
+
 
 class LFRiz(object):
 
     def __init__(self, infile, inmesh, pts, ndays, tindex, level):
+
+        self.ndays = ndays
+        self.nt = ndays + 1
+        self.pts = pts
         
         # read the data
         self.srcGrid = mint.Grid()
@@ -33,6 +39,9 @@ class LFRiz(object):
         # compute the fluxes in m^2/s across each edge
         uvec = numpy.zeros((2,), numpy.float64)
         self.influxes = numpy.zeros((self.srcGrid.getNumberOfCells(), 4), numpy.float64)
+        # from m/s to rad/day
+        coeff = numpy.pi * 3600 * 24 / (180. * A_EARTH)
+        deg2rad = numpy.pi/180.
         for icell in range(self.srcGrid.getNumberOfCells()):
             for ie in range(4):
                 edgeIndex, _ = self.srcGrid.getEdgeId(icell, ie)
@@ -41,20 +50,36 @@ class LFRiz(object):
                 lon1, lat1 = lon[n1], lat[n1]
                 latmid = 0.5*(lat0 + lat1)
                 dlon, dlat = lon1 - lon0, lat1 - lat0
-                self.influxes[icell, ie] = A_EARTH*(u1[edgeIndex]*dlat - u2[edgeIndex]*numpy.cos(latmid*numpy.pi/180.)*dlon)
-
-        # create structured grids with nodal flux data attached
-        numRibbons, nt = pts.shape[0] - 1, ndays + 1
-        assert(numRibbons >= 1)
-        self.ribbons = [numpy.zeros((2, nt), numpy.float64) for i in range(numRibbons)]
-        self.fields = [numpy.zeros((2, nt), numpy.float64) for i in range(numRibbons)]
+                # convert to rads
+                dlon *= deg2rad
+                dlat *= deg2rad
+                latmid *= deg2rad
+                # fluxes in rad^2/day
+                self.influxes[icell, ie] = coeff*( u1[edgeIndex] * dlat / numpy.cos(latmid) - u2[edgeIndex] * dlon)
 
 
     def advect(self):
+
         # create a vector field interpolator
-        self.vectInterp = mint.VectorInterp()
-        self.vectInterp.setGrid(self.srcGrid)
-        self.vectInterp.buildLocator(numCellsPerBucket=100, periodX=360.)
+        vi = mint.VectorInterp()
+        vi.setGrid(self.srcGrid)
+        vi.buildLocator(numCellsPerBucket=100, periodX=360.)
+
+        numPoints = self.pts.shape[0]
+
+        def tendency(xyz, t):
+            p = xyz.reshape((numPoints, 3))
+            vi.findPoints(p)
+            vect = vi.getFaceVectors(self.influxes, placement=0)
+            return vect.reshape((numPoints*3,))
+
+        dt = 1. # one day
+        tvals = [i*dt for i in range(self.nt)]
+        xyz0 = self.pts.reshape((numPoints*3,))
+        sol = odeint(tendency, xyz0, tvals, rtol=1.e-12, atol=1.e-12)
+
+        print(sol)
+
 
 
     def show(self):
