@@ -14,8 +14,10 @@ class LFRiz(object):
 
         self.ndays = ndays
         self.nt = ndays + 1
-        self.pts = pts
-        
+        self.pts0 = pts
+
+        self.numPoints = self.pts0.shape[0]
+
         # read the data
         self.srcGrid = mint.Grid()
         # cubed-sphere
@@ -65,20 +67,28 @@ class LFRiz(object):
         vi.setGrid(self.srcGrid)
         vi.buildLocator(numCellsPerBucket=100, periodX=360.)
 
-        numPoints = self.pts.shape[0]
-
         def tendency(xyz, t):
-            p = xyz.reshape((numPoints, 3))
+            p = xyz.reshape((self.numPoints, 3))
             vi.findPoints(p)
             vect = vi.getFaceVectors(self.influxes, placement=0)
-            return vect.reshape((numPoints*3,))
+            return vect.reshape((self.numPoints*3,))
 
+        # time step
         dt = 1. # one day
+
+        # all the time values for which we seek the advected positions
         tvals = [i*dt for i in range(self.nt)]
-        xyz0 = self.pts.reshape((numPoints*3,))
+
+        # intial positions as a flat vector
+        xyz0 = self.pts0.reshape((self.numPoints*3,))
+
+        # advance the positions
         sol = odeint(tendency, xyz0, tvals, rtol=1.e-12, atol=1.e-12)
 
-        print(sol)
+        # save the positions
+        self.points = sol.reshape((self.nt, self.numPoints, 3))
+
+        print(self.points)
 
 
 
@@ -112,7 +122,7 @@ def main(*,
 
     xy0 = numpy.array(eval(pts))
     xyz = numpy.zeros((xy0.shape[0], 3))
-    xyz[:, :1] = xy0[:, :1]
+    xyz[:, 0:2] = xy0[:, 0:2]
     lfr = LFRiz(infile, inmesh, xyz, ndays, tindex, level)
     lfr.advect()
     lfr.save(outfile)
