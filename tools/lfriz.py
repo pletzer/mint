@@ -85,11 +85,8 @@ class LFRiz(object):
         # advance the positions
         sol = odeint(tendency, xyz0, tvals, rtol=1.e-12, atol=1.e-12)
 
-        # save the positions
+        # save the positions, column major
         self.points = sol.reshape((self.nt, self.numPoints, 3))
-
-        print(self.points)
-
 
 
     def show(self):
@@ -97,16 +94,67 @@ class LFRiz(object):
 
 
     def save(self, filename):
-        pass
+
+        numRibbons = self.numPoints - 1
+        assert(numRibbons >= 1) # need at least two points
+
+        for i in range(numRibbons):
+
+            vfluxData = vtk.vtkDoubleArray()
+            vpointData = vtk.vtkDoubleArray()
+            vpoints = vtk.vtkPoints()
+            vsgrid = vtk.vtkStructuredGrid()
+            vwriter = vtk.vtkStructuredGridWriter()
+
+            # set the dimensions
+            vfluxData.SetNumberOfTuples(self.nt * 2)
+            vfluxData.SetNumberOfComponents(1) # scalar
+            vpointData.SetNumberOfTuples(self.nt * 2)
+            vpointData.SetNumberOfComponents(3)
+            vpoints.SetNumberOfPoints(self.nt * 2)
+            vsgrid.SetDimensions(2, self.nt, 1)
+            fname = filename + f'_{i}.vtk'
+            vwriter.SetFileName(fname)
+
+            # vertices
+            pts = numpy.ascontiguousarray( self.points[:, i:i+2, :] )
+
+            # fluxes
+            fluxes = numpy.zeros( (self.nt, 2), dtype=numpy.float64)
+
+
+            pli = mint.PolylineIntegral()
+            for j in range(self.nt):
+                tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
+                pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
+                fluxes[j, 0:2] = pli.getIntegral(self.influxes)
+
+
+            # connect
+            vfluxData.SetVoidArray(fluxes, self.nt * 2, 1)
+            vfluxData.SetName('flux')
+            vpointData.SetVoidArray(pts, self.nt * 2 * 3, 1)
+            vpoints.SetData(vpointData)
+            vsgrid.SetPoints(vpoints)
+            vsgrid.GetPointData().AddArray(vfluxData)
+            vwriter.SetInputData(vsgrid)
+            vwriter.Update()
+
+            print(f'write {fname}')
+
+
+
+
+
 
 ###############################################################################
 
 def main(*,
          infile: str = '../data/lfric_diag_wind.nc', inmesh: str = 'Mesh2d',
          pts: str="(0., 10.), (50., 10.)", 
-         ndays : float=10, 
+         ndays : int=10, 
          tindex : int = 0, level: int = 0, 
-         outfile: str = 'lfriz.vtk'):
+         outfile: str = 'lfriz'):
 
     """
     Generate advection grid
