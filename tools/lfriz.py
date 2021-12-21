@@ -5,7 +5,7 @@ import netCDF4
 import vtk
 from scipy.integrate import odeint
 
-A_EARTH = 6371e3 # metres
+A_EARTH = 6371.e3 # metres
 DEG2RAD = numpy.pi/180.
 
 
@@ -76,7 +76,7 @@ class LFRiz(object):
             p = xyz.reshape((self.numPoints, 3))
             vi.findPoints(p)
             vect = vi.getFaceVectors(self.influxes, placement=0)
-            #print(f'vect = {vect}')
+            print(f'vect = {vect}')
             return vect.reshape((self.numPoints*3,))
 
         # time step
@@ -99,58 +99,129 @@ class LFRiz(object):
         print(f'{self.points}')
 
 
+    def build(self):
+
+        pli = mint.PolylineIntegral() # to compute fluxes
+
+        numRibbons = self.numPoints - 1
+        assert(numRibbons >= 1) # need at least two points
+
+        self.vfluxData = vtk.vtkDoubleArray()
+        self.vfluxData.SetName('flux')
+        self.vfluxData.SetNumberOfComponents(1)
+        self.vfluxData.SetNumberOfTuples(numRibbons * 2 * self.nt)
+
+        self.vpointData = vtk.vtkDoubleArray()
+        self.vpointData.SetNumberOfComponents(3)
+        self.vpointData.SetNumberOfTuples(numRibbons * 2 * self.nt)
+
+        self.vpoints = vtk.vtkPoints()
+        self.vpoints.SetData(self.vpointData)
+
+        self.vgrid = vtk.vtkUnstructuredGrid()
+        self.vgrid.SetPoints(self.vpoints)
+        self.vgrid.Allocate(1, 1)
+
+        ptIds = vtk.vtkIdList()
+        ptIds.SetNumberOfIds(4)
+
+        for i in range(numRibbons):
+
+            # set the nodal values
+            for j in range(self.nt):
+
+                index0 = 2*(self.nt*i + j)
+                index1 = index0 + 1
+
+                xyz0 = self.points[j, i + 0, :]
+                xyz1 = self.points[j, i + 1, :]
+                self.vpointData.SetTuple(index0, xyz0)
+                self.vpointData.SetTuple(index1, xyz1)
+
+                tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
+                pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
+                flx = (pli.getIntegral(self.influxes),)
+
+                # same flux values for 2 adjacent nodes
+                self.vfluxData.SetTuple(index0, flx)
+                self.vfluxData.SetTuple(index1, flx)
+
+            # build the cells
+            for j in range(self.ndays): # self.nt - 1
+
+                index0 = 2*(self.nt*i + j)
+                index1 = index0 + 1
+                index2 = index1 + 2
+                index3 = index2 - 1
+
+                ptIds.SetId(0, index0)
+                ptIds.SetId(1, index1)
+                ptIds.SetId(2, index2)
+                ptIds.SetId(3, index3)
+
+                self.vgrid.InsertNextCell(vtk.VTK_QUAD, ptIds)
+
+        self.vgrid.GetPointData().AddArray(self.vfluxData)
+        print(self.vgrid)
+
+ 
     def show(self):
         pass
 
 
     def save(self, filename):
 
-        numRibbons = self.numPoints - 1
-        assert(numRibbons >= 1) # need at least two points
+        writer = vtk.vtkUnstructuredGridWriter()
+        writer.SetFileName(filename)
+        writer.SetInputData(self.vgrid)
+        writer.Update()
 
-        for i in range(numRibbons):
+        # numRibbons = self.numPoints - 1
+        # assert(numRibbons >= 1) # need at least two points
 
-            vfluxData = vtk.vtkDoubleArray()
-            vpointData = vtk.vtkDoubleArray()
-            vpoints = vtk.vtkPoints()
-            vsgrid = vtk.vtkStructuredGrid()
-            vwriter = vtk.vtkStructuredGridWriter()
+        # for i in range(numRibbons):
 
-            # set the dimensions
-            vfluxData.SetNumberOfTuples(self.nt * 2)
-            vfluxData.SetNumberOfComponents(1) # scalar
-            vpointData.SetNumberOfTuples(self.nt * 2)
-            vpointData.SetNumberOfComponents(3)
-            vpoints.SetNumberOfPoints(self.nt * 2)
-            vsgrid.SetDimensions(2, self.nt, 1)
-            fname = filename + f'_{i}.vtk'
-            vwriter.SetFileName(fname)
+        #     vfluxData = vtk.vtkDoubleArray()
+        #     vpointData = vtk.vtkDoubleArray()
+        #     vpoints = vtk.vtkPoints()
+        #     vsgrid = vtk.vtkStructuredGrid()
+        #     vwriter = vtk.vtkStructuredGridWriter()
 
-            # vertices
-            pts = numpy.ascontiguousarray( self.points[:, i:i+2, :] )
+        #     # set the dimensions
+        #     vfluxData.SetNumberOfTuples(self.nt * 2)
+        #     vfluxData.SetNumberOfComponents(1) # scalar
+        #     vpointData.SetNumberOfTuples(self.nt * 2)
+        #     vpointData.SetNumberOfComponents(3)
+        #     vpoints.SetNumberOfPoints(self.nt * 2)
+        #     vsgrid.SetDimensions(2, self.nt, 1)
+        #     fname = filename + f'_{i}.vtk'
+        #     vwriter.SetFileName(fname)
 
-            # fluxes
-            fluxes = numpy.zeros( (self.nt, 2), dtype=numpy.float64)
+        #     # vertices
+        #     pts = numpy.ascontiguousarray( self.points[:, i:i+2, :] )
 
-
-            pli = mint.PolylineIntegral()
-            for j in range(self.nt):
-                tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
-                pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
-                fluxes[j, 0:2] = pli.getIntegral(self.influxes)
+        #     # fluxes
+        #     fluxes = numpy.zeros( (self.nt, 2), dtype=numpy.float64)
 
 
-            # connect
-            vfluxData.SetVoidArray(fluxes, self.nt * 2, 1)
-            vfluxData.SetName('flux')
-            vpointData.SetVoidArray(pts, self.nt * 2 * 3, 1)
-            vpoints.SetData(vpointData)
-            vsgrid.SetPoints(vpoints)
-            vsgrid.GetPointData().AddArray(vfluxData)
-            vwriter.SetInputData(vsgrid)
-            vwriter.Update()
+        #     pli = mint.PolylineIntegral()
+        #     for j in range(self.nt):
+        #         tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
+        #         pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
+        #         fluxes[j, 0:2] = pli.getIntegral(self.influxes)
 
-            print(f'wrote {fname}')
+
+        #     # connect
+        #     vfluxData.SetVoidArray(fluxes, self.nt * 2, 1)
+        #     vfluxData.SetName('flux')
+        #     vpointData.SetVoidArray(pts, self.nt * 2 * 3, 1)
+        #     vpoints.SetData(vpointData)
+        #     vsgrid.SetPoints(vpoints)
+        #     vsgrid.GetPointData().AddArray(vfluxData)
+        #     vwriter.SetInputData(vsgrid)
+        #     vwriter.Update()
+
+        #     print(f'wrote {fname}')
 
 
 
@@ -161,10 +232,10 @@ class LFRiz(object):
 
 def main(*,
          infile: str = '../data/lfric_diag_wind.nc', inmesh: str = 'Mesh2d',
-         pts: str="(0., 40.), (50., 40.)", 
+         pts: str="(20., 40.), (50., 40.)", 
          ndays : int=10, 
          tindex : int = 0, level: int = 0, 
-         outfile: str = 'lfriz'):
+         outfile: str = 'lfriz.vtk'):
 
     """
     Generate advection grid
@@ -183,6 +254,7 @@ def main(*,
     xyz[:, 0:2] = xy0[:, 0:2]
     lfr = LFRiz(infile, inmesh, xyz, ndays, tindex, level)
     lfr.advect()
+    lfr.build()
     lfr.save(outfile)
 
 if __name__ == '__main__':
