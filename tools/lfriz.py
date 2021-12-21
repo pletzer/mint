@@ -8,7 +8,6 @@ from scipy.integrate import odeint
 A_EARTH = 6371.e3 # metres
 DEG2RAD = numpy.pi/180.
 
-
 class LFRiz(object):
 
     def __init__(self, infile, inmesh, pts, ndays, tindex, level):
@@ -26,25 +25,43 @@ class LFRiz(object):
         self.srcGrid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1)
         self.srcGrid.loadFromUgrid2D(infile + '$' + inmesh)
 
-        # read the u, v components, in m/s
+        # read the u, v components for each unique edge, in m/s
         nc = netCDF4.Dataset(infile)
         u1 = nc.variables['u1'][tindex, level, :]
         u2 = nc.variables['u2'][tindex, level, :]
-
-        # read the edge to node connectivity
-        e2nname = nc.variables[inmesh].edge_node_connectivity
-        e2n = nc.variables[e2nname][:]
 
         # read the coordinates
         xname, yname = nc.variables[inmesh].node_coordinates.split(' ')
         lon = nc.variables[xname][:]
         lat = nc.variables[yname][:]
 
-        # compute the fluxes in m^2/s across each edge
-        uvec = numpy.zeros((2,), numpy.float64)
         self.influxes = numpy.zeros((self.srcGrid.getNumberOfCells(), 4), numpy.float64)
-        # from m/s to rad/day
+
+        coeff = 3600 * 24 / A_EARTH
+
+        # iterate
+        for icell in range(self.srcGrid.getNumberOfCells()):
+            for ie in range(4):
+
+                edgeIndex, edgeSign = self.srcGrid.getEdgeId(icell, ie)
+                n0, n1 = self.srcGrid.getNodeIds(icell, ie)
+
+                lon0, lat0 = lon[n0], lat[n0]
+                lon1, lat1 = lon[n1], lat[n1]
+
+                latmid_rad = 0.5*(lat0 + lat1) * DEG2RAD
+                dlon, dlat = lon1 - lon0, lat1 - lat0
+
+                # fluxes in deg^2/day (approximation)
+                self.influxes[icell, ie] = coeff *  (u1[edgeIndex] * dlat / numpy.cos(latmid_rad) - u2[edgeIndex] * dlon)
+                
+                print(f'cell {icell} edge {ie} edgeSign={edgeSign} u1,u2 = {u1[edgeIndex]},{u2[edgeIndex]} (m/s) p0={lon0},{lat0} p1={lon1},{lat1} dlon,dlat={dlon},{dlat} (deg) flux = {self.influxes[icell, ie]} (deg^2/day)')
+
+
+        # compute the fluxes in deg^2/day across each edge        # from m/s to rad/day
         coeff = 3600 * 24 / A_EARTH # sec -> day
+
+        # iterate
         for icell in range(self.srcGrid.getNumberOfCells()):
             for ie in range(4):
 

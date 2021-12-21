@@ -4,6 +4,7 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
+configure_file(testLFRicVectorField.cpp testLFRicVectorField.cxx)
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
 configure_file(testNcAttributes.cpp testNcAttributes.cxx)
@@ -147,6 +148,14 @@ if (BUILD_FORTRAN)
                         FAIL_REGULAR_EXPRESSION "ERROR")
 
 endif()
+
+add_executable(testLFRicVectorField testLFRicVectorField.cxx)
+target_link_libraries(testLFRicVectorField
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 
 add_executable(testLogger testLogger.cxx)
 target_link_libraries(testLogger
@@ -314,6 +323,7 @@ target_link_libraries(testRegridAxis
 )
 
 
+add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
 add_test(NAME logger COMMAND testLogger)
 add_test(NAME vecMat COMMAND testVecMat)
 add_test(NAME netcdf COMMAND testNetcdf)
