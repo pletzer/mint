@@ -6,6 +6,7 @@ import vtk
 from scipy.integrate import odeint
 
 A_EARTH = 6371e3 # metres
+DEG2RAD = numpy.pi/180.
 
 
 class LFRiz(object):
@@ -14,6 +15,7 @@ class LFRiz(object):
 
         self.ndays = ndays
         self.nt = ndays + 1
+        print(f'num times = {self.nt}')
         self.pts0 = pts
 
         self.numPoints = self.pts0.shape[0]
@@ -42,22 +44,25 @@ class LFRiz(object):
         uvec = numpy.zeros((2,), numpy.float64)
         self.influxes = numpy.zeros((self.srcGrid.getNumberOfCells(), 4), numpy.float64)
         # from m/s to rad/day
-        coeff = numpy.pi * 3600 * 24 / (180. * A_EARTH)
-        deg2rad = numpy.pi/180.
+        coeff = 3600 * 24 / A_EARTH # sec -> day
         for icell in range(self.srcGrid.getNumberOfCells()):
             for ie in range(4):
+
                 edgeIndex, _ = self.srcGrid.getEdgeId(icell, ie)
                 n0, n1 = self.srcGrid.getNodeIds(icell, ie)
+
                 lon0, lat0 = lon[n0], lat[n0]
                 lon1, lat1 = lon[n1], lat[n1]
                 latmid = 0.5*(lat0 + lat1)
                 dlon, dlat = lon1 - lon0, lat1 - lat0
+
                 # convert to rads
-                dlon *= deg2rad
-                dlat *= deg2rad
-                latmid *= deg2rad
-                # fluxes in rad^2/day
+                dlon *= DEG2RAD
+                dlat *= DEG2RAD
+                latmid *= DEG2RAD
+                # fluxes in rad^2/day (approximation)
                 self.influxes[icell, ie] = coeff*( u1[edgeIndex] * dlat / numpy.cos(latmid) - u2[edgeIndex] * dlon)
+                #print(f'cell {icell} edge {ie} u1, u2 = {u1[edgeIndex]}, {u2[edgeIndex]} dlon, dlat = {dlon}, {dlat} [rad] flux = {self.influxes[icell, ie]} ')
 
 
     def advect(self):
@@ -71,6 +76,7 @@ class LFRiz(object):
             p = xyz.reshape((self.numPoints, 3))
             vi.findPoints(p)
             vect = vi.getFaceVectors(self.influxes, placement=0)
+            #print(f'vect = {vect}')
             return vect.reshape((self.numPoints*3,))
 
         # time step
@@ -78,15 +84,19 @@ class LFRiz(object):
 
         # all the time values for which we seek the advected positions
         tvals = [i*dt for i in range(self.nt)]
+        print(f'time values: {tvals}')
 
         # intial positions as a flat vector
         xyz0 = self.pts0.reshape((self.numPoints*3,))
+        print(f'initial positions = {xyz0}')
 
         # advance the positions
         sol = odeint(tendency, xyz0, tvals, rtol=1.e-12, atol=1.e-12)
 
         # save the positions, column major
         self.points = sol.reshape((self.nt, self.numPoints, 3))
+        print(f'advected points:')
+        print(f'{self.points}')
 
 
     def show(self):
@@ -140,7 +150,7 @@ class LFRiz(object):
             vwriter.SetInputData(vsgrid)
             vwriter.Update()
 
-            print(f'write {fname}')
+            print(f'wrote {fname}')
 
 
 
@@ -151,7 +161,7 @@ class LFRiz(object):
 
 def main(*,
          infile: str = '../data/lfric_diag_wind.nc', inmesh: str = 'Mesh2d',
-         pts: str="(0., 10.), (50., 10.)", 
+         pts: str="(0., 40.), (50., 40.)", 
          ndays : int=10, 
          tindex : int = 0, level: int = 0, 
          outfile: str = 'lfriz'):
