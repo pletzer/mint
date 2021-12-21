@@ -1,4 +1,3 @@
-#include "mntLogger.h"
 #include <mntVectorInterp.h>
 #include <vtkGenericCell.h>
 
