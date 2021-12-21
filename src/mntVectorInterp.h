@@ -2,6 +2,8 @@
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntVecN.h>
+#include <sstream> // std::stringstream
+#include "mntLogger.h"
 
 #ifndef MNT_VECTOR_INTERP
 #define MNT_VECTOR_INTERP
@@ -214,8 +216,10 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         // ordered correctly
         jac = 0.25*(a013 + a120 + a231 + a302);
         if (jac <= 0) {
-            std::cerr << "Warning: bad cell " << cellId << " vertices: " 
-                      << v0 << ',' << v1 << ',' << v2 << ',' << v3 << '\n';
+          std::stringstream msg;
+         msg << "bad cell " << cellId << " vertices: " <<
+                            v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+            mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
             ier = 1;
         }
 
