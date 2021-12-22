@@ -72,6 +72,55 @@ void createGridAndLocator(Grid_t** grd, vmtCellLocator** cloc) {
     (*cloc)->BuildLocator();
 }
 
+void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fluxes) {
+
+    int ier, signEdge;
+
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, grd);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setLocator(&vp, cloc);
+    assert(ier == 0);
+    const double tol2 = 1.e-10;
+
+    Vec3 p0, p1, pm, velocity;
+
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grd, &numCells);
+    assert(ier == 0);
+
+    // compute the velocity from fluxes at the edges and compare
+    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+
+        for (int ie = 0; ie < 4; ++ie) {
+
+            ier = mnt_grid_getPoints(&grd, icell, ie, &p0[0], &p1[0]);
+            assert(ier == 0);
+
+            // mid edge location
+            pm = 0.5*(p0 + p1);
+
+            // find the location of the point
+            ier = mnt_vectorinterp_findPoints(&vp, 1, &pm[0], tol2);
+            assert(ier == 0);
+
+            // estimate the vector at the edge location
+            ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &fluxes[0],
+                                                            &velocity[0]);
+            assert(ier == 0);
+
+            std::cout << "cell " << icell << " edge " << ie << " p0;p1=" << p0 << ";" << p1 << " flx=" << fluxes[4*icell+ie] << " v=" << velocity << '\n';
+
+        }
+    }
+
+    ier = mnt_vectorinterp_del(&vp);
+    assert(ier == 0);
+
+}
+
 
 void testZonal() {
 
@@ -111,52 +160,11 @@ void testZonal() {
     // compute the fluxes
     std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell 
 
-
-    VectorInterp_t* vp = NULL;
-    ier = mnt_vectorinterp_new(&vp);
-    assert(ier == 0);
-    ier = mnt_vectorinterp_setGrid(&vp, grd);
-    assert(ier == 0);
-    ier = mnt_vectorinterp_setLocator(&vp, cloc);
-    assert(ier == 0);
-    const double tol2 = 1.e-10;
-
-    Vec3 p0, p1, pm, velocity;
-
-    // compute the velocity from fluxes at the edges and compare
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
-
-        for (int ie = 0; ie < 4; ++ie) {
-
-            ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &signEdge);
-            assert(ier == 0);
-
-            ier = mnt_grid_getPoints(&grd, icell, ie, &p0[0], &p1[0]);
-            assert(ier == 0);
-
-            // mid edge location
-            pm = 0.5*(p0 + p1);
-
-            // find the location of the point
-            ier = mnt_vectorinterp_findPoints(&vp, 1, &pm[0], tol2);
-            assert(ier == 0);
-
-            // estimate the vector at the edge location
-            ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &fluxes[0],
-                                                            &velocity[0]);
-            assert(ier == 0);
-
-            std::cout << "cell " << icell << " edge " << ie << " p0;p1=" << p0 << ";" << p1 << " flx=" << fluxes[4*icell+ie] << " v=" << velocity << '\n';
-
-        }
-    }
+    getVectors(grd, cloc, fluxes);
 
 
     // clean up
     cloc->Delete();
-
-    ier = mnt_vectorinterp_del(&vp);
-    assert(ier == 0);
 
     ier = mnt_grid_del(&grd);
     assert(ier == 0);
