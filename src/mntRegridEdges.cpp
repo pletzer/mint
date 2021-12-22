@@ -655,6 +655,9 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
         std::string fname = "badSegments.vtk";
         msg = "saving segments that are not fully contained in the source grid in file " + fname;
         mntlog::warn(__FILE__, __func__, __LINE__, msg);
+#if (VTK_MAJOR_VERSION >= 9)
+        wr->SetFileVersion(42); // want to write old legacy version
+#endif
         wr->SetFileName(fname.c_str());
         wr->SetInputData(badSegmentsGrid);
         wr->Update();
