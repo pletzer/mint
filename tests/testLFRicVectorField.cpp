@@ -42,26 +42,44 @@ std::vector<double> computeFluxes(Grid_t* grd,
 }
 
 
-void testZonal() {
+void createGridAndLocator(Grid_t** grd, vmtCellLocator** cloc) {
 
     int ier;
-    Grid_t* grd;
-    ier = mnt_grid_new(&grd);
+    ier = mnt_grid_new(grd);
     assert(ier == 0);
 
     int fixLonAcrossDateline = 1;
     int averageLonAtPole = 1;
     int degrees = 1;
-    ier = mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
+    ier = mnt_grid_setFlags(grd, fixLonAcrossDateline, averageLonAtPole, degrees);
     assert(ier == 0);
 
-    // one or more "$" to discriminate file and mesh names
-    ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
+    // filename$meshname
+    ier = mnt_grid_loadFromUgrid2D(grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
     assert(ier == 0);
 
     std::size_t numBadCells = 0;
-    ier = mnt_grid_check(&grd, &numBadCells);
+    ier = mnt_grid_check(grd, &numBadCells);
     assert(numBadCells == 0);
+
+    vtkUnstructuredGrid* ugrid;
+    ier = mnt_grid_get(grd, &ugrid);
+    assert(ier == 0);
+
+    *cloc = vmtCellLocator::New();
+    (*cloc)->SetDataSet(ugrid);
+    (*cloc)->SetNumberOfCellsPerBucket(100);
+    (*cloc)->BuildLocator();
+}
+
+
+void testZonal() {
+
+    Grid_t* grd;
+    vmtCellLocator* cloc;
+    int ier;
+
+    createGridAndLocator(&grd, &cloc);
 
     std::size_t numEdgeIds;
     ier = mnt_grid_getNumberOfEdges(&grd, &numEdgeIds);
@@ -93,14 +111,6 @@ void testZonal() {
     // compute the fluxes
     std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell 
 
-    // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
-    vtkUnstructuredGrid* ugrid;
-    ier = mnt_grid_get(&grd, &ugrid);
-    assert(ier == 0);
-    cloc->SetDataSet(ugrid);
-    cloc->SetNumberOfCellsPerBucket(100);
-    cloc->BuildLocator();
 
     VectorInterp_t* vp = NULL;
     ier = mnt_vectorinterp_new(&vp);
@@ -136,11 +146,15 @@ void testZonal() {
                                                             &velocity[0]);
             assert(ier == 0);
 
+            std::cout << "cell " << icell << " edge " << ie << " p0;p1=" << p0 << ";" << p1 << " flx=" << fluxes[4*icell+ie] << " v=" << velocity << '\n';
+
         }
     }
 
 
     // clean up
+    cloc->Delete();
+
     ier = mnt_vectorinterp_del(&vp);
     assert(ier == 0);
 
