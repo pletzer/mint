@@ -21,9 +21,12 @@ class LFRiz(object):
 
         # read the data
         self.srcGrid = mint.Grid()
-        # cubed-sphere
+
+        # cubed-sphere flags
         self.srcGrid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1)
         self.srcGrid.loadFromUgrid2D(infile + '$' + inmesh)
+
+        self.srcGrid.dump('lfriz_grid.vtk')
 
         # read the u, v components for each unique edge, in m/s
         nc = netCDF4.Dataset(infile)
@@ -36,8 +39,6 @@ class LFRiz(object):
         lat = nc.variables[yname][:]
 
         self.influxes = numpy.zeros((self.srcGrid.getNumberOfCells(), 4), numpy.float64)
-
-        coeff = 3600 * 24 / A_EARTH
 
         # iterate
         for icell in range(self.srcGrid.getNumberOfCells()):
@@ -52,34 +53,13 @@ class LFRiz(object):
                 latmid_rad = 0.5*(lat0 + lat1) * DEG2RAD
                 dlon, dlat = lon1 - lon0, lat1 - lat0
 
-                # fluxes in deg^2/day (approximation)
-                self.influxes[icell, ie] = coeff *  (u1[edgeIndex] * dlat / numpy.cos(latmid_rad) - u2[edgeIndex] * dlon)
-                
-                print(f'cell {icell} edge {ie} edgeSign={edgeSign} u1,u2 = {u1[edgeIndex]},{u2[edgeIndex]} (m/s) p0={lon0},{lat0} p1={lon1},{lat1} dlon,dlat={dlon},{dlat} (deg) flux = {self.influxes[icell, ie]} (deg^2/day)')
+                # convert velocities in m/s to deg/day
+                u_deg = 3600 * 24 * u1[edgeIndex] / (DEG2RAD * A_EARTH * numpy.cos(latmid_rad))
+                v_deg = 3600 * 24 * u2[edgeIndex] / (DEG2RAD * A_EARTH)
 
-
-        # compute the fluxes in deg^2/day across each edge        # from m/s to rad/day
-        coeff = 3600 * 24 / A_EARTH # sec -> day
-
-        # iterate
-        for icell in range(self.srcGrid.getNumberOfCells()):
-            for ie in range(4):
-
-                edgeIndex, _ = self.srcGrid.getEdgeId(icell, ie)
-                n0, n1 = self.srcGrid.getNodeIds(icell, ie)
-
-                lon0, lat0 = lon[n0], lat[n0]
-                lon1, lat1 = lon[n1], lat[n1]
-                latmid = 0.5*(lat0 + lat1)
-                dlon, dlat = lon1 - lon0, lat1 - lat0
-
-                # convert to rads
-                dlon *= DEG2RAD
-                dlat *= DEG2RAD
-                latmid *= DEG2RAD
-                # fluxes in rad^2/day (approximation)
-                self.influxes[icell, ie] = coeff*( u1[edgeIndex] * dlat / numpy.cos(latmid) - u2[edgeIndex] * dlon)
-                #print(f'cell {icell} edge {ie} u1, u2 = {u1[edgeIndex]}, {u2[edgeIndex]} dlon, dlat = {dlon}, {dlat} [rad] flux = {self.influxes[icell, ie]} ')
+                # fluxes in deg^2/day (finite difference approximation)
+                self.influxes[icell, ie] = u_deg*dlat - v_deg*dlon
+                # print(f'cell {icell} edge {ie} edgeSign={edgeSign} u1,u2 = {u1[edgeIndex]},{u2[edgeIndex]} (m/s) p0={lon0},{lat0} p1={lon1},{lat1} dlon,dlat={dlon},{dlat} (deg) flux = {self.influxes[icell, ie]} (deg^2/day)')
 
 
     def advect(self):
@@ -91,9 +71,13 @@ class LFRiz(object):
 
         def tendency(xyz, t):
             p = xyz.reshape((self.numPoints, 3))
-            vi.findPoints(p)
-            vect = vi.getFaceVectors(self.influxes, placement=0)
-            print(f'vect = {vect}')
+            ier = vi.findPoints(p)
+            if ier > 0:
+                # out of domain
+                vect = numpy.zeros((self.numPoints, 3), numpy.float64)
+            else:
+                vect = vi.getFaceVectors(self.influxes, placement=0)
+            # print(f'vect = {vect}')
             return vect.reshape((self.numPoints*3,))
 
         # time step
@@ -179,7 +163,6 @@ class LFRiz(object):
                 self.vgrid.InsertNextCell(vtk.VTK_QUAD, ptIds)
 
         self.vgrid.GetPointData().AddArray(self.vfluxData)
-        print(self.vgrid)
 
  
     def show(self):
@@ -189,69 +172,19 @@ class LFRiz(object):
     def save(self, filename):
 
         writer = vtk.vtkUnstructuredGridWriter()
+        writer.SetFileVersion(42) # write 4.2 VTK files
         writer.SetFileName(filename)
         writer.SetInputData(self.vgrid)
         writer.Update()
-
-        # numRibbons = self.numPoints - 1
-        # assert(numRibbons >= 1) # need at least two points
-
-        # for i in range(numRibbons):
-
-        #     vfluxData = vtk.vtkDoubleArray()
-        #     vpointData = vtk.vtkDoubleArray()
-        #     vpoints = vtk.vtkPoints()
-        #     vsgrid = vtk.vtkStructuredGrid()
-        #     vwriter = vtk.vtkStructuredGridWriter()
-
-        #     # set the dimensions
-        #     vfluxData.SetNumberOfTuples(self.nt * 2)
-        #     vfluxData.SetNumberOfComponents(1) # scalar
-        #     vpointData.SetNumberOfTuples(self.nt * 2)
-        #     vpointData.SetNumberOfComponents(3)
-        #     vpoints.SetNumberOfPoints(self.nt * 2)
-        #     vsgrid.SetDimensions(2, self.nt, 1)
-        #     fname = filename + f'_{i}.vtk'
-        #     vwriter.SetFileName(fname)
-
-        #     # vertices
-        #     pts = numpy.ascontiguousarray( self.points[:, i:i+2, :] )
-
-        #     # fluxes
-        #     fluxes = numpy.zeros( (self.nt, 2), dtype=numpy.float64)
-
-
-        #     pli = mint.PolylineIntegral()
-        #     for j in range(self.nt):
-        #         tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
-        #         pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
-        #         fluxes[j, 0:2] = pli.getIntegral(self.influxes)
-
-
-        #     # connect
-        #     vfluxData.SetVoidArray(fluxes, self.nt * 2, 1)
-        #     vfluxData.SetName('flux')
-        #     vpointData.SetVoidArray(pts, self.nt * 2 * 3, 1)
-        #     vpoints.SetData(vpointData)
-        #     vsgrid.SetPoints(vpoints)
-        #     vsgrid.GetPointData().AddArray(vfluxData)
-        #     vwriter.SetInputData(vsgrid)
-        #     vwriter.Update()
-
-        #     print(f'wrote {fname}')
-
-
-
-
 
 
 ###############################################################################
 
 def main(*,
          infile: str = '../data/lfric_diag_wind.nc', inmesh: str = 'Mesh2d',
-         pts: str="(20., 40.), (50., 40.)", 
-         ndays : int=10, 
-         tindex : int = 0, level: int = 0, 
+         pts: str="[(-170+i*2, -30+i*1) for i in range(50)]",
+         ndays : int=100,
+         tindex : int = 0, level: int = 0,
          outfile: str = 'lfriz.vtk'):
 
     """

@@ -97,9 +97,12 @@ class VectorInterp(object):
         """
         Get the edge vectors at given target points.
 
-        :param data: edge data array of size number of unique edges
-        :param placement: 0 if data are cell by cell (size num cells * 4), 
-                          assume unique edge Id data otherwise (size num 
+        :param data: edge line integrals (see placement argument below). The units
+                     of the line integrals must be consistent with the coordinates
+                     units (typically degrees). For instance, a velocity field
+                     in degrees/time expects a line integral in degrees^2/time.
+        :param placement: 0 if data are cell by cell (size num cells * 4),
+                          assume unique edge Id data otherwise (size num
                           edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
@@ -136,9 +139,12 @@ class VectorInterp(object):
         """
         Get the lateral face vectors at given target points.
 
-        :param data: edge data array of size number of unique edges
-        :param placement: 0 if data are cell by cell (size num cells * 4), 
-                          assume unique edge Id data otherwise (size num 
+        :param data: edge fluxes (see placement argument below). The units
+                     should be compatible with the coordinates units
+                     (typically degrees). For instance, a velocity field
+                     in degrees/time expects a flux in degrees^2/time.
+        :param placement: 0 if data are cell by cell (size num cells * 4),
+                          assume unique edge Id data otherwise (size num
                           edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
