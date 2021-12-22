@@ -26,7 +26,11 @@ class LFRiz(object):
         self.srcGrid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1)
         self.srcGrid.loadFromUgrid2D(infile + '$' + inmesh)
 
-        self.srcGrid.dump('lfriz_grid.vtk')
+
+        # create a vector field interpolator
+        self.vi = mint.VectorInterp()
+        self.vi.setGrid(self.srcGrid)
+        self.vi.buildLocator(numCellsPerBucket=200, periodX=360.)
 
         # read the u, v components for each unique edge, in m/s
         nc = netCDF4.Dataset(infile)
@@ -40,8 +44,17 @@ class LFRiz(object):
 
         self.influxes = numpy.zeros((self.srcGrid.getNumberOfCells(), 4), numpy.float64)
 
+        numCells = self.srcGrid.getNumberOfCells()
+
+        pcellPoints = numpy.zeros((numCells, 3,), numpy.float64)
+
+        self.velocities = numpy.zeros((numCells, 3), numpy.float64)
+
         # iterate
-        for icell in range(self.srcGrid.getNumberOfCells()):
+        for icell in range(numCells):
+
+            pmid = numpy.zeros((3,), numpy.float64)
+
             for ie in range(4):
 
                 edgeIndex, edgeSign = self.srcGrid.getEdgeId(icell, ie)
@@ -61,22 +74,29 @@ class LFRiz(object):
                 self.influxes[icell, ie] = u_deg*dlat - v_deg*dlon
                 # print(f'cell {icell} edge {ie} edgeSign={edgeSign} u1,u2 = {u1[edgeIndex]},{u2[edgeIndex]} (m/s) p0={lon0},{lat0} p1={lon1},{lat1} dlon,dlat={dlon},{dlat} (deg) flux = {self.influxes[icell, ie]} (deg^2/day)')
 
+                pmid += numpy.array((lon0, lat0, 0.))
+
+            pmid /= 4
+            pcellPoints[icell, :] = pmid
+
+        ier = self.vi.findPoints(pcellPoints)
+        assert(ier == 0)
+        self.velocities = self.vi.getFaceVectors(self.influxes, placement=0)
+
+        self.srcGrid.attach('velocity', self.velocities)
+        self.srcGrid.dump('lfriz_grid.vtk')
+
 
     def advect(self):
 
-        # create a vector field interpolator
-        vi = mint.VectorInterp()
-        vi.setGrid(self.srcGrid)
-        vi.buildLocator(numCellsPerBucket=100, periodX=360.)
-
         def tendency(xyz, t):
             p = xyz.reshape((self.numPoints, 3))
-            ier = vi.findPoints(p)
+            ier = self.vi.findPoints(p)
             if ier > 0:
                 # out of domain
                 vect = numpy.zeros((self.numPoints, 3), numpy.float64)
             else:
-                vect = vi.getFaceVectors(self.influxes, placement=0)
+                vect = self.vi.getFaceVectors(self.influxes, placement=0)
             # print(f'vect = {vect}')
             return vect.reshape((self.numPoints*3,))
 
@@ -108,7 +128,7 @@ class LFRiz(object):
         assert(numRibbons >= 1) # need at least two points
 
         self.vfluxData = vtk.vtkDoubleArray()
-        self.vfluxData.SetName('flux')
+        self.vfluxData.SetName('abs_flux')
         self.vfluxData.SetNumberOfComponents(1)
         self.vfluxData.SetNumberOfTuples(numRibbons * 2 * self.nt)
 
@@ -141,11 +161,11 @@ class LFRiz(object):
 
                 tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
                 pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
-                flx = (pli.getIntegral(self.influxes),)
+                flx = pli.getIntegral(self.influxes)
 
-                # same flux values for 2 adjacent nodes
-                self.vfluxData.SetTuple(index0, flx)
-                self.vfluxData.SetTuple(index1, flx)
+                # same flux values for the 2 adjacent nodes
+                self.vfluxData.SetTuple(index0, (abs(flx),))
+                self.vfluxData.SetTuple(index1, (abs(flx),))
 
             # build the cells
             for j in range(self.ndays): # self.nt - 1
@@ -182,8 +202,8 @@ class LFRiz(object):
 
 def main(*,
          infile: str = '../data/lfric_diag_wind.nc', inmesh: str = 'Mesh2d',
-         pts: str="[(-170+i*2, -30+i*1) for i in range(50)]",
-         ndays : int=100,
+         pts: str="[(-100 + i*0.5, -40 + i*0.25) for i in range(40)]",
+         ndays : int=300,
          tindex : int = 0, level: int = 0,
          outfile: str = 'lfriz.vtk'):
 
