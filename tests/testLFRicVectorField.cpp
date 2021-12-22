@@ -168,12 +168,61 @@ void testZonal() {
 
     ier = mnt_grid_del(&grd);
     assert(ier == 0);
-    mnt_printLogMessages();
+}
+
+void testMeridional() {
+
+    Grid_t* grd;
+    vmtCellLocator* cloc;
+    int ier;
+
+    createGridAndLocator(&grd, &cloc);
+
+    std::size_t numEdgeIds;
+    ier = mnt_grid_getNumberOfEdges(&grd, &numEdgeIds);
+    assert(ier == 0);
+
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grd, &numCells);
+    assert(ier == 0);
+
+    // zonal and meridional components of the velocity
+    std::vector<double> u(numEdgeIds);
+    std::vector<double> v(numEdgeIds);
+    std::size_t edgeId;
+    int signEdge;
+
+
+    // set the velocity
+    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+        for (int ie = 0; ie < 4; ++ie) {
+
+            ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &signEdge);
+            assert(ier == 0);
+
+            u[edgeId] = 0.0; 
+            v[edgeId] = 1.0; // 1 deg / time
+        }
+    }
+
+    // compute the fluxes
+    std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell 
+
+    getVectors(grd, cloc, fluxes);
+
+
+    // clean up
+    cloc->Delete();
+
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
 }
 
 int main(int argc, char** argv) {
 
     testZonal();
+    testMeridional();
 
+    mnt_printLogMessages();
     return 0;
 }
