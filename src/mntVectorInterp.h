@@ -46,7 +46,7 @@ LIBRARY_API
 int mnt_vectorinterp_del(VectorInterp_t** self);
 
 /**
- * Set the grid and cell locator
+ * Set the grid
  * @param self instance of VectorInterp_t
  * @param grid grid (borrowed reference)
  * @param locator locator (borrowed reference)
@@ -56,7 +56,7 @@ LIBRARY_API
 int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid);
 
 /**
- * Set the grid and cell locator
+ * Set the grid cell locator
  * @param self instance of VectorInterp_t
  * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
@@ -65,7 +65,7 @@ LIBRARY_API
 int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
 
 /**
- * Build cell locator
+ * Build the grid cell locator
  * @param self instance of VectorInterp_t
  * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
@@ -90,7 +90,8 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
 /**
  * Get the edge vectors at given target points from cell by cell data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size numCells*4. The units must be consistent
+ *             with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
@@ -104,7 +105,8 @@ int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
 /**
  * Get the face vectors at given target points from cell by cell data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size numCells*4. The units must be consistent
+ *             with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
@@ -117,7 +119,8 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
 /**
  * Get the edge vectors at given target points from unique edge Id data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size number of edges. The units must be
+ *             consistent with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
@@ -131,7 +134,8 @@ int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
 /**
  * Get the face vectors at given target points from unique edge Id data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size number of edges. The units must be
+ *             consistent with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors

@@ -93,7 +93,8 @@ class LFRiz(object):
             p = xyz.reshape((self.numPoints, 3))
             ier = self.vi.findPoints(p)
             if ier > 0:
-                # out of domain
+                # out of domain?
+                print(f'**** FAILED to find points p = {p} in the grid at time {t}')
                 vect = numpy.zeros((self.numPoints, 3), numpy.float64)
             else:
                 vect = self.vi.getFaceVectors(self.influxes, placement=0)
@@ -104,7 +105,7 @@ class LFRiz(object):
         dt = 1. # one day
 
         # all the time values for which we seek the advected positions
-        tvals = [i*dt for i in range(self.nt)]
+        tvals = numpy.array([i*dt for i in range(self.nt)])
         print(f'time values: {tvals}')
 
         # intial positions as a flat vector
@@ -116,6 +117,11 @@ class LFRiz(object):
 
         # save the positions, column major
         self.points = sol.reshape((self.nt, self.numPoints, 3))
+
+        # store time in the z component
+        for i in range(self.numPoints):
+            self.points[:, i, 2] = 1.e-5 + 0.1*tvals[:] # elevate the z component
+
         print(f'advected points:')
         print(f'{self.points}')
 
@@ -131,6 +137,11 @@ class LFRiz(object):
         self.vfluxData.SetName('abs_flux')
         self.vfluxData.SetNumberOfComponents(1)
         self.vfluxData.SetNumberOfTuples(numRibbons * 2 * self.nt)
+
+        self.vTimeData = vtk.vtkIntArray()
+        self.vTimeData.SetName('time')
+        self.vTimeData.SetNumberOfComponents(1)
+        self.vTimeData.SetNumberOfTuples(numRibbons * 2 * self.nt)
 
         self.vpointData = vtk.vtkDoubleArray()
         self.vpointData.SetNumberOfComponents(3)
@@ -167,6 +178,10 @@ class LFRiz(object):
                 self.vfluxData.SetTuple(index0, (abs(flx),))
                 self.vfluxData.SetTuple(index1, (abs(flx),))
 
+                # same time values for the 2 adjacent nodes
+                self.vTimeData.SetTuple(index0, (j,))
+                self.vTimeData.SetTuple(index1, (j,))
+
             # build the cells
             for j in range(self.ndays): # self.nt - 1
 
@@ -183,6 +198,7 @@ class LFRiz(object):
                 self.vgrid.InsertNextCell(vtk.VTK_QUAD, ptIds)
 
         self.vgrid.GetPointData().AddArray(self.vfluxData)
+        self.vgrid.GetPointData().AddArray(self.vTimeData)
 
  
     def show(self):
