@@ -12,7 +12,7 @@
 #define VMT_CELL_LOCATOR
 
 /**
- * A class to quickly find a cell in an unstructured grid  (as a drop-in alternative to vtkCellLocator)
+ * A class to quickly find a cell in an unstructured grid (as a drop-in alternative to vtkCellLocator)
  */
 
 class vmtCellLocator {

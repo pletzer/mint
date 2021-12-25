@@ -56,7 +56,7 @@ class PolylineIntegral(object):
         ier = MINTLIB.mnt_polylineintegral_build(self.obj, grid.ptr, xyz.shape[0],
                                              xyz, cc, periodX)
         if ier:
-            msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
+            msg = f"Failed to locate points {xyz} (ok if some fall outside the domain)"
             warning_handler(FILE, 'build', ier, detailedmsg=msg)
 
     def getIntegral(self, data):

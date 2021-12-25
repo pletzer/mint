@@ -92,7 +92,7 @@ class LFRiz(object):
         def tendency(xyz, t):
             p = xyz.reshape((self.numPoints, 3))
             ier = self.vi.findPoints(p)
-            if ier > 0:
+            if ier != 0:
                 # out of domain?
                 print(f'**** FAILED to find points p = {p} in the grid at time {t}')
                 vect = numpy.zeros((self.numPoints, 3), numpy.float64)
@@ -113,14 +113,15 @@ class LFRiz(object):
         print(f'initial positions = {xyz0}')
 
         # advance the positions
-        sol = odeint(tendency, xyz0, tvals, rtol=1.e-12, atol=1.e-12)
+        # rtol and atol cannot be too small as this generates undeflows
+        sol = odeint(tendency, xyz0, tvals, rtol=1.e-10, atol=1.e-10)
 
         # save the positions, column major
         self.points = sol.reshape((self.nt, self.numPoints, 3))
 
-        # store time in the z component
+        # artifically elevate the z component
         for i in range(self.numPoints):
-            self.points[:, i, 2] = 1.e-5 + 0.1*tvals[:] # elevate the z component
+            self.points[:, i, 2] = 1.e-6 + tvals[:]/float(self.nt)
 
         print(f'advected points:')
         print(f'{self.points}')

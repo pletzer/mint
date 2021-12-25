@@ -34,7 +34,7 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
 
     if (npoints <= 0) {
         std::string mgs = "need at least one point";
-        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
 
@@ -50,9 +50,9 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
     // build the cell locator
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(vgrid);
-    loc->SetNumberOfCellsPerBucket(128);
-    loc->setPeriodicityLengthX(periodX);
+    loc->SetNumberOfCellsPerBucket(256);
     loc->BuildLocator();
+    loc->setPeriodicityLengthX(periodX);
 
     // iterate over the Polyline segments
     for (int ip0 = 0; ip0 < npoints - 1; ++ip0) {
