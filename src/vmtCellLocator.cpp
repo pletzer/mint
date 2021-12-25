@@ -319,7 +319,6 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
         double distSq = dot(direction, direction);
         if (distSq < eps) {
             // zero length, skip
-            std::cout << "... zero distance: distSq = " << distSq << '\n';
             continue;
         }
 

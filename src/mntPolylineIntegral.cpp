@@ -49,8 +49,9 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
 
     // build the cell locator
     vmtCellLocator* loc = vmtCellLocator::New();
-    loc->setPeriodicityLengthX(periodX);
     loc->SetDataSet(vgrid);
+    loc->SetNumberOfCellsPerBucket(128);
+    loc->setPeriodicityLengthX(periodX);
     loc->BuildLocator();
 
     // iterate over the Polyline segments
