@@ -119,9 +119,9 @@ class LFRiz(object):
         # save the positions, column major
         self.points = sol.reshape((self.nt, self.numPoints, 3))
 
-        # artifically elevate the z component
-        for i in range(self.numPoints):
-            self.points[:, i, 2] = 1.e-6 + tvals[:]/float(self.nt)
+        # # artifically elevate the z component
+        # for i in range(self.numPoints):
+        #     self.points[:, i, 2] = 1.e-6 + tvals[:]/float(self.nt)
 
         print(f'advected points:')
         print(f'{self.points}')
@@ -129,9 +129,31 @@ class LFRiz(object):
 
     def build(self):
 
-        pli = mint.PolylineIntegral() # to compute fluxes
+        # starting line
+        self.startLineGrid = vtk.vtkStructuredGrid()
+        self.startLineGrid.SetDimensions(self.numPoints, 1, 1)
+        self.startPoints = vtk.vtkPoints()
+        self.startPoints.SetNumberOfPoints(self.numPoints)
+        for i in range(self.numPoints):
+            self.startPoints.SetPoint(i, self.pts0[i, :])
+        self.startLineGrid.SetPoints(self.startPoints)
 
         numRibbons = self.numPoints - 1
+
+        # add the initial fluxes
+        self.startFluxes = vtk.vtkDoubleArray()
+        self.startFluxes.SetNumberOfComponents(1)
+        self.startFluxes.SetNumberOfTuples(numRibbons)
+        self.startFluxes.SetName('flux')
+        self.startLineGrid.GetCellData().AddArray(self.startFluxes)
+
+        # initial fluxes
+        for i in range(numRibbons):
+            pli = mint.PolylineIntegral() # to compute fluxes
+            pli.build(self.srcGrid, self.pts0[i:i+2, :], counterclock=False, periodX=360.)
+            flx = abs(pli.getIntegral(self.influxes))
+            self.startFluxes.SetTuple(i, (flx,))
+
         assert(numRibbons >= 1) # need at least two points
 
         self.vfluxData = vtk.vtkDoubleArray()
@@ -172,12 +194,13 @@ class LFRiz(object):
                 self.vpointData.SetTuple(index1, xyz1)
 
                 tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
-                pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
-                flx = pli.getIntegral(self.influxes)
+                pli2 = mint.PolylineIntegral() # to compute fluxes
+                pli2.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
+                flx = abs(pli2.getIntegral(self.influxes))
 
                 # same flux values for the 2 adjacent nodes
-                self.vfluxData.SetTuple(index0, (abs(flx),))
-                self.vfluxData.SetTuple(index1, (abs(flx),))
+                self.vfluxData.SetTuple(index0, (flx,))
+                self.vfluxData.SetTuple(index1, (flx,))
 
                 # same time values for the 2 adjacent nodes
                 self.vTimeData.SetTuple(index0, (j,))
@@ -215,14 +238,24 @@ class LFRiz(object):
         writer.Update()
 
 
+    def saveStartLine(self, filename):
+
+        writer = vtk.vtkStructuredGridWriter()
+        writer.SetFileVersion(42) # write 4.2 VTK files
+        writer.SetFileName(filename)
+        writer.SetInputData(self.startLineGrid)
+        writer.Update()
+
+
 ###############################################################################
 
 def main(*,
          infile: str = '../data/lfric_diag_wind.nc', inmesh: str = 'Mesh2d',
          pts: str="[(-100 + i*0.5, -40 + i*0.25) for i in range(40)]",
-         ndays : int=300,
-         tindex : int = 0, level: int = 0,
-         outfile: str = 'lfriz.vtk'):
+         ndays : int=365,
+         tindex : int=0, level: int=0,
+         outfile: str='lfriz_flux.vtk',
+         startlinefile: str='lfriz_startline.vtk'):
 
     """
     Generate advection grid
@@ -234,6 +267,7 @@ def main(*,
     param: tindex time index
     param: level level
     param: outfile output VTK file
+    param: startLine output VTK file where start line is saved
     """
 
     xy0 = numpy.array(eval(pts))
@@ -243,6 +277,7 @@ def main(*,
     lfr.advect()
     lfr.build()
     lfr.save(outfile)
+    lfr.saveStartLine(startlinefile)
 
 if __name__ == '__main__':
     defopt.run(main)
