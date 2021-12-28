@@ -32,6 +32,9 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
     int ier = 0;
     std::string msg;
 
+    // reset
+    (*self)->weights.empty();
+
     if (npoints <= 0) {
         std::string mgs = "need at least one point";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
