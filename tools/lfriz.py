@@ -129,6 +129,8 @@ class LFRiz(object):
 
     def build(self):
 
+        pli = mint.PolylineIntegral() # to compute fluxes
+
         # starting line
         self.startLineGrid = vtk.vtkStructuredGrid()
         self.startLineGrid.SetDimensions(self.numPoints, 1, 1)
@@ -149,8 +151,6 @@ class LFRiz(object):
 
         # initial fluxes
         for i in range(numRibbons):
-            # pli needs to be instantiated in the loop
-            pli = mint.PolylineIntegral() # to compute fluxes
             pli.build(self.srcGrid, self.pts0[i:i+2, :], counterclock=False, periodX=360.)
             flx = abs(pli.getIntegral(self.influxes))
             self.startFluxes.SetTuple(i, (flx,))
@@ -195,7 +195,6 @@ class LFRiz(object):
                 self.vpointData.SetTuple(index1, xyz1)
 
                 tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
-                pli = mint.PolylineIntegral() # to compute fluxes
                 pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
                 flx = abs(pli.getIntegral(self.influxes))
 

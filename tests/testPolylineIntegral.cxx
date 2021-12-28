@@ -124,6 +124,12 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
                                      counterclock, periodX);
     assert(ier == 0);
 
+    // build multiple times
+    ier = mnt_polylineintegral_build(&pli, grd, npoints, 
+                                     (const double*) &xyz[0], 
+                                     counterclock, periodX);
+    assert(ier == 0);    
+
     double totalFlux;
     ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0], &totalFlux);
 

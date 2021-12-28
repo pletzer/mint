@@ -33,7 +33,7 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
     std::string msg;
 
     // reset
-    (*self)->weights.empty();
+    (*self)->weights.clear();
 
     if (npoints <= 0) {
         std::string mgs = "need at least one point";
