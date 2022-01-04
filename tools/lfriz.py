@@ -119,9 +119,9 @@ class LFRiz(object):
         # save the positions, column major
         self.points = sol.reshape((self.nt, self.numPoints, 3))
 
-        # # artifically elevate the z component
-        # for i in range(self.numPoints):
-        #     self.points[:, i, 2] = 1.e-6 + tvals[:]/float(self.nt)
+        # artifically elevate the z component
+        for i in range(self.numPoints):
+            self.points[:, i, 2] = 1.e-6 + tvals[:]/float(self.nt)
 
         print(f'advected points:')
         print(f'{self.points}')

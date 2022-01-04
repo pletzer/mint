@@ -67,7 +67,9 @@ int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
 /**
  * Build the grid cell locator
  * @param self instance of VectorInterp_t
- * @param locator locator (borrowed reference)
+ * @param numCellsPerBucket number of cells per bucket. The smaller the faster the cell search. However, 
+ *                          small values may casue problems, we recommend about 100 or more
+ * @param periodX period length, use 0 if non-periodic in the first coordinate
  * @return error code (0 = OK)
  */
 LIBRARY_API
