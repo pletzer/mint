@@ -37,7 +37,7 @@ int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator) 
 }
 
 LIBRARY_API
-int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX) {
+int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX, int enableFolding) {
 
     if (!(*self)->grid) {
         std::string msg ="must call setGrid before invoking buildLocator";
@@ -49,8 +49,11 @@ int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, 
     (*self)->locator = vmtCellLocator::New();
     (*self)->locator->SetDataSet((*self)->grid->grid);
     (*self)->locator->SetNumberOfCellsPerBucket(numCellsPerBucket);
-    (*self)->locator->BuildLocator();
     (*self)->locator->setPeriodicityLengthX(periodX);
+    if (enableFolding == 1) {
+        (*self)->locator->enableFolding();
+    }
+    (*self)->locator->BuildLocator();
 
     return 0;
 }

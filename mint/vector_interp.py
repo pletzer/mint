@@ -52,18 +52,23 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
-    def buildLocator(self, numCellsPerBucket=10, periodX=360.):
+    def buildLocator(self, numCellsPerBucket=10, periodX=360., enableFolding=False):
         """
         Build the cell locator.
 
         :param numCellsPerBucket: approximate number of cells per bucket
         :param periodX: periodicity in x (set to 0 if non-periodic)
+        :param enableFolding: whether (1) or not (0) |latitudes| > 90 should be folded back into the domain
         :note: call this after setGrid
         """
+        enableFoldingInt = 0
+        if enableFolding:
+            enableFoldingInt = 1
+
         MINTLIB.mnt_vectorinterp_buildLocator.argtypes = [POINTER(c_void_p),
-                                                      c_int, c_double]
+                                                      c_int, c_double, c_int]
         ier = MINTLIB.mnt_vectorinterp_buildLocator(self.obj,
-                                                numCellsPerBucket, periodX)
+                                                    numCellsPerBucket, periodX, enableFoldingInt)
         if ier:
             error_handler(FILE, 'buildLocator', ier)
 

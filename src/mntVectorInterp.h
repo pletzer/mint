@@ -70,10 +70,11 @@ int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
  * @param numCellsPerBucket number of cells per bucket. The smaller the faster the cell search. However, 
  *                          small values may casue problems, we recommend about 100 or more
  * @param periodX period length, use 0 if non-periodic in the first coordinate
+ * @param enableFolding whether (1) or not (0) |latitude| > 90 deg values should be folded back into the domain
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX);
+int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX, int enableFolding);
 
 /**
  * Find target points

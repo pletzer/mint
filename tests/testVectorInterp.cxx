@@ -196,7 +196,8 @@ void testRotated() {
     assert(ier == 0);
     int numCellsPerBucket = 10;
     double periodX = 0.;
-    ier = mnt_vectorinterp_buildLocator(&vp, numCellsPerBucket, periodX);
+    int enableFolding = 0;
+    ier = mnt_vectorinterp_buildLocator(&vp, numCellsPerBucket, periodX, enableFolding);
     double tol2 = 1.e-10;
 
     // set some data
