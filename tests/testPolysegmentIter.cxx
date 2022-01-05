@@ -305,10 +305,11 @@ void testPointOutside() {
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
+    double xPeriod = 2.0;
+    loc->setPeriodicityLengthX(xPeriod);
 
     const double p0[] = {-0.1, 0.0, 0.};
     const double p1[] = {0.1, 0.0, 0.};
-    double xPeriod = 2.0;
     PolysegmentIter psi(grid, loc, p0, p1);
     size_t numSegs = psi.getNumberOfSegments();
     psi.reset();
