@@ -31,13 +31,18 @@ def test_compute_weights():
     # the netcdf file
     rg.loadDstGrid(f'{dst_file}$physics')
 
-    # compute the regridding weights. numCellsPerBucket is used to
+    # build the locator. numCellsPerBucket is used to
     # accelerate the cell search. The smaller numCellPerBucket the
     # faster the search. However, there are edge cases where the
     # search fails when numCellsPerBucket is too small. periodX is
     # the periodicity length to add/subtract to make the cells well
-    # behaved (periodX can be 0 if a regional model)
-    rg.build(numCellsPerBucket=128, periodX=360., debug=2)
+    # behaved (periodX can be 0 if a regional model). Parameter 
+    # enableFolding allows for |latitude| > 90.
+    rg.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
+
+    # compute the regridding weights. debug = 2 saves the bad
+    # edges in a VTK file
+    rg.computeWeights(debug=2)
 
     # save the weights in a netCDF file
     rg.dumpWeights('test_regrid_edges_py.nc')

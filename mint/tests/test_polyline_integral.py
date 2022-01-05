@@ -70,8 +70,11 @@ def test_simple(nx, ny, potFunc, xyz):
     gr.dump('test_polyline_integral.vtk')
 
     pli = PolylineIntegral()
+
     # no periodicity in x
-    pli.build(gr, xyz, counterclock=False, periodX=0.0)
+    pli.buildLocator(gr, numCellsPerBucket=128, periodX=0.0, enableFolding=False)
+
+    pli.computeWeights(xyz, counterclock=False)
 
     flux = pli.getIntegral(data)
     exactFlux = potFunc(xyz[-1, :]) - potFunc(xyz[0, :])
@@ -138,7 +141,9 @@ def test_partially_outside(nx, ny, potFunc):
                        (0., 1., 0.)])
 
     # no periodicity in x
-    pli.build(gr, xyz, counterclock=False, periodX=0.0)
+    pli.buildLocator(gr, numCellsPerBucket=128, periodX=0.0, enableFolding=False)
+
+    pli.computeWeights(xyz, counterclock=False)
 
     flux = pli.getIntegral(data)
 
@@ -215,7 +220,9 @@ def test_completely_outside(nx, ny, potFunc):
                        (0., 1., 0.)])
 
     # no periodicity in x
-    pli.build(gr, xyz, counterclock=False, periodX=0.0)
+    pli.buildLocator(gr, numCellsPerBucket=128, periodX=0.0, enableFolding=False)
+
+    pli.computeWeights(xyz, counterclock=False)
 
     flux = pli.getIntegral(data)
     exactFlux = 0.0

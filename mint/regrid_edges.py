@@ -137,26 +137,43 @@ class RegridEdges(object):
             error_handler(FILE, 'getNumDstEdges', ier)
         return n.value
 
-    def build(self, numCellsPerBucket=10, periodX=360., debug=0):
+    def buildLocator(self, numCellsPerBucket=100, periodX=360., enableFolding=0):
         """
-        Build the regridder and compute the regridding weights.
+        Build the locator.
 
         :param numCellsPerBucket: average number of cells per bucket,
                                   performance typically improves with a higher
                                   number of cells per bucket
         :param periodX: periodicity length (set to 0 if non-periodic)
-        :param debug: 0=no debug info, 1=print debug info, 2=save bad
-                      edges in VTK file
+        :param enableFolding: whether (1) or not (0) to allow for |latitude| > 90
         :warning: There are cases at very coarse resolution where the regridding
                   may fail for some edges if the number of cells per bucket is too small
         """
-        MINTLIB.mnt_regridedges_build.argtypes = [POINTER(c_void_p), c_int,
-                                              c_double, c_int]
-        ier = MINTLIB.mnt_regridedges_build(self.obj, numCellsPerBucket,
-                                        periodX, debug)
+
+        enableFoldingInt = 0
+        if enableFolding:
+            enableFoldingInt = 1
+
+        MINTLIB.mnt_regridedges_buildLocator.argtypes = [POINTER(c_void_p), c_int,
+                                                         c_double, c_int]
+        ier = MINTLIB.mnt_regridedges_buildLocator(self.obj, numCellsPerBucket,
+                                                   periodX, enableFoldingInt)
+        if ier:
+            msg = "Failed to build locator"
+            warning_handler(FILE, 'buildLocator', ier, detailedmsg=msg)
+
+    def computeWeights(self, debug=0):
+        """
+        Compute the regridding weights.
+
+        :param debug: 0=no debug info, 1=print debug info, 2=save bad
+                      edges in VTK file
+        """
+        MINTLIB.mnt_regridedges_computeWeights.argtypes = [POINTER(c_void_p), c_int]
+        ier = MINTLIB.mnt_regridedges_computeWeights(self.obj, debug)
         if ier:
             msg = "Some target lines fall outside the grid. (Ok if these are partially outside.)"
-            warning_handler(FILE, 'build', ier, detailedmsg=msg)
+            warning_handler(FILE, 'computeWeights', ier, detailedmsg=msg)
 
     def dumpWeights(self, filename):
         """

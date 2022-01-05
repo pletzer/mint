@@ -34,30 +34,51 @@ class PolylineIntegral(object):
         if ier:
             error_handler(FILE, '__del__', ier)
 
-    def build(self, grid, xyz, counterclock, periodX):
+    def buildLocator(self, grid, numCellsPerBucket=128, periodX=0.0, enableFolding=False):
+        """
+        Build the locator.
+
+        :param grid: instance of Grid
+        :param numCellsPerBucket: average number of cells per bucket,
+                                  performance typically improves with a higher
+                                  number of cells per bucket
+        :param periodX: periodicity length in x (longitudes),
+                        set to 0 if non-periodic.
+        :param enableFolding: whether (1) or not (0) to allow for |latitude| > 90
+        """
+
+        enableFoldingInt = 0
+        if enableFolding:
+            enableFoldingInt = 1
+
+        MINTLIB.mnt_polylineintegral_buildLocator.argtypes = [POINTER(c_void_p), c_void_p,
+                                                              c_int, c_double, c_int]
+        ier = MINTLIB.mnt_polylineintegral_buildLocator(self.obj, grid.ptr,
+                                                        numCellsPerBucket, periodX, enableFoldingInt)
+        if ier:
+            msg = "Failed to build locator"
+            warning_handler(FILE, 'buildLocator', ier, detailedmsg=msg)
+
+    def computeWeights(self, xyz, counterclock):
         """
         Build the flux calculator.
 
-        :param grid: instance of Grid
         :param xyz: numpy array with npoints rows and 3 columns
         :param counterclock: orientation of the edges in the cell
                              (True=counterclockwise,
                               False=positive in xi)
-        :param periodX: periodicity length in x (longitudes),
-                        Set to zero if non-periodic.
         """
-        MINTLIB.mnt_polylineintegral_build.argtypes = [POINTER(c_void_p), c_void_p,
-                                                   c_int,
-                                                   DOUBLE_ARRAY_PTR,
-                                                   c_int, c_double]
+        MINTLIB.mnt_polylineintegral_computeWeights.argtypes = [POINTER(c_void_p),
+                                                                c_int, DOUBLE_ARRAY_PTR,
+                                                                c_int]
         cc = 0
         if counterclock:
             cc = 1
-        ier = MINTLIB.mnt_polylineintegral_build(self.obj, grid.ptr, xyz.shape[0],
-                                             xyz, cc, periodX)
+        ier = MINTLIB.mnt_polylineintegral_computeWeights(self.obj, xyz.shape[0],
+                                                          xyz, cc)
         if ier:
             msg = f"Failed to locate points {xyz} (ok if some fall outside the domain)"
-            warning_handler(FILE, 'build', ier, detailedmsg=msg)
+            warning_handler(FILE, 'computeWeights', ier, detailedmsg=msg)
 
     def getIntegral(self, data):
         """
