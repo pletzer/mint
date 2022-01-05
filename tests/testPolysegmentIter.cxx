@@ -305,11 +305,12 @@ void testPointOutside() {
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
+    double xPeriod = 2.0;
+    loc->setPeriodicityLengthX(xPeriod);
 
     const double p0[] = {-0.1, 0.0, 0.};
     const double p1[] = {0.1, 0.0, 0.};
-    double xPeriod = 2.0;
-    PolysegmentIter psi(grid, loc, p0, p1, xPeriod);
+    PolysegmentIter psi(grid, loc, p0, p1);
     size_t numSegs = psi.getNumberOfSegments();
     psi.reset();
     for (size_t i = 0; i < numSegs; ++i) {
@@ -382,7 +383,7 @@ void test3Points() {
     std::vector<Vec3> pts{Vec3(p0), Vec3(p1), Vec3(p2)};
     for (size_t iInterval = 0; iInterval < pts.size() - 1; ++iInterval) {
 
-        PolysegmentIter psi(grid, loc, p0, p1, xPeriod);
+        PolysegmentIter psi(grid, loc, p0, p1);
 
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();

@@ -39,8 +39,12 @@ void test1() {
 
     int numCellsPerBucket = 8;
     double period = 0.;
+    int enableFolding = 0;
+    ier = mnt_regridedges_buildLocator(&rg, numCellsPerBucket, period, enableFolding);
+    assert(ier == 0);
+
     int debug = 1;
-    ier = mnt_regridedges_build(&rg, numCellsPerBucket, period, debug);
+    ier = mnt_regridedges_computeWeights(&rg, debug);
     assert(ier == 0);
 
     ier = mnt_regridedges_dumpWeights(&rg, outputFile.c_str(), (int) outputFile.size());
@@ -122,9 +126,15 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
     
     assert(ier == 0);
     double period = 0.;
-    int debug = 1;
-    ier = mnt_regridedges_build(&rg, numCellsPerBucket, period, debug);
+    int enableFolding = 0;
+    ier = mnt_regridedges_buildLocator(&rg, numCellsPerBucket, period, enableFolding);
     std::cerr << testName << ": build...OK\n";
+    assert(ier == 0);
+
+    int debug = 1;
+    ier = mnt_regridedges_computeWeights(&rg, debug);
+    std::cerr << testName << ": computeWeights...OK\n";
+    assert(ier == 0);
 
     std::string weightFile = testName + "Weights.nc";
     ier = mnt_regridedges_dumpWeights(&rg, weightFile.c_str(), (int) weightFile.size());

@@ -31,13 +31,13 @@ void test(const std::string& filename, size_t npoints, const double points[]) {
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(ugrid);
     loc->BuildLocator();
-    // loc->setPeriodicityLengthX(2*M_PI);
+    loc->setPeriodicityLengthX(2*M_PI);
     assert(npoints > 1);
 
     for (size_t ipoint = 0; ipoint < npoints - 1; ++ipoint) {
         const double* p0 = &points[3*(ipoint + 0)];
         const double* p1 = &points[3*(ipoint + 1)];
-        PolysegmentIter psi(ugrid, loc, p0, p1, 2*M_PI);
+        PolysegmentIter psi(ugrid, loc, p0, p1);
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
         for (size_t i = 0; i < numSegs; ++i) {
@@ -89,13 +89,13 @@ void testUM(const std::string& filename, size_t npoints, const double points[]) 
     vmtCellLocator* loc = vmtCellLocator::New();
     loc->SetDataSet(ugrid);
     loc->BuildLocator();
-    // loc->setPeriodicityLengthX(2*M_PI);
+    loc->setPeriodicityLengthX(2*M_PI);
     assert(npoints > 1);
 
     for (size_t ipoint = 0; ipoint < npoints - 1; ++ipoint) {
         const double* p0 = &points[3*(ipoint + 0)];
         const double* p1 = &points[3*(ipoint + 1)];
-        PolysegmentIter psi(ugrid, loc, p0, p1, 2*M_PI);
+        PolysegmentIter psi(ugrid, loc, p0, p1);
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
         for (size_t i = 0; i < numSegs; ++i) {

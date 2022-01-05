@@ -97,7 +97,7 @@ void testSimple() {
         Vec3& pa = pts[iInterval + 0];
         Vec3& pb = pts[iInterval + 1];
 
-        PolysegmentIter psi(grid, loc, &pa[0], &pb[0], xPeriod);
+        PolysegmentIter psi(grid, loc, &pa[0], &pb[0]);
 
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
@@ -155,7 +155,7 @@ void testFold() {
         Vec3& pa = pts[iInterval + 0];
         Vec3& pb = pts[iInterval + 1];
 
-        PolysegmentIter psi(grid, loc, &pa[0], &pb[0], xPeriod);
+        PolysegmentIter psi(grid, loc, &pa[0], &pb[0]);
 
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
@@ -216,7 +216,7 @@ void testFold2() {
 
         Vec3& pa = pts[iInterval + 0];
         Vec3& pb = pts[iInterval + 1];
-        PolysegmentIter psi(grid, loc, &pa[0], &pb[0], xPeriod);
+        PolysegmentIter psi(grid, loc, &pa[0], &pb[0]);
 
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
@@ -274,7 +274,7 @@ void testFold3() {
 
         Vec3& pa = pts[iInterval + 0];
         Vec3& pb = pts[iInterval + 1];
-        PolysegmentIter psi(grid, loc, &pa[0], &pb[0], xPeriod);
+        PolysegmentIter psi(grid, loc, &pa[0], &pb[0]);
 
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();
@@ -332,7 +332,7 @@ void testFold4() {
 
         Vec3& pa = pts[iInterval + 0];
         Vec3& pb = pts[iInterval + 1];
-        PolysegmentIter psi(grid, loc, &pa[0], &pb[0], xPeriod);
+        PolysegmentIter psi(grid, loc, &pa[0], &pb[0]);
 
         size_t numSegs = psi.getNumberOfSegments();
         psi.reset();

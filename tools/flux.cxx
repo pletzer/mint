@@ -24,6 +24,8 @@ int main(int argc, char** argv) {
     args.set("-nline", 2, "Number of points defining the line (>= 2)");
     args.set("-counter", false, "Whether the edge values correspond to edges oriented in counterclockwise direction");
     args.set("-P", 0.0, "Periodicity length of x (0 if not periodic)");
+    args.set("-F", 0, "Specify whether folding is allowed (|latitude| > 90)");
+    args.set("-N", 128, "Average number of cells per bucket");
     args.set("-verbose", false, "Turn on verbosity");
 
 
@@ -105,11 +107,24 @@ int main(int argc, char** argv) {
           std::cout << "Warning: edge values are assumed to be stored in counterclockwise direction\n";
           counterclock = 1;
         }
+
+        int numCellsPerBucket = args.get<int>("-N");
         double periodX = args.get<double>("-P");
-        ier = mnt_polylineintegral_build(&fluxCalc, srcGrid, (int) npts, &xyz[0], 
-                                         counterclock, periodX);
+        int enableFolding = args.get<int>("-F");
+
+        ier = mnt_polylineintegral_setGrid(&fluxCalc, srcGrid);
         if (ier != 0) {
-            std::cerr << "ERROR: after calling mnt_lineintegral_build ier = " << ier << '\n';
+            std::cerr << "ERROR: after calling mnt_polylineintegral_setGrid ier = " << ier << '\n';
+        }
+
+        ier = mnt_polylineintegral_buildLocator(&fluxCalc, numCellsPerBucket, periodX, enableFolding);
+        if (ier != 0) {
+            std::cerr << "ERROR: after calling mnt_polylineintegral_buildLocator ier = " << ier << '\n';
+        }
+
+        ier = mnt_polylineintegral_computeWeights(&fluxCalc, (int) npts, &xyz[0], counterclock);
+        if (ier != 0) {
+            std::cerr << "ERROR: after calling mnt_polylineintegral_computeWeights ier = " << ier << '\n';
         }
 
         double flux = 0.0;

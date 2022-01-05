@@ -443,6 +443,9 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
 LIBRARY_API
 int mnt_grid_dump(Grid_t** self, const char* filename) {
     vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
+#if (VTK_MAJOR_VERSION >= 9)
+    writer->SetFileVersion(42); // want to write old legacy format
+#endif
     writer->SetFileName(filename);
     writer->SetInputData((*self)->grid);
     writer->Update();

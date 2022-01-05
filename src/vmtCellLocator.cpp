@@ -131,6 +131,8 @@ vmtCellLocator::BuildLocator() {
 void 
 vmtCellLocator::setPeriodicityLengthX(double periodX) {
 
+    this->periodX = periodX;
+
     this->modPeriodX.resize(0);
     this->modPeriodX.push_back(0.0);
     if (periodX > 0) {
@@ -138,6 +140,11 @@ vmtCellLocator::setPeriodicityLengthX(double periodX) {
         this->modPeriodX.push_back(+periodX);
     }
 
+}
+
+double
+vmtCellLocator::getPeriodicityLengthX() const {
+    return this->periodX;
 }
 
 void
@@ -319,7 +326,6 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
         double distSq = dot(direction, direction);
         if (distSq < eps) {
             // zero length, skip
-            std::cout << "... zero distance: distSq = " << distSq << '\n';
             continue;
         }
 

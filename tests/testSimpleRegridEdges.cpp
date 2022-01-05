@@ -31,8 +31,12 @@ int main() {
 
     int num_cells_per_bucket = 1;
     double periodX = 0.;
+    int enableFolding = 0;
+    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding);
+    assert(ier == 0);
+
     int debug = 2;
-    ier = mnt_regridedges_build(&rg, num_cells_per_bucket, periodX, debug);
+    ier = mnt_regridedges_computeWeights(&rg, debug);
     assert(ier == 0);
 
     ier = mnt_regridedges_print(&rg);

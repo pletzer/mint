@@ -52,18 +52,23 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
-    def buildLocator(self, numCellsPerBucket=10, periodX=360.):
+    def buildLocator(self, numCellsPerBucket=10, periodX=360., enableFolding=False):
         """
         Build the cell locator.
 
         :param numCellsPerBucket: approximate number of cells per bucket
         :param periodX: periodicity in x (set to 0 if non-periodic)
+        :param enableFolding: whether (1) or not (0) |latitudes| > 90 should be folded back into the domain
         :note: call this after setGrid
         """
+        enableFoldingInt = 0
+        if enableFolding:
+            enableFoldingInt = 1
+
         MINTLIB.mnt_vectorinterp_buildLocator.argtypes = [POINTER(c_void_p),
-                                                      c_int, c_double]
+                                                      c_int, c_double, c_int]
         ier = MINTLIB.mnt_vectorinterp_buildLocator(self.obj,
-                                                numCellsPerBucket, periodX)
+                                                    numCellsPerBucket, periodX, enableFoldingInt)
         if ier:
             error_handler(FILE, 'buildLocator', ier)
 
@@ -97,9 +102,12 @@ class VectorInterp(object):
         """
         Get the edge vectors at given target points.
 
-        :param data: edge data array of size number of unique edges
-        :param placement: 0 if data are cell by cell (size num cells * 4), 
-                          assume unique edge Id data otherwise (size num 
+        :param data: edge line integrals (see placement argument below). The units
+                     of the line integrals must be consistent with the coordinates
+                     units (typically degrees). For instance, a velocity field
+                     in degrees/time expects a line integral in degrees^2/time.
+        :param placement: 0 if data are cell by cell (size num cells * 4),
+                          assume unique edge Id data otherwise (size num
                           edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
@@ -136,9 +144,12 @@ class VectorInterp(object):
         """
         Get the lateral face vectors at given target points.
 
-        :param data: edge data array of size number of unique edges
-        :param placement: 0 if data are cell by cell (size num cells * 4), 
-                          assume unique edge Id data otherwise (size num 
+        :param data: edge fluxes (see placement argument below). The units
+                     should be compatible with the coordinates units
+                     (typically degrees). For instance, a velocity field
+                     in degrees/time expects a flux in degrees^2/time.
+        :param placement: 0 if data are cell by cell (size num cells * 4),
+                          assume unique edge Id data otherwise (size num
                           edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.

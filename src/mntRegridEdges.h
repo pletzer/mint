@@ -282,15 +282,26 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
                                 const char* fort_filename, int n);
 
 /**
- * Build the regridder and compute the regridding weights
+ * Build the cell locator
  * @param self instance of the regridding object
  * @param numCellsPerBucket average number of cells per bucket
  * @param periodX periodicity length (set to 0 if non-periodic)
+ * @param enableFolding set to 1 if latitudes can take values > 90 or < -90 degrees
+ * @return error code (0 is OK)
+ * @note call this before comoputing the weights
+ */
+LIBRARY_API
+int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
+                                 double periodX, int enableFolding);
+
+/**
+ * Compute the regridding weights
+ * @param self instance of the regridding object
  * @param debug 0=no debug info, 1=print debug info, 2=save bad edges in VTK file
  * @return error code (0 is OK)
  */
 LIBRARY_API
-int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug);
+int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug);
 
 /**
  * Get the number of the source grid cells

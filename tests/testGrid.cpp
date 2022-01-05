@@ -17,12 +17,14 @@ void testLFRic() {
     Grid_t* grd;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
-    // one or more ":" to discriminate file and mesh names
+    // filename$meshname
     ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
     assert(ier == 0);
     std::size_t numBadCells = 0;
     ier = mnt_grid_check(&grd, &numBadCells);
     assert(numBadCells == 0);
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
     mnt_printLogMessages();
 }
 
@@ -100,7 +102,7 @@ void testUgrid() {
     assert(ier == 0);
 
     ier = mnt_grid_del(&grd);
-    assert(ier == 0); 
+    assert(ier == 0);
 }
 
 

@@ -12,7 +12,7 @@
 #define VMT_CELL_LOCATOR
 
 /**
- * A class to quickly find a cell in an unstructured grid  (as a drop-in alternative to vtkCellLocator)
+ * A class to quickly find a cell in an unstructured grid (as a drop-in alternative to vtkCellLocator)
  */
 
 class vmtCellLocator {
@@ -100,6 +100,11 @@ public:
      */
     void setPeriodicityLengthX(double periodX);
 
+    /**
+     * Get the periodicity length in x
+     * @return 0 if non-periodic, periodicity in first coordinate otherwise
+     */
+    double getPeriodicityLengthX() const;
 
     /**
      * Enable folding across poles
@@ -171,6 +176,8 @@ private:
     // folding of over the poles. 
     std::vector<int> kFolding;
 
+    // periodicity in x
+    double periodX;
 
     /**
      * Adjust the longitude and latitude to account for the folding at the pole

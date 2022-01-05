@@ -2,6 +2,8 @@
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntVecN.h>
+#include <sstream> // std::stringstream
+#include "mntLogger.h"
 
 #ifndef MNT_VECTOR_INTERP
 #define MNT_VECTOR_INTERP
@@ -44,7 +46,7 @@ LIBRARY_API
 int mnt_vectorinterp_del(VectorInterp_t** self);
 
 /**
- * Set the grid and cell locator
+ * Set the grid
  * @param self instance of VectorInterp_t
  * @param grid grid (borrowed reference)
  * @param locator locator (borrowed reference)
@@ -54,7 +56,7 @@ LIBRARY_API
 int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid);
 
 /**
- * Set the grid and cell locator
+ * Set the grid cell locator
  * @param self instance of VectorInterp_t
  * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
@@ -63,13 +65,16 @@ LIBRARY_API
 int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
 
 /**
- * Build cell locator
+ * Build the grid cell locator
  * @param self instance of VectorInterp_t
- * @param locator locator (borrowed reference)
+ * @param numCellsPerBucket number of cells per bucket. The smaller the faster the cell search. However, 
+ *                          small values may casue problems, we recommend about 100 or more
+ * @param periodX period length, use 0 if non-periodic in the first coordinate
+ * @param enableFolding whether (1) or not (0) |latitude| > 90 deg values should be folded back into the domain
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX);
+int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX, int enableFolding);
 
 /**
  * Find target points
@@ -88,7 +93,8 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
 /**
  * Get the edge vectors at given target points from cell by cell data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size numCells*4. The units must be consistent
+ *             with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
@@ -102,7 +108,8 @@ int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
 /**
  * Get the face vectors at given target points from cell by cell data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size numCells*4. The units must be consistent
+ *             with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
@@ -115,7 +122,8 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
 /**
  * Get the edge vectors at given target points from unique edge Id data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size number of edges. The units must be
+ *             consistent with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
@@ -129,7 +137,8 @@ int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
 /**
  * Get the face vectors at given target points from unique edge Id data
  * @param self instance of VectorInterp_t
- * @param data edge data, array of size numCells*4
+ * @param data edge data, array of size number of edges. The units must be
+ *             consistent with the coordinates.
  * @param vectors array of output vectors, size numPoints*3
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
@@ -214,8 +223,10 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         // ordered correctly
         jac = 0.25*(a013 + a120 + a231 + a302);
         if (jac <= 0) {
-            std::cerr << "Warning: bad cell " << cellId << " vertices: " 
-                      << v0 << ',' << v1 << ',' << v2 << ',' << v3 << '\n';
+          std::stringstream msg;
+         msg << "bad cell " << cellId << " vertices: " <<
+                            v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+            mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
             ier = 1;
         }
 
