@@ -19,6 +19,11 @@ struct PolylineIntegral_t {
     /** interpolation weights map: (cellId, edgeIndex) -> weight */
     std::map< std::pair<vtkIdType, int>, double > weights;
 
+    /* cell locator */
+    vmtCellLocator* loc;
+
+    /* VTK grid (borrowed pointer) */
+    vtkUnstructuredGrid* vgrid;
 };
 
 /**
@@ -38,22 +43,36 @@ LIBRARY_API
 int mnt_polylineintegral_del(PolylineIntegral_t** self);
 
 /** 
- * Build the interpolation. This will compute the interpolation weights.
+ * Build the locator
  * @param self instance of the polyline integral object
  * @param grid instance of Grid_t
+ * @param numCellsPerBucket number of cells per bucket (small number allows a faster search,
+ *                          large numbers are sometimes required, we recommend ~100)
+ * @param periodX periodicity length (0. if not periodic)
+ * @param enableFolding whether (1) or not (0) to enable folding across the poles
+ *                      (allow |latitude| > 90)
+ * @return error code (0 is OK)
+ */
+LIBRARY_API
+int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self, Grid_t* grid, 
+                                      int numCellsPerBucket,
+                                      double periodX,
+                                      int enableFolding);
+
+/** 
+ * Compute the interpolation weights
+ * @param self instance of the polyline integral object
  * @param npoints number of points
  * @param xyz flat array size npoints * 3 containing the xyz coordinates
  * @param counterclock 1 if the edges go counterclockwise (that is [0,0]->[1,0], 
  *        [1,0]->[1,1], [1,1]->[0,1] and [0,1]->[0,0,]). Set counterclock = 0 if 
  *        the edges are oriented [0,0,]->[1,0], [1,0], [1,1], [0, 1]->[1,1] and 
  *        [0,0]->[0,1]
- * @param periodX periodicity length (0. if not periodic)
  * @return error code (0 is OK)
  */
 LIBRARY_API
-int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, 
-                               int npoints, const double xyz[], int counterclock,
-                               double periodX);
+int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
+                                        int npoints, const double xyz[], int counterclock);
 
 /** 
  * Get the integral of the field along the line

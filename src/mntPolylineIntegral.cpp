@@ -11,23 +11,51 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     
     *self = new PolylineIntegral_t();
 
+    (*self)->loc = vmtCellLocator::New();
+    (*self)->vgrid = NULL;
+
     return 0;
 }
 
 LIBRARY_API
 int mnt_polylineintegral_del(PolylineIntegral_t** self) {
-    int ier = 0;
 
     // destroy everything here
+    (*self)->loc->Delete();
 
     delete *self;
-    return ier;
+
+    return 0;
 }
 
 
 LIBRARY_API
-int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid, 
-                               int npoints, const double xyz[], int counterclock, double periodX) {
+int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self, Grid_t* grid,
+                                      int numCellsPerBucket,
+                                      double periodX,
+                                      int enableFolding) {
+
+    int ier = 0;
+    std::string msg;
+
+    // get VTK grid
+    mnt_grid_get(&grid, &(*self)->vgrid);
+
+    // build the cell locator
+    (*self)->loc->SetDataSet((*self)->vgrid);
+    (*self)->loc->SetNumberOfCellsPerBucket(numCellsPerBucket);
+    (*self)->loc->setPeriodicityLengthX(periodX);
+    if (enableFolding == 1) {
+        (*self)->loc->enableFolding();
+    }
+    (*self)->loc->BuildLocator();
+
+    return ier;
+}
+
+LIBRARY_API
+int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
+                                        int npoints, const double xyz[], int counterclock) {
 
     int ier = 0;
     std::string msg;
@@ -41,21 +69,16 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
         return 1;
     }
 
+    if (!(*self)->vgrid) {
+        std::string mgs = "need to build locator before computing the weights";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 2;
+    }
+
     const double* xi0_xi1 = QUAD_POSITIVEXI_EDGE_DIRECTION;
     if (counterclock > 0) {
         xi0_xi1 = QUAD_COUNTERCLOCKWISE_EDGE_DIRECTION;
     }
-
-    // get VTK grid
-    vtkUnstructuredGrid* vgrid = NULL;
-    mnt_grid_get(&grid, &vgrid);
-
-    // build the cell locator
-    vmtCellLocator* loc = vmtCellLocator::New();
-    loc->SetDataSet(vgrid);
-    loc->SetNumberOfCellsPerBucket(256);
-    loc->BuildLocator();
-    loc->setPeriodicityLengthX(periodX);
 
     // iterate over the Polyline segments
     for (int ip0 = 0; ip0 < npoints - 1; ++ip0) {
@@ -70,7 +93,7 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
 
         // build the polysegment iterator. This breaks segment p0 -> p1 into 
         // smaller segments, each being entirely contained within grid cells
-        PolysegmentIter polyseg(vgrid, loc, p0, p1, periodX);
+        PolysegmentIter polyseg((*self)->vgrid, (*self)->loc, p0, p1);
 
         // number of sub-segments
         std::size_t numSubSegs = polyseg.getNumberOfSegments();
@@ -124,8 +147,6 @@ int mnt_polylineintegral_build(PolylineIntegral_t** self, Grid_t* grid,
         }
 
     }
-
-    loc->Delete();
 
     return ier;
 }

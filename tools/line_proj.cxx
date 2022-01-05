@@ -22,8 +22,9 @@ int main(int argc, char** argv) {
     args.set("-i", std::string(""), "Source grid file in VTK format");
     args.set("-p", std::string("(0., 0.),(360., 0.)"), "Points defining the path.");
     args.set("-v", std::string("edgeData"), "Edge variable name.");
-    args.set("-N", 1, "Average number of cells per bucket.");
+    args.set("-N", 128, "Average number of cells per bucket.");
     args.set("-P", 0.0, "Periodicity length of x (0 if not periodic)");
+    args.set("-F", 0, "Specify whether folding is allowed (|latitude| > 90)");
     args.set("-verbose", false, "Turn on verbosity");
     args.set("-counter", false, "Whether the edge values correspond to edges oriented in counterclockwise direction");
 
@@ -89,10 +90,18 @@ int main(int argc, char** argv) {
           std::cout << "Warning: edge values are assumed to be stored in counter clockwise direction\n";
           counterclock = 1;
         }
+
+        int numCellsPerBucket = args.get<int>("-N");
         double periodX = args.get<double>("-P");
-        ier = mnt_polylineintegral_build(&fluxCalc, srcGrid, (int) npts, &xyz[0], counterclock, periodX);
+        int enableFolding = args.get<int>("-F");
+        ier = mnt_polylineintegral_buildLocator(&fluxCalc, srcGrid, numCellsPerBucket, periodX, enableFolding);
         if (ier != 0) {
-            std::cerr << "ERROR: after calling mnt_lineintegral_build ier = " << ier << '\n';
+            std::cerr << "ERROR: after calling mnt_lineintegral_buildLocator ier = " << ier << '\n';
+        }
+
+        ier = mnt_polylineintegral_computeWeights(&fluxCalc, (int) npts, &xyz[0], counterclock);
+        if (ier != 0) {
+            std::cerr << "ERROR: after calling mnt_polylineintegral_computeWeights ier = " << ier << '\n';
         }
 
         std::cout << "no of cells " << vgrid->GetNumberOfCells() << " no of points " << vgrid->GetNumberOfPoints() << '\n';

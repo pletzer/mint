@@ -19,14 +19,11 @@ struct TCmpFunctor {
 
 PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
                                  vmtCellLocator* locator,
-                                 const double p0In[], const double p1In[],
-                                 double periodX) {
+                                 const double p0In[], const double p1In[]) {
 
     // small tolerances
     this->eps = 10 * std::numeric_limits<double>::epsilon();
     this->eps100 = 100. * this->eps;
-
-    this->periodX = periodX;
 
     // set the grid and the grid locator
     this->grid = grid;
@@ -226,21 +223,23 @@ PolysegmentIter::__makePeriodic(Vec3& v) {
 
     std::string msg;
 
+    double periodX = this->locator->getPeriodicityLengthX();
+
     // fix start/end points if they fall outside the domain and the domain is periodic
-    if (this->periodX > 0.) {
+    if (periodX > 0.) {
         double xmin = this->grid->GetBounds()[0];
         double xmax = this->grid->GetBounds()[1];
         if (v[0] < xmin) {
-            msg = "adding x periodicity length " + std::to_string(this->periodX) +
+            msg = "adding x periodicity length " + std::to_string(periodX) +
                          " to point " + std::to_string(v[0]) + "," + std::to_string(v[1]) + "," + std::to_string(v[2]);
             mntlog::info(__FILE__, __func__, __LINE__, msg);
-            v[0] += this->periodX;
+            v[0] += periodX;
         }
         else if (v[0] > xmax) {
-            msg = "subtracting x periodicity length " + std::to_string(this->periodX) + 
+            msg = "subtracting x periodicity length " + std::to_string(periodX) + 
                          " from point " + std::to_string(v[0]) + "," + std::to_string(v[1]) + "," + std::to_string(v[2]);
             mntlog::info(__FILE__, __func__, __LINE__, msg);
-            v[0] -= this->periodX;
+            v[0] -= periodX;
         }
     }
 
