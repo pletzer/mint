@@ -149,9 +149,10 @@ class LFRiz(object):
         self.startFluxes.SetName('flux')
         self.startLineGrid.GetCellData().AddArray(self.startFluxes)
 
+        pli.buildLocator(self.srcGrid, numCellsPerBucket=128, periodX=360., enableFolding=False)
         # initial fluxes
         for i in range(numRibbons):
-            pli.build(self.srcGrid, self.pts0[i:i+2, :], counterclock=False, periodX=360.)
+            pli.computeWeights(self.pts0[i:i+2, :], counterclock=False)
             flx = abs(pli.getIntegral(self.influxes))
             self.startFluxes.SetTuple(i, (flx,))
 
@@ -195,7 +196,7 @@ class LFRiz(object):
                 self.vpointData.SetTuple(index1, xyz1)
 
                 tpts = numpy.ascontiguousarray( self.points[j, i:i+2, :] )
-                pli.build(self.srcGrid, tpts, counterclock=False, periodX=360.)
+                pli.computeWeights(tpts, counterclock=False)
                 flx = abs(pli.getIntegral(self.influxes))
 
                 # same flux values for the 2 adjacent nodes
