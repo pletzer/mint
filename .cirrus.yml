@@ -29,7 +29,13 @@ linux_task:
   auto_cancellation: true
   matrix:
     env:
+      PY_VER: "3.10"
+      VTK_VER: "9.1"
+    env:
       PY_VER: "3.9"
+      VTK_VER: "9.1"
+    env:
+      PY_VER: "3.8"
       VTK_VER: "9.1"
   name: "Linux: py${PY_VER}"
   container:
@@ -69,7 +75,7 @@ linux_task:
     - conda activate py${PY_VER} >/dev/null 2>&1
     - conda install --yes -c conda-forge netcdf-fortran doxygen 2>&1
     - conda list
-    - pip install --no-deps --editable .
+    - python setup.py develop
     - pytest
     - mkdir build-cmake
     - cd build-cmake
@@ -138,7 +144,7 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
       VTK_VER: "9.1"
   name: "Windows: py$PY_VER"
   windows_container:
@@ -162,7 +168,7 @@ win_task:
     - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=4.8.1
   install_script:
     - conda list
-    - pip install --no-deps --editable .    
+    - python setup.py develop
     - python -c "import mint; print(dir(mint))"
     # - pytest mint\tests
     # - ps: Get-Command python
