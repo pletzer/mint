@@ -30,8 +30,7 @@ linux_task:
   matrix:
     env:
       PY_VER: "3.9"
-    env:
-      PY_VER: "3.10"
+      VTK_VER: "9.1"
   name: "Linux: py${PY_VER}"
   container:
     dockerfile: requirements/ci/linux/Dockerfile
@@ -86,7 +85,8 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.10"
+      PY_VER: "3.9"
+      VTK_VER: "9.1"
   name: "OSX: py${PY_VER}"
   osx_instance:
     image: big-sur-xcode
@@ -127,7 +127,7 @@ osx_task:
     - pytest
     - mkdir build-cmake
     - cd build-cmake
-    - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.1 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
+    - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
     - make
     - ctest
 
@@ -139,9 +139,6 @@ win_task:
   matrix:
     env:
       PY_VER: "3.9"
-      VTK_VER: "9.1"
-    env:
-      PY_VER: "3.10"
       VTK_VER: "9.1"
   name: "Windows: py$PY_VER"
   windows_container:
