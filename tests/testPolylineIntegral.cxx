@@ -115,10 +115,13 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
     ier = mnt_polylineintegral_new(&pli);
     assert(ier == 0);
 
+    ier = mnt_polylineintegral_setGrid(&pli, grd);
+    assert(ier == 0);
+
     int numCellsPerBucket = 128;
     double periodX = 0;
     int enableFolding = 0;
-    ier = mnt_polylineintegral_buildLocator(&pli, grd, numCellsPerBucket, periodX, enableFolding);
+    ier = mnt_polylineintegral_buildLocator(&pli, numCellsPerBucket, periodX, enableFolding);
     assert(ier == 0);
 
     int npoints = (int) xyz.size() / 3;

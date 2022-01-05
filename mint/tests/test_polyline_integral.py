@@ -71,8 +71,10 @@ def test_simple(nx, ny, potFunc, xyz):
 
     pli = PolylineIntegral()
 
+    pli.setGrid(gr)
+
     # no periodicity in x
-    pli.buildLocator(gr, numCellsPerBucket=128, periodX=0.0, enableFolding=False)
+    pli.buildLocator(numCellsPerBucket=128, periodX=0.0, enableFolding=False)
 
     pli.computeWeights(xyz, counterclock=False)
 
@@ -140,8 +142,10 @@ def test_partially_outside(nx, ny, potFunc):
                        (1., 1., 0.),
                        (0., 1., 0.)])
 
+    pli.setGrid(gr)
+
     # no periodicity in x
-    pli.buildLocator(gr, numCellsPerBucket=128, periodX=0.0, enableFolding=False)
+    pli.buildLocator(numCellsPerBucket=128, periodX=0.0, enableFolding=False)
 
     pli.computeWeights(xyz, counterclock=False)
 
@@ -219,8 +223,10 @@ def test_completely_outside(nx, ny, potFunc):
                        (-1., 1., 0.),
                        (0., 1., 0.)])
 
+    pli.setGrid(gr)
+
     # no periodicity in x
-    pli.buildLocator(gr, numCellsPerBucket=128, periodX=0.0, enableFolding=False)
+    pli.buildLocator(numCellsPerBucket=128, periodX=0.0, enableFolding=False)
 
     pli.computeWeights(xyz, counterclock=False)
 

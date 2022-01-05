@@ -91,10 +91,15 @@ int main(int argc, char** argv) {
           counterclock = 1;
         }
 
+        ier = mnt_polylineintegral_setGrid(&fluxCalc, srcGrid);
+        if (ier != 0) {
+            std::cerr << "ERROR: after calling mnt_polylineintegral_setGrid ier = " << ier << '\n';
+        }
+
         int numCellsPerBucket = args.get<int>("-N");
         double periodX = args.get<double>("-P");
         int enableFolding = args.get<int>("-F");
-        ier = mnt_polylineintegral_buildLocator(&fluxCalc, srcGrid, numCellsPerBucket, periodX, enableFolding);
+        ier = mnt_polylineintegral_buildLocator(&fluxCalc, numCellsPerBucket, periodX, enableFolding);
         if (ier != 0) {
             std::cerr << "ERROR: after calling mnt_lineintegral_buildLocator ier = " << ier << '\n';
         }

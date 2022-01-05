@@ -43,18 +43,28 @@ LIBRARY_API
 int mnt_polylineintegral_del(PolylineIntegral_t** self);
 
 /** 
- * Build the locator
+ * Set the grid
  * @param self instance of the polyline integral object
  * @param grid instance of Grid_t
+ * @return error code (0 is OK)
+ */
+LIBRARY_API
+int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
+
+
+/** 
+ * Build the locator
+ * @param self instance of the polyline integral object
  * @param numCellsPerBucket number of cells per bucket (small number allows a faster search,
  *                          large numbers are sometimes required, we recommend ~100)
  * @param periodX periodicity length (0. if not periodic)
  * @param enableFolding whether (1) or not (0) to enable folding across the poles
  *                      (allow |latitude| > 90)
  * @return error code (0 is OK)
+ * @note call this after mnt_polylineintegral_setGrid
  */
 LIBRARY_API
-int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self, Grid_t* grid, 
+int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self,
                                       int numCellsPerBucket,
                                       double periodX,
                                       int enableFolding);

@@ -30,7 +30,21 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
 
 
 LIBRARY_API
-int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self, Grid_t* grid,
+int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
+
+    int ier = 0;
+    std::string msg;
+
+    // get VTK grid
+    mnt_grid_get(&grid, &(*self)->vgrid);
+    (*self)->loc->SetDataSet((*self)->vgrid);
+
+    return ier;
+}
+
+
+LIBRARY_API
+int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self,
                                       int numCellsPerBucket,
                                       double periodX,
                                       int enableFolding) {
@@ -38,11 +52,7 @@ int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self, Grid_t* grid,
     int ier = 0;
     std::string msg;
 
-    // get VTK grid
-    mnt_grid_get(&grid, &(*self)->vgrid);
-
     // build the cell locator
-    (*self)->loc->SetDataSet((*self)->vgrid);
     (*self)->loc->SetNumberOfCellsPerBucket(numCellsPerBucket);
     (*self)->loc->setPeriodicityLengthX(periodX);
     if (enableFolding == 1) {

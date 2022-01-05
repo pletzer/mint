@@ -30,7 +30,7 @@ class LFRiz(object):
         # create a vector field interpolator
         self.vi = mint.VectorInterp()
         self.vi.setGrid(self.srcGrid)
-        self.vi.buildLocator(numCellsPerBucket=200, periodX=360.)
+        self.vi.buildLocator(numCellsPerBucket=200, periodX=360., enableFolding=False)
 
         # read the u, v components for each unique edge, in m/s
         nc = netCDF4.Dataset(infile)
@@ -149,7 +149,8 @@ class LFRiz(object):
         self.startFluxes.SetName('flux')
         self.startLineGrid.GetCellData().AddArray(self.startFluxes)
 
-        pli.buildLocator(self.srcGrid, numCellsPerBucket=128, periodX=360., enableFolding=False)
+        pli.setGrid(self.srcGrid)
+        pli.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
         # initial fluxes
         for i in range(numRibbons):
             pli.computeWeights(self.pts0[i:i+2, :], counterclock=False)

@@ -34,26 +34,38 @@ class PolylineIntegral(object):
         if ier:
             error_handler(FILE, '__del__', ier)
 
-    def buildLocator(self, grid, numCellsPerBucket=128, periodX=0.0, enableFolding=False):
+    def setGrid(self, grid):
+        """
+        Set the grid.
+
+        :param grid: instance of Grid
+        """
+        MINTLIB.mnt_polylineintegral_setGrid.argtypes = [POINTER(c_void_p), c_void_p]
+        ier = MINTLIB.mnt_polylineintegral_setGrid(self.obj, grid.ptr)
+        if ier:
+            msg = "Failed to set the grid"
+            warning_handler(FILE, 'setGrid', ier, detailedmsg=msg)
+
+    def buildLocator(self, numCellsPerBucket=128, periodX=0.0, enableFolding=False):
         """
         Build the locator.
 
-        :param grid: instance of Grid
         :param numCellsPerBucket: average number of cells per bucket,
                                   performance typically improves with a higher
                                   number of cells per bucket
         :param periodX: periodicity length in x (longitudes),
                         set to 0 if non-periodic.
         :param enableFolding: whether (1) or not (0) to allow for |latitude| > 90
+        :note: call this after setGrid
         """
 
         enableFoldingInt = 0
         if enableFolding:
             enableFoldingInt = 1
 
-        MINTLIB.mnt_polylineintegral_buildLocator.argtypes = [POINTER(c_void_p), c_void_p,
+        MINTLIB.mnt_polylineintegral_buildLocator.argtypes = [POINTER(c_void_p),
                                                               c_int, c_double, c_int]
-        ier = MINTLIB.mnt_polylineintegral_buildLocator(self.obj, grid.ptr,
+        ier = MINTLIB.mnt_polylineintegral_buildLocator(self.obj,
                                                         numCellsPerBucket, periodX, enableFoldingInt)
         if ier:
             msg = "Failed to build locator"
