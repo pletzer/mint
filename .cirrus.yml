@@ -123,7 +123,7 @@ osx_task:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-osx-64.lock >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
-    - pip install --no-deps --editable .
+    - python setup.py develop
     - pytest
     - mkdir build-cmake
     - cd build-cmake

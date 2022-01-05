@@ -67,16 +67,9 @@ conda env create --file requirements/mint.yml
 conda activate mint-dev
 ```
 
-If you find the above commands to fail on Windows, try (in the Anaconda prompt terminal):
-```
-conda create -n mint-dev
-conda activate mint-dev
-conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk=9.0.3 numpy pytest netcdf4
-```
-
 Then type:
 ```
-pip install --no-deps --editable .
+python setup.py develop
 ```
 
 ### Testing the Python module
