@@ -206,18 +206,31 @@ module mnt_regridedges_capi_mod
     !> @param obj instance of mntRegridEdges_t (opaque handle)
     !> @param num_cells_per_bucket number of cells per bucket
     !> @param periodX period in longitudes (0 if non-periodic)
-    !> @param debug 0=no debug info, 1=print debug info, 2=save bad edges in VTK file
+    !> @param enableFolding set to 1 if |latitude| > 90 deg.
     !> @return 0 if successful
-    function mnt_regridedges_build(obj, num_cells_per_bucket, periodX, debug) &
-                                   bind(C, name='mnt_regridedges_build')
+    function mnt_regridedges_buildLocator(obj, num_cells_per_bucket, periodX, enableFolding) &
+                                          bind(C, name='mnt_regridedges_buildLocator')
       use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
       type(c_ptr), intent(inout)       :: obj !> void**
       integer(c_int), value            :: num_cells_per_bucket
       real(c_double), value            :: periodX
+      integer(c_int), value            :: enableFolding
+      integer(c_int)                   :: mnt_regridedges_buildLocator
+    end function mnt_regridedges_buildLocator
+
+    !> Compute the interpolation weights
+    !> @param obj instance of mntRegridEdges_t (opaque handle)
+    !> @param debug 0=no debug info, 1=print debug info, 2=save bad edges in VTK file
+    !> @return 0 if successful
+    function mnt_regridedges_computeWeights(obj, debug) &
+                                            bind(C, name='mnt_regridedges_computeWeights')
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
+      implicit none
+      type(c_ptr), intent(inout)       :: obj !> void**
       integer(c_int), value            :: debug
-      integer(c_int)                   :: mnt_regridedges_build
-    end function mnt_regridedges_build
+      integer(c_int)                   :: mnt_regridedges_computeWeights
+    end function mnt_regridedges_computeWeights
 
     !> Get the number of unique edges in the source grid
     !> @param n number (output)

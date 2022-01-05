@@ -184,6 +184,7 @@ int main(int argc, char** argv) {
     args.set("-s", std::string(""), "UGRID source grid file and mesh name, specified as \"filename$meshname\"");
     args.set("-v", std::string(""), "Specify edge staggered field variable name in source UGRID file, varname[@filename$meshname]");
     args.set("-P", 0.0, "Specify the periodicity length in longitudes (default is non-periodic)");
+    args.set("-F", 0, "Specify whether folding is allowed (|latitude| > 90)");
     args.set("-d", std::string(""), "UGRID destination grid file name");
     args.set("-w", std::string(""), "Write interpolation weights to file");
     args.set("-W", std::string(""), "Load interpolation weights from file");
@@ -274,12 +275,19 @@ int main(int argc, char** argv) {
 
         // compute the weights
         std::cout << "info: computing weights\n";
-        ier = mnt_regridedges_build(&rg, args.get<int>("-N"), 
-                                         args.get<double>("-P"), args.get<int>("-debug"));
+        ier = mnt_regridedges_buildLocator(&rg, args.get<int>("-N"), 
+                                           args.get<double>("-P"),
+                                           args.get<int>("-F"));
         if (ier != 0) {
             return finalize(6, args.get<bool>("-verbose"));
         }
     
+        std::cout << "info: computing weights\n";
+        ier = mnt_regridedges_computeWeights(&rg, args.get<int>("-debug"));
+        if (ier != 0) {
+            return finalize(6, args.get<bool>("-verbose"));
+        }
+
         // save the weights to file
         if (weightsFile.size() != 0) {
             std::cout << "info: saving weights in file " << weightsFile << '\n';

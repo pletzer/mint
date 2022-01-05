@@ -486,7 +486,8 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
 }
 
 LIBRARY_API
-int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double periodX, int debug) {
+int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
+                                 double periodX, int enableFolding) {
 
     std::string msg;
     // checks
@@ -504,8 +505,19 @@ int mnt_regridedges_build(RegridEdges_t** self, int numCellsPerBucket, double pe
     // build the locator
     (*self)->srcLoc->SetDataSet((*self)->srcGrid);
     (*self)->srcLoc->SetNumberOfCellsPerBucket(numCellsPerBucket);
-    (*self)->srcLoc->BuildLocator();
     (*self)->srcLoc->setPeriodicityLengthX(periodX);
+    if (enableFolding == 1) {
+        (*self)->srcLoc->enableFolding();
+    }
+    (*self)->srcLoc->BuildLocator();
+
+    return 0;
+}
+
+LIBRARY_API
+int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
+
+    std::string msg;
 
     // compute the weights
     vtkIdList* dstPtIds = vtkIdList::New();
