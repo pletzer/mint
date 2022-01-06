@@ -34,6 +34,9 @@ linux_task:
     env:
       PY_VER: "3.9"
       VTK_VER: "9.1"
+    env:
+      PY_VER: "3.10"
+      VTK_VER: "9.1"
   name: "Linux: py${PY_VER}"
   container:
     dockerfile: requirements/ci/linux/Dockerfile
@@ -88,7 +91,7 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
       VTK_VER: "9.1"
   name: "OSX: py${PY_VER}"
   osx_instance:
@@ -160,7 +163,7 @@ win_task:
   conda_script:
     - choco install -y miniconda3 --params="'/D:%CONDA_DIR%'"
     - conda update -yn base conda
-    - conda install -c conda-forge setuptools
+    - conda install --yes -c conda-forge setuptools
     - conda install --yes python=%PY_VER%
     - conda install --yes pytest tbb cython numpy netcdf4
     - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=%LIBNETCDF_VER%
