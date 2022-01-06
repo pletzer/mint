@@ -144,7 +144,7 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
       VTK_VER: "9.1"
       LIBNETCDF_VER: "4.8.1"
   name: "Windows: py$PY_VER"
@@ -169,7 +169,7 @@ win_task:
     - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=%LIBNETCDF_VER%
   install_script:
     - conda list
-    - pip install --no-deps --editable .    
+    - python setup.py develop
     - python -c "import mint; print(dir(mint))"
     # - pytest mint\tests
     # - ps: Get-Command python
