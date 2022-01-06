@@ -144,8 +144,9 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.10"
+      PY_VER: "3.9"
       VTK_VER: "9.1"
+      LIBNETCDF_VER: "4.8.1"
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
@@ -165,7 +166,7 @@ win_task:
     - conda install -c conda-forge setuptools
     - conda install --yes python=%PY_VER%
     - conda install --yes pytest tbb cython numpy netcdf4
-    - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=4.8.1
+    - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=%LIBNETCDF_VER%
   install_script:
     - conda list
     - python setup.py develop
