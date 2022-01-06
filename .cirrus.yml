@@ -30,8 +30,10 @@ linux_task:
   matrix:
     env:
       PY_VER: "3.8"
+      VTK_VER: "9.1"
     env:
       PY_VER: "3.9"
+      VTK_VER: "9.1"
   name: "Linux: py${PY_VER}"
   container:
     dockerfile: requirements/ci/linux/Dockerfile
@@ -74,7 +76,7 @@ linux_task:
     - pytest
     - mkdir build-cmake
     - cd build-cmake
-    - cmake -DBUILD_FORTRAN=ON -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.1 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
+    - cmake -DBUILD_FORTRAN=ON -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
     - make
     - ctest
 
@@ -87,6 +89,7 @@ osx_task:
   matrix:
     env:
       PY_VER: "3.9"
+      VTK_VER: "9.1"
   name: "OSX: py${PY_VER}"
   osx_instance:
     image: big-sur-xcode
@@ -127,7 +130,7 @@ osx_task:
     - pytest
     - mkdir build-cmake
     - cd build-cmake
-    - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-9.1 -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
+    - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
     - make
     - ctest
 
@@ -139,6 +142,7 @@ win_task:
   matrix:
     env:
       PY_VER: "3.9"
+      VTK_VER: "9.1"
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
@@ -158,7 +162,7 @@ win_task:
     - conda install -c conda-forge setuptools
     - conda install --yes python=%PY_VER%
     - conda install --yes pytest tbb cython numpy netcdf4
-    - conda install --yes -c conda-forge vtk=9.1.0 libnetcdf=4.8.1
+    - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=4.8.1
   install_script:
     - conda list
     - pip install --no-deps --editable .    
@@ -174,8 +178,8 @@ win_task:
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     # - where cl
     # - dir "%CONDA_LIB%\lib
-    # - dir "%CONDA_LIB%\include\vtk-9.1"
-    - cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%CONDA_LIB%\include\vtk-9.1" -DVTK_LIBRARY_DIR="%CONDA_LIB%\lib" -DNETCDF_INCLUDE_DIRS="%CONDA_LIB%\include" -DNETCDF_LIBRARIES="%CONDA_LIB%\lib\netcdf.lib" ..
+    # - dir "%CONDA_LIB%\include\vtk-%VTK_VER%"
+    - cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%CONDA_LIB%\include\vtk-%VTK_VER%" -DVTK_LIBRARY_DIR="%CONDA_LIB%\lib" -DNETCDF_INCLUDE_DIRS="%CONDA_LIB%\include" -DNETCDF_LIBRARIES="%CONDA_LIB%\lib\netcdf.lib" ..
     - nmake
     - ctest
     - cd ../
