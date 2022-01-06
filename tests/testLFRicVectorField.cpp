@@ -22,7 +22,7 @@ std::vector<double> computeFluxes(Grid_t* grd,
 
     std::vector<double> fluxes(numCells * 4);
 
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (auto icell = 0; icell < numCells; ++icell) {
         for (int ie = 0; ie < 4; ++ie) {
 
             ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &signEdge);
@@ -74,7 +74,7 @@ void createGridAndLocator(Grid_t** grd, vmtCellLocator** cloc) {
 
 void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fluxes) {
 
-    int ier, signEdge;
+    int ier;
 
     VectorInterp_t* vp = NULL;
     ier = mnt_vectorinterp_new(&vp);
@@ -194,7 +194,7 @@ void testMeridional() {
 
 
     // set the velocity
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (auto icell = 0; icell < numCells; ++icell) {
         for (int ie = 0; ie < 4; ++ie) {
 
             ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &signEdge);
