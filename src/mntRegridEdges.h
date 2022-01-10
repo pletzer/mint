@@ -25,12 +25,6 @@
 
 struct RegridEdges_t {
 
-    /** pointer to the source VTK unstructured grid */
-    vtkUnstructuredGrid* srcGrid;
-
-    /** pointer to the destination VTK unstructured grid */
-    vtkUnstructuredGrid* dstGrid;
-
     /** cell locator (octree-based) for fast cell search */
     vmtCellLocator* srcLoc;
 
@@ -94,6 +88,9 @@ struct RegridEdges_t {
     /** start indices for multi-array iterator */
     std::vector<std::size_t> startIndices;
 
+    /** whether the gridder owns the grids */
+    bool srcGridIsOwned;
+    bool dstGridIsOwned;
 };
 
 /**
@@ -111,6 +108,24 @@ int mnt_regridedges_new(RegridEdges_t** self);
  */
 LIBRARY_API
 int mnt_regridedges_del(RegridEdges_t** self);
+
+/**
+ * Set the source grid
+ * @param self instance of the regridding object
+ * @param grid instance of Grid_t
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid);
+
+/**
+ * Set the destination grid
+ * @param self instance of the regridding object
+ * @param grid instance of Grid_t
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid);
 
 /**
  * Set the source grid flags

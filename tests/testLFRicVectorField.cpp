@@ -8,7 +8,7 @@
 #include <vector>
 
 
-std::vector<double> computeFluxes(Grid_t* grd, 
+std::vector<double> computeFluxes(Grid_t* grd,
                                   const std::vector<double>& u,
                                   const std::vector<double>& v) {
 
@@ -22,7 +22,7 @@ std::vector<double> computeFluxes(Grid_t* grd,
 
     std::vector<double> fluxes(numCells * 4);
 
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (auto icell = 0; icell < numCells; ++icell) {
         for (int ie = 0; ie < 4; ++ie) {
 
             ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &signEdge);
@@ -74,7 +74,7 @@ void createGridAndLocator(Grid_t** grd, vmtCellLocator** cloc) {
 
 void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fluxes) {
 
-    int ier, signEdge;
+    int ier;
 
     VectorInterp_t* vp = NULL;
     ier = mnt_vectorinterp_new(&vp);
@@ -158,7 +158,7 @@ void testZonal() {
     }
 
     // compute the fluxes
-    std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell 
+    std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell
 
     getVectors(grd, cloc, fluxes);
 
@@ -194,19 +194,19 @@ void testMeridional() {
 
 
     // set the velocity
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (auto icell = 0; icell < numCells; ++icell) {
         for (int ie = 0; ie < 4; ++ie) {
 
             ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &signEdge);
             assert(ier == 0);
 
-            u[edgeId] = 0.0; 
+            u[edgeId] = 0.0;
             v[edgeId] = 1.0; // 1 deg / time
         }
     }
 
     // compute the fluxes
-    std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell 
+    std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell
 
     getVectors(grd, cloc, fluxes);
 

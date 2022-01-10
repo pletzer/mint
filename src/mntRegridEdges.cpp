@@ -25,8 +25,6 @@ LIBRARY_API
 int mnt_regridedges_new(RegridEdges_t** self) {
 
     *self = new RegridEdges_t();
-    (*self)->srcGrid = NULL;
-    (*self)->dstGrid = NULL;
     (*self)->srcLoc = vmtCellLocator::New();
 
     mnt_grid_new(&((*self)->srcGridObj));
@@ -42,6 +40,9 @@ int mnt_regridedges_new(RegridEdges_t** self) {
 
     (*self)->dstWriter = NULL;
 
+    (*self)->srcGridIsOwned = false;
+    (*self)->dstGridIsOwned = false;
+
     return 0;
 }
 
@@ -54,8 +55,12 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     (*self)->srcLoc->Delete();
 
     // destroy the source and destination grids
-    mnt_grid_del(&((*self)->srcGridObj));
-    mnt_grid_del(&((*self)->dstGridObj));
+    if ((*self)->srcGridIsOwned) {
+        mnt_grid_del(&((*self)->srcGridObj));
+    }
+    if ((*self)->dstGridIsOwned) {
+        mnt_grid_del(&((*self)->dstGridObj));
+    }
 
     if ((*self)->srcNcid >= 0) {
         ier = nc_close((*self)->srcNcid);
@@ -76,6 +81,20 @@ int mnt_regridedges_del(RegridEdges_t** self) {
     delete *self;
 
     return ier;
+}
+
+LIBRARY_API
+int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
+
+    (*self)->srcGridObj = grid;
+    return 0;
+}
+
+LIBRARY_API
+int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid) {
+
+    (*self)->dstGridObj = grid;
+    return 0;
 }
 
 LIBRARY_API
@@ -468,7 +487,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     mntlog::info(__FILE__, __func__, __LINE__, 
                  "loading src grid from file \"" + filename + "\"");
     int ier = mnt_grid_loadFromUgrid2D(&((*self)->srcGridObj), filename.c_str());
-    (*self)->srcGrid = (*self)->srcGridObj->grid;
+    (*self)->srcGridIsOwned = true; // the regridder owns the src grid
     return ier;
 }
 
@@ -481,7 +500,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     mntlog::info(__FILE__, __func__, __LINE__, 
                  "loading dst grid from file \"" + filename + "\"");
     int ier = mnt_grid_loadFromUgrid2D(&((*self)->dstGridObj), filename.c_str());
-    (*self)->dstGrid = (*self)->dstGridObj->grid;
+    (*self)->dstGridIsOwned = true; // the regridder owns the dst grid
     return ier;
 }
 
@@ -491,19 +510,14 @@ int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
 
     std::string msg;
     // checks
-    if (!(*self)->srcGrid) {
+    if (!(*self)->srcGridObj || !(*self)->srcGridObj->grid) {
         msg = "must set source grid";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
-    if (!(*self)->dstGrid) {
-        msg = "must set destination grid\n";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return 2;
-    }
 
     // build the locator
-    (*self)->srcLoc->SetDataSet((*self)->srcGrid);
+    (*self)->srcLoc->SetDataSet((*self)->srcGridObj->grid);
     (*self)->srcLoc->SetNumberOfCellsPerBucket(numCellsPerBucket);
     (*self)->srcLoc->setPeriodicityLengthX(periodX);
     if (enableFolding == 1) {
@@ -524,9 +538,9 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
     vtkIdList* srcCellIds = vtkIdList::New();
     double dstEdgePt0[] = {0., 0., 0.};
     double dstEdgePt1[] = {0., 0., 0.};
-    vtkPoints* dstPoints = (*self)->dstGrid->GetPoints();
+    vtkPoints* dstPoints = (*self)->dstGridObj->grid->GetPoints();
 
-    std::size_t numDstCells = (*self)->dstGrid->GetNumberOfCells();
+    std::size_t numDstCells = (*self)->dstGridObj->grid->GetNumberOfCells();
 
     // reserve some space for the weights and their cell/edge id arrays
     std::size_t n = numDstCells * MNT_NUM_EDGES_PER_QUAD * 20;
@@ -557,9 +571,9 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
     for (std::size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
 
         // get this cell vertex Ids
-        (*self)->dstGrid->GetCellPoints(dstCellId, dstPtIds);
+        (*self)->dstGridObj->grid->GetCellPoints(dstCellId, dstPtIds);
 
-        vtkCell* dstCell = (*self)->dstGrid->GetCell(dstCellId);
+        vtkCell* dstCell = (*self)->dstGridObj->grid->GetCell(dstCellId);
 
         // iterate over the four edges of each dst cell
         for (int dstEdgeIndex = 0; dstEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
@@ -573,7 +587,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
             dstPoints->GetPoint(dstCell->GetPointId(id1), dstEdgePt1);
 
             // break the edge into sub-edges
-            PolysegmentIter polySegIter = PolysegmentIter((*self)->srcGrid, 
+            PolysegmentIter polySegIter = PolysegmentIter((*self)->srcGridObj->grid, 
                                                           (*self)->srcLoc,
                                                           dstEdgePt0, dstEdgePt1);
 
@@ -603,7 +617,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
                     mntlog::info(__FILE__, __func__, __LINE__, buffer);
                 }
 
-                vtkCell* srcCell = (*self)->srcGrid->GetCell(srcCellId);
+                vtkCell* srcCell = (*self)->srcGridObj->grid->GetCell(srcCellId);
                 double* srcCellParamCoords = srcCell->GetParametricCoords();
 
                 for (int srcEdgeIndex = 0; srcEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
@@ -684,13 +698,13 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
 
 LIBRARY_API
 int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n) {
-    *n = (*self)->srcGrid->GetNumberOfCells();
+    *n = (*self)->srcGridObj->grid->GetNumberOfCells();
     return 0;
 }
 
 LIBRARY_API
 int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n) {
-    *n = (*self)->dstGrid->GetNumberOfCells();
+    *n = (*self)->dstGridObj->grid->GetNumberOfCells();
     return 0;
 }
 

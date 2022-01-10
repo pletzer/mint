@@ -135,7 +135,7 @@ int mnt_ncfieldwrite_define(NcFieldWrite_t** self) {
   int ndims = (int) (*self)->dimSizes.size();
   std::vector<int> dimIds(ndims);
   int ier;
-  for (std::size_t i = 0; i < ndims; ++i) {
+  for (auto i = 0; i < ndims; ++i) {
     ier = nc_def_dim((*self)->ncid, (*self)->dimNames[i].c_str(),
                                     (*self)->dimSizes[i], &dimIds[i]);
     if (ier != NC_NOERR) {
