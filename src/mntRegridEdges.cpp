@@ -79,6 +79,20 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 }
 
 LIBRARY_API
+int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
+
+    (*self)->srcGridObj = grid;
+    return 0;
+}
+
+LIBRARY_API
+int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid) {
+
+    (*self)->dstGridObj = grid;
+    return 0;
+}
+
+LIBRARY_API
 int mnt_regridedges_setSrcGridFlags(RegridEdges_t** self, int fixLonAcrossDateline, int averageLonAtPole) {
 
     const int degrees = 1; // for the time being

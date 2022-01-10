@@ -124,9 +124,6 @@ private:
     double eps100;
     double totalT;
 
-    // either 360, 2*pi or 0 (if not periodic)
-    double periodX;
-
     std::size_t index;
     std::size_t numSegs;
 

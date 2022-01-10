@@ -11,6 +11,7 @@ configure_file(testNcAttributes.cpp testNcAttributes.cxx)
 configure_file(testNcDimensions.cpp testNcDimensions.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
+configure_file(testRegridEdgesWithGrid.cpp testRegridEdgesWithGrid.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testPolysegmentIter2.cpp testPolysegmentIter2.cxx)
 configure_file(testFindCellsAlongLine.cpp testFindCellsAlongLine.cxx)
@@ -219,6 +220,13 @@ target_link_libraries(testRegridEdgesFromUgrid
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testRegridEdgesWithGrid testRegridEdgesWithGrid.cxx)
+target_link_libraries(testRegridEdgesWithGrid
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testPolylineParser testPolylineParser.cxx)
 target_link_libraries(testPolylineParser
                     mint
@@ -341,6 +349,7 @@ add_test(NAME ugrid2D_xyz COMMAND testUgrid2D
                         "-vtk" "cs_4_xyz.vtk")
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
+add_test(NAME regridEdgesWithGrid COMMAND testRegridEdgesWithGrid)
 add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)

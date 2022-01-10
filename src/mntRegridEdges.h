@@ -113,6 +113,24 @@ LIBRARY_API
 int mnt_regridedges_del(RegridEdges_t** self);
 
 /**
+ * Set the source grid
+ * @param self instance of the regridding object
+ * @param grid instance of Grid_t
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid);
+
+/**
+ * Set the destination grid
+ * @param self instance of the regridding object
+ * @param grid instance of Grid_t
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid);
+
+/**
  * Set the source grid flags
  * @param self instance of the regridding object
  * @param fixLonAcrossDateline set this to 1 if a periodicity length (360) should be added/subtracted to nodes in order to make each cell as compact as possible

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MINT: /Users/pletzera/mint-dev2/src/mntRegridEdges.h File Reference</title>
+<title>MINT: /Users/pletzera/mint-master/src/mntRegridEdges.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -111,6 +111,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a25b0237e7a1851454eea8cba1108f6db"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a25b0237e7a1851454eea8cba1108f6db">mnt_regridedges_del</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self)</td></tr>
 <tr class="memdesc:a25b0237e7a1851454eea8cba1108f6db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="mnt_regrid_edges_8h.html#a25b0237e7a1851454eea8cba1108f6db">More...</a><br /></td></tr>
 <tr class="separator:a25b0237e7a1851454eea8cba1108f6db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4924e18ed6c2a3cd815529254e7f0f7c"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a4924e18ed6c2a3cd815529254e7f0f7c">mnt_regridedges_setSrcGrid</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, <a class="el" href="struct_grid__t.html">Grid_t</a> *grid)</td></tr>
+<tr class="memdesc:a4924e18ed6c2a3cd815529254e7f0f7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the source grid.  <a href="mnt_regrid_edges_8h.html#a4924e18ed6c2a3cd815529254e7f0f7c">More...</a><br /></td></tr>
+<tr class="separator:a4924e18ed6c2a3cd815529254e7f0f7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af15da6343a612939e6e26bd64593d9cc"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#af15da6343a612939e6e26bd64593d9cc">mnt_regridedges_setDstGrid</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, <a class="el" href="struct_grid__t.html">Grid_t</a> *grid)</td></tr>
+<tr class="memdesc:af15da6343a612939e6e26bd64593d9cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the destination grid.  <a href="mnt_regrid_edges_8h.html#af15da6343a612939e6e26bd64593d9cc">More...</a><br /></td></tr>
+<tr class="separator:af15da6343a612939e6e26bd64593d9cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae565af756a08f8f1ac5df515d48d5fec"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ae565af756a08f8f1ac5df515d48d5fec">mnt_regridedges_setSrcGridFlags</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int fixLonAcrossDateline, int averageLonAtPole)</td></tr>
 <tr class="memdesc:ae565af756a08f8f1ac5df515d48d5fec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the source grid flags.  <a href="mnt_regrid_edges_8h.html#ae565af756a08f8f1ac5df515d48d5fec">More...</a><br /></td></tr>
 <tr class="separator:ae565af756a08f8f1ac5df515d48d5fec"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1242,6 +1248,44 @@ Supplying the length of the filename string allows one to call this function fro
 
 </div>
 </div>
+<a id="af15da6343a612939e6e26bd64593d9cc" name="af15da6343a612939e6e26bd64593d9cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af15da6343a612939e6e26bd64593d9cc">&#9670;&nbsp;</a></span>mnt_regridedges_setDstGrid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LIBRARY_API int mnt_regridedges_setDstGrid </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_grid__t.html">Grid_t</a> *&#160;</td>
+          <td class="paramname"><em>grid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the destination grid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
+    <tr><td class="paramname">grid</td><td>instance of <a class="el" href="struct_grid__t.html">Grid_t</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code (0 = OK) </dd></dl>
+
+</div>
+</div>
 <a id="a2d5bffef774b78622d203fbe0c09220d" name="a2d5bffef774b78622d203fbe0c09220d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2d5bffef774b78622d203fbe0c09220d">&#9670;&nbsp;</a></span>mnt_regridedges_setDstGridFlags()</h2>
 
@@ -1285,6 +1329,44 @@ Supplying the length of the filename string allows one to call this function fro
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>error code (0 = OK) </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Longitudes are not uniquely defined at the poles </dd></dl>
+
+</div>
+</div>
+<a id="a4924e18ed6c2a3cd815529254e7f0f7c" name="a4924e18ed6c2a3cd815529254e7f0f7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4924e18ed6c2a3cd815529254e7f0f7c">&#9670;&nbsp;</a></span>mnt_regridedges_setSrcGrid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LIBRARY_API int mnt_regridedges_setSrcGrid </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_grid__t.html">Grid_t</a> *&#160;</td>
+          <td class="paramname"><em>grid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the source grid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
+    <tr><td class="paramname">grid</td><td>instance of <a class="el" href="struct_grid__t.html">Grid_t</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>error code (0 = OK) </dd></dl>
 
 </div>
 </div>
