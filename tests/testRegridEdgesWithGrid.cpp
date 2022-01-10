@@ -20,7 +20,7 @@ void test1() {
     ier = mnt_grid_setFlags(&srcGrid, fixLonAcrossDateline, averageLonAtPole, degrees);
     assert(ier == 0);
     // read the grid
-    ier = mnt_grid_load(&srcGrid, "${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc$mesh2d");
+    ier = mnt_grid_loadFromUgrid2D(&srcGrid, "${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc$mesh2d");
     assert(ier == 0);
 
     // destination grid
@@ -33,7 +33,7 @@ void test1() {
     ier = mnt_grid_setFlags(&dstGrid, fixLonAcrossDateline, averageLonAtPole, degrees);
     assert(ier == 0);
     // read the grid
-    ier = mnt_grid_load(&dstGrid, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
+    ier = mnt_grid_loadFromUgrid2D(&dstGrid, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
     assert(ier == 0);
 
     // regridder
@@ -46,11 +46,11 @@ void test1() {
     assert(ier == 0);
     int numCellsPerBucket = 100;
     double periodX = 360.;
-    int enableFolding = 1;
+    int enableFolding = 0;
     ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding);
     assert(ier == 0);
 
-    int debug = 1;
+    int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
     assert(ier == 0);
 

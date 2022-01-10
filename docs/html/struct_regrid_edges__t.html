@@ -77,12 +77,6 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a262293db10f7f3f56046bf53057d1735"><td class="memItemLeft" align="right" valign="top">vtkUnstructuredGrid *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_regrid_edges__t.html#a262293db10f7f3f56046bf53057d1735">srcGrid</a></td></tr>
-<tr class="memdesc:a262293db10f7f3f56046bf53057d1735"><td class="mdescLeft">&#160;</td><td class="mdescRight">pointer to the source VTK unstructured grid  <a href="struct_regrid_edges__t.html#a262293db10f7f3f56046bf53057d1735">More...</a><br /></td></tr>
-<tr class="separator:a262293db10f7f3f56046bf53057d1735"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43e577ceaa23faf49acd714a6411ec20"><td class="memItemLeft" align="right" valign="top">vtkUnstructuredGrid *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_regrid_edges__t.html#a43e577ceaa23faf49acd714a6411ec20">dstGrid</a></td></tr>
-<tr class="memdesc:a43e577ceaa23faf49acd714a6411ec20"><td class="mdescLeft">&#160;</td><td class="mdescRight">pointer to the destination VTK unstructured grid  <a href="struct_regrid_edges__t.html#a43e577ceaa23faf49acd714a6411ec20">More...</a><br /></td></tr>
-<tr class="separator:a43e577ceaa23faf49acd714a6411ec20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa963b852b5c03b050bbf3340423b7eac"><td class="memItemLeft" align="right" valign="top">vmtCellLocator *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_regrid_edges__t.html#aa963b852b5c03b050bbf3340423b7eac">srcLoc</a></td></tr>
 <tr class="memdesc:aa963b852b5c03b050bbf3340423b7eac"><td class="mdescLeft">&#160;</td><td class="mdescRight">cell locator (octree-based) for fast cell search  <a href="struct_regrid_edges__t.html#aa963b852b5c03b050bbf3340423b7eac">More...</a><br /></td></tr>
 <tr class="separator:aa963b852b5c03b050bbf3340423b7eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,6 +140,11 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ade6313d132285c94a7d193e9b3e44889"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_regrid_edges__t.html#ade6313d132285c94a7d193e9b3e44889">startIndices</a></td></tr>
 <tr class="memdesc:ade6313d132285c94a7d193e9b3e44889"><td class="mdescLeft">&#160;</td><td class="mdescRight">start indices for multi-array iterator  <a href="struct_regrid_edges__t.html#ade6313d132285c94a7d193e9b3e44889">More...</a><br /></td></tr>
 <tr class="separator:ade6313d132285c94a7d193e9b3e44889"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe52efd88046d207dd339532d254b941"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_regrid_edges__t.html#abe52efd88046d207dd339532d254b941">srcGridIsOwned</a></td></tr>
+<tr class="memdesc:abe52efd88046d207dd339532d254b941"><td class="mdescLeft">&#160;</td><td class="mdescRight">whether the gridder owns the grids  <a href="struct_regrid_edges__t.html#abe52efd88046d207dd339532d254b941">More...</a><br /></td></tr>
+<tr class="separator:abe52efd88046d207dd339532d254b941"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a931475f08172d9b4cc33d8d422fe360b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_regrid_edges__t.html#a931475f08172d9b4cc33d8d422fe360b">dstGridIsOwned</a></td></tr>
+<tr class="separator:a931475f08172d9b4cc33d8d422fe360b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Edge-centred field regridding. </p>
@@ -199,19 +198,17 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a43e577ceaa23faf49acd714a6411ec20" name="a43e577ceaa23faf49acd714a6411ec20"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43e577ceaa23faf49acd714a6411ec20">&#9670;&nbsp;</a></span>dstGrid</h2>
+<a id="a931475f08172d9b4cc33d8d422fe360b" name="a931475f08172d9b4cc33d8d422fe360b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a931475f08172d9b4cc33d8d422fe360b">&#9670;&nbsp;</a></span>dstGridIsOwned</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">vtkUnstructuredGrid* RegridEdges_t::dstGrid</td>
+          <td class="memname">bool RegridEdges_t::dstGridIsOwned</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>pointer to the destination VTK unstructured grid </p>
 
 </div>
 </div>
@@ -327,19 +324,19 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a262293db10f7f3f56046bf53057d1735" name="a262293db10f7f3f56046bf53057d1735"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a262293db10f7f3f56046bf53057d1735">&#9670;&nbsp;</a></span>srcGrid</h2>
+<a id="abe52efd88046d207dd339532d254b941" name="abe52efd88046d207dd339532d254b941"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe52efd88046d207dd339532d254b941">&#9670;&nbsp;</a></span>srcGridIsOwned</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">vtkUnstructuredGrid* RegridEdges_t::srcGrid</td>
+          <td class="memname">bool RegridEdges_t::srcGridIsOwned</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>pointer to the source VTK unstructured grid </p>
+<p>whether the gridder owns the grids </p>
 
 </div>
 </div>

@@ -25,12 +25,6 @@
 
 struct RegridEdges_t {
 
-    /** pointer to the source VTK unstructured grid */
-    vtkUnstructuredGrid* srcGrid;
-
-    /** pointer to the destination VTK unstructured grid */
-    vtkUnstructuredGrid* dstGrid;
-
     /** cell locator (octree-based) for fast cell search */
     vmtCellLocator* srcLoc;
 
@@ -94,6 +88,9 @@ struct RegridEdges_t {
     /** start indices for multi-array iterator */
     std::vector<std::size_t> startIndices;
 
+    /** whether the gridder owns the grids */
+    bool srcGridIsOwned;
+    bool dstGridIsOwned;
 };
 
 /**
