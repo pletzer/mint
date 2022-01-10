@@ -79,6 +79,30 @@ class RegridEdges(object):
         if ier:
             error_handler(FILE, 'setDstGridFlags', ier)
 
+    def setSrcGrid(self, grid):
+        """
+        Set the source grid
+
+        :param grid: grid
+        """
+        MINTLIB.mnt_regridedges_setSrcGrid.argtypes = [POINTER(c_void_p), c_void_p]
+        ier = MINTLIB.mnt_regridedges_setSrcGrid(self.obj, grid.ptr)
+        if ier:
+            error_handler(FILE, 'setSrcGrid', ier)
+
+
+    def setDstGrid(self, grid):
+        """
+        Set the destination grid
+
+        :param grid: grid
+        """
+        MINTLIB.mnt_regridedges_setDstGrid.argtypes = [POINTER(c_void_p), c_void_p]
+        ier = MINTLIB.mnt_regridedges_setDstGrid(self.obj, grid.ptr)
+        if ier:
+            error_handler(FILE, 'setDstGrid', ier)
+
+
     def loadSrcGrid(self, filename):
         """
         Load a source grid from a 2D UGRID file.
@@ -91,8 +115,6 @@ class RegridEdges(object):
                                                     c_char_p, c_int]
         fn = filename.encode('utf-8')
         ier = MINTLIB.mnt_regridedges_loadSrcGrid(self.obj, fn, len(fn))
-        if ier:
-            error_handler(FILE, 'loadSrcGrid', ier)
 
     def loadDstGrid(self, filename):
         """

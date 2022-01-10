@@ -1,9 +1,31 @@
-from mint import RegridEdges
+from mint import RegridEdges, Grid
 import numpy
 from pathlib import Path
 
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
+
+
+def test_set_grids():
+
+    # create and load src grid
+    sg = Grid()
+    sg.setFlags(0, 0) # lon-lat
+    filename = str(DATA_DIR / Path('lonlatzt_100x50x3x2.nc'))
+    sg.loadFromUgrid2D(f'{filename}$mesh2d')
+
+    # create and load dst grid
+    dg = Grid()
+    dg.setFlags(1, 1) # cubed-sphere
+    filename = str(DATA_DIR / Path('lfric_diag_wind.nc'))
+    dg.loadFromUgrid2D(f'{filename}$Mesh2d')
+
+    # create a regridder
+    rg = RegridEdges()
+    rg.setSrcGrid(sg)
+    rg.setDstGrid(dg)
+    rg.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=True)
+    rg.computeWeights()
 
 
 def test_compute_weights():
