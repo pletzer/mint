@@ -13,7 +13,7 @@ parser.add_argument('-u', dest='velocity_x', default='sin(pi*x/180.)',
 parser.add_argument('-v', dest='velocity_y', default='cos(pi*y/180.)',
                     help='Specify the contravariant velocity component v (deg/time) along latitudes as a function of x (deg. east) and y (deg. north)')
 parser.add_argument('-g', dest='grid_file', default='', 
-                    help='Specify the netcdf file containing the grid geometry/topology and grid name as FILE_NAME:GRID_NAME')
+                    help='Specify the netcdf file containing the grid geometry/topology and grid name as FILE_NAME$GRID_NAME')
 parser.add_argument('-t', dest='time', default=1.0, type=float,
                     help='Specify final time for integrating trajectories upstream')
 parser.add_argument('-o', dest='output_file', default='', 
@@ -25,22 +25,22 @@ parser.add_argument('-C', dest='clip', action='store_true',
 args = parser.parse_args()
 
 if len(args.grid_file) == 0:
-    print('ERROR: must provide grid file (-g)')
+    print(f'ERROR: must provide grid file (-g)')
     sys.exit(1)
 
 if len(args.output_file) == 0:
-    print('ERROR: must provide output file (-o)')
+    print(f'ERROR: must provide output file (-o)')
     sys.exit(2)
 
 if args.output_file == args.grid_file:
-    print('ERROR: output file name must be different from grid file name')
+    print(f'ERROR: output file name {args.grid_file} must be different from grid file name')
     sys.exit(3)
 
-# file_name:grid_name
+# file_name$grid_name
 try:
-    grid_file, grid_var = args.grid_file.split(':')
+    grid_file, grid_var = args.grid_file.split('$')
 except:
-    print('ERROR: argument passed to -g should be in format GRID_FILE:GRID_NAME')
+    print(f'ERROR: argument {args.grid_file} passed to -g should be in format GRID_FILE$GRID_NAME')
     sys.exit(4)
 
 

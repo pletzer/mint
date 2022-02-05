@@ -15,7 +15,7 @@ parser.add_argument('-nt', dest='nt', type=int, default=1,
 parser.add_argument('-n', dest='fieldName', default='edge_integrated_velocity',
                     help='Specify the name of the edge field')
 parser.add_argument('-g', dest='grid_file', default='', 
-                    help='The netcdf file containing the grid geometry/topology and the name of the grid FILE_NAME:GRID_NAME')
+                    help='The netcdf file containing the grid geometry/topology and the name of the grid FILE_NAME$GRID_NAME')
 parser.add_argument('-d', dest='data_file', default='', 
                     help='Specify the netcdf file containing the edge integrated velocity data')
 args = parser.parse_args()
@@ -29,9 +29,9 @@ if len(args.data_file) == 0:
     sys.exit(2)
 
 try:
-    grid_file, grid_var = args.grid_file.split(':')
+    grid_file, grid_var = args.grid_file.split('$')
 except:
-    print('ERROR: could not extract grid name, specify -g FILE_NAME:GRID_NAME')
+    print('ERROR: could not extract grid name, specify -g FILE_NAME$GRID_NAME')
     sys.exit(3)
 
 

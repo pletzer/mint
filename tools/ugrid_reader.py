@@ -31,8 +31,9 @@ class UgridReader(ReaderBase):
 
         super(UgridReader, self).__init__()
         
-        # filename:meshname
-        fname, mname = filename.split(':')
+        # filename$meshname
+        print(f'filename: {filename}')
+        fname, mname = filename.split('$')
         nc = netCDF4.Dataset(fname, 'r')
 
         mesh = nc.variables[mname][:]
@@ -243,7 +244,7 @@ def main():
     from numpy import pi, sin, cos, exp, heaviside, power
 
     parser = argparse.ArgumentParser(description='Read ugrid file')
-    parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file in the form FILENAME:MESHNAME')
+    parser.add_argument('-i', dest='input', default='', help='Specify UGRID input netCDF file in the form FILENAME$MESHNAME')
     parser.add_argument('-r', dest='regularization', action='store_false', help='Disable pole regularization (required for latlon grid)')
     parser.add_argument('-V', dest='vtk_file', default='lonlat.vtk', help='Save grid in VTK file')
     parser.add_argument('-stream', dest='streamFunc', default='', 

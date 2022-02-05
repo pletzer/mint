@@ -22,7 +22,7 @@ DT=1
 cp @CMAKE_SOURCE_DIR@/data/cs_16.nc grid.nc
 
 echo "add edge field from stream function..."
-python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g grid.nc:physics -d input_data.nc \
+python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g 'grid.nc$physics' -d input_data.nc \
        -n edge_integrated_velocity -s $STREAM_FUNC
 if [ $? != 0 ]; then
     echo "ERROR when running generate_edge_field.py"
@@ -33,7 +33,7 @@ cp input_data.nc input_data_initial.nc
 
 # saving the grid in VTK file
 echo "saving grid in VTK file grid.vtk..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i 'grid.nc$physics' -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
@@ -41,15 +41,15 @@ fi
 
 # push the grid upstream grid
 echo "pushing the grid upstream..."
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g 'grid.nc$physics' -o upstream.nc -t $DT
 if [ $? != 0 ]; then
     echo "ERROR when running generate_upstream_grid.py"
     exit 3
 fi
 
 # compute the regridding weights
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
-                                      -d "upstream.nc:physics" -D 1 \
+@CMAKE_BINARY_DIR@/tools/regrid_edges -s 'grid.nc$physics' -S 1 \
+                                      -d 'upstream.nc$physics' -D 1 \
                                       -w weights.nc -N 128 -debug 2 -P 360
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
@@ -65,8 +65,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     ncdump input_data.nc | grep -i nan
 
     # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
-                                          -d upstream.nc:physics -D 1 \
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s 'grid.nc$physics' -S 1 \
+                                          -d 'upstream.nc$physics' -D 1 \
                                           -W weights.nc \
                                           -v edge_integrated_velocity@input_data.nc \
                                           -o upstream_${step}.vtk -O data_${step}.nc
