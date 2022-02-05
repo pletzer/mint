@@ -20,21 +20,21 @@ NSTEPS=5
 DT=1
 
 # generate grid.nc:physics with edge_integrated_velocity 
-python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o grid.nc:physics
+python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o 'grid.nc$physics'
 if [ $? != 0 ]; then
     echo "ERROR when running generate_latlon_ugrid.py"
     exit 1
 fi
 
 # save the grid as a VTK file
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i 'grid.nc$physics' -V grid.vtk
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
 fi
 
 # push the grid upstream grid
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g 'grid.nc$physics' -o upstream.nc -t $DT
 if [ $? != 0 ]; then
     echo "ERROR when running generate_upstream_grid.py"
     exit 3
@@ -46,9 +46,9 @@ for step in $(seq -f "%05g" 1 $NSTEPS); do
     echo "step $step"
     # regrid from current to upstream
     cp data.nc input_data.nc
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 0 \
-                                          -d "upstream.nc:physics" -D 0 \
-                                          -v "edge_integrated_velocity@input_data.nc:physics" \
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s 'grid.nc$physics' -S 0 \
+                                          -d 'upstream.nc$physics' -D 0 \
+                                          -v 'edge_integrated_velocity@input_data.nc$physics' \
                                           -o upstream_${step}.vtk -O data.nc:physics
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
     cp data.nc data_${step}.nc

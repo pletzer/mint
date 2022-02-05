@@ -28,14 +28,14 @@ DT=1
 
 
 echo "generate lat lon grid..."
-python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o "grid.nc:physics"
+python @CMAKE_SOURCE_DIR@/tools/generate_latlon_ugrid.py -nx $NX -ny $NY -s $STREAM_FUNC -o 'grid.nc$physics'
 if [ $? != 0 ]; then
     echo "ERROR when running generate_latlon_ugrid.py"
     exit 1
 fi
 
 echo "push the grid upstream..."
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g "grid.nc:physics" -o upstream.nc -t $DT
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g 'grid.nc$physics' -o upstream.nc -t $DT
 if [ $? != 0 ]; then
     echo "ERROR when running generate_upstream_grid.py"
     exit 2
@@ -43,7 +43,7 @@ fi
 
 # turn off regularization
 echo "save the upstream grid..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i upstream.nc:physics -r -V upstream.vtk -stream $STREAM_FUNC -u $U -v $V
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i 'upstream.nc$physics' -r -V upstream.vtk -stream $STREAM_FUNC -u $U -v $V
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
@@ -52,8 +52,8 @@ fi
 
 # compute the regridding weights, tell the grid it is periodic
 echo "compute the regridding weights"
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s "upstream.nc:physics" -S 0 \
-                                      -d "grid.nc:physics" -D 0 \
+@CMAKE_BINARY_DIR@/tools/regrid_edges -s 'upstream.nc$physics' -S 0 \
+                                      -d 'grid.nc$physics' -D 0 \
                                       -w weights.nc -N 128 -debug 2 #-P 360
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
@@ -62,7 +62,7 @@ fi
 
 # saving the grid in VTK file. NOTE the -r option, which turns off regularization for the lat lon grid
 echo "saving grid in VTK file grid.vtk..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -r -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i 'grid.nc$physics' -r -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 4
@@ -70,7 +70,7 @@ fi
 
 
 echo "generate edge data on upstream grid..."
-python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g upstream.nc:physics -d upstream_data.nc \
+python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g 'upstream.nc$physics' -d upstream_data.nc \
        -n edge_integrated_velocity -s $STREAM_FUNC
 if [ $? != 0 ]; then
     echo "ERROR when running generate_edge_field.py"
@@ -83,8 +83,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS); do
     echo "step $step"
 
     # regrid from upstream to grid
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s upstream.nc:physics -S 0 \
-                                          -d grid.nc:physics -D 0 \
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s 'upstream.nc$physics' -S 0 \
+                                          -d 'grid.nc$physics' -D 0 \
                                           -W weights.nc \
                                           -v edge_integrated_velocity@upstream_data.nc \
                                           -o grid_${step}.vtk -O data_${step}.nc
@@ -95,8 +95,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS); do
 
     # single level
     mv grid_${step}_0.vtk grid_${step}.vtk
-       
-    # convert field saved cell by cell to edge field with unique edge Ids                               
+
+    # convert field saved cell by cell to edge field with unique edge Ids                
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i grid_${step}.vtk -v edge_integrated_velocity -o edge_${step}.vtk
     if [ $? != 0 ]; then
         echo "ERROR when converting cell-by-cell field to edge field with unique edge Ids"

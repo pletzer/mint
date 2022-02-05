@@ -25,9 +25,9 @@ if not args.grid_file:
     print("ERROR: must specify grid file (-o)")
     sys.exit(1)
 try:
-    grid_file, mesh_name = args.grid_file.split(':')
+    grid_file, mesh_name = args.grid_file.split('$')
 except:
-    print("ERROR: grid file must be in the form 'FILENAME:MESHNAME'")
+    print(f"ERROR: grid file {args.grid_file} must be in the form 'FILENAME$MESHNAME'")
     sys.exit(2)
 
 

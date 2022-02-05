@@ -11,7 +11,9 @@ export LD_LIBRARY_PATH=$VTK_DIR/../..
 #V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
 #
 # Bump stream function. The stream function here does not correspond to the u, v field
-STREAM_FUNC="sin(pi*(x-155.)/(167.-155.))*(heaviside(y+27.,1.)-heaviside(y-63.,1.))*(heaviside(x-155.,1.)-heaviside(x-167.,1.))/(167.-155.)"
+X0="155."
+X1="167."
+STREAM_FUNC="sin(pi*(x-$X0)/(${X1}-${X0}))*(heaviside(y+27.,1.)-heaviside(y-63.,1.))*(heaviside(x-$X0,1.)-heaviside(x-$X1,1.))/(${X1}-${X0})"
 U="(100*2*pi/180)*cos(pi*y/180)*sin(pi*y/180)*sin(2*pi*x/360)**2"
 V="(100*pi/360)*cos(pi*y/180)**2*cos(2*pi*x/360)*sin(2*pi*x/360)"
 NSTEPS="100"
@@ -77,8 +79,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
 
     ncdump data_${step}.nc | grep -i nan
     mv upstream_${step}_0.vtk upstream_${step}.vtk
-       
-    # convert field saved cell by cell to edge field with unique edge Ids                               
+
+    # convert field saved cell by cell to edge field with unique edge Ids
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
     if [ $? != 0 ]; then
         echo "ERROR when converting cell-by-cell field to edge field with unique edge Ids"
