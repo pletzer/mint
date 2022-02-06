@@ -80,7 +80,7 @@ linux_task:
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=ON -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
-    - make
+    - make VERBOSE=1
     - ctest
 
 
