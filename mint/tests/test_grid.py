@@ -20,6 +20,10 @@ def test_create_grid():
                           (2., 1., 0.),
                           (1., 1., 0.)]).reshape((2, 4, 3))
     gr.setPoints(points)
+
+    # expected because we set the grid with setPoints
+    assert gr.getNumberOfEdges() == 0
+
     with TemporaryDirectory() as d:
         fname = str(Path(d) / Path('grid.vtk'))
         gr.dump(fname)
