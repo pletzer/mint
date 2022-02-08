@@ -224,10 +224,10 @@ class Grid(object):
         ier = MINTLIB.mnt_grid_getNumberOfEdges(self.obj, byref(n))
         if ier:
             error_handler(FILE, 'getNumberOfEdges', ier)
-        elif n <= 0:
+        elif n.value <= 0:
             msg = f'''A number of unique edges ({n}) is expected if the grid was not loaded from UGRID,
 for instance if you set the grid points cell by cell using the setPoints method'''
-            warning_handler(FILE, 'getNumberOfEdges', ier, detailedfmsg=msg)
+            warning_handler(FILE, 'getNumberOfEdges', ier, detailedmsg=msg)
         return n.value
 
     def check(self):
