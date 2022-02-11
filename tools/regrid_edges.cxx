@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
     args.set("-D", 1, "Set to zero to disable destination grid regularization, -D 0 is required for uniform lon-lat grid");
     args.set("-N", 128, "Average number of cells per bucket");
     args.set("-debug", 1, "0=no checks, 1=print outside segments, 2=save outside segments");
-    args.set("-verbose", false, "Turn on verbosity");
+    args.set("-verbose", false, "Turn on verbosity, will print log messages");
 
     bool success = args.parse(argc, argv);
     bool help = args.get<bool>("-h");
@@ -274,7 +274,8 @@ int main(int argc, char** argv) {
     if (loadWeightsFile.size() == 0) {
 
         // compute the weights
-        std::cout << "info: computing weights\n";
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "building the cell locator");
         ier = mnt_regridedges_buildLocator(&rg, args.get<int>("-N"), 
                                            args.get<double>("-P"),
                                            args.get<int>("-F"));
@@ -282,7 +283,8 @@ int main(int argc, char** argv) {
             return finalize(6, args.get<bool>("-verbose"));
         }
     
-        std::cout << "info: computing weights\n";
+        mntlog::info(__FILE__, __func__, __LINE__, 
+            "computing the weights");
         ier = mnt_regridedges_computeWeights(&rg, args.get<int>("-debug"));
         if (ier != 0) {
             return finalize(6, args.get<bool>("-verbose"));
