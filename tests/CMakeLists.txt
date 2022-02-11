@@ -378,7 +378,7 @@ add_test(NAME regridedges_latlon4x2_to_lfric
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges" "-debug" "2" "-P" "360."
             "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
             "-d" "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d" "-D" "1"
-            "-w" "regridedges_latlon4x2_to_lfric_weights.nc"
+            "-w" "regridedges_latlon4x2_to_lfric_weights.nc" "-verbose"
          )
 
 add_test(NAME regridedges_field_lfric_diag
@@ -387,7 +387,8 @@ add_test(NAME regridedges_field_lfric_diag
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "edge_field@${CMAKE_SOURCE_DIR}/data/edge_field_lfric_diag_ex.nc"
             "-O" "regridedges_field_lfric_diag_ex.nc"
-            "-o" "regridedges_field_lfric_diag_ex.vtk")
+            "-o" "regridedges_field_lfric_diag_ex.vtk"
+             "-verbose")
 set_tests_properties(regridedges_field_lfric_diag PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-0[8-9]")
 
@@ -397,7 +398,8 @@ add_test(NAME regridedges_xyzt
             "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc$physics" "-D" "1"
             "-v" "u@${CMAKE_SOURCE_DIR}/data/lonlatzt_8x4x3x2.nc"
             "-O" "regridedges_xyzt.nc"
-            "-o" "regridedges_xyzt.vtk")
+            "-o" "regridedges_xyzt.vtk"
+             "-verbose")
 set_tests_properties(regridedges_xyzt PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
@@ -407,7 +409,8 @@ add_test(NAME regridedges_xyzt2
             "-d" "${CMAKE_SOURCE_DIR}/data/c24_u_integrated.nc$physics" "-D" "1"
             "-v" "u@${CMAKE_SOURCE_DIR}/data/lonlatzt_100x50x3x2.nc"
             "-O" "regridedges_xyzt2.nc"
-            "-o" "regridedges_xyzt2.vtk")
+            "-o" "regridedges_xyzt2.vtk"
+            "-verbose")
 set_tests_properties(regridedges_xyzt2 PROPERTIES
                      PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
 
@@ -417,7 +420,8 @@ add_test(NAME regridedges_axes
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
             "-v" "u1@${CMAKE_SOURCE_DIR}/data/lfric_diag_ex.nc"
             "-O" "regridedges_axes.nc"
-            "-o" "regridedges_axes.vtk")
+            "-o" "regridedges_axes.vtk"
+            "-verbose")
 # we do not expect conservation
 #set_tests_properties(regridedges_axes PROPERTIES
 #                     PASS_REGULAR_EXPRESSION "Min/avg/max cell loop integrals: [^/]*/[^/]*/[^e]+e-1[0-9]")
@@ -436,7 +440,8 @@ add_test(NAME regridedges_1
          COMMAND "${CMAKE_BINARY_DIR}/tools/regrid_edges"
             "-s" "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon" "-S" "0"
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" "-D" "1"
-            "-w" "regridedges_1_weights.nc")
+            "-w" "regridedges_1_weights.nc"
+            "-verbose")
 set_tests_properties(regridedges_1 PROPERTIES
                      PASS_REGULAR_EXPRESSION "info: saving weights in file")
 
@@ -529,7 +534,8 @@ add_test(NAME regrid_upstream
                  "-s" "${CMAKE_SOURCE_DIR}/data/grid_cs.nc$unit_test" "-S" "1"
                  "-d" "${CMAKE_SOURCE_DIR}/data/upstream_grid_cs.nc$unit_test" "-D" "1"
                  "-N" "128" "-P" "360"
-                 "-debug" "2")
+                 "-debug" "2"
+                 "-verbose")
 set_tests_properties(regrid_upstream PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: \\[32\\] total t of segment")
 

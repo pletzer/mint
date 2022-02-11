@@ -11,7 +11,9 @@ export LD_LIBRARY_PATH=$VTK_DIR/../..
 #V="1*(cos(pi*(x-y)/360.)+cos(pi*(x+y)/360.))"
 #
 # Bump stream function. The stream function here does not correspond to the u, v field
-STREAM_FUNC="sin(pi*(x-155.)/(167.-155.))*(heaviside(y+27.,1.)-heaviside(y-63.,1.))*(heaviside(x-155.,1.)-heaviside(x-167.,1.))/(167.-155.)"
+X0="155."
+X1="167."
+STREAM_FUNC="sin(pi*(x-$X0)/(${X1}-${X0}))*(heaviside(y+27.,1.)-heaviside(y-63.,1.))*(heaviside(x-$X0,1.)-heaviside(x-$X1,1.))/(${X1}-${X0})"
 U="(100*2*pi/180)*cos(pi*y/180)*sin(pi*y/180)*sin(2*pi*x/360)**2"
 V="(100*pi/360)*cos(pi*y/180)**2*cos(2*pi*x/360)*sin(2*pi*x/360)"
 NSTEPS="100"
@@ -22,7 +24,7 @@ DT=1
 cp @CMAKE_SOURCE_DIR@/data/cs_16.nc grid.nc
 
 echo "add edge field from stream function..."
-python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g grid.nc:physics -d input_data.nc \
+python @CMAKE_SOURCE_DIR@/tools/generate_edge_field.py -g 'grid.nc$physics' -d input_data.nc \
        -n edge_integrated_velocity -s $STREAM_FUNC
 if [ $? != 0 ]; then
     echo "ERROR when running generate_edge_field.py"
@@ -33,7 +35,7 @@ cp input_data.nc input_data_initial.nc
 
 # saving the grid in VTK file
 echo "saving grid in VTK file grid.vtk..."
-python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i grid.nc:physics -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
+python @CMAKE_SOURCE_DIR@/tools/ugrid_reader.py -i 'grid.nc$physics' -V grid.vtk -stream $STREAM_FUNC -u "$U" -v "$V"
 if [ $? != 0 ]; then
     echo "ERROR when running ugrid_reader.py"
     exit 2
@@ -41,15 +43,15 @@ fi
 
 # push the grid upstream grid
 echo "pushing the grid upstream..."
-python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g grid.nc:physics -o upstream.nc -t $DT
+python @CMAKE_SOURCE_DIR@/tools/generate_upstream_grid.py -u $U -v $V -g 'grid.nc$physics' -o upstream.nc -t $DT
 if [ $? != 0 ]; then
     echo "ERROR when running generate_upstream_grid.py"
     exit 3
 fi
 
 # compute the regridding weights
-@CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
-                                      -d "upstream.nc:physics" -D 1 \
+@CMAKE_BINARY_DIR@/tools/regrid_edges -s 'grid.nc$physics' -S 1 \
+                                      -d 'upstream.nc$physics' -D 1 \
                                       -w weights.nc -N 128 -debug 2 -P 360
 if [ $? != 0 ]; then
     echo "ERROR when computing the regridding weights"
@@ -65,8 +67,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
     ncdump input_data.nc | grep -i nan
 
     # regrid from current to upstream
-    @CMAKE_BINARY_DIR@/tools/regrid_edges -s grid.nc:physics -S 1 \
-                                          -d upstream.nc:physics -D 1 \
+    @CMAKE_BINARY_DIR@/tools/regrid_edges -s 'grid.nc$physics' -S 1 \
+                                          -d 'upstream.nc$physics' -D 1 \
                                           -W weights.nc \
                                           -v edge_integrated_velocity@input_data.nc \
                                           -o upstream_${step}.vtk -O data_${step}.nc
@@ -77,8 +79,8 @@ for step in $(seq -f "%05g" 0 $NSTEPS1); do
 
     ncdump data_${step}.nc | grep -i nan
     mv upstream_${step}_0.vtk upstream_${step}.vtk
-       
-    # convert field saved cell by cell to edge field with unique edge Ids                               
+
+    # convert field saved cell by cell to edge field with unique edge Ids
     python @CMAKE_SOURCE_DIR@/tools/cellByCell2Edges.py -i upstream_${step}.vtk -v edge_integrated_velocity -o edge_upstream_${step}.vtk
     if [ $? != 0 ]; then
         echo "ERROR when converting cell-by-cell field to edge field with unique edge Ids"
