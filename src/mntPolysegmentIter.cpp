@@ -230,15 +230,9 @@ PolysegmentIter::__makePeriodic(Vec3& v) {
         double xmin = this->grid->GetBounds()[0];
         double xmax = this->grid->GetBounds()[1];
         if (v[0] < xmin) {
-            msg = "adding x periodicity length " + std::to_string(periodX) +
-                         " to point " + std::to_string(v[0]) + "," + std::to_string(v[1]) + "," + std::to_string(v[2]);
-            mntlog::info(__FILE__, __func__, __LINE__, msg);
             v[0] += periodX;
         }
         else if (v[0] > xmax) {
-            msg = "subtracting x periodicity length " + std::to_string(periodX) + 
-                         " from point " + std::to_string(v[0]) + "," + std::to_string(v[1]) + "," + std::to_string(v[2]);
-            mntlog::info(__FILE__, __func__, __LINE__, msg);
             v[0] -= periodX;
         }
     }
