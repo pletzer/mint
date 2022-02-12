@@ -114,6 +114,23 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'setPointsPtr', ier)
 
+    def getPoints(self):
+        """
+        Get a view of the points (vertices) array of the cell-by-cell mesh.
+
+        :return numpy contiguous array of shape (ncells,
+                      num_verts_per_cell, 3)
+        """
+        MINTLIB.mnt_grid_getPointsPtr.argtypes = [POINTER(c_void_p), POINTER(POINTER(c_double))]
+
+        pointsPtr = POINTER(c_double)()
+        ier = MINTLIB.mnt_grid_getPointsPtr(self.obj, byref(pointsPtr))
+        if ier:
+            error_handler(FILE, 'getPointsPtr', ier)
+        # create a numpy array from a C pointer\
+        ncells = self.getNumberOfCells()
+        return numpy.ctypeslib.as_array(pointsPtr, shape=(ncells, 4, 3))
+
     def getEdgeId(self, cellId, edgeIndex):
         """
         Get the edge Id and direction of a cellId, edgeIndex pair.
