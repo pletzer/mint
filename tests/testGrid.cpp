@@ -23,6 +23,18 @@ void testLFRic() {
     std::size_t numBadCells = 0;
     ier = mnt_grid_check(&grd, &numBadCells);
     assert(numBadCells == 0);
+    double* verts;
+    ier = mnt_grid_getPointsPtr(&grd, &verts);
+    assert(ier == 0);
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grd, &numCells);
+    for (auto cellId = 0; cellId < numCells; ++cellId) {
+        for (auto vIndex = 0; vIndex < 4; ++vIndex) {
+            auto k = 3*(cellId*4 + vIndex);
+            std::cout << "testLFRic: cell " << cellId << " node " << vIndex << " coords " << 
+                         verts[k + 0] << ',' << verts[k + 1] << ',' << verts[k + 2] << '\n';
+        }
+    }
     ier = mnt_grid_del(&grd);
     assert(ier == 0);
     mnt_printLogMessages();

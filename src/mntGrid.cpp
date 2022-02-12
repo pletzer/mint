@@ -131,6 +131,18 @@ int mnt_grid_setPointsPtr(Grid_t** self, double points[]) {
 }
 
 LIBRARY_API
+int mnt_grid_getPointsPtr(Grid_t** self, double** pointsPtr) {
+
+    if ((*self)->verts) {
+        *pointsPtr = (*self)->verts;
+    }
+    else {
+        return 1; // the points have not been set
+    }
+    return 0;
+}
+
+LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
     (*self)->pointData = vtkDoubleArray::New();

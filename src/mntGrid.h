@@ -103,6 +103,18 @@ LIBRARY_API
 int mnt_grid_setPointsPtr(Grid_t** self, double points[]);
 
 /**
+ * Get the pointer to the array of points
+ * @param self instance of Grid_t
+ * @param points pointer to the flat array of size 4*ncells*3 (4 points per cell, each point has three coordinates) 
+ *               holding the vertex coordinates
+ * @return error code (0 = OK)
+ * @see mnt_grid_setPointsPtr
+ */
+LIBRARY_API
+int mnt_grid_getPointsPtr(Grid_t** self, double** points);
+
+
+/**
  * Build the grid and connectivity
  * @param self instance of Grid_t
  * @param nVertsPerCell number of vertices per cell
