@@ -4,6 +4,14 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
+VORTEX_CENTRE = numpy.array([10., 20., 0.])
+VORTEX_SIG = 30.0
+
+def vortexFunc(point):
+	dx = point - VORTEX_CENTRE
+	# gaussian bump
+	return numpy.exp( -dx.dot(dx)/(2.*VORTEX_SIG*VORTEX_SIG))
+
 
 def test_1():
 
@@ -25,8 +33,37 @@ def test_1():
 	regridder.buildLocator(numCellsPerBucket=128, periodX=360.0, enableFolding=0)
 	regridder.computeWeights(debug=2)
 
+	# get the cell-by-cell points
+	spoints = sgrid.getPoints()
 
+	# create src data
+	numSrcCells = sgrid.getNumberOfCells()
+	sdata = numpy.zeros((numSrcCells, 4), numpy.float64)
 
+	# allocate dst data array
+	numDstCells = dgrid.getNumberOfCells()
+	ddata = numpy.zeros((numDstCells, 4), numpy.float64)
+
+	for icell in range(numSrcCells):
+		# get the mid point of the cell
+		midPoint = spoints[icell, :, :].mean(axis=0)
+		# get the vortex strength for this cell
+		vortexStrength = vortexFunc(midPoint)
+		# iterate over the vertices of the cell,
+		# i0 is the first point of the edge
+		for i0 in range(4):
+			# i1 is the second point of the edge in
+			# anticlockwise direction
+			i1 = (i0 + 1) % 4
+			# our convention is to have the edges pointing in the
+			# positive parametric direction, the last two edges
+			# have the wrong sign
+			sign = 1 - 2*(i0 // 2)
+			# associate the same vorticity to each edge
+			sdata[icell, i0] = sign * 0.25*vortexStrength
+
+	# apply the weights
+	regridder.apply(sdata, ddata)
 
 
 if __name__ == '__main__':
