@@ -1,6 +1,6 @@
 from ctypes import (c_void_p, c_int, byref, POINTER,
                     c_double, c_size_t)
-from . import MINTLIB
+from . import MINTLIB, UNIQUE_EDGE_DATA, CELL_BY_CELL_DATA
 from . import error_handler, warning_handler
 import numpy
 
@@ -66,7 +66,7 @@ class VectorInterp(object):
             enableFoldingInt = 1
 
         MINTLIB.mnt_vectorinterp_buildLocator.argtypes = [POINTER(c_void_p),
-                                                      c_int, c_double, c_int]
+                                                          c_int, c_double, c_int]
         ier = MINTLIB.mnt_vectorinterp_buildLocator(self.obj,
                                                     numCellsPerBucket, periodX, enableFoldingInt)
         if ier:
@@ -98,7 +98,7 @@ class VectorInterp(object):
                                                  targetPoints, tol2)
         return numBad
 
-    def getEdgeVectors(self, data, placement):
+    def getEdgeVectors(self, data, placement=UNIQUE_EDGE_DATA):
         """
         Get the edge vectors at given target points.
 
@@ -106,21 +106,20 @@ class VectorInterp(object):
                      of the line integrals must be consistent with the coordinates
                      units (typically degrees). For instance, a velocity field
                      in degrees/time expects a line integral in degrees^2/time.
-        :param placement: 0 if data are cell by cell (size num cells * 4),
-                          assume unique edge Id data otherwise (size num
-                          edges)
+        :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell (size num cells * 4),
+                          assume unique edge Id data otherwise (size num edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
 
-        # check data size
+        # check the data size
         n = numpy.prod(data.shape)
-        if placement == 0 and n != self.numGridCells * 4:
+        if placement == CELL_BY_CELL_DATA and n != self.numGridCells * 4:
             msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
             ier = 10
             error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
             return
-        elif placement != 0 and n != self.numGridEdges:
+        elif placement != CELL_BY_CELL_DATA and n != self.numGridEdges:
             msg = f"data has wrong size (= {n}), num edges = {self.numGridEdges}"
             ier = 11
             error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
@@ -140,7 +139,7 @@ class VectorInterp(object):
                             detailedmsg=msg)
         return res
 
-    def getFaceVectors(self, data, placement):
+    def getFaceVectors(self, data, placement=UNIQUE_EDGE_DATA):
         """
         Get the lateral face vectors at given target points.
 
@@ -148,21 +147,20 @@ class VectorInterp(object):
                      should be compatible with the coordinates units
                      (typically degrees). For instance, a velocity field
                      in degrees/time expects a flux in degrees^2/time.
-        :param placement: 0 if data are cell by cell (size num cells * 4),
-                          assume unique edge Id data otherwise (size num
-                          edges)
+        :param placement: mint.CELL_BY_CELL_DATA if data are cell by cell (size num cells * 4),
+                          assume unique edge Id data otherwise (size num edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
 
         # check data size
         n = numpy.prod(data.shape)
-        if placement == 0 and n != self.numGridCells * 4:
+        if placement == CELL_BY_CELL_DATA and n != self.numGridCells * 4:
             msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
             ier = 10
             error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
             return
-        elif placement != 0 and n != self.numGridEdges:
+        elif placement != CELL_BY_CELL_DATA and n != self.numGridEdges:
             msg = f"data has wrong size (= {n}), num edges = {self.numGridEdges}"
             ier = 11
             error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)

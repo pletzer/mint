@@ -63,7 +63,7 @@ def test_1():
 			sdata[icell, i0] = sign * 0.25*vortexStrength
 
 	# apply the weights
-	regridder.apply(sdata, ddata)
+	regridder.apply(sdata, ddata, placement=mint.CELL_BY_CELL_DATA)
 
 	# attach fields to the src and dst grids
 	sgrid.attach('vorticity', sdata[:, 0] + sdata[:, 1] - sdata[:, 2] - sdata[:, 3])
