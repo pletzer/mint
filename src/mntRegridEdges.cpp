@@ -743,10 +743,8 @@ int mnt_regridedges_applyToCellByCellData(RegridEdges_t** self,
     mnt_regridedges_getNumDstCells(self, &numDstCells);
 
     // initialize to zero
-    for (std::size_t icell = 0; icell < numDstCells; ++icell) {
-        for (auto ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
-            dst_data[icell*MNT_NUM_EDGES_PER_QUAD + ie] = 0;
-        }
+    for (std::size_t i = 0; i < numDstCells * (std::size_t) MNT_NUM_EDGES_PER_QUAD; ++i) {
+        dst_data[i] = 0.0;
     }
 
     for (std::size_t i = 0; i < (*self)->weights.size(); ++i) {
@@ -758,6 +756,7 @@ int mnt_regridedges_applyToCellByCellData(RegridEdges_t** self,
 
         std::size_t srcIdx = srcCellId*MNT_NUM_EDGES_PER_QUAD + srcEdgeIndex;
         std::size_t dstIdx = dstCellId*MNT_NUM_EDGES_PER_QUAD + dstEdgeIndex;
+
         dst_data[dstIdx] += weight * src_data[srcIdx];
     }
 
