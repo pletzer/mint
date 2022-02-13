@@ -49,29 +49,35 @@ int main() {
     // edges point in the positive direction
     //
     //     3
-    //  4--<---3
+    //  o--<---o
     //  |      |
     //4 ^      V 2
     //  |      |
-    //  1-->---2
+    //  o-->---o
     //     1
-    double srcData[] = {1., -2., -1., 2.};
+    double srcData[] = {1., -2., -3., 4.};
     double dstData[4];
 
-    int placement = 1; // data with unique edge Ids
-    ier = mnt_regridedges_apply(&rg, srcData, dstData, placement);
+    ier = mnt_regridedges_apply(&rg, srcData, dstData, MNT_UNIQUE_EDGE_DATA);
+    assert(ier == 0);
+
+    double srcCellByCellData[] = {1., -2., -3., 4.};
+    double dstCellByCellData[4];
+
+    ier = mnt_regridedges_apply(&rg, srcCellByCellData, dstCellByCellData, MNT_CELL_BY_CELL_DATA);
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
 
     for (size_t i = 0; i < 4; ++i) {
-        std::cout << "src edge " << i << " data value " << srcData[i] << '\n';
+        std::cout << "src edge " << i << " data value " << srcData[i] << ' ' << srcCellByCellData[i] << '\n';
     }
     for (size_t i = 0; i < 4; ++i) {
-        std::cout << "dst edge " << i << " data value " << dstData[i] << '\n';
+        std::cout << "dst edge " << i << " data value " << dstData[i] << ' ' << dstCellByCellData[i] << '\n';
         // expect the same value as srcData
         assert(std::abs(dstData[i] - srcData[i]) < 1.e-12);
+        assert(std::abs(dstData[i] - dstCellByCellData[i]) < 1.e-12);
     }
 
 }

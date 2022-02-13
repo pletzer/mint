@@ -89,7 +89,7 @@ void test1() {
         ier = mnt_regridedges_loadSrcSlice(&rg, &srcData[0]);
         assert(ier == 0);
 
-        int placement = 1; // data with unique edge Ids
+        int placement = MNT_UNIQUE_EDGE_DATA;
         ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0], placement);
         assert(ier == 0);
 
@@ -181,7 +181,7 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
     std::vector<double> dstData(numDstEdges);
 
     // regrid
-    int placement = 1; // data with unique edge Ids
+    int placement = MNT_UNIQUE_EDGE_DATA;
     ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0], placement);
     assert(ier == 0);
 
