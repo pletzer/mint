@@ -195,23 +195,28 @@ class Grid(object):
             error_handler(FILE, 'getEdgeArcLength', ier)
         return res.value
 
-    def attach(self, varname, data):
+    def attach(self, varname, data, copy=True):
         """
         Attach data to the grid.
 
         :param varname: field name
-        :param data: numpy array of size (ncells, nDataPerCell)
+        :param data: numpy array of size (ncells, :)
+        :param copy: set to False if you do not want the data to be copied
         """
         nDataPerCell = 1
         if len(data.shape) > 1:
             nDataPerCell = data.shape[-1]
         MINTLIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int,
-                                        DOUBLE_ARRAY_PTR]
-        # make a copy to ensure that the data exist during the life of
-        # this instance
-        self.data[varname] = data.copy()
-        ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
-                                  nDataPerCell, self.data[varname])
+                                            DOUBLE_ARRAY_PTR]
+        if copy:
+            # make a copy to ensure that the data exist during the life of
+            # this instance
+            self.data[varname] = data.copy()
+            ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
+                                          nDataPerCell, self.data[varname])
+        else:
+            ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
+                                          nDataPerCell, data)
         if ier:
             error_handler(FILE, 'attach', ier)
 

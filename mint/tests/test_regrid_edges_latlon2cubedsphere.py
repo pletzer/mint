@@ -65,6 +65,15 @@ def test_1():
 	# apply the weights
 	regridder.apply(sdata, ddata)
 
+	# attach fields to the src and dst grids
+	sgrid.attach('vorticity', sdata[:, 0] + sdata[:, 1] - sdata[:, 2] - sdata[:, 3])
+	dgrid.attach('vorticity', ddata[:, 0] + ddata[:, 1] - ddata[:, 2] - ddata[:, 3])
+
+	# save the grids and fields to VTK files
+	sgrid.dump('sgrid.vtk')
+	dgrid.dump('dgrid.vtk')
+
+	mint.writeLogMessages('test_regrid_edges_latlon2cubedsphere.log')
 
 if __name__ == '__main__':
 	test_1()

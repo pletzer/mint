@@ -58,7 +58,8 @@ int main() {
     double srcData[] = {1., -2., -1., 2.};
     double dstData[4];
 
-    ier = mnt_regridedges_apply(&rg, srcData, dstData);
+    int placement = 1; // data with unique edge Ids
+    ier = mnt_regridedges_apply(&rg, srcData, dstData, placement);
     assert(ier == 0);
 
     ier = mnt_regridedges_del(&rg);

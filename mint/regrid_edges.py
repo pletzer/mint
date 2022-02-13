@@ -228,9 +228,9 @@ class RegridEdges(object):
         Apply the regridding weights to an edge field with unique edge Ids
 
         :param srcdata: contiguous arrays of source field data, dimensioned
-                        number of source grid edges
+                        number of source grid, unique edges
         :param dstdata: contiguous arrays of destination field data (output),
-                        dimensioned number of destination grid edges
+                        dimensioned number of destination, unique grid edges
         """
         MINTLIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p),
                                               DOUBLE_ARRAY_PTR,
