@@ -80,6 +80,7 @@ $(function() {
 <code>#include &lt;map&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vtkUnstructuredGrid.h&gt;</code><br />
+<code>#include &lt;mntGlobal.h&gt;</code><br />
 <code>#include &lt;vmtCellLocator.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="mnt_grid_8h_source.html">mntGrid.h</a>&gt;</code><br />
 <code>#include &lt;mntQuadEdgeIter.h&gt;</code><br />
@@ -261,7 +262,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
     <tr><td class="paramname">src_data</td><td>edge centred data on the source grid (input) </td></tr>
     <tr><td class="paramname">dst_data</td><td>edge centred data on the destination grid (output) </td></tr>
-    <tr><td class="paramname">placement</td><td>0 for cell by cell data, 1 for unique edge data </td></tr>
+    <tr><td class="paramname">placement</td><td>MNT_CELL_BY_CELL_DATA for cell by cell data, MNT_UNIQUE_EDGE_DATA for unique edge data </td></tr>
   </table>
   </dd>
 </dl>

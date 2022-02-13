@@ -1,4 +1,5 @@
 #include "mntLIBRARY_API.h"
+#include <mntGlobal.h>
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntVecN.h>
@@ -154,7 +155,7 @@ int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
  * @param self instance of VectorInterp_t
  * @param data edge data
  * @param vectors array of output vectors, size numPoints*3
- * @param placement 0 if data are cell by cell (size num cells * 4),
+ * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell (size num cells * 4),
  *                  data are assumed to be on unique edges 
  *                  otherwise (size num edges)
  * @return error code (0 = OK)
@@ -172,7 +173,7 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
  * @param self instance of VectorInterp_t
  * @param data edge data
  * @param vectors array of output vectors, size numPoints*3
- * @param placement 0 if data are cell by cell (size num cells * 4),
+ * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell (size num cells * 4),
  *                  data are assumed to be on unique edges 
  *                  otherwise (size num edges)
  * @return error code (0 = OK)

@@ -401,7 +401,7 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
                                     double vectors[],
                                     int placement) {
     int ier;
-    if (placement == 0) {
+    if (placement == MNT_CELL_BY_CELL_DATA) {
         ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(self, data, vectors);
     }
     else {
@@ -415,7 +415,7 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     double vectors[],
                                     int placement) {
     int ier;
-    if (placement == 0) {
+    if (placement == MNT_CELL_BY_CELL_DATA) {
         ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(self, data, vectors);
     }
     else {

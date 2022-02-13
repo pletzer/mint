@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vtkUnstructuredGrid.h>
+#include <mntGlobal.h>
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
@@ -365,7 +366,7 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* n);
  * @param self instance of the regridding object
  * @param src_data edge centred data on the source grid (input)
  * @param dst_data edge centred data on the destination grid (output)
- * @param placement 0 for cell by cell data, 1 for unique edge data
+ * @param placement MNT_CELL_BY_CELL_DATA for cell by cell data, MNT_UNIQUE_EDGE_DATA for unique edge data
  * @return error code (0 is OK)
  */
 LIBRARY_API

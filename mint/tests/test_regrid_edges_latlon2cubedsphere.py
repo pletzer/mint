@@ -13,6 +13,11 @@ def vortexFunc(point):
 	return numpy.exp( -dx.dot(dx)/(2.*VORTEX_SIG*VORTEX_SIG))
 
 
+def streamFunc(point):
+	x, y, _ = point
+	return numpy.sin(x*numpy.pi/180.)*numpy.cos(y*numpy.pi/180.)
+
+
 def test_1():
 
 	# source grid
@@ -55,12 +60,14 @@ def test_1():
 			# i1 is the second point of the edge in
 			# anticlockwise direction
 			i1 = (i0 + 1) % 4
+			p0 = spoints[icell, i0, :]
+			p1 = spoints[icell, i1, :]
 			# our convention is to have the edges pointing in the
 			# positive parametric direction, the last two edges
 			# have the wrong sign
 			sign = 1 - 2*(i0 // 2)
 			# associate the same vorticity to each edge
-			sdata[icell, i0] = sign * 0.25*vortexStrength
+			sdata[icell, i0] = sign * (streamFunc(p1) - streamFunc(p0)) #0.25*vortexStrength
 
 	# apply the weights
 	regridder.apply(sdata, ddata, placement=mint.CELL_BY_CELL_DATA)

@@ -1,0 +1,7 @@
+#ifndef MNT_GLOBAL
+#define MNT_GLOBAL
+
+#define MNT_CELL_BY_CELL_DATA 0
+#define MNT_UNIQUE_EDGE_DATA 1
+
+#endif // MNT_GLOBAL

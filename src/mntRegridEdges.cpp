@@ -830,7 +830,7 @@ int mnt_regridedges_applyToUniqueEdgeData(RegridEdges_t** self,
 LIBRARY_API
 int mnt_regridedges_apply(RegridEdges_t** self, 
                           const double src_data[], double dst_data[], int placement) {
-    if (placement == 0) {
+    if (placement == MNT_CELL_BY_CELL_DATA) {
         return mnt_regridedges_applyToCellByCellData(self, src_data, dst_data);
     }
     else {
