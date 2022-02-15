@@ -77,7 +77,7 @@ int main() {
         std::cout << "dst edge " << i << " data value " << dstData[i] << ' ' << dstCellByCellData[i] << '\n';
         // expect the same value as srcData
         assert(std::abs(dstData[i] - srcData[i]) < 1.e-12);
-        assert(std::abs(dstData[i] - dstCellByCellData[i]) < 1.e-12);
+        assert(std::abs(srcCellByCellData[i] - dstCellByCellData[i]) < 1.e-12);
     }
 
 }
