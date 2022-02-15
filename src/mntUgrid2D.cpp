@@ -31,10 +31,10 @@ std::vector<Vec3>
 Ugrid2D::getFacePoints(std::size_t faceId) const {
 
     const std::size_t* pointIds = this->getFacePointIds(faceId);
-    std::vector<Vec3> res(4); // 2d 4 points per quad
+    std::vector<Vec3> res(MNT_NUM_VERTS_PER_QUAD);
 
-    // iterate over the 4 points
-    for (std::size_t i = 0; i < 4; ++i) {
+    // iterate over the points
+    for (std::size_t i = 0; i < MNT_NUM_VERTS_PER_QUAD; ++i) {
         const double* p = this->getPoint(pointIds[i]);
         res[i] = Vec3(p);
     }
@@ -134,9 +134,9 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     }
 
     std::size_t n = this->face2Points.size();
-    this->numFaces = n / 4; // 4 points per face
+    this->numFaces = n / MNT_NUM_VERTS_PER_QUAD;
     n = this->edge2Points.size();
-    this->numEdges = n / 2; // 2 points per edge
+    this->numEdges = n / MNT_NUM_VERTS_PER_EDGE;
 
     // compute min/max values after regularizing the coords across the faces
     // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
@@ -404,7 +404,7 @@ Ugrid2D::dumpGridVtk(const std::string& filename) {
     std::ofstream f;
     f.open(filename);
     f << "# vtk DataFile Version 4.2\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n";
-    f << "POINTS " << 4 * this->numFaces << " double\n";
+    f << "POINTS " << MNT_NUM_VERTS_PER_QUAD * this->numFaces << " double\n";
     for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
         const std::vector<Vec3> nodes = this->getFacePointsRegularized(faceId);
         for (const Vec3& node : nodes) {
@@ -414,11 +414,10 @@ Ugrid2D::dumpGridVtk(const std::string& filename) {
     }
     f << "CELLS " << this->numFaces << ' ' << 5 * this->numFaces << '\n'; // 2D
     for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
-        // 4 points per face
-        f << "4 " << faceId*4 + 0 << ' '
-                  << faceId*4 + 1 << ' '
-                  << faceId*4 + 2 << ' '
-                  << faceId*4 + 3 << '\n';
+        f << MNT_NUM_VERTS_PER_QUAD << faceId*MNT_NUM_VERTS_PER_QUAD + 0 << ' '
+                                    << faceId*MNT_NUM_VERTS_PER_QUAD + 1 << ' '
+                                    << faceId*MNT_NUM_VERTS_PER_QUAD + 2 << ' '
+                                    << faceId*MNT_NUM_VERTS_PER_QUAD + 3 << '\n';
     }
     f << "CELL_TYPES " << this->numFaces << '\n';
     for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {

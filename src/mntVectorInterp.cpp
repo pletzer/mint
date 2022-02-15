@@ -165,10 +165,10 @@ int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
         double ate = 1.0 - eta;
 
         // interpolate
-        double data0 = data[cellId*4 + 0];
-        double data1 = data[cellId*4 + 1];
-        double data2 = data[cellId*4 + 2];
-        double data3 = data[cellId*4 + 3];
+        double data0 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 0];
+        double data1 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 1];
+        double data2 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 2];
+        double data3 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 3];
         for (std::size_t j = 0; j < 3; ++j) {
             // fill in the vector
             vectors[iTargetId*3 + j] = (data0*ate + data2*eta)*gradXsi[j] + 
@@ -228,10 +228,10 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
         double ate = 1.0 - eta;
 
         // interpolate
-        double data0 = data[cellId*4 + 0];
-        double data1 = data[cellId*4 + 1];
-        double data2 = data[cellId*4 + 2];
-        double data3 = data[cellId*4 + 3];
+        double data0 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 0];
+        double data1 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 1];
+        double data2 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 2];
+        double data3 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 3];
         for (std::size_t j = 0; j < 3; ++j) {
             // fill in the vector
             // the negative sign is because d r/ d eta points in the opposite
