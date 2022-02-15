@@ -124,7 +124,7 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
             double coeff = polyseg.getCoefficient();
 
             // store the weights for this sub-segment
-            for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
+            for (int edgeIndex = 0; edgeIndex < MNT_NUM_EDGES_PER_QUAD; ++edgeIndex) {
 
                 // starting point of the cell edge in parameter space
                 const double* xi0 = &xi0_xi1[6*edgeIndex];
@@ -179,12 +179,12 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
         // add the contribution
 #ifdef DEBUG
         std::string msg = "adding weight = " + std::to_string(wght) + " * edge integral = " + 
-                          std::to_string(data[cellId*4 + edgeIndex]) + " to the flux (" +
+                          std::to_string(data[cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex]) + " to the flux (" +
                           std::to_string(*result) + " so far) for cellId = " + 
                           std::to_string(cellId) + " edgeIndex = " + std::to_string(edgeIndex);
         mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
-        *result += wght * data[cellId*4 + edgeIndex];
+        *result += wght * data[cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex];
     }
 #ifdef DEBUG
     std::string msg = "total flux = " + std::to_string(*result);
