@@ -7,6 +7,7 @@
 #include <vtkUnstructuredGridReader.h>
 #include <vtkGenericCell.h>
 #include <vector>
+#include <mntGlobal.h>
 
 #ifndef MNT_GRID
 #define MNT_GRID
@@ -27,16 +28,16 @@ struct Grid_t {
 
     vtkUnstructuredGridReader* reader;
 
-    // stores the fields (4 * numFaces)
+    // stores the fields (MNT_NUM_EDGES_PER_QUAD * numFaces)
     std::vector<vtkDoubleArray*> doubleArrays;
 
-    // flat array of size numFaces * 4
+    // flat array of size numFaces * MNT_NUM_VERTS_QUAD
     std::vector<std::size_t> faceNodeConnectivity;
 
-    // flat array of size numFaces * 4
+    // flat array of size numFaces * MNT_NUM_EDGES_PER_QUAD
     std::vector<std::size_t> faceEdgeConnectivity;
 
-    // flat array of size numEdges * 2
+    // flat array of size numEdges * MNT_NUM_VERTS_PER_EDGE
     std::vector<std::size_t> edgeNodeConnectivity;
 
     // edge arc lengths
@@ -94,7 +95,7 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
 /**
  * Set the pointer to an array of points
  * @param self instance of Grid_t
- * @param points flat array of size 4*ncells*3 (4 points per cell, each point has three coordinates)
+ * @param points flat array of size ncells*MNT_NUM_VERTS_PER_QUAD*3
  * @return error code (0 = OK)
  * @note the caller is responsible for managing the memory of the points array, which
  *       is expected to exist until the grid object is destroyed
@@ -105,7 +106,7 @@ int mnt_grid_setPointsPtr(Grid_t** self, double points[]);
 /**
  * Get the pointer to the array of points
  * @param self instance of Grid_t
- * @param points pointer to the flat array of size 4*ncells*3 (4 points per cell, each point has three coordinates) 
+ * @param points pointer to the flat array of size ncells*MNT_NUM_VERTS_PER_QUAD*3
  *               holding the vertex coordinates
  * @return error code (0 = OK)
  * @see mnt_grid_setPointsPtr

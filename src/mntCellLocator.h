@@ -47,7 +47,7 @@ int mnt_celllocator_del(CellLocator_t** self);
  * Set the points (vertices) array pointer
  * @param nVertsPerCell number of vertices per cell
  * @param ncells number of cells
- * @param points flat array of size 4*ncells*3
+ * @param points flat array of size ncells*MNT_NUM_VERTS_PER_QUAD*3
  * @return error code (0 is OK)
  * @note the caller is responsible for managing the memory of the points array, which
  *       is expected to exist until the grid object is destroyed.

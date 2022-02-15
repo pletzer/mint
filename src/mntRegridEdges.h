@@ -16,8 +16,6 @@
 #ifndef MNT_REGRID_EDGES
 #define MNT_REGRID_EDGES
 
-#define MNT_NUM_EDGES_PER_QUAD 4
-
 /**
  * @brief Edge-centred field regridding
  *

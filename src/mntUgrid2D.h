@@ -9,6 +9,7 @@
 #include <vtkPoints.h>
 #include <vtkQuad.h>
 #include <vtkUnstructuredGrid.h>
+#include <mntGlobal.h>
 #include <mntVecN.h>
 
 #ifndef MNT_UGRID_2D
@@ -78,7 +79,7 @@ std::size_t getNumberOfPoints() const {
  * @return pointer
  */
 const std::size_t* getFacePointIds(size_t faceId) const {
-    return &this->face2Points[faceId*4];
+    return &this->face2Points[faceId*MNT_NUM_VERTS_PER_QUAD];
 }
 const std::vector<std::size_t>& getFacePointIds() const {
     return this->face2Points;
@@ -90,7 +91,7 @@ const std::vector<std::size_t>& getFacePointIds() const {
  * @return pointer
  */
 const std::size_t* getFaceEdgeIds(size_t faceId) const {
-    return &this->face2Edges[faceId*4];
+    return &this->face2Edges[faceId*MNT_NUM_EDGES_PER_QUAD];
 }
 const std::vector<std::size_t>& getFaceEdgeIds() const {
     return this->face2Edges;
