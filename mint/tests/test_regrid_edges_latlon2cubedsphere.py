@@ -1,86 +1,88 @@
 import mint
 import numpy
+import math
 from pathlib import Path
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
-VORTEX_CENTRE = numpy.array([10., 20., 0.])
-VORTEX_SIG = 30.0
-
-def vortexFunc(point):
-	dx = point - VORTEX_CENTRE
-	# gaussian bump
-	return numpy.exp( -dx.dot(dx)/(2.*VORTEX_SIG*VORTEX_SIG))
-
-
 def streamFunc(point):
-	x, y, _ = point
-	return numpy.sin(x*numpy.pi/180.)*numpy.cos(y*numpy.pi/180.)
+
+    x, y, _ = point
+    return numpy.sin(x*numpy.pi/180.) * numpy.cos(y*numpy.pi/180.)
 
 
 def test_1():
 
-	# source grid
-	sgrid = mint.Grid()
-	# cubed-sphere
-	sgrid.setFlags(1, 1)
-	sgrid.loadFromUgrid2D(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
+    # source grid
+    sgrid = mint.Grid()
+    # lat-lon
+    sgrid.setFlags(0, 0)
+    sgrid.loadFromUgrid2D(f'{DATA_DIR}/latlon100x50.nc$latlon')
 
-	# destination grid
-	dgrid = mint.Grid()
-	# lat-lon
-	dgrid.setFlags(0, 0)
-	dgrid.loadFromUgrid2D(f'{DATA_DIR}/latlon100x50.nc$latlon')
+    # destination grid
+    dgrid = mint.Grid()
+    # cubed-sphere
+    dgrid.setFlags(1, 1)
+    dgrid.loadFromUgrid2D(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
 
-	regridder = mint.RegridEdges()
-	regridder.setSrcGrid(sgrid)
-	regridder.setDstGrid(dgrid)
-	regridder.buildLocator(numCellsPerBucket=128, periodX=360.0, enableFolding=0)
-	regridder.computeWeights(debug=2)
+    regridder = mint.RegridEdges()
+    regridder.setSrcGrid(sgrid)
+    regridder.setDstGrid(dgrid)
+    regridder.buildLocator(numCellsPerBucket=128, periodX=360.0, enableFolding=False)
+    regridder.computeWeights(debug=2)
 
-	# get the cell-by-cell points
-	spoints = sgrid.getPoints()
+    # get the cell-by-cell points
+    spoints = sgrid.getPoints()
 
-	# create src data
-	numSrcCells = sgrid.getNumberOfCells()
-	sdata = numpy.zeros((numSrcCells, 4), numpy.float64)
+    # create src data
+    numSrcCells = sgrid.getNumberOfCells()
+    sdata = numpy.zeros((numSrcCells, 4), numpy.float64)
 
-	# allocate dst data array
-	numDstCells = dgrid.getNumberOfCells()
-	ddata = numpy.zeros((numDstCells, 4), numpy.float64)
+    # allocate dst data array
+    numDstCells = dgrid.getNumberOfCells()
+    ddata = numpy.zeros((numDstCells, 4), numpy.float64)
 
-	for icell in range(numSrcCells):
-		# get the mid point of the cell
-		midPoint = spoints[icell, :, :].mean(axis=0)
-		# get the vortex strength for this cell
-		vortexStrength = vortexFunc(midPoint)
-		# iterate over the vertices of the cell,
-		# i0 is the first point of the edge
-		for i0 in range(4):
-			# i1 is the second point of the edge in
-			# anticlockwise direction
-			i1 = (i0 + 1) % 4
-			p0 = spoints[icell, i0, :]
-			p1 = spoints[icell, i1, :]
-			# our convention is to have the edges pointing in the
-			# positive parametric direction, the last two edges
-			# have the wrong sign
-			sign = 1 - 2*(i0 // 2)
-			# associate the same vorticity to each edge
-			sdata[icell, i0] = sign * (streamFunc(p1) - streamFunc(p0)) #0.25*vortexStrength
+    for icell in range(numSrcCells):
+        for i0 in range(4):
+            # i1 is the second point of the edge in
+            # anticlockwise direction
+            i1 = (i0 + 1) % 4
+            p0 = spoints[icell, i0, :]
+            p1 = spoints[icell, i1, :]
+            # our convention is to have the edges pointing in the
+            # positive parametric direction, the last two edges
+            # have the wrong sign
+            sign = 1 - 2*(i0 // 2)
+            # associate the same vorticity to each edge
+            sdata[icell, i0] = sign * (streamFunc(p1) - streamFunc(p0))
 
-	# apply the weights
-	regridder.apply(sdata, ddata, placement=mint.CELL_BY_CELL_DATA)
+    # apply the weights
+    regridder.apply(sdata, ddata, placement=mint.CELL_BY_CELL_DATA)
 
-	# attach fields to the src and dst grids
-	sgrid.attach('vorticity', sdata[:, 0] + sdata[:, 1] - sdata[:, 2] - sdata[:, 3])
-	dgrid.attach('vorticity', ddata[:, 0] + ddata[:, 1] - ddata[:, 2] - ddata[:, 3])
+    # compute the flow across a broken line
+    xyz = numpy.array([(-170., -80., 0.), (170., 80., 0.)])
 
-	# save the grids and fields to VTK files
-	sgrid.dump('sgrid.vtk')
-	dgrid.dump('dgrid.vtk')
+    sflux = mint.PolylineIntegral()
+    sflux.setGrid(sgrid)
+    sflux.buildLocator(numCellsPerBucket=128, periodX=360.0, enableFolding=False)
+    sflux.computeWeights(xyz, counterclock=False)
 
-	mint.writeLogMessages('test_regrid_edges_latlon2cubedsphere.log')
+    dflux = mint.PolylineIntegral()
+    dflux.setGrid(dgrid)
+    dflux.buildLocator(numCellsPerBucket=128, periodX=360.0, enableFolding=False)
+    dflux.computeWeights(xyz, counterclock=False)
+
+    exactFlux = streamFunc(xyz[-1, :]) - streamFunc(xyz[0, :])
+    srcFluxVal = sflux.getIntegral(sdata)
+    dstFluxVal = dflux.getIntegral(ddata)
+    print(f'fluxes: exact={exactFlux} over src grid = {srcFluxVal} (error={(srcFluxVal - exactFlux):.2g}) dst grid = {dstFluxVal} (error={(dstFluxVal - exactFlux):.2g})')
+
+    # save the grids and fields to VTK files
+    sgrid.dump('sgrid.vtk')
+    dgrid.dump('dgrid.vtk')
+
+    mint.printLogMessages()
+    mint.writeLogMessages('test_regrid_edges_latlon2cubedsphere.log')
 
 if __name__ == '__main__':
-	test_1()
+    test_1()
