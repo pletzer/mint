@@ -297,6 +297,134 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 }
 
 LIBRARY_API
+int mnt_grid_loadFromUGrid2DData(Grid_t** self, std::size_t ncells, std::size_t nedges, std::size_t npoints, 
+                                 const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]) {
+
+
+    (*self)->numEdges = nedges;
+
+    // compute lonMin
+    double lonMin = std::numeric_limits<double>::max();
+    for (auto i = 0; i < npoints; ++i) {
+        double lon = xyz[i*3 + LON_INDEX];
+        lonMin = (lon < lonMin? lon: lonMin);
+    }
+
+    // copy
+    (*self)->faceNodeConnectivity.resize(ncells * MNT_NUM_VERTS_PER_QUAD);
+    for (auto i = 0; i < ncells * MNT_NUM_VERTS_PER_QUAD; ++i) {
+        (*self)->faceNodeConnectivity[i] = face2nodes[i];
+    }
+
+    (*self)->edgeNodeConnectivity.resize(nedges * MNT_NUM_VERTS_PER_EDGE);
+    for (auto i = 0; i < nedges * MNT_NUM_VERTS_PER_EDGE; ++i) {
+        (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
+    }
+
+    int numVertsPerCell = MNT_NUM_VERTS_PER_QUAD;
+
+    // compute the face to edge connectivity from the edge-node and face-node connectivity
+    std::map< std::array<std::size_t, 2>, std::size_t > node2Edge;
+    for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
+        // start node
+        std::size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
+        // end node
+        std::size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
+        // create two entries n0 -> n1 and n1 -> n0
+        std::pair< std::array<std::size_t, 2>, std::size_t > ne1({n0, n1}, iedge);
+        std::pair< std::array<std::size_t, 2>, std::size_t > ne2({n1, n0}, iedge);
+        node2Edge.insert(ne1);
+        node2Edge.insert(ne2);
+    }
+    (*self)->faceEdgeConnectivity.resize(ncells * MNT_NUM_EDGES_PER_QUAD);
+    for (std::size_t icell = 0; icell < ncells; ++icell) {
+        for (std::size_t i0 = 0; i0 < MNT_NUM_VERTS_PER_QUAD; ++i0) {
+            std::size_t i1 = (i0 + 1) % MNT_NUM_VERTS_PER_QUAD;
+            // start and end node indices
+            std::size_t n0 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i0];
+            std::size_t n1 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i1];
+            std::size_t edgeId = node2Edge[std::array<std::size_t, 2>{n0, n1}];
+            // set the edge Id for these two nodes
+            (*self)->faceEdgeConnectivity[icell*MNT_NUM_EDGES_PER_QUAD + i0] = edgeId;
+        }
+    }
+
+    // repackage the cell vertices as a flat array
+
+    if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
+
+        // allocate the vertices and set the values
+        (*self)->verts = new double[ncells * numVertsPerCell * 3];
+        (*self)->ownsVerts = true;
+
+        for (std::size_t icell = 0; icell < ncells; ++icell) {
+
+            // fix longitude when crossing the dateline
+            // use the first longitude as the base
+            std::size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
+            double lonBase = xyz[kBase*3 + LON_INDEX];
+
+            double avgLon = 0;
+            long long poleNodeIdx = -1;
+            int count = 0;
+            for (auto nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+
+                std::size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
+                double lon = xyz[k*3 + LON_INDEX];
+                double lat = xyz[k*3 + LAT_INDEX];
+
+                if ((*self)->fixLonAcrossDateline) {
+                    lon = fixLongitude((*self)->periodX, lonBase, lon);
+                }
+
+                if (std::abs(lat) == 0.25*(*self)->periodX) {
+                    // at the pole
+                    poleNodeIdx  = nodeIdx;
+                }
+                else {
+                    avgLon += lon;
+                    count++;
+                }
+
+                // even in 2d we have three components
+                (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lon;
+                (*self)->verts[LAT_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lat;
+                (*self)->verts[ELV_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = 0.0;
+            }
+            avgLon /= count;
+
+            // check if there if one of the cell nodes is at the north/south pole. In
+            // this case the longitude is ill-defined. Set the longitude there to the
+            // average of the 3 other longitudes.
+
+            if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
+                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
+            }
+
+            // make sure the cell is within the lonMin to lonMin + periodX range
+            double offsetLon = 0.0;
+            if ((*self)->fixLonAcrossDateline) {
+                if (avgLon > lonMin + (*self)->periodX) {
+                    offsetLon = -(*self)->periodX;
+                }
+                else if (avgLon < lonMin) {
+                    offsetLon = (*self)->periodX;
+                }
+                for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+                    (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*numVertsPerCell*3] += offsetLon;
+                }
+            }
+        }
+    }
+
+    // build the connectivity
+    int ier = mnt_grid_build(self, numVertsPerCell, ncells);
+
+    return 0;
+}
+
+
+LIBRARY_API
 int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename:meshname"
@@ -381,7 +509,7 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
             for (auto nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
 
                 std::size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
-                double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
+                double lon = ugrid.getPoint(k)[LON_INDEX];
                 double lat = ugrid.getPoint(k)[LAT_INDEX];
 
                 if ((*self)->fixLonAcrossDateline) {
