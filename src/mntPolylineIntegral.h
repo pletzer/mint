@@ -88,7 +88,7 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
  * Get the integral of the field along the line
  * @param self instance of the polyline integral object
  * @param data the edge integrated field values.
- *        This array is expected to be dimensioned ncells * 4 (4 edges per cell). Each data value
+ *        This array is expected to be dimensioned ncells * MNT_NUM_EDGES_PER_QUAD. Each data value
  *        is a scalar representing the integral of the field over the edge. The directions of the
  *        edges should match the flag "counterclock" in the build method
  * @param result line integral of the field over the polyline

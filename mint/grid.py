@@ -1,6 +1,6 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
                     c_size_t, c_longlong, c_double)
-from . import MINTLIB
+from . import MINTLIB, NUM_VERTS_PER_QUAD
 from . import error_handler, warning_handler
 import numpy
 
@@ -114,6 +114,23 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'setPointsPtr', ier)
 
+    def getPoints(self):
+        """
+        Get a view of the points (vertices) array of the cell-by-cell mesh.
+
+        :return numpy contiguous array of shape (ncells,
+                      num_verts_per_cell, 3)
+        """
+        MINTLIB.mnt_grid_getPointsPtr.argtypes = [POINTER(c_void_p), POINTER(POINTER(c_double))]
+
+        pointsPtr = POINTER(c_double)()
+        ier = MINTLIB.mnt_grid_getPointsPtr(self.obj, byref(pointsPtr))
+        if ier:
+            error_handler(FILE, 'getPointsPtr', ier)
+        # create a numpy array from a C pointer\
+        ncells = self.getNumberOfCells()
+        return numpy.ctypeslib.as_array(pointsPtr, shape=(ncells, NUM_VERTS_PER_QUAD, 3))
+
     def getEdgeId(self, cellId, edgeIndex):
         """
         Get the edge Id and direction of a cellId, edgeIndex pair.
@@ -178,23 +195,28 @@ class Grid(object):
             error_handler(FILE, 'getEdgeArcLength', ier)
         return res.value
 
-    def attach(self, varname, data):
+    def attach(self, varname, data, copy=True):
         """
         Attach data to the grid.
 
         :param varname: field name
-        :param data: numpy array of size (ncells, nDataPerCell)
+        :param data: numpy array of size (ncells, :)
+        :param copy: set to False if you do not want the data to be copied
         """
         nDataPerCell = 1
         if len(data.shape) > 1:
             nDataPerCell = data.shape[-1]
         MINTLIB.mnt_grid_attach.argtypes = [POINTER(c_void_p), c_char_p, c_int,
-                                        DOUBLE_ARRAY_PTR]
-        # make a copy to ensure that the data exist during the life of
-        # this instance
-        self.data[varname] = data.copy()
-        ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
-                                  nDataPerCell, self.data[varname])
+                                            DOUBLE_ARRAY_PTR]
+        if copy:
+            # make a copy to ensure that the data exist during the life of
+            # this instance
+            self.data[varname] = data.copy()
+            ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
+                                          nDataPerCell, self.data[varname])
+        else:
+            ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
+                                          nDataPerCell, data)
         if ier:
             error_handler(FILE, 'attach', ier)
 

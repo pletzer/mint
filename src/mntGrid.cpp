@@ -131,6 +131,18 @@ int mnt_grid_setPointsPtr(Grid_t** self, double points[]) {
 }
 
 LIBRARY_API
+int mnt_grid_getPointsPtr(Grid_t** self, double** pointsPtr) {
+
+    if ((*self)->verts) {
+        *pointsPtr = (*self)->verts;
+    }
+    else {
+        return 1; // the points have not been set
+    }
+    return 0;
+}
+
+LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
     (*self)->pointData = vtkDoubleArray::New();
@@ -149,7 +161,7 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
     (*self)->grid->Allocate(ncells, 1);
 
     int cellType = -1;
-    if (nVertsPerCell == 4) {
+    if (nVertsPerCell == MNT_NUM_VERTS_PER_QUAD) {
         cellType = VTK_QUAD;
     }
     else if (nVertsPerCell == 8) {
@@ -214,19 +226,19 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
     std::size_t numCells;
     mnt_grid_getNumberOfCells(self, &numCells);
 
-    if ((*self)->edgeArcLengths.size() == numCells * 4) {
+    if ((*self)->edgeArcLengths.size() == numCells * MNT_NUM_EDGES_PER_QUAD) {
         // already done
         return 0;
     }
 
     Vec3 p0, p1;
 
-    (*self)->edgeArcLengths.resize(numCells * 4);
+    (*self)->edgeArcLengths.resize(numCells * MNT_NUM_EDGES_PER_QUAD);
     for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
-        for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
+        for (int edgeIndex = 0; edgeIndex < MNT_NUM_EDGES_PER_QUAD; ++edgeIndex) {
 
-            vtkIdType ptId0 = 4*cellId + edgeIndex;
-            vtkIdType ptId1 = 4*cellId + (edgeIndex + 1) % 4;
+            vtkIdType ptId0 = MNT_NUM_VERTS_PER_QUAD*cellId + edgeIndex;
+            vtkIdType ptId1 = MNT_NUM_VERTS_PER_QUAD*cellId + (edgeIndex + 1) % MNT_NUM_VERTS_PER_QUAD;
 
             (*self)->points->GetPoint(ptId0, &p0[0]);
             (*self)->points->GetPoint(ptId1, &p1[0]);
@@ -253,13 +265,14 @@ int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
                              cos_the0*sin_lam0*cos_the1*sin_lam1 +
                              sin_the0*sin_the1;
 
-            std::size_t k = 4*cellId + edgeIndex;
+            std::size_t k = MNT_NUM_EDGES_PER_QUAD*cellId + edgeIndex;
             (*self)->edgeArcLengths[k] = std::abs( acos(r0DotR1) );
         }
     }
 
     // add the field
-    int ier = mnt_grid_attach(self, (*self)->EDGE_LENGTH_NAME.c_str(), 4, &(*self)->edgeArcLengths[0]);
+    int ier = mnt_grid_attach(self, (*self)->EDGE_LENGTH_NAME.c_str(), 
+                              MNT_NUM_EDGES_PER_QUAD, &(*self)->edgeArcLengths[0]);
 
     return ier;
 }
@@ -272,7 +285,7 @@ int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, do
             "you need to call mnt_grid_computeEdgeArcLengths before invoking mnt_grid_getEdgeArcLength");
         return 1;
     }
-    std::size_t k = cellId*4 + edgeIndex;
+    std::size_t k = cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex;
     *res = (*self)->edgeArcLengths[k];
     return 0;
 }
@@ -313,7 +326,7 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     std::size_t ncells = ugrid.getNumberOfFaces();
     std::size_t nedges = ugrid.getNumberOfEdges();
     std::size_t npoints = ugrid.getNumberOfPoints();
-    int numVertsPerCell = 4;
+    int numVertsPerCell = MNT_NUM_VERTS_PER_QUAD;
 
     // get the face to edge connectivity from the file
     (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
@@ -333,16 +346,16 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
             node2Edge.insert(ne1);
             node2Edge.insert(ne2);
         }
-        (*self)->faceEdgeConnectivity.resize(ncells * 4);
+        (*self)->faceEdgeConnectivity.resize(ncells * MNT_NUM_EDGES_PER_QUAD);
         for (std::size_t icell = 0; icell < ncells; ++icell) {
-            for (std::size_t i0 = 0; i0 < 4; ++i0) {
-                std::size_t i1 = (i0 + 1) % 4;
+            for (std::size_t i0 = 0; i0 < MNT_NUM_VERTS_PER_QUAD; ++i0) {
+                std::size_t i1 = (i0 + 1) % MNT_NUM_VERTS_PER_QUAD;
                 // start and end node indices
-                std::size_t n0 = (*self)->faceNodeConnectivity[icell*4 + i0];
-                std::size_t n1 = (*self)->faceNodeConnectivity[icell*4 + i1];
+                std::size_t n0 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i0];
+                std::size_t n1 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i1];
                 std::size_t edgeId = node2Edge[std::array<std::size_t, 2>{n0, n1}];
                 // set the edge Id for these two nodes
-                (*self)->faceEdgeConnectivity[icell*4 + i0] = edgeId;
+                (*self)->faceEdgeConnectivity[icell*MNT_NUM_EDGES_PER_QUAD + i0] = edgeId;
             }
         }
     }
@@ -483,11 +496,11 @@ LIBRARY_API
 int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
                        double point0[], double point1[]) {
 
-    // flat index for the start point, 4 points per cell, 3d coordinates
-    std::size_t k0 = 4*3*cellId + 3*((edgeIndex + 0) % 4);
+    // flat index for the start point, 3d coordinates
+    std::size_t k0 = MNT_NUM_VERTS_PER_QUAD*3*cellId + 3*((edgeIndex + 0) % MNT_NUM_VERTS_PER_QUAD);
 
-    // flat index for the end point, 4 points per cell, 3d coordinates
-    std::size_t k1 = 4*3*cellId + 3*((edgeIndex + 1) % 4);
+    // flat index for the end point, 3d coordinates
+    std::size_t k1 = MNT_NUM_VERTS_PER_QUAD*3*cellId + 3*((edgeIndex + 1) % MNT_NUM_VERTS_PER_QUAD);
 
     if (edgeIndex < 2) {
         // edge's direction is counterclockwise
@@ -512,8 +525,7 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
 
     // nodeIndex0,1 are the local cell indices of the vertices in the range 0-3
     int nodeIndex0 = edgeIndex;
-    // 4 vertices per cell
-    int nodeIndex1 = (edgeIndex + 1) % 4;
+    int nodeIndex1 = (edgeIndex + 1) % MNT_NUM_VERTS_PER_QUAD;
 
     // edges 2-3 go clockwise
     // edges 0-1 go anticlockwise
@@ -524,8 +536,8 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
         nodeIndex1 = tmp;
     }
 
-    nodeIds[0] = (*self)->faceNodeConnectivity[4*cellId + nodeIndex0];
-    nodeIds[1] = (*self)->faceNodeConnectivity[4*cellId + nodeIndex1];
+    nodeIds[0] = (*self)->faceNodeConnectivity[MNT_NUM_VERTS_PER_QUAD*cellId + nodeIndex0];
+    nodeIds[1] = (*self)->faceNodeConnectivity[MNT_NUM_VERTS_PER_QUAD*cellId + nodeIndex1];
 
     return 0;
 }
@@ -547,10 +559,10 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
     // iterate over the edges of this face until we find the edge
     // that has vertices nodeIds (but not necessarily in the same
     // order)
-    for (int ie = 0; ie < 4; ++ie) {
+    for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
 
         // edgeId under consideration
-        vtkIdType eId = (*self)->faceEdgeConnectivity[4*cellId + ie];
+        vtkIdType eId = (*self)->faceEdgeConnectivity[MNT_NUM_EDGES_PER_QUAD*cellId + ie];
 
         // vertex Ids of the edge
         vtkIdType nId0 = (*self)->edgeNodeConnectivity[eId*2 + 0];
@@ -595,7 +607,7 @@ int mnt_grid_check(Grid_t** self, std::size_t* numBadCells) {
 
     vtkIdType ncells = (*self)->grid->GetNumberOfCells();
 
-    std::vector<Vec3> pts(4); // 2D
+    std::vector<Vec3> pts(MNT_NUM_VERTS_PER_QUAD); // 2D
 
     for (vtkIdType i = 0; i < ncells; ++i) {
 

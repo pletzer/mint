@@ -51,6 +51,7 @@ endif()
 
 set(HEADER_FILES
   mntLIBRARY_API.h
+  mntGlobal.h
   mntLogger.h
   mntFileMeshNameExtractor.h
   vmtCellLocator.h

@@ -89,7 +89,8 @@ void test1() {
         ier = mnt_regridedges_loadSrcSlice(&rg, &srcData[0]);
         assert(ier == 0);
 
-        ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
+        int placement = MNT_UNIQUE_EDGE_DATA;
+        ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0], placement);
         assert(ier == 0);
 
         ier = mnt_regridedges_dumpDstSlice(&rg, &dstData[0]);
@@ -155,9 +156,15 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
     std::cerr << testName << ": src num cells = " << numSrcCells << " num edges = " << numSrcEdges << "...OK\n";
 
     std::vector<double> srcData(numSrcEdges);
+    std::vector<double> srcCellByCellData(numSrcCells * MNT_NUM_EDGES_PER_QUAD);
+    double* srcPoints;
+    double* pBeg;
+    double* pEnd;
+    ier = mnt_grid_getPointsPtr(&rg->srcGridObj, &srcPoints);
+    assert(ier == 0);
 
     for (std::size_t srcCellId = 0; srcCellId < numSrcCells; ++srcCellId) {
-        for (int ie = 0; ie < 4; ++ie) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
 
             ier = mnt_grid_getEdgeId(&rg->srcGridObj, srcCellId, ie, &srcEdgeId, &srcEdgeSign);
             assert(ier == 0);
@@ -166,6 +173,15 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
             assert(ier == 0);
 
             srcData[srcEdgeId] = srcEdgeSign * (streamFunc(p1) - streamFunc(p0));
+
+            // first two edges are anticlockwise, last two are clockwise
+            int edgeSign = 1;
+            if (ie > 1) edgeSign = -1;
+            int i0 = ie;
+            int i1 = (i0 + 1) % MNT_NUM_VERTS_PER_QUAD;
+            pBeg = &srcPoints[srcCellId*MNT_NUM_VERTS_PER_QUAD*3 + i0*3];
+            pEnd = &srcPoints[srcCellId*MNT_NUM_VERTS_PER_QUAD*3 + i1*3];
+            srcCellByCellData[srcCellId*MNT_NUM_EDGES_PER_QUAD + ie] = edgeSign*(streamFunc(pEnd) - streamFunc(pBeg));
         }
     }
     std::cerr << testName << ": src data set...OK\n";
@@ -178,16 +194,21 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
     assert(ier == 0);
 
     std::vector<double> dstData(numDstEdges);
+    std::vector<double> dstCellByCellData(numDstCells * MNT_NUM_EDGES_PER_QUAD);
 
     // regrid
-    ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0]);
+    ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0], MNT_UNIQUE_EDGE_DATA);
     assert(ier == 0);
+
+    ier = mnt_regridedges_apply(&rg, &srcCellByCellData[0], &dstCellByCellData[0], MNT_CELL_BY_CELL_DATA);
+    assert(ier == 0);
+
 
     // check
     printf("%s\n dstCellId         edgeIndex        edgeId      interpVal      exact        error               p0               p1\n", testName.c_str());
     double totError = 0;
     for (std::size_t dstCellId = 0; dstCellId < numDstCells; ++dstCellId) {
-        for (int ie = 0; ie < 4; ++ie) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
 
             ier = mnt_grid_getEdgeId(&rg->dstGridObj, dstCellId, ie, &dstEdgeId, &dstEdgeSign);
             assert(ier == 0);
@@ -198,6 +219,8 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
             double exact = dstEdgeSign * (streamFunc(p1) - streamFunc(p0));
 
             double interpVal = dstData[dstEdgeId];
+
+            assert(std::abs(dstEdgeSign*dstData[dstEdgeId] - dstCellByCellData[dstCellId*MNT_NUM_EDGES_PER_QUAD + ie]) < 1.e-8);
 
             double error = interpVal - exact;
 

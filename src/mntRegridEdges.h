@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vtkUnstructuredGrid.h>
+#include <mntGlobal.h>
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
@@ -14,8 +15,6 @@
 
 #ifndef MNT_REGRID_EDGES
 #define MNT_REGRID_EDGES
-
-#define MNT_NUM_EDGES_PER_QUAD 4
 
 /**
  * @brief Edge-centred field regridding
@@ -363,14 +362,14 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* n);
 /**
  * Apply the interpolation weights to an edge field with unique edge Ids
  * @param self instance of the regridding object
- * @param src_data edge centred data on the source grid
- * @param dst_data edge centred data on the destination grid
+ * @param src_data edge centred data on the source grid (input)
+ * @param dst_data edge centred data on the destination grid (output)
+ * @param placement MNT_CELL_BY_CELL_DATA for cell by cell data, MNT_UNIQUE_EDGE_DATA for unique edge data
  * @return error code (0 is OK)
- * @note Edges go anticlockwise
  */
 LIBRARY_API
 int mnt_regridedges_apply(RegridEdges_t** self, 
-                          const double src_data[], double dst_data[]);
+                          const double src_data[], double dst_data[], int placement);
 
 /**
  * Load the weights from file

@@ -20,6 +20,7 @@
 #include <netcdf.h>
 
 #define NUM_EDGES_PER_CELL 4
+#define UNIQUE_EDGE_DATA 1
 
 /**
  * Convert a number to a string
@@ -449,7 +450,7 @@ int main(int argc, char** argv) {
             }
 
             // apply the weights to the src field
-            ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0]);
+            ier = mnt_regridedges_apply(&rg, &srcEdgeData[0], &dstEdgeData[0], UNIQUE_EDGE_DATA);
             if (ier != 0) {
                 mntlog::error(__FILE__, __func__, __LINE__, 
                     "failed to apply weights to dst field \"" + vname + "\"");

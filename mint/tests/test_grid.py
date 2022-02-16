@@ -21,6 +21,10 @@ def test_create_grid():
                           (1., 1., 0.)]).reshape((2, 4, 3))
     gr.setPoints(points)
 
+    # get a pointer to the points of the cell-by-cell mesh
+    pts = gr.getPoints()
+    print(pts)
+
     # expected because we set the grid with setPoints
     assert gr.getNumberOfEdges() == 0
 

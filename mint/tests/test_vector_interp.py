@@ -1,5 +1,6 @@
 from mint import Grid
 from mint import VectorInterp
+from mint import CELL_BY_CELL_DATA
 import numpy
 import vtk
 from tempfile import TemporaryDirectory
@@ -135,12 +136,12 @@ def test_rectilinear():
             data[cellId, edgeIndex] = 1.0
 
             # get the edge interpolated vectors
-            vectorData = vi.getEdgeVectors(data, placement=0)
+            vectorData = vi.getEdgeVectors(data, placement=CELL_BY_CELL_DATA)
             assert(abs(vectorData.max() - 1.) < 1.e-12)
             assert(abs(vectorData.min() - 0.) < 1.e-12)
 
             # get the lateral flux interpolated vectors
-            vectorData = vi.getFaceVectors(data, placement=0)
+            vectorData = vi.getFaceVectors(data, placement=CELL_BY_CELL_DATA)
             # face vectors take the sign of the area vector,
             # negative if pointing down
             assert(abs(numpy.fabs(vectorData).max() - 1.) < 1.e-12)
@@ -192,10 +193,10 @@ def test_rectilinear2():
             data[cellId, edgeIndex] = 1.0
 
             # get the edge interpolated vectors
-            vectorData = vi.getEdgeVectors(data, placement=0)
+            vectorData = vi.getEdgeVectors(data, placement=CELL_BY_CELL_DATA)
 
             # get the lateral flux interpolated vectors
-            vectorData = vi.getFaceVectors(data, placement=0)
+            vectorData = vi.getFaceVectors(data, placement=CELL_BY_CELL_DATA)
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
@@ -239,12 +240,12 @@ def test_slanted():
                 data[cellId, edgeIndex] = 1.0
 
                 # get the edge interpolated vectors
-                vectorData = vi.getEdgeVectors(data, placement=0)
+                vectorData = vi.getEdgeVectors(data, placement=CELL_BY_CELL_DATA)
                 fileName = f"{d}{sep}slanted_edgeVectors_cellId{cellId}edgeIndex{edgeIndex}Edge.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # get the lateral face interpolated vectors
-                vectorData = vi.getFaceVectors(data, placement=0)
+                vectorData = vi.getFaceVectors(data, placement=CELL_BY_CELL_DATA)
                 fileName = f"{d}{sep}slanted_faceVectors_cellId{cellId}edgeIndex{edgeIndex}Face.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
@@ -291,12 +292,12 @@ def test_degenerate():
                 data[cellId, edgeIndex] = 1.0
 
                 # get the edge interpolated vectors
-                vectorData = vi.getEdgeVectors(data, placement=0)
+                vectorData = vi.getEdgeVectors(data, placement=CELL_BY_CELL_DATA)
                 fileName = f"{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}Edge.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 
                 # get the face interpolated vectors
-                vectorData = vi.getFaceVectors(data, placement=0)
+                vectorData = vi.getFaceVectors(data, placement=CELL_BY_CELL_DATA)
                 fileName = f"{d}{sep}degenerate_cellId{cellId}edgeIndex{edgeIndex}Face.vtk"
                 saveVectorsVTKFile(targetPoints, vectorData, fileName)
 

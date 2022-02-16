@@ -737,7 +737,35 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* nPtr) {
 }
 
 LIBRARY_API
-int mnt_regridedges_apply(RegridEdges_t** self, 
+int mnt_regridedges_applyToCellByCellData(RegridEdges_t** self, 
+                                          const double src_data[], double dst_data[]) {
+    std::size_t numDstCells = 0;
+    mnt_regridedges_getNumDstCells(self, &numDstCells);
+
+    // initialize to zero
+    for (std::size_t i = 0; i < numDstCells * (std::size_t) MNT_NUM_EDGES_PER_QUAD; ++i) {
+        dst_data[i] = 0.0;
+    }
+
+    for (std::size_t i = 0; i < (*self)->weights.size(); ++i) {
+        auto srcCellId = (*self)->weightSrcCellIds[i];
+        auto dstCellId = (*self)->weightDstCellIds[i];
+        auto srcEdgeIndex = (*self)->weightSrcFaceEdgeIds[i];
+        auto dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
+        auto weight = (*self)->weights[i];
+
+        std::size_t srcIdx = srcCellId*MNT_NUM_EDGES_PER_QUAD + srcEdgeIndex;
+        std::size_t dstIdx = dstCellId*MNT_NUM_EDGES_PER_QUAD + dstEdgeIndex;
+
+        dst_data[dstIdx] += weight * src_data[srcIdx];
+    }
+
+    return 0;
+}
+
+
+LIBRARY_API
+int mnt_regridedges_applyToUniqueEdgeData(RegridEdges_t** self, 
                           const double src_data[], double dst_data[]) {
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
@@ -797,6 +825,17 @@ int mnt_regridedges_apply(RegridEdges_t** self,
     return ier;
 }
 
+
+LIBRARY_API
+int mnt_regridedges_apply(RegridEdges_t** self, 
+                          const double src_data[], double dst_data[], int placement) {
+    if (placement == MNT_CELL_BY_CELL_DATA) {
+        return mnt_regridedges_applyToCellByCellData(self, src_data, dst_data);
+    }
+    else {
+        return mnt_regridedges_applyToUniqueEdgeData(self, src_data, dst_data);
+    }
+}
 
 LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 
