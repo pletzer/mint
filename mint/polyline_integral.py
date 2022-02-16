@@ -1,5 +1,5 @@
 from ctypes import (c_void_p, c_double, c_int, byref, POINTER)
-from . import MINTLIB
+from . import MINTLIB, NUM_EDGES_PER_QUAD
 from . import error_handler, warning_handler
 import numpy
 
@@ -97,9 +97,9 @@ class PolylineIntegral(object):
         Get the flux integral over the polyline.
 
         :param data: edge field data. This array is expected to be
-                     dimensioned (numCells, 4). Each value is a scalar
-                     representing the integral of the field over the
-                     edge. The directions of the edges are
+                     dimensioned (numCells, mint.NUM_EDGES_PER_QUAD). 
+                     Each value is a scalar representing the integral 
+                     of the field over the edge. The directions of the edges are
                      (0, 0) -> (1, 0),
                      (1, 0) -> (1, 1),
                      (0, 1) -> (1, 1) and

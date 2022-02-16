@@ -1,6 +1,6 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
                     c_size_t, c_longlong, c_double)
-from . import MINTLIB
+from . import MINTLIB, NUM_VERTS_PER_QUAD
 from . import error_handler, warning_handler
 import numpy
 
@@ -129,7 +129,7 @@ class Grid(object):
             error_handler(FILE, 'getPointsPtr', ier)
         # create a numpy array from a C pointer\
         ncells = self.getNumberOfCells()
-        return numpy.ctypeslib.as_array(pointsPtr, shape=(ncells, 4, 3))
+        return numpy.ctypeslib.as_array(pointsPtr, shape=(ncells, NUM_VERTS_PER_QUAD, 3))
 
     def getEdgeId(self, cellId, edgeIndex):
         """
