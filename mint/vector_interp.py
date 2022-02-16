@@ -1,6 +1,6 @@
 from ctypes import (c_void_p, c_int, byref, POINTER,
                     c_double, c_size_t)
-from . import MINTLIB, UNIQUE_EDGE_DATA, CELL_BY_CELL_DATA
+from . import MINTLIB, UNIQUE_EDGE_DATA, CELL_BY_CELL_DATA, NUM_EDGES_PER_QUAD
 from . import error_handler, warning_handler
 import numpy
 
@@ -106,7 +106,8 @@ class VectorInterp(object):
                      of the line integrals must be consistent with the coordinates
                      units (typically degrees). For instance, a velocity field
                      in degrees/time expects a line integral in degrees^2/time.
-        :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell (size num cells * 4),
+        :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell 
+                          (size num cells * mint.NUM_EDGES_PER_QUAD),
                           assume unique edge Id data otherwise (size num edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
@@ -114,8 +115,8 @@ class VectorInterp(object):
 
         # check the data size
         n = numpy.prod(data.shape)
-        if placement == CELL_BY_CELL_DATA and n != self.numGridCells * 4:
-            msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
+        if placement == CELL_BY_CELL_DATA and n != self.numGridCells * NUM_EDGES_PER_QUAD:
+            msg = f"data has wrong size (= {n}), num cells*NUM_EDGES_PER_QUAD = {self.numGridCells*NUM_EDGES_PER_QUAD}"
             ier = 10
             error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
             return
@@ -147,7 +148,8 @@ class VectorInterp(object):
                      should be compatible with the coordinates units
                      (typically degrees). For instance, a velocity field
                      in degrees/time expects a flux in degrees^2/time.
-        :param placement: mint.CELL_BY_CELL_DATA if data are cell by cell (size num cells * 4),
+        :param placement: mint.CELL_BY_CELL_DATA if data are cell by cell 
+                          (size num cells * mint.NUM_EDGES_PER_QUAD),
                           assume unique edge Id data otherwise (size num edges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
@@ -155,8 +157,8 @@ class VectorInterp(object):
 
         # check data size
         n = numpy.prod(data.shape)
-        if placement == CELL_BY_CELL_DATA and n != self.numGridCells * 4:
-            msg = f"data has wrong size (= {n}), num cells*4 = {self.numGridCells*4}"
+        if placement == CELL_BY_CELL_DATA and n != self.numGridCells * NUM_EDGES_PER_QUAD:
+            msg = f"data has wrong size (= {n}), num cells*NUM_EDGES_PER_QUAD = {self.numGridCells*NUM_EDGES_PER_QUAD}"
             ier = 10
             error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
             return
