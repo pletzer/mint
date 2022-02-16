@@ -71,7 +71,7 @@ class PolylineIntegral(object):
             msg = "Failed to build locator"
             warning_handler(FILE, 'buildLocator', ier, detailedmsg=msg)
 
-    def computeWeights(self, xyz, counterclock):
+    def computeWeights(self, xyz, counterclock=False):
         """
         Build the flux calculator.
 

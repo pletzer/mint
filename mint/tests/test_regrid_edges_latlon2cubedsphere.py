@@ -65,17 +65,19 @@ def test_1():
     sflux = mint.PolylineIntegral()
     sflux.setGrid(sgrid)
     sflux.buildLocator(numCellsPerBucket=128, periodX=360.0, enableFolding=False)
-    sflux.computeWeights(xyz, counterclock=False)
+    sflux.computeWeights(xyz)
 
     dflux = mint.PolylineIntegral()
     dflux.setGrid(dgrid)
     dflux.buildLocator(numCellsPerBucket=128, periodX=360.0, enableFolding=False)
-    dflux.computeWeights(xyz, counterclock=False)
+    dflux.computeWeights(xyz)
 
     exactFlux = streamFunc(xyz[-1, :]) - streamFunc(xyz[0, :])
     srcFluxVal = sflux.getIntegral(sdata)
+    errSrcFlux = srcFluxVal - exactFlux
     dstFluxVal = dflux.getIntegral(ddata)
-    print(f'fluxes: exact={exactFlux} over src grid = {srcFluxVal} (error={(srcFluxVal - exactFlux):.2g}) dst grid = {dstFluxVal} (error={(dstFluxVal - exactFlux):.2g})')
+    errDstFlux = dstFluxVal - exactFlux
+    print(f'fluxes: exact={exactFlux} over grid src: {srcFluxVal} (error={errSrcFlux:.2g}) dst: {dstFluxVal} (error={errDstFlux:.2g})')
 
     # save the grids and fields to VTK files
     sgrid.dump('sgrid.vtk')
