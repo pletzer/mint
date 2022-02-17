@@ -498,19 +498,19 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
                 (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = avgLon;
             }
 
-            // make sure the cell is within the lonMin to lonMin + periodX range
-            double offsetLon = 0.0;
-            if ((*self)->fixLonAcrossDateline) {
-                if (avgLon > lonMin + (*self)->periodX) {
-                    offsetLon = -(*self)->periodX;
-                }
-                else if (avgLon < lonMin) {
-                    offsetLon = (*self)->periodX;
-                }
-                for (int nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
-                    (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*MNT_NUM_VERTS_PER_QUAD*3] += offsetLon;
-                }
-            }
+            // // make sure the cell is within the lonMin to lonMin + periodX range
+            // double offsetLon = 0.0;
+            // if ((*self)->fixLonAcrossDateline) {
+            //     if (avgLon > lonMin + (*self)->periodX) {
+            //         offsetLon = -(*self)->periodX;
+            //     }
+            //     else if (avgLon < lonMin) {
+            //         offsetLon = (*self)->periodX;
+            //     }
+            //     for (int nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
+            //         (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*MNT_NUM_VERTS_PER_QUAD*3] += offsetLon;
+            //     }
+            // }
         }
     }
 
