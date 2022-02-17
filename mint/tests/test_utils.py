@@ -15,7 +15,7 @@ def filename():
 def grid(filename):
     gr = Grid()
     gr.setFlags(1, 1)
-    gr.loadFromUgrid2D(f'{filename}$Mesh2d')
+    gr.loadFromUgrid2DFile(f'{filename}$Mesh2d')
     return gr
 
 

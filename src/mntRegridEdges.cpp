@@ -486,7 +486,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     std::string filename = std::string(fort_filename, n);
     mntlog::info(__FILE__, __func__, __LINE__, 
                  "loading src grid from file \"" + filename + "\"");
-    int ier = mnt_grid_loadFromUgrid2D(&((*self)->srcGridObj), filename.c_str());
+    int ier = mnt_grid_loadFromUgrid2DFile(&((*self)->srcGridObj), filename.c_str());
     (*self)->srcGridIsOwned = true; // the regridder owns the src grid
     return ier;
 }
@@ -499,7 +499,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     std::string filename = std::string(fort_filename, n);
     mntlog::info(__FILE__, __func__, __LINE__, 
                  "loading dst grid from file \"" + filename + "\"");
-    int ier = mnt_grid_loadFromUgrid2D(&((*self)->dstGridObj), filename.c_str());
+    int ier = mnt_grid_loadFromUgrid2DFile(&((*self)->dstGridObj), filename.c_str());
     (*self)->dstGridIsOwned = true; // the regridder owns the dst grid
     return ier;
 }

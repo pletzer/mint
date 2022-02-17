@@ -18,7 +18,7 @@ void testLFRic() {
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
     // filename$meshname
-    ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
     assert(ier == 0);
     std::size_t numBadCells = 0;
     ier = mnt_grid_check(&grd, &numBadCells);
@@ -45,7 +45,7 @@ void testUgrid() {
     Grid_t* grd;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
-    ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
     assert(ier == 0);
     ier = mnt_grid_print(&grd);
     assert(ier == 0);
