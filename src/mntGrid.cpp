@@ -60,10 +60,17 @@ double fixLongitude(double periodX, double lonBase, double lon) {
 }
 
 
-void getCellPointsRegularized(std::size_t cellId, double periodX,
-                              const std::vector<double>& xyz, 
-                              const std::vector<std::size_t>& face2nodes, 
-                              std::vector<Vec3>& nodes) {
+/**
+ *  Get the cell points, without applying any regularization
+ * @param cellId cell ID
+ * @param xyz coordinates points
+ * @param face2nodes face (cell) to nodes (points) connectivity
+ * @param nodes array of coordinates (output)
+ */
+void getCellPoints(std::size_t cellId,
+                   const std::vector<double>& xyz, 
+                   const std::vector<std::size_t>& face2nodes, 
+                   std::vector<Vec3>& nodes) {
 
     const std::size_t* ptIds = &face2nodes[cellId*MNT_NUM_VERTS_PER_QUAD];
 
@@ -73,38 +80,17 @@ void getCellPointsRegularized(std::size_t cellId, double periodX,
         for (auto j = 0; j < 3; ++j) {
             nodes[i][j] = xyz[ptId*3 + j];
         }
-
-        // regularize by adding/subtracting a periodicity length
-        double lonBase = nodes[0][LON_INDEX];
-        double lon = nodes[i][LON_INDEX];
-        nodes[i][LON_INDEX] = fixLongitude(periodX, lonBase, lon);
-    }
-
-    std::size_t indexPole = std::numeric_limits<size_t>::max();
-    double avgLon = 0.;
-    for (std::size_t i = 0; i < nodes.size(); ++i) {
-        // detect if node is on/near pole
-        if (std::abs(std::abs(nodes[i][LAT_INDEX]) -  90.) < 1.e-12) {
-            indexPole = i;
-        }
-        else {
-            avgLon += nodes[i][LON_INDEX];
-        }
-    }
-    avgLon /= 3.;
-
-    if (indexPole < std::numeric_limits<size_t>::max()) {
-        // longitude at the pole is ill defined - we can set it to any
-        // value.
-        if (avgLon > 180.0) {
-            nodes[indexPole][LON_INDEX] = 270.0;
-        }
-        else {
-            nodes[indexPole][LON_INDEX] = 90.0;
-        }
     }
 }
 
+
+/**
+ *  Compute the face (cell) to edges connectivity
+ * @param xyz coordinates points
+ * @param faceNodeConnectivity face (cell) to nodes (points) connectivity
+ * @param edgeNodeConnectivity edge to nodes (points) connectivity
+ * @param faveEdgeConnectivity (output)
+ */
 void computeFaceEdgeConnectivity(const std::vector<std::size_t>& faceNodeConnectivity, 
                                  const std::vector<std::size_t>& edgeNodeConnectivity,
                                  std::vector<std::size_t>& faceEdgeConnectivity) {
@@ -416,29 +402,14 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     // copy
     const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
     (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
-    for (auto i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
+    for (std::size_t i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
         (*self)->faceNodeConnectivity[i] = face2nodes[i];
     }
 
     const std::vector<std::size_t>& edge2nodes = ugrid.getEdgePointIds();
     (*self)->edgeNodeConnectivity.resize(nedges*MNT_NUM_VERTS_PER_EDGE);
-    for (auto i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
+    for (std::size_t  i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
         (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
-    }
-
-    // find the min longitude of the domain
-    const std::vector<double>& xyz = ugrid.getPoints();
-
-    // compute min longitude after regularizing the coords across the faces
-    // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
-    double lonMin = +std::numeric_limits<double>::max();
-    std::vector<Vec3> nodes(MNT_NUM_VERTS_PER_QUAD);
-    for (auto cellId = 0; cellId < ncells; ++cellId) {
-        getCellPointsRegularized(cellId, (*self)->periodX, xyz, face2nodes, nodes);
-        for (const Vec3& p : nodes) {
-            double lon = p[LON_INDEX];
-            lonMin = (lon < lonMin? lon: lonMin);
-        }
     }
 
     // compute the face to edge connectivity from the edge-node and face-node connectivity
@@ -446,9 +417,14 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
                                 (*self)->edgeNodeConnectivity,
                                 (*self)->faceEdgeConnectivity);
 
+    // find the min longitude of the domain
+    const std::vector<double>& xyz = ugrid.getPoints();
+
     // repackage the cell vertices as a flat array
 
     if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
+
+        std::vector<Vec3> nodes(MNT_NUM_VERTS_PER_QUAD);
 
         // allocate the vertices and set the values
         (*self)->verts = new double[ncells * MNT_NUM_VERTS_PER_QUAD * 3];
@@ -456,19 +432,19 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
 
         for (std::size_t icell = 0; icell < ncells; ++icell) {
 
+            getCellPoints(icell, xyz, face2nodes, nodes);
+
             // fix longitude when crossing the dateline
             // use the first longitude as the base
-            std::size_t kBase = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD];
-            double lonBase = ugrid.getPoint(kBase)[LON_INDEX];
+            double lonBase = nodes[0][LON_INDEX];
 
             double avgLon = 0;
             long long poleNodeIdx = -1;
             int count = 0;
             for (auto nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
 
-                std::size_t k = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + nodeIdx];
-                double lon = ugrid.getPoint(k)[LON_INDEX];
-                double lat = ugrid.getPoint(k)[LAT_INDEX];
+                double lon = nodes[nodeIdx][LON_INDEX];
+                double lat = nodes[nodeIdx][LAT_INDEX];
 
                 if ((*self)->fixLonAcrossDateline) {
                     lon = fixLongitude((*self)->periodX, lonBase, lon);
@@ -497,20 +473,6 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
             if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
                 (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = avgLon;
             }
-
-            // // make sure the cell is within the lonMin to lonMin + periodX range
-            // double offsetLon = 0.0;
-            // if ((*self)->fixLonAcrossDateline) {
-            //     if (avgLon > lonMin + (*self)->periodX) {
-            //         offsetLon = -(*self)->periodX;
-            //     }
-            //     else if (avgLon < lonMin) {
-            //         offsetLon = (*self)->periodX;
-            //     }
-            //     for (int nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
-            //         (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*MNT_NUM_VERTS_PER_QUAD*3] += offsetLon;
-            //     }
-            // }
         }
     }
 
