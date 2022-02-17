@@ -327,16 +327,25 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     std::size_t ncells = ugrid.getNumberOfFaces();
     std::size_t nedges = ugrid.getNumberOfEdges();
     std::size_t npoints = ugrid.getNumberOfPoints();
+    (*self)->numEdges = nedges;
 
     double xmin[3], xmax[3];
     ugrid.getRange(xmin, xmax);
     double lonMin = xmin[0];
 
-    (*self)->numEdges = nedges;
-
     // copy
-    (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
-    (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
+    const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
+
+    (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
+    for (auto i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
+        (*self)->faceNodeConnectivity[i] = face2nodes[i];
+    }
+
+    const std::vector<std::size_t>& edge2nodes = ugrid.getEdgePointIds();
+    (*self)->edgeNodeConnectivity.resize(nedges*MNT_NUM_VERTS_PER_EDGE);
+    for (auto i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
+        (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
+    }
 
     int numVertsPerCell = MNT_NUM_VERTS_PER_QUAD;
 
