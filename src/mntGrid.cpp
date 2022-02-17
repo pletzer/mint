@@ -103,8 +103,42 @@ void getCellPointsRegularized(std::size_t cellId, double periodX,
             nodes[indexPole][LON_INDEX] = 90.0;
         }
     }
-
 }
+
+void computeFaceEdgeConnectivity(const std::vector<std::size_t>& faceNodeConnectivity, 
+                                 const std::vector<std::size_t>& edgeNodeConnectivity,
+                                 std::vector<std::size_t>& faceEdgeConnectivity) {
+
+    std::size_t ncells = faceNodeConnectivity.size() / MNT_NUM_VERTS_PER_QUAD;
+    std::size_t nedges = edgeNodeConnectivity.size() / MNT_NUM_VERTS_PER_EDGE;
+
+    std::map< std::array<std::size_t, 2>, std::size_t > node2Edge;
+    for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
+        // start node
+        std::size_t n0 = edgeNodeConnectivity[iedge*2 + 0];
+        // end node
+        std::size_t n1 = edgeNodeConnectivity[iedge*2 + 1];
+        // create two entries n0 -> n1 and n1 -> n0
+        std::pair< std::array<std::size_t, 2>, std::size_t > ne1({n0, n1}, iedge);
+        std::pair< std::array<std::size_t, 2>, std::size_t > ne2({n1, n0}, iedge);
+        node2Edge.insert(ne1);
+        node2Edge.insert(ne2);
+    }
+
+    faceEdgeConnectivity.resize(ncells * MNT_NUM_EDGES_PER_QUAD);
+    for (std::size_t icell = 0; icell < ncells; ++icell) {
+        for (std::size_t i0 = 0; i0 < MNT_NUM_VERTS_PER_QUAD; ++i0) {
+            std::size_t i1 = (i0 + 1) % MNT_NUM_VERTS_PER_QUAD;
+            // start and end node indices
+            std::size_t n0 = faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i0];
+            std::size_t n1 = faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i1];
+            std::size_t edgeId = node2Edge[std::array<std::size_t, 2>{n0, n1}];
+            // set the edge Id for these two nodes
+            faceEdgeConnectivity[icell*MNT_NUM_EDGES_PER_QUAD + i0] = edgeId;
+        }
+    }
+}
+
 
 LIBRARY_API
 int mnt_grid_new(Grid_t** self) {
@@ -408,31 +442,9 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     }
 
     // compute the face to edge connectivity from the edge-node and face-node connectivity
-    (*self)->faceEdgeConnectivity.resize(ncells*MNT_NUM_EDGES_PER_QUAD);
-    std::map< std::array<std::size_t, 2>, std::size_t > node2Edge;
-    for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
-        // start node
-        std::size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
-        // end node
-        std::size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
-        // create two entries n0 -> n1 and n1 -> n0
-        std::pair< std::array<std::size_t, 2>, std::size_t > ne1({n0, n1}, iedge);
-        std::pair< std::array<std::size_t, 2>, std::size_t > ne2({n1, n0}, iedge);
-        node2Edge.insert(ne1);
-        node2Edge.insert(ne2);
-    }
-    (*self)->faceEdgeConnectivity.resize(ncells * MNT_NUM_EDGES_PER_QUAD);
-    for (std::size_t icell = 0; icell < ncells; ++icell) {
-        for (std::size_t i0 = 0; i0 < MNT_NUM_VERTS_PER_QUAD; ++i0) {
-            std::size_t i1 = (i0 + 1) % MNT_NUM_VERTS_PER_QUAD;
-            // start and end node indices
-            std::size_t n0 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i0];
-            std::size_t n1 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i1];
-            std::size_t edgeId = node2Edge[std::array<std::size_t, 2>{n0, n1}];
-            // set the edge Id for these two nodes
-            (*self)->faceEdgeConnectivity[icell*MNT_NUM_EDGES_PER_QUAD + i0] = edgeId;
-        }
-    }
+    computeFaceEdgeConnectivity((*self)->faceNodeConnectivity, 
+                                (*self)->edgeNodeConnectivity,
+                                (*self)->faceEdgeConnectivity);
 
     // repackage the cell vertices as a flat array
 
