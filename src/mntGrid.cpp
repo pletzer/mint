@@ -68,8 +68,8 @@ double fixLongitude(double periodX, double lonBase, double lon) {
  * @param nodes array of coordinates (output)
  */
 void getCellPoints(std::size_t cellId,
-                   const std::vector<double>& xyz, 
-                   const std::vector<std::size_t>& face2nodes, 
+                   const double xyz[], 
+                   const std::size_t face2nodes[], 
                    std::vector<Vec3>& nodes) {
 
     const std::size_t* ptIds = &face2nodes[cellId*MNT_NUM_VERTS_PER_QUAD];
@@ -370,58 +370,14 @@ LIBRARY_API
 int mnt_grid_loadFromUGrid2DData(Grid_t** self, std::size_t ncells, std::size_t nedges, std::size_t npoints, 
                                  const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]) {
 
-    // build the connectivity
-    int ier = mnt_grid_build(self, MNT_NUM_VERTS_PER_QUAD, ncells);
-
-    return ier;
-}
-
-
-LIBRARY_API
-int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
-
-    // extract the filename and the mesh name from "filename:meshname"
-    auto fm = fileMeshNameExtractor(fileAndMeshName);
-
-    std::string filename = fm.first;
-    std::string meshname = fm.second;
-
-    Ugrid2D ugrid;
-    int ier = ugrid.load(filename, meshname);
-    if (ier != 0) {
-        mntlog::error(__FILE__, __func__, __LINE__, 
-            "could not read mesh \"" + meshname + "\" in UGRID file \"" + filename + "\"");
-        return 1;
-    }
-
-    std::size_t ncells = ugrid.getNumberOfFaces();
-    std::size_t nedges = ugrid.getNumberOfEdges();
-    std::size_t npoints = ugrid.getNumberOfPoints();
     (*self)->numEdges = nedges;
-
-    // copy
-    const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
-    (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
-    for (std::size_t i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
-        (*self)->faceNodeConnectivity[i] = face2nodes[i];
-    }
-
-    const std::vector<std::size_t>& edge2nodes = ugrid.getEdgePointIds();
-    (*self)->edgeNodeConnectivity.resize(nedges*MNT_NUM_VERTS_PER_EDGE);
-    for (std::size_t  i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
-        (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
-    }
 
     // compute the face to edge connectivity from the edge-node and face-node connectivity
     computeFaceEdgeConnectivity((*self)->faceNodeConnectivity, 
                                 (*self)->edgeNodeConnectivity,
                                 (*self)->faceEdgeConnectivity);
 
-    // find the min longitude of the domain
-    const std::vector<double>& xyz = ugrid.getPoints();
-
     // repackage the cell vertices as a flat array
-
     if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
 
         std::vector<Vec3> nodes(MNT_NUM_VERTS_PER_QUAD);
@@ -477,7 +433,50 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     }
 
     // build the connectivity
-    ier = mnt_grid_build(self, MNT_NUM_VERTS_PER_QUAD, ncells);
+    int ier = mnt_grid_build(self, MNT_NUM_VERTS_PER_QUAD, ncells);
+
+    return ier;
+}
+
+
+LIBRARY_API
+int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
+
+    // extract the filename and the mesh name from "filename:meshname"
+    auto fm = fileMeshNameExtractor(fileAndMeshName);
+
+    std::string filename = fm.first;
+    std::string meshname = fm.second;
+
+    Ugrid2D ugrid;
+    int ier = ugrid.load(filename, meshname);
+    if (ier != 0) {
+        mntlog::error(__FILE__, __func__, __LINE__, 
+            "could not read mesh \"" + meshname + "\" in UGRID file \"" + filename + "\"");
+        return 1;
+    }
+
+    std::size_t ncells = ugrid.getNumberOfFaces();
+    std::size_t nedges = ugrid.getNumberOfEdges();
+    std::size_t npoints = ugrid.getNumberOfPoints();
+
+    // copy the connectivity arrays and coordinates
+    const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
+    (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
+    for (std::size_t i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
+        (*self)->faceNodeConnectivity[i] = face2nodes[i];
+    }
+
+    const std::vector<std::size_t>& edge2nodes = ugrid.getEdgePointIds();
+    (*self)->edgeNodeConnectivity.resize(nedges*MNT_NUM_VERTS_PER_EDGE);
+    for (std::size_t  i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
+        (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
+    }
+
+    const std::vector<double>& xyz = ugrid.getPoints();
+
+    ier = mnt_grid_loadFromUGrid2DData(self, ncells, nedges, npoints, 
+                                       &xyz[0], &face2nodes[0], &edge2nodes[0]);
 
     return ier;
 }
