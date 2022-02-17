@@ -30,6 +30,59 @@ inline double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
     Vec3 d20 = p2 - p0;
     return d10[0]*d20[1] - d10[1]*d20[0];
 }
+inline double getArea2D(const double* p0, const double* p1, const double* p2) {
+    return (p1[0]-p0[0])*(p2[1] - p0[1]) - (p1[1] - p0[1])*(p2[0] - p0[0]);
+}
+
+void getCellPointsRegularized(std::size_t cellId, double periodX,
+                              const std::vector<double>& xyz, 
+                              const std::vector<std::size_t>& face2nodes, 
+                              std::vector<Vec3>& nodes) {
+
+    const std::size_t* ptIds = &face2nodes[cellId*MNT_NUM_VERTS_PER_QUAD];
+
+    for (std::size_t i = 0; i < MNT_NUM_VERTS_PER_QUAD; ++i) {
+
+        std::size_t ptId = ptIds[i];
+        for (auto j = 0; j < 3; ++j) {
+            nodes[i][j] = xyz[ptId*3 + j];
+        }
+
+        // regularize by adding/subtracting a periodicity length
+        double dLon = nodes[i][LON_INDEX] - nodes[0][LON_INDEX];
+        double dLonsPMPeriod[] = {std::abs(dLon - periodX), 
+                                  std::abs(dLon          ), 
+                                  std::abs(dLon + periodX)};
+        double* minDLon = std::min_element(&dLonsPMPeriod[0], &dLonsPMPeriod[3]);
+        int indexMin = (int) std::distance(dLonsPMPeriod, minDLon);
+        nodes[i][LON_INDEX] += (indexMin - 1)*periodX;
+    }
+
+    std::size_t indexPole = std::numeric_limits<size_t>::max();
+    double avgLon = 0.;
+    for (std::size_t i = 0; i < nodes.size(); ++i) {
+        // detect if node is on/near pole
+        if (std::abs(std::abs(nodes[i][LAT_INDEX]) -  90.) < 1.e-12) {
+            indexPole = i;
+        }
+        else {
+            avgLon += nodes[i][LON_INDEX];
+        }
+    }
+    avgLon /= 3.;
+
+    if (indexPole < std::numeric_limits<size_t>::max()) {
+        // longitude at the pole is ill defined - we can set it to any
+        // value.
+        if (avgLon > 180.0) {
+            nodes[indexPole][LON_INDEX] = 270.0;
+        }
+        else {
+            nodes[indexPole][LON_INDEX] = 90.0;
+        }
+    }
+
+}
 
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge lengths
@@ -142,6 +195,7 @@ int mnt_grid_getPointsPtr(Grid_t** self, double** pointsPtr) {
     return 0;
 }
 
+
 LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
@@ -183,7 +237,6 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
         (*self)->grid->InsertNextCell(cellType, ptIds);
     }
     (*self)->grid->SetPoints((*self)->points);
-    // (*self)->grid->BuildLinks(); // DO WE NEED THIS?
 
     // clean
     ptIds->Delete();
@@ -329,13 +382,8 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     std::size_t npoints = ugrid.getNumberOfPoints();
     (*self)->numEdges = nedges;
 
-    double xmin[3], xmax[3];
-    ugrid.getRange(xmin, xmax);
-    double lonMin = xmin[0];
-
     // copy
     const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
-
     (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
     for (auto i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
         (*self)->faceNodeConnectivity[i] = face2nodes[i];
@@ -347,10 +395,23 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
         (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
     }
 
-    // get the face to edge connectivity from the file
-    (*self)->faceEdgeConnectivity.resize(ncells*MNT_NUM_EDGES_PER_QUAD);
+    // find the min longitude of the domain
+    const std::vector<double>& xyz = ugrid.getPoints();
+
+    // compute min longitude after regularizing the coords across the faces
+    // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
+    double lonMin = +std::numeric_limits<double>::max();
+    std::vector<Vec3> nodes(MNT_NUM_VERTS_PER_QUAD);
+    for (auto cellId = 0; cellId < ncells; ++cellId) {
+        getCellPointsRegularized(cellId, (*self)->periodX, xyz, face2nodes, nodes);
+        for (const Vec3& p : nodes) {
+            double lon = p[LON_INDEX];
+            lonMin = (lon < lonMin? lon: lonMin);
+        }
+    }
 
     // compute the face to edge connectivity from the edge-node and face-node connectivity
+    (*self)->faceEdgeConnectivity.resize(ncells*MNT_NUM_EDGES_PER_QUAD);
     std::map< std::array<std::size_t, 2>, std::size_t > node2Edge;
     for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
         // start node
