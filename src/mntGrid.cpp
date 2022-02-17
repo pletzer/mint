@@ -34,6 +34,32 @@ inline double getArea2D(const double* p0, const double* p1, const double* p2) {
     return (p1[0]-p0[0])*(p2[1] - p0[1]) - (p1[1] - p0[1])*(p2[0] - p0[0]);
 }
 
+/**
+ * Fix the longitude by adding/subtracting a period to reduce the edge lengths
+ * @param periodX periodicity length in x
+ * @param lonBase base/reference longitude
+ * @param lon longitude
+ * @return corrected longitude
+ */
+inline
+double fixLongitude(double periodX, double lonBase, double lon) {
+
+    double diffLon = lon - lonBase;
+    const double eps = 100 * std::numeric_limits<double>::epsilon();
+
+    // favour leaving lon as is if lon == 0
+    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX - eps),
+                                             std::abs(diffLon),
+                                             std::abs(diffLon + periodX + eps)};
+
+    std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), diffLonMinusZeroPlus.end());
+    int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
+
+    // fix the longitude
+    return lon + (indexMin - 1)*periodX;
+}
+
+
 void getCellPointsRegularized(std::size_t cellId, double periodX,
                               const std::vector<double>& xyz, 
                               const std::vector<std::size_t>& face2nodes, 
@@ -49,13 +75,9 @@ void getCellPointsRegularized(std::size_t cellId, double periodX,
         }
 
         // regularize by adding/subtracting a periodicity length
-        double dLon = nodes[i][LON_INDEX] - nodes[0][LON_INDEX];
-        double dLonsPMPeriod[] = {std::abs(dLon - periodX), 
-                                  std::abs(dLon          ), 
-                                  std::abs(dLon + periodX)};
-        double* minDLon = std::min_element(&dLonsPMPeriod[0], &dLonsPMPeriod[3]);
-        int indexMin = (int) std::distance(dLonsPMPeriod, minDLon);
-        nodes[i][LON_INDEX] += (indexMin - 1)*periodX;
+        double lonBase = nodes[0][LON_INDEX];
+        double lon = nodes[i][LON_INDEX];
+        nodes[i][LON_INDEX] = fixLongitude(periodX, lonBase, lon);
     }
 
     std::size_t indexPole = std::numeric_limits<size_t>::max();
@@ -82,31 +104,6 @@ void getCellPointsRegularized(std::size_t cellId, double periodX,
         }
     }
 
-}
-
-/**
- * Fix the longitude by adding/subtracting a period to reduce the edge lengths
- * @param periodX periodicity length in x
- * @param lonBase base/reference longitude
- * @param lon longitude
- * @return corrected longitude
- */
-inline
-double fixLongitude(double periodX, double lonBase, double lon) {
-
-    double diffLon = lon - lonBase;
-    const double eps = 100 * std::numeric_limits<double>::epsilon();
-
-    // favour leaving lon as is if lon == 0
-    std::vector<double> diffLonMinusZeroPlus{std::abs(diffLon - periodX - eps),
-                                             std::abs(diffLon),
-                                             std::abs(diffLon + periodX + eps)};
-
-    std::vector<double>::iterator it = std::min_element(diffLonMinusZeroPlus.begin(), diffLonMinusZeroPlus.end());
-    int indexMin = (int) std::distance(diffLonMinusZeroPlus.begin(), it);
-
-    // fix the longitude
-    return lon + (indexMin - 1)*periodX;
 }
 
 LIBRARY_API
