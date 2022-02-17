@@ -136,14 +136,6 @@ std::vector<Vec3> getEdgePointsRegularized(std::size_t edgeId) const;
 std::vector<Vec3> getFacePointsRegularized(std::size_t faceId) const;
 
 /**
- * Get min/max range of the domain
- * @param xmin low point of the domain (output)
- * @param xmax high point of the domain (output)
- */
-void getRange(double xmin[], double xmax[]) const;
-
-
-/**
  * Get the face vertex coordinates
  * @return array of points
  */
@@ -160,10 +152,6 @@ private:
 
     // vertex coordinates
     std::vector<double> points;
-
-    // domain min/max
-    Vec3 xmin;
-    Vec3 xmax;
 
     std::size_t numPoints;
     std::size_t numEdges;
