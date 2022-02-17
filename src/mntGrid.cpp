@@ -347,8 +347,6 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
         (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
     }
 
-    int numVertsPerCell = MNT_NUM_VERTS_PER_QUAD;
-
     // get the face to edge connectivity from the file
     (*self)->faceEdgeConnectivity.resize(ncells*MNT_NUM_EDGES_PER_QUAD);
 
@@ -383,22 +381,22 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
     if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
 
         // allocate the vertices and set the values
-        (*self)->verts = new double[ncells * numVertsPerCell * 3];
+        (*self)->verts = new double[ncells * MNT_NUM_VERTS_PER_QUAD * 3];
         (*self)->ownsVerts = true;
 
         for (std::size_t icell = 0; icell < ncells; ++icell) {
 
             // fix longitude when crossing the dateline
             // use the first longitude as the base
-            std::size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
+            std::size_t kBase = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD];
             double lonBase = ugrid.getPoint(kBase)[LON_INDEX];
 
             double avgLon = 0;
             long long poleNodeIdx = -1;
             int count = 0;
-            for (auto nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+            for (auto nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
 
-                std::size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
+                std::size_t k = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + nodeIdx];
                 double lon = ugrid.getPoint(k)[LON_INDEX];
                 double lat = ugrid.getPoint(k)[LAT_INDEX];
 
@@ -416,9 +414,9 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
                 }
 
                 // even in 2d we have three components
-                (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lon;
-                (*self)->verts[LAT_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lat;
-                (*self)->verts[ELV_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = 0.0;
+                (*self)->verts[LON_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lon;
+                (*self)->verts[LAT_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lat;
+                (*self)->verts[ELV_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = 0.0;
             }
             avgLon /= count;
 
@@ -427,7 +425,7 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
             // average of the 3 other longitudes.
 
             if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
-                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
+                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = avgLon;
             }
 
             // make sure the cell is within the lonMin to lonMin + periodX range
@@ -439,8 +437,8 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
                 else if (avgLon < lonMin) {
                     offsetLon = (*self)->periodX;
                 }
-                for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
-                    (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*numVertsPerCell*3] += offsetLon;
+                for (int nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
+                    (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*MNT_NUM_VERTS_PER_QUAD*3] += offsetLon;
                 }
             }
         }
