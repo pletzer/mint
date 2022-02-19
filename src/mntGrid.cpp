@@ -372,6 +372,17 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
 
     (*self)->numEdges = nedges;
 
+    // copy the connectivity arrays and coordinates
+    (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
+    for (std::size_t i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
+        (*self)->faceNodeConnectivity[i] = face2nodes[i];
+    }
+
+    (*self)->edgeNodeConnectivity.resize(nedges*MNT_NUM_VERTS_PER_EDGE);
+    for (std::size_t  i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
+        (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
+    }
+
     // compute the face to edge connectivity from the edge-node and face-node connectivity
     computeFaceEdgeConnectivity((*self)->faceNodeConnectivity, 
                                 (*self)->edgeNodeConnectivity,
@@ -460,20 +471,9 @@ int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
     std::size_t nedges = ugrid.getNumberOfEdges();
     std::size_t npoints = ugrid.getNumberOfPoints();
 
-    // copy the connectivity arrays and coordinates
-    const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
-    (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
-    for (std::size_t i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
-        (*self)->faceNodeConnectivity[i] = face2nodes[i];
-    }
-
-    const std::vector<std::size_t>& edge2nodes = ugrid.getEdgePointIds();
-    (*self)->edgeNodeConnectivity.resize(nedges*MNT_NUM_VERTS_PER_EDGE);
-    for (std::size_t  i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
-        (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
-    }
-
     const std::vector<double>& xyz = ugrid.getPoints();
+    const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
+    const std::vector<std::size_t>& edge2nodes = ugrid.getEdgePointIds();
 
     ier = mnt_grid_loadFromUgrid2DData(self, ncells, nedges, npoints, 
                                        &xyz[0], &face2nodes[0], &edge2nodes[0]);
@@ -599,6 +599,12 @@ LIBRARY_API
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
                        std::size_t* edgeId, int* signEdge) {
 
+    if ((*self)->faceNodeConnectivity.size() == 0) {
+        std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
+
     // initialize
     *signEdge = 0;
 
@@ -648,6 +654,12 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
 
 LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
+
+    if ((*self)->faceNodeConnectivity.size() == 0) {
+        std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
 
     *numEdges = (*self)->numEdges;
     return 0;

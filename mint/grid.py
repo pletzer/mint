@@ -69,7 +69,8 @@ class Grid(object):
         """
         MINTLIB.mnt_grid_loadFromUgrid2DData.argtypes = [POINTER(c_void_p),
                                                          c_size_t, c_size_t, c_size_t,
-                                                         DOUBLE_ARRAY_PTR, SIZE_T_ARRAY_PTR, SIZE_T_ARRAY_PTR]
+                                                         DOUBLE_ARRAY_PTR,
+                                                         SIZE_T_ARRAY_PTR, SIZE_T_ARRAY_PTR]
         ncells = c_size_t(face2nodes.shape[0])
         nedges = c_size_t(edge2nodes.shape[0])
         npoints = c_size_t(xyz.shape[0])

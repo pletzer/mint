@@ -25,9 +25,6 @@ def test_create_grid():
     pts = gr.getPoints()
     print(pts)
 
-    # expected because we set the grid with setPoints
-    assert gr.getNumberOfEdges() == 0
-
     with TemporaryDirectory() as d:
         fname = str(Path(d) / Path('grid.vtk'))
         gr.dump(fname)
@@ -127,9 +124,18 @@ def test_load_ugrid_data():
     # 1          0
     # :          :
     # 0....<3....1
-    xyz = numpy.array([(0.,0.,0.), (1.,0.,0.), (1.,1.,0.), (0.,1.,0.)])
+    xyz = numpy.array([(0.,0.,0.),
+                       (1.,0.,0.),
+                       (1.,1.,0.),
+                       (0.,1.,0.)],
+                       dtype=numpy.float64)
     face2nodes = numpy.array([(0, 1, 2, 3),], dtype=numpy.uintp)
-    edge2nodes = numpy.array([(1, 2), (3, 0), (3, 2), (1, 0)], dtype=numpy.uintp)
+    edge2nodes = numpy.array([(1, 2), # edge 0
+                              (3, 0), # edge 1
+                              (3, 2), # edge 2
+                              (1, 0)],# edge 3
+                              dtype=numpy.uintp)
+
     gr = Grid()
     gr.setFlags(0, 0)
     gr.loadFromUgrid2DData(xyz, face2nodes, edge2nodes)
