@@ -658,7 +658,6 @@ int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
     if ((*self)->faceNodeConnectivity.size() == 0) {
         std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
         mntlog::warn(__FILE__, __func__, __LINE__, msg);
-        return 1;
     }
 
     *numEdges = (*self)->numEdges;
