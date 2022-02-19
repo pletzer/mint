@@ -119,6 +119,38 @@ def test_edge_arc_lengths():
 cell {icell} edge {edgeIndex} edge arc length/radius: {arcLength}""")
 
 
+def test_load_ugrid_data():
+    # a single cell
+    # 3....>2....2
+    # :          :
+    # v          ^
+    # 1          0
+    # :          :
+    # 0....<3....1
+    xyz = numpy.array([(0.,0.,0.), (1.,0.,0.), (1.,1.,0.), (0.,1.,0.)])
+    face2nodes = numpy.array([(0, 1, 2, 3),], dtype=numpy.uintp)
+    edge2nodes = numpy.array([(1, 2), (3, 0), (3, 2), (1, 0)], dtype=numpy.uintp)
+    gr = Grid()
+    gr.setFlags(0, 0)
+    gr.loadFromUgrid2DData(xyz, face2nodes, edge2nodes)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=0)
+    assert(n0 == 0)
+    assert(n1 == 1)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=1)
+    assert(n0 == 1)
+    assert(n1 == 2)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=2)
+    assert(n0 == 3)
+    assert(n1 == 2)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=3)
+    assert(n0 == 0)
+    assert(n1 == 3)
+
+
 if __name__ == '__main__':
 
     test_edge_arc_lengths()

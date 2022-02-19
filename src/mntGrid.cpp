@@ -367,7 +367,7 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 }
 
 LIBRARY_API
-int mnt_grid_loadFromUGrid2DData(Grid_t** self, std::size_t ncells, std::size_t nedges, std::size_t npoints, 
+int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t nedges, std::size_t npoints, 
                                  const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]) {
 
     (*self)->numEdges = nedges;
@@ -475,7 +475,7 @@ int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
 
     const std::vector<double>& xyz = ugrid.getPoints();
 
-    ier = mnt_grid_loadFromUGrid2DData(self, ncells, nedges, npoints, 
+    ier = mnt_grid_loadFromUgrid2DData(self, ncells, nedges, npoints, 
                                        &xyz[0], &face2nodes[0], &edge2nodes[0]);
 
     return ier;
@@ -569,6 +569,12 @@ int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
 
 LIBRARY_API
 int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]) {
+
+    if ((*self)->faceNodeConnectivity.size() == 0) {
+        std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
 
     // nodeIndex0,1 are the local cell indices of the vertices in the range 0-3
     int nodeIndex0 = edgeIndex;

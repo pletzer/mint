@@ -17,7 +17,7 @@ var searchData=
   ['mnt_5fgrid_5fgetpoints_14',['mnt_grid_getPoints',['../mnt_grid_8h.html#a78460c4de03af0177fc5630a21539862',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fgetpointsptr_15',['mnt_grid_getPointsPtr',['../mnt_grid_8h.html#ac6e4790c007082db4a0d25482e06fdc5',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fload_16',['mnt_grid_load',['../mnt_grid_8h.html#a1f4970fa8e13ba40510be5dd5158935a',1,'mntGrid.h']]],
-  ['mnt_5fgrid_5floadfromugrid2ddata_17',['mnt_grid_loadFromUGrid2DData',['../mnt_grid_8h.html#ad32bf16d8d9995da546994eb0cfde39c',1,'mntGrid.h']]],
+  ['mnt_5fgrid_5floadfromugrid2ddata_17',['mnt_grid_loadFromUgrid2DData',['../mnt_grid_8h.html#a7e56878c465a7e49fa6111fa61e90929',1,'mntGrid.h']]],
   ['mnt_5fgrid_5floadfromugrid2dfile_18',['mnt_grid_loadFromUgrid2DFile',['../mnt_grid_8h.html#afec030ab941581dbf2c3d37e7687b113',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fnew_19',['mnt_grid_new',['../mnt_grid_8h.html#a08f391acad052fb4a4d4ac63ff7bacab',1,'mntGrid.h']]],
   ['mnt_5fgrid_5fprint_20',['mnt_grid_print',['../mnt_grid_8h.html#a6ed4234f6ece38eb7b8d5d0e21b589ac',1,'mntGrid.h']]],

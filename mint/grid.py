@@ -1,12 +1,13 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
                     c_size_t, c_longlong, c_double)
-from . import MINTLIB, NUM_VERTS_PER_QUAD
+from . import MINTLIB, NUM_VERTS_PER_QUAD, NUM_VERTS_PER_EDGE
 from . import error_handler, warning_handler
 import numpy
 
 
 FILE = 'grid.py'
 DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
+SIZE_T_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp)
 
 
 class Grid(object):
@@ -58,6 +59,25 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'setFlags', ier)
 
+    def loadFromUgrid2DData(self, xyz, face2nodes, edge2nodes):
+        """
+        Load a grid from 2D UGRID data structures.
+
+        :param xyz: array of vertex corrdinates, size npoints * 3
+        :param face2nodes: array of face/cell connectivity to vertex Ids
+        :param edge2nodes: array of edge connectivity to vertex Ids
+        """
+        MINTLIB.mnt_grid_loadFromUgrid2DData.argtypes = [POINTER(c_void_p),
+                                                         c_size_t, c_size_t, c_size_t,
+                                                         DOUBLE_ARRAY_PTR, SIZE_T_ARRAY_PTR, SIZE_T_ARRAY_PTR]
+        ncells = c_size_t(face2nodes.shape[0])
+        nedges = c_size_t(edge2nodes.shape[0])
+        npoints = c_size_t(xyz.shape[0])
+        ier = MINTLIB.mnt_grid_loadFromUgrid2DData(self.obj, ncells, nedges, npoints,
+                                                   xyz, face2nodes, edge2nodes)
+        if ier:
+            error_handler(FILE, 'loadFromUgrid2DData', ier)
+
     def loadFromUgrid2DFile(self, fileAndMeshName):
         """
         Load a grid from a 2D UGRID file.
@@ -96,7 +116,7 @@ class Grid(object):
 
     def setPoints(self, points):
         """
-        Set the point (vertices) and build the connectivity.
+        Set the points (vertices), cell by cell.
 
         :param points: numpy contiguous array of shape (ncells,
                        num_verts_per_cell, 3) using C ordering
@@ -116,7 +136,7 @@ class Grid(object):
 
     def getPoints(self):
         """
-        Get a view of the points (vertices) array of the cell-by-cell mesh.
+        Get a view of the point (vertex) array of the cell-by-cell mesh.
 
         :return numpy contiguous array of shape (ncells,
                       num_verts_per_cell, 3)
@@ -157,12 +177,12 @@ class Grid(object):
 
         :param cellId: Id of the cell
         :param edgeIndex: edge index of the cell (0...3)
-        :returns two node indices
+        :returns node indices
         """
         MINTLIB.mnt_grid_getNodeIds.argtypes = [POINTER(c_void_p),
-                                            c_longlong, c_int,
-                                            POINTER(c_size_t)]
-        nodeIds = (c_size_t*2)()
+                                                c_size_t, c_int,
+                                                POINTER(c_size_t)]
+        nodeIds = (c_size_t*NUM_VERTS_PER_EDGE)()
         ier = MINTLIB.mnt_grid_getNodeIds(self.obj, cellId, edgeIndex, nodeIds)
         if ier:
             error_handler(FILE, 'getNodeIds', ier)

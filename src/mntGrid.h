@@ -92,22 +92,6 @@ int mnt_grid_del(Grid_t** self);
 LIBRARY_API
 int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole, int degrees);
 
-/**
- * Load the grid from UGrid data structures
- * @param self instance of Grid_t
- * @param numCells number of cells
- * @param numEdges number of edges
- * @param numPoints number of points
- * @param xyz flat array of size numPoints*3
- * @param face2nodes cell to nodes connectivity (0 based indexing)
- * @param edge2nodes edge to nodes connectivity (0 based indexing)
- * @return error code (0 = OK)
- * @note this method will copy the data structures
- */
-LIBRARY_API
-int mnt_grid_loadFromUGrid2DData(Grid_t** self, std::size_t numCells, std::size_t numEdges, std::size_t numPoints, 
-                                 const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]);
-
 
 /**
  * Set the pointer to an array of points
@@ -183,6 +167,22 @@ int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, do
  */
 LIBRARY_API
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
+
+/**
+ * Load the grid from UGrid data structures
+ * @param self instance of Grid_t
+ * @param numCells number of cells
+ * @param numEdges number of edges
+ * @param numPoints number of points
+ * @param xyz flat array of size numPoints*3
+ * @param face2nodes cell to nodes connectivity (0 based indexing)
+ * @param edge2nodes edge to nodes connectivity (0 based indexing)
+ * @return error code (0 = OK)
+ * @note this method will copy the data structures
+ */
+LIBRARY_API
+int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t numCells, std::size_t numEdges, std::size_t numPoints, 
+                                 const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]);
 
 /**
  * Load a grid from a 2D Ugrid file
