@@ -12,13 +12,63 @@ void testVTK() {
 }
 
 
+void testUgridData() {
+
+    int ier;
+    Grid_t* grd;
+    ier = mnt_grid_new(&grd);
+    assert(ier == 0);
+
+    /* a single cell
+     3....>2....2
+     :          :
+     v          ^
+     1          0
+     :          :
+     0....<3....1
+    */
+
+    std::size_t ncells = 1;
+    std::size_t nedges = 4;
+    std::size_t npoints = 4;
+    std::vector<double> xyz{0.,0.,0.,
+                            1.,0.,0.,
+                            1.,1.,0.,
+                            0.,1.,0.};
+    std::vector<std::size_t> face2nodes{0, 1, 2, 3};
+    std::vector<std::size_t> edge2nodes{1, 2,
+                                        3, 0,
+                                        3, 2,
+                                        1, 0};
+    ier = mnt_grid_loadFromUgrid2DData(&grd, ncells, nedges, npoints, &xyz[0], &face2nodes[0], &edge2nodes[0]);
+
+    std::vector<vtkIdType> edgeNodeIds(MNT_NUM_VERTS_PER_EDGE);
+
+    ier = mnt_grid_getNodeIds(&grd, 0, 0, &edgeNodeIds[0]);
+    assert(edgeNodeIds[0] == 0);
+    assert(edgeNodeIds[1] == 1);
+
+    ier = mnt_grid_getNodeIds(&grd, 0, 1, &edgeNodeIds[0]);
+    assert(edgeNodeIds[0] == 1);
+    assert(edgeNodeIds[1] == 2);
+
+    ier = mnt_grid_getNodeIds(&grd, 0, 2, &edgeNodeIds[0]);
+    assert(edgeNodeIds[0] == 3);
+    assert(edgeNodeIds[1] == 2);
+
+    ier = mnt_grid_getNodeIds(&grd, 0, 3, &edgeNodeIds[0]);
+    assert(edgeNodeIds[0] == 0);
+    assert(edgeNodeIds[1] == 3);
+}
+
+
 void testLFRic() {
     int ier;
     Grid_t* grd;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
     // filename$meshname
-    ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
     assert(ier == 0);
     std::size_t numBadCells = 0;
     ier = mnt_grid_check(&grd, &numBadCells);
@@ -37,7 +87,6 @@ void testLFRic() {
     }
     ier = mnt_grid_del(&grd);
     assert(ier == 0);
-    mnt_printLogMessages();
 }
 
 void testUgrid() {
@@ -45,7 +94,7 @@ void testUgrid() {
     Grid_t* grd;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
-    ier = mnt_grid_loadFromUgrid2D(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
     assert(ier == 0);
     ier = mnt_grid_print(&grd);
     assert(ier == 0);
@@ -123,6 +172,8 @@ int main(int argc, char** argv) {
     testLFRic();
     testUgrid();
     testVTK();
+
+    mnt_printLogMessages();
 
     return 0;
 }

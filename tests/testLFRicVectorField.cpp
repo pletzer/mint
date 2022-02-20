@@ -55,7 +55,7 @@ void createGridAndLocator(Grid_t** grd, vmtCellLocator** cloc) {
     assert(ier == 0);
 
     // filename$meshname
-    ier = mnt_grid_loadFromUgrid2D(grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
+    ier = mnt_grid_loadFromUgrid2DFile(grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
     assert(ier == 0);
 
     std::size_t numBadCells = 0;

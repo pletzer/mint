@@ -30,6 +30,9 @@ inline double getArea2D(const Vec3& p0, const Vec3& p1, const Vec3& p2) {
     Vec3 d20 = p2 - p0;
     return d10[0]*d20[1] - d10[1]*d20[0];
 }
+inline double getArea2D(const double* p0, const double* p1, const double* p2) {
+    return (p1[0]-p0[0])*(p2[1] - p0[1]) - (p1[1] - p0[1])*(p2[0] - p0[0]);
+}
 
 /**
  * Fix the longitude by adding/subtracting a period to reduce the edge lengths
@@ -55,6 +58,73 @@ double fixLongitude(double periodX, double lonBase, double lon) {
     // fix the longitude
     return lon + (indexMin - 1)*periodX;
 }
+
+
+/**
+ *  Get the cell points, without applying any regularization
+ * @param cellId cell ID
+ * @param xyz coordinates points
+ * @param face2nodes face (cell) to nodes (points) connectivity
+ * @param nodes array of coordinates (output)
+ */
+void getCellPoints(std::size_t cellId,
+                   const double xyz[], 
+                   const std::size_t face2nodes[], 
+                   std::vector<Vec3>& nodes) {
+
+    const std::size_t* ptIds = &face2nodes[cellId*MNT_NUM_VERTS_PER_QUAD];
+
+    for (std::size_t i = 0; i < MNT_NUM_VERTS_PER_QUAD; ++i) {
+
+        std::size_t ptId = ptIds[i];
+        for (auto j = 0; j < 3; ++j) {
+            nodes[i][j] = xyz[ptId*3 + j];
+        }
+    }
+}
+
+
+/**
+ *  Compute the face (cell) to edges connectivity
+ * @param xyz coordinates points
+ * @param faceNodeConnectivity face (cell) to nodes (points) connectivity
+ * @param edgeNodeConnectivity edge to nodes (points) connectivity
+ * @param faveEdgeConnectivity (output)
+ */
+void computeFaceEdgeConnectivity(const std::vector<std::size_t>& faceNodeConnectivity, 
+                                 const std::vector<std::size_t>& edgeNodeConnectivity,
+                                 std::vector<std::size_t>& faceEdgeConnectivity) {
+
+    std::size_t ncells = faceNodeConnectivity.size() / MNT_NUM_VERTS_PER_QUAD;
+    std::size_t nedges = edgeNodeConnectivity.size() / MNT_NUM_VERTS_PER_EDGE;
+
+    std::map< std::array<std::size_t, 2>, std::size_t > node2Edge;
+    for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
+        // start node
+        std::size_t n0 = edgeNodeConnectivity[iedge*2 + 0];
+        // end node
+        std::size_t n1 = edgeNodeConnectivity[iedge*2 + 1];
+        // create two entries n0 -> n1 and n1 -> n0
+        std::pair< std::array<std::size_t, 2>, std::size_t > ne1({n0, n1}, iedge);
+        std::pair< std::array<std::size_t, 2>, std::size_t > ne2({n1, n0}, iedge);
+        node2Edge.insert(ne1);
+        node2Edge.insert(ne2);
+    }
+
+    faceEdgeConnectivity.resize(ncells * MNT_NUM_EDGES_PER_QUAD);
+    for (std::size_t icell = 0; icell < ncells; ++icell) {
+        for (std::size_t i0 = 0; i0 < MNT_NUM_VERTS_PER_QUAD; ++i0) {
+            std::size_t i1 = (i0 + 1) % MNT_NUM_VERTS_PER_QUAD;
+            // start and end node indices
+            std::size_t n0 = faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i0];
+            std::size_t n1 = faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i1];
+            std::size_t edgeId = node2Edge[std::array<std::size_t, 2>{n0, n1}];
+            // set the edge Id for these two nodes
+            faceEdgeConnectivity[icell*MNT_NUM_EDGES_PER_QUAD + i0] = edgeId;
+        }
+    }
+}
+
 
 LIBRARY_API
 int mnt_grid_new(Grid_t** self) {
@@ -142,6 +212,7 @@ int mnt_grid_getPointsPtr(Grid_t** self, double** pointsPtr) {
     return 0;
 }
 
+
 LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
@@ -183,7 +254,6 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
         (*self)->grid->InsertNextCell(cellType, ptIds);
     }
     (*self)->grid->SetPoints((*self)->points);
-    // (*self)->grid->BuildLinks(); // DO WE NEED THIS?
 
     // clean
     ptIds->Delete();
@@ -297,92 +367,51 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 }
 
 LIBRARY_API
-int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
+int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t nedges, std::size_t npoints, 
+                                 const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]) {
 
-    // extract the filename and the mesh name from "filename:meshname"
-    auto fm = fileMeshNameExtractor(fileAndMeshName);
+    (*self)->numEdges = nedges;
 
-    std::string filename = fm.first;
-    std::string meshname = fm.second;
-
-    Ugrid2D ugrid;
-    int ier = ugrid.load(filename, meshname);
-    if (ier != 0) {
-        mntlog::error(__FILE__, __func__, __LINE__, 
-            "could not read mesh \"" + meshname + "\" in UGRID file \"" + filename + "\"");
-        return 1;
+    // copy the connectivity arrays and coordinates
+    (*self)->faceNodeConnectivity.resize(ncells*MNT_NUM_VERTS_PER_QUAD);
+    for (std::size_t i = 0; i < ncells*MNT_NUM_VERTS_PER_QUAD; ++i) {
+        (*self)->faceNodeConnectivity[i] = face2nodes[i];
     }
 
-    double xmin[3], xmax[3];
-    ugrid.getRange(xmin, xmax);
-    double lonMin = xmin[0];
-
-    (*self)->numEdges = ugrid.getNumberOfEdges();
-
-    // copy
-    (*self)->faceNodeConnectivity = ugrid.getFacePointIds();
-    (*self)->edgeNodeConnectivity = ugrid.getEdgePointIds();
-
-    std::size_t ncells = ugrid.getNumberOfFaces();
-    std::size_t nedges = ugrid.getNumberOfEdges();
-    std::size_t npoints = ugrid.getNumberOfPoints();
-    int numVertsPerCell = MNT_NUM_VERTS_PER_QUAD;
-
-    // get the face to edge connectivity from the file
-    (*self)->faceEdgeConnectivity = ugrid.getFaceEdgeIds();
-
-    if ((*self)->faceEdgeConnectivity.size() == 0) {
-
-        // compute the face to edge connectivity from the edge-node and face-node connectivity
-        std::map< std::array<std::size_t, 2>, std::size_t > node2Edge;
-        for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
-            // start node
-            std::size_t n0 = (*self)->edgeNodeConnectivity[iedge*2 + 0];
-            // end node
-            std::size_t n1 = (*self)->edgeNodeConnectivity[iedge*2 + 1];
-            // create two entries n0 -> n1 and n1 -> n0
-            std::pair< std::array<std::size_t, 2>, std::size_t > ne1({n0, n1}, iedge);
-            std::pair< std::array<std::size_t, 2>, std::size_t > ne2({n1, n0}, iedge);
-            node2Edge.insert(ne1);
-            node2Edge.insert(ne2);
-        }
-        (*self)->faceEdgeConnectivity.resize(ncells * MNT_NUM_EDGES_PER_QUAD);
-        for (std::size_t icell = 0; icell < ncells; ++icell) {
-            for (std::size_t i0 = 0; i0 < MNT_NUM_VERTS_PER_QUAD; ++i0) {
-                std::size_t i1 = (i0 + 1) % MNT_NUM_VERTS_PER_QUAD;
-                // start and end node indices
-                std::size_t n0 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i0];
-                std::size_t n1 = (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + i1];
-                std::size_t edgeId = node2Edge[std::array<std::size_t, 2>{n0, n1}];
-                // set the edge Id for these two nodes
-                (*self)->faceEdgeConnectivity[icell*MNT_NUM_EDGES_PER_QUAD + i0] = edgeId;
-            }
-        }
+    (*self)->edgeNodeConnectivity.resize(nedges*MNT_NUM_VERTS_PER_EDGE);
+    for (std::size_t  i = 0; i < nedges*MNT_NUM_VERTS_PER_EDGE; ++i) {
+        (*self)->edgeNodeConnectivity[i] = edge2nodes[i];
     }
+
+    // compute the face to edge connectivity from the edge-node and face-node connectivity
+    computeFaceEdgeConnectivity((*self)->faceNodeConnectivity, 
+                                (*self)->edgeNodeConnectivity,
+                                (*self)->faceEdgeConnectivity);
 
     // repackage the cell vertices as a flat array
-
     if (npoints > 0 && (*self)->faceNodeConnectivity.size() > 0) {
 
+        std::vector<Vec3> nodes(MNT_NUM_VERTS_PER_QUAD);
+
         // allocate the vertices and set the values
-        (*self)->verts = new double[ncells * numVertsPerCell * 3];
+        (*self)->verts = new double[ncells * MNT_NUM_VERTS_PER_QUAD * 3];
         (*self)->ownsVerts = true;
 
         for (std::size_t icell = 0; icell < ncells; ++icell) {
 
+            getCellPoints(icell, xyz, face2nodes, nodes);
+
             // fix longitude when crossing the dateline
             // use the first longitude as the base
-            std::size_t kBase = (*self)->faceNodeConnectivity[icell*numVertsPerCell];
-            double lonBase = ugrid.getPoint(kBase)[LON_INDEX];
+            double lonBase = nodes[0][LON_INDEX];
 
             double avgLon = 0;
             long long poleNodeIdx = -1;
             int count = 0;
-            for (auto nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
+            for (auto nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
 
-                std::size_t k = (*self)->faceNodeConnectivity[icell*numVertsPerCell + nodeIdx];
-                double lon = ugrid.getPoint(k)[LON_INDEX]; //lons[k];
-                double lat = ugrid.getPoint(k)[LAT_INDEX];
+                double lon = nodes[nodeIdx][LON_INDEX];
+                double lat = nodes[nodeIdx][LAT_INDEX];
 
                 if ((*self)->fixLonAcrossDateline) {
                     lon = fixLongitude((*self)->periodX, lonBase, lon);
@@ -398,9 +427,9 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
                 }
 
                 // even in 2d we have three components
-                (*self)->verts[LON_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lon;
-                (*self)->verts[LAT_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = lat;
-                (*self)->verts[ELV_INDEX + nodeIdx*3 + icell*numVertsPerCell*3] = 0.0;
+                (*self)->verts[LON_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lon;
+                (*self)->verts[LAT_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lat;
+                (*self)->verts[ELV_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = 0.0;
             }
             avgLon /= count;
 
@@ -409,29 +438,47 @@ int mnt_grid_loadFromUgrid2D(Grid_t** self, const char* fileAndMeshName) {
             // average of the 3 other longitudes.
 
             if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
-                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*numVertsPerCell*3] = avgLon;
-            }
-
-            // make sure the cell is within the lonMin to lonMin + periodX range
-            double offsetLon = 0.0;
-            if ((*self)->fixLonAcrossDateline) {
-                if (avgLon > lonMin + (*self)->periodX) {
-                    offsetLon = -(*self)->periodX;
-                }
-                else if (avgLon < lonMin) {
-                    offsetLon = (*self)->periodX;
-                }
-                for (int nodeIdx = 0; nodeIdx < numVertsPerCell; ++nodeIdx) {
-                    (*self)->verts[LON_INDEX + (std::size_t) nodeIdx * 3 + icell*numVertsPerCell*3] += offsetLon;
-                }
+                (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = avgLon;
             }
         }
     }
 
     // build the connectivity
-    ier = mnt_grid_build(self, numVertsPerCell, ncells);
+    int ier = mnt_grid_build(self, MNT_NUM_VERTS_PER_QUAD, ncells);
 
-    return 0;
+    return ier;
+}
+
+
+LIBRARY_API
+int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
+
+    // extract the filename and the mesh name from "filename:meshname"
+    auto fm = fileMeshNameExtractor(fileAndMeshName);
+
+    std::string filename = fm.first;
+    std::string meshname = fm.second;
+
+    Ugrid2D ugrid;
+    int ier = ugrid.load(filename, meshname);
+    if (ier != 0) {
+        mntlog::error(__FILE__, __func__, __LINE__, 
+            "could not read mesh \"" + meshname + "\" in UGRID file \"" + filename + "\"");
+        return 1;
+    }
+
+    std::size_t ncells = ugrid.getNumberOfFaces();
+    std::size_t nedges = ugrid.getNumberOfEdges();
+    std::size_t npoints = ugrid.getNumberOfPoints();
+
+    const std::vector<double>& xyz = ugrid.getPoints();
+    const std::vector<std::size_t>& face2nodes = ugrid.getFacePointIds();
+    const std::vector<std::size_t>& edge2nodes = ugrid.getEdgePointIds();
+
+    ier = mnt_grid_loadFromUgrid2DData(self, ncells, nedges, npoints, 
+                                       &xyz[0], &face2nodes[0], &edge2nodes[0]);
+
+    return ier;
 }
 
 LIBRARY_API
@@ -523,6 +570,12 @@ int mnt_grid_getPoints(Grid_t** self, vtkIdType cellId, int edgeIndex,
 LIBRARY_API
 int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdType nodeIds[]) {
 
+    if ((*self)->faceNodeConnectivity.size() == 0) {
+        std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
+
     // nodeIndex0,1 are the local cell indices of the vertices in the range 0-3
     int nodeIndex0 = edgeIndex;
     int nodeIndex1 = (edgeIndex + 1) % MNT_NUM_VERTS_PER_QUAD;
@@ -545,6 +598,12 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
 LIBRARY_API
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
                        std::size_t* edgeId, int* signEdge) {
+
+    if ((*self)->faceNodeConnectivity.size() == 0) {
+        std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
 
     // initialize
     *signEdge = 0;
@@ -595,6 +654,11 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells) {
 
 LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges) {
+
+    if ((*self)->faceNodeConnectivity.size() == 0) {
+        std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+    }
 
     *numEdges = (*self)->numEdges;
     return 0;

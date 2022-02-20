@@ -25,9 +25,6 @@ def test_create_grid():
     pts = gr.getPoints()
     print(pts)
 
-    # expected because we set the grid with setPoints
-    assert gr.getNumberOfEdges() == 0
-
     with TemporaryDirectory() as d:
         fname = str(Path(d) / Path('grid.vtk'))
         gr.dump(fname)
@@ -77,7 +74,7 @@ def test_load_from_ugrid_file():
     gr = Grid()
     gr.setFlags(1, 1)
     filename = str(DATA_DIR / Path('cs_4.nc'))
-    gr.loadFromUgrid2D(f'{filename}$physics')
+    gr.loadFromUgrid2DFile(f'{filename}$physics')
     nedges = gr.getNumberOfEdges()
     print(f'nedges = {nedges}')
     assert(nedges == 192)
@@ -99,7 +96,7 @@ def test_load_from_ugrid_file2():
     gr = Grid()
     gr.setFlags(1, 1)
     filename = str(DATA_DIR / Path('lfric_diag_wind.nc'))
-    gr.loadFromUgrid2D(f'{filename}$Mesh2d')
+    gr.loadFromUgrid2DFile(f'{filename}$Mesh2d')
     nedges = gr.getNumberOfEdges()
     print(f'nedges = {nedges}')
     assert(nedges == 3072)
@@ -109,7 +106,7 @@ def test_edge_arc_lengths():
     gr = Grid()
     gr.setFlags(1, 1)
     filename = str(DATA_DIR / Path('cs_4.nc'))
-    gr.loadFromUgrid2D(f'{filename}$physics')
+    gr.loadFromUgrid2DFile(f'{filename}$physics')
     gr.computeEdgeArcLengths()
     ncells = gr.getNumberOfCells()
     for icell in range(ncells):
@@ -117,6 +114,47 @@ def test_edge_arc_lengths():
             arcLength = gr.getEdgeArcLength(icell, edgeIndex)
             print(f""""
 cell {icell} edge {edgeIndex} edge arc length/radius: {arcLength}""")
+
+
+def test_load_ugrid_data():
+    # a single cell
+    # 3....>2....2
+    # :          :
+    # v          ^
+    # 1          0
+    # :          :
+    # 0....<3....1
+    xyz = numpy.array([(0.,0.,0.),
+                       (1.,0.,0.),
+                       (1.,1.,0.),
+                       (0.,1.,0.)],
+                       dtype=numpy.float64)
+    face2nodes = numpy.array([(0, 1, 2, 3),], dtype=numpy.uintp)
+    edge2nodes = numpy.array([(1, 2), # edge 0
+                              (3, 0), # edge 1
+                              (3, 2), # edge 2
+                              (1, 0)],# edge 3
+                              dtype=numpy.uintp)
+
+    gr = Grid()
+    gr.setFlags(0, 0)
+    gr.loadFromUgrid2DData(xyz, face2nodes, edge2nodes)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=0)
+    assert(n0 == 0)
+    assert(n1 == 1)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=1)
+    assert(n0 == 1)
+    assert(n1 == 2)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=2)
+    assert(n0 == 3)
+    assert(n1 == 2)
+
+    n0, n1 = gr.getNodeIds(cellId=0, edgeIndex=3)
+    assert(n0 == 0)
+    assert(n1 == 3)
 
 
 if __name__ == '__main__':

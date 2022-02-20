@@ -72,7 +72,7 @@ void testNetCDFFile(const std::string& fileNameAndMesh, const Vec3& point) {
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
     std::string path = "${CMAKE_SOURCE_DIR}/data/" + fileNameAndMesh;
-    ier = mnt_grid_loadFromUgrid2D(&grd, path.c_str());
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, path.c_str());
     assert(ier == 0);
     vtkUnstructuredGrid* vtkUGrid = NULL;
     ier = mnt_grid_get(&grd, &vtkUGrid);

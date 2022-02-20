@@ -17,13 +17,13 @@ def test_1():
     sgrid = mint.Grid()
     # lat-lon
     sgrid.setFlags(0, 0)
-    sgrid.loadFromUgrid2D(f'{DATA_DIR}/latlon100x50.nc$latlon')
+    sgrid.loadFromUgrid2DFile(f'{DATA_DIR}/latlon100x50.nc$latlon')
 
     # destination grid
     dgrid = mint.Grid()
     # cubed-sphere
     dgrid.setFlags(1, 1)
-    dgrid.loadFromUgrid2D(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
+    dgrid.loadFromUgrid2DFile(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
 
     regridder = mint.RegridEdges()
     regridder.setSrcGrid(sgrid)

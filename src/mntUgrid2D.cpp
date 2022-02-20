@@ -63,13 +63,6 @@ Ugrid2D::getEdgePoints(std::size_t edgeId) const {
     return res;
 }
 
-void
-Ugrid2D::getRange(double xMin[], double xMax[]) const {
-    for (std::size_t i = 0; i < NUM_SPACE_DIMS; ++i) {
-        xMin[i] = this->xmin[i];
-        xMax[i] = this->xmax[i];
-    }
-}
 
 int 
 Ugrid2D::load(const std::string& filename, const std::string& meshname) {
@@ -137,20 +130,6 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     this->numFaces = n / MNT_NUM_VERTS_PER_QUAD;
     n = this->edge2Points.size();
     this->numEdges = n / MNT_NUM_VERTS_PER_EDGE;
-
-    // compute min/max values after regularizing the coords across the faces
-    // (ie adding/subtracting 360 deg for the longitude to make the face area positive)
-    this->xmin = +std::numeric_limits<double>::max();
-    this->xmax = -std::numeric_limits<double>::max();
-    for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
-        std::vector<Vec3> nodes = this->getFacePointsRegularized(faceId);
-        for (const Vec3& p : nodes) {
-            for (std::size_t j = 0; j < this->xmin.size(); ++j) {
-                this->xmin[j] = (p[j] < this->xmin[j]? p[j]: this->xmin[j]);
-                this->xmax[j] = (p[j] > this->xmax[j]? p[j]: this->xmax[j]);
-            }                     
-        }
-    }
 
     return 0;
 }
@@ -318,55 +297,6 @@ Ugrid2D::readPoints(int ncid, int meshid) {
     return 0;
 }
 
-std::vector<Vec3> 
-Ugrid2D::getFacePointsRegularized(std::size_t faceId) const {
-
-    std::vector<Vec3> res = this->getFacePoints(faceId);
-
-    if (this->isCartesian) {
-        return res;
-    }
-
-    // regularize
-    for (std::size_t i = 1; i < res.size(); ++i) {
-
-        // add/subtract 360 
-        double dLon = res[i][LON_INDEX] - res[0][LON_INDEX];
-        double dLonsPM360[] = {std::abs(dLon - 360.), 
-                               std::abs(dLon       ), 
-                               std::abs(dLon + 360.)};
-        double* minDLon = std::min_element(&dLonsPM360[0], &dLonsPM360[3]);
-        int indexMin = (int) std::distance(dLonsPM360, minDLon);
-        res[i][LON_INDEX] += (indexMin - 1)*360.0;
-   }
-
-    std::size_t indexPole = std::numeric_limits<size_t>::max();
-    double avgLon = 0.;
-    for (std::size_t i = 0; i < res.size(); ++i) {
-        // detect if node is on/near pole
-        if (std::abs(std::abs(res[i][LAT_INDEX]) -  90.) < 1.e-12) {
-            indexPole = i;
-        }
-        else {
-            avgLon += res[i][LON_INDEX];
-        }
-    }
-    avgLon /= 3.;
-
-    if (indexPole < std::numeric_limits<size_t>::max()) {
-        // longitude at the pole is ill defined - we can set it to any
-        // value.
-        if (avgLon > 180.0) {
-            res[indexPole][LON_INDEX] = 270.0;
-        }
-        else {
-            res[indexPole][LON_INDEX] = 90.0;
-        }
-    }
-
-    return res;
-}
-
 
 std::vector<Vec3> 
 Ugrid2D::getEdgePointsRegularized(std::size_t edgeId) const {
@@ -406,7 +336,7 @@ Ugrid2D::dumpGridVtk(const std::string& filename) {
     f << "# vtk DataFile Version 4.2\nvtk output\nASCII\nDATASET UNSTRUCTURED_GRID\n";
     f << "POINTS " << MNT_NUM_VERTS_PER_QUAD * this->numFaces << " double\n";
     for (std::size_t faceId = 0; faceId < this->numFaces; ++faceId) {
-        const std::vector<Vec3> nodes = this->getFacePointsRegularized(faceId);
+        const std::vector<Vec3> nodes = this->getFacePoints(faceId);
         for (const Vec3& node : nodes) {
             f << node << ' ';
         }
