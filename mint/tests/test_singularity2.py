@@ -168,6 +168,21 @@ class ContourFluxes:
                          },
         }
 
+        # regrid
+        grid2 = mint.Grid()
+        grid2.setFlags(1, 1) # cubed sphere
+        grid2.loadFromUgrid2DFile(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
+
+        regridder = mint.RegridEdges()
+        regridder.setSrcGrid(self.grid)
+        regridder.setDstGrid(grid2)
+        regridder.buildLocator(numCellsPerBucket=100, periodX=0.0, enableFolding=0)
+        regridder.computeWeights(debug=2)
+
+        ncells2 = grid2.getNumberOfCells()
+        data2 = numpy.zeros((ncells2, mint.NUM_EDGES_PER_QUAD), numpy.float64)
+        regridder.apply(self.data, data2, placement=mint.CELL_BY_CELL_DATA)
+
         for case in results:
 
             pli = mint.PolylineIntegral()
@@ -175,13 +190,22 @@ class ContourFluxes:
             # no periodicity in x
             pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
             pli.computeWeights(results[case]['xyz'])
-
             flux = pli.getIntegral(self.data)
 
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')
 
-            print(f'{case}: flux = {flux} exact = {results[case]["exact"]} error = {flux - results[case]["exact"]:.3g}')
+            print(f'{case}  original: flux = {flux} exact = {results[case]["exact"]} error = {flux - results[case]["exact"]:.3g}')
+
+            # same for the interpolated data
+            pli = mint.PolylineIntegral()
+            pli.setGrid(grid2)
+            # no periodicity in x
+            pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
+            pli.computeWeights(results[case]['xyz'])
+            flux2 = pli.getIntegral(data2)
+            print(f'{case} regridded: flux = {flux2} exact = {results[case]["exact"]} error = {flux2 - results[case]["exact"]:.3g}')
+
 
         # for case in 'A', 'B', 'C':
         #     assert(abs(flux - results[case]['exact']) < 1.e-10)
