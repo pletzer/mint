@@ -170,8 +170,9 @@ class ContourFluxes:
 
         # regrid
         grid2 = mint.Grid()
-        grid2.setFlags(1, 1) # cubed sphere
-        grid2.loadFromUgrid2DFile(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
+        grid2.setFlags(0, 0) # uniform
+        grid2.loadFromUgrid2DFile(f'{DATA_DIR}/latlon100x50Shifted.nc$mesh')
+        grid2.dump('grid2.vtk')
 
         regridder = mint.RegridEdges()
         regridder.setSrcGrid(self.grid)
@@ -225,7 +226,7 @@ class ContourFluxes:
         xyz[:, 0] = xx.flat
         xyz[:, 1] = yy.flat
         vi.findPoints(xyz)
-        vectors = vi.getFaceVectors(self.data, placement=0)
+        vectors = vi.getEdgeVectors(self.data, placement=mint.CELL_BY_CELL_DATA)
 
         ptsData = vtk.vtkDoubleArray()
         ptsData.SetNumberOfComponents(3)
