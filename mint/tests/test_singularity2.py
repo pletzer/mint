@@ -3,6 +3,9 @@ from mint import VectorInterp, NUM_VERTS_PER_QUAD
 import numpy
 import pytest
 import vtk
+from pathlib import Path
+
+DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 
 def streamFunction(p):
@@ -61,6 +64,8 @@ class ContourFluxes:
 
     def __init__(self, nx, ny):
 
+
+
         # the singularity must fall inside a cell
         assert(nx % 2 == 1)
         assert(ny % 2 == 1)
@@ -69,66 +74,69 @@ class ContourFluxes:
         self.xymin = (-180., -90.)
         self.xymax = (+180., +90.)
 
-        # create grid and data
+        # create grid
+        self.grid = Grid()
+        # cubed-sphere
+        self.grid.setFlags(1, 1)
+        self.grid.loadFromUgrid2DFile(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
+        self.points = self.grid.getPoints()
+
+        ncells = self.grid.getNumberOfCells()
 
         dx = (self.xymax[0] - self.xymin[0]) / float(nx)
         dy = (self.xymax[1] - self.xymin[1]) / float(ny)
 
-        self.points = numpy.zeros((nx*ny, 4, 3), numpy.float64)
-        self.data = numpy.zeros((nx*ny, 4))
+        self.data = numpy.zeros((ncells, 4))
+        self.xymin = numpy.array([float('inf'), float('inf')])
+        self.xymax = numpy.array([-float('inf'), -float('inf')])
 
-        k = 0
-        for i in range(nx):
-            x0 = self.xymin[0] + i*dx
-            x1 = x0 + dx
-            for j in range(ny):
-                y0 = self.xymin[1] + j*dy
-                y1 = y0 + dy
+        for k in range(ncells):
 
-                # node indexing
-                #  3-->--2
-                #  |     |
-                #  ^     ^
-                #  |     |
-                #  0-->--1
-                self.points[k, 0, :] = x0, y0, 0.
-                self.points[k, 1, :] = x1, y0, 0.
-                self.points[k, 2, :] = x1, y1, 0.
-                self.points[k, 3, :] = x0, y1, 0.
+            # node indexing
+            #  3-->--2
+            #  |     |
+            #  ^     ^
+            #  |     |
+            #  0-->--1
 
-                # edge indexing
-                #     2
-                #  +-->--+
-                #  |     |
-                # 3^     ^1
-                #  |     |
-                #  +-->--+
-                #     0
+            # edge indexing
+            #     2
+            #  +-->--+
+            #  |     |
+            # 3^     ^1
+            #  |     |
+            #  +-->--+
+            #     0
 
-                for i0 in range(NUM_VERTS_PER_QUAD):
+            for i0 in range(NUM_VERTS_PER_QUAD):
 
-                    i1 = (i0 + 1) % NUM_VERTS_PER_QUAD
+                i1 = (i0 + 1) % NUM_VERTS_PER_QUAD
 
-                    s0 = streamFunction(self.points[k, i0, :])
-                    s1 = streamFunction(self.points[k, i1, :])
+                p0 = self.points[k, i0, :]
+                p1 = self.points[k, i1, :]
 
-                    sign = 1 - 2*(i0 // 2)
+                self.xymin[0] = min(self.xymin[0], p0[0])
+                self.xymin[1] = min(self.xymin[1], p0[1])
 
-                    ds = sign*(s1 - s0)
+                self.xymax[0] = max(self.xymax[0], p0[0])
+                self.xymax[1] = max(self.xymax[1], p0[1])
 
-                    # take into account multivaluedness
-                    if ds > 0.5:
-                        ds -= 1.0
-                    elif ds < -0.5:
-                        ds += 1.0
+                s0 = streamFunction(p0)
+                s1 = streamFunction(p1)
 
-                    self.data[k, i0] = ds
+                sign = 1 - 2*(i0 // 2)
 
-                # increment the cell counter
-                k += 1
+                ds = sign*(s1 - s0)
 
-        self.grid = Grid()
-        self.grid.setPoints(self.points)
+                # take into account the multivaluedness
+                if ds > 0.5:
+                    ds -= 1.0
+                elif ds < -0.5:
+                    ds += 1.0
+
+                self.data[k, i0] = ds
+
+        self.grid.dump('grid.vtk')
         self.saveVectorField()
 
 
