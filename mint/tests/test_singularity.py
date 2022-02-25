@@ -1,5 +1,5 @@
 from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
-from mint import VectorInterp
+from mint import VectorInterp, NUM_VERTS_PER_QUAD
 import numpy
 import pytest
 import vtk
@@ -104,28 +104,25 @@ class ContourFluxes:
                 #  |     |
                 #  +-->--+
                 #     0
-                s0 = streamFunction(self.points[k, 0, :])
-                s1 = streamFunction(self.points[k, 1, :])
-                s2 = streamFunction(self.points[k, 2, :])
-                s3 = streamFunction(self.points[k, 3, :])
 
-                self.data[k, 0] = s1 - s0
+                for i0 in range(NUM_VERTS_PER_QUAD):
 
-                self.data[k, 1] = s2 - s1
-                if self.data[k, 1] > 0.5:
-                    # points 2 and 1 are on either side of the branch
-                    self.data[k, 1] -= 1.
-                elif self.data[k, 1] < -0.5:
-                    self.data[k, 1] += 1.
+                    i1 = (i0 + 1) % NUM_VERTS_PER_QUAD
 
-                self.data[k, 2] = s2 - s3
+                    s0 = streamFunction(self.points[k, i0, :])
+                    s1 = streamFunction(self.points[k, i1, :])
 
-                self.data[k, 3] = s3 - s0
-                if self.data[k, 3] > 0.5:
-                    # points 3 and 0 are on either side of the branch
-                    self.data[k, 3] -= 1.
-                elif self.data[k, 3] < -0.5:
-                    self.data[k, 3] += 1.
+                    sign = 1 - 2*(i0 // 2)
+
+                    ds = sign*(s1 - s0)
+
+                    # take into account multivaluedness
+                    if ds > 0.5:
+                        ds -= 1.0
+                    elif ds < -0.5:
+                        ds += 1.0
+
+                    self.data[k, i0] = ds
 
                 # increment the cell counter
                 k += 1
