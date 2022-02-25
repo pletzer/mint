@@ -66,8 +66,8 @@ class ContourFluxes:
         assert(ny % 2 == 1)
 
         self.nx, self.ny = nx, ny
-        self.xymin = (-2., -2.)
-        self.xymax = (2., 2.)
+        self.xymin = (-180., -90.)
+        self.xymax = (+180., +90.)
 
         # create grid and data
 
@@ -143,7 +143,7 @@ class ContourFluxes:
                           'flux': float('nan'),
                           'exact': 1.0,
                          },
-            'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.9),
+            'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.9*self.xymax[1]),
                            'flux': float('nan'),
                            'exact': 1.0,
                          },
@@ -224,5 +224,5 @@ class ContourFluxes:
 
 
 if __name__ == '__main__':
-    cf = ContourFluxes(nx=21, ny=21)
+    cf = ContourFluxes(nx=21, ny=11)
     cf.compute()
