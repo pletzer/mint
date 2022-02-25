@@ -147,13 +147,17 @@ class ContourFluxes:
                            'flux': float('nan'),
                            'exact': 1.0,
                          },
-            'C': {'xyz': createLoop(xybeg=(1., 1.5*h), xyend=(1., -1.5*h), nt=15),
+            'C': {'xyz': createLoop(xybeg=(self.xymax[0], +1.5*h),
+                                    xyend=(self.xymax[0], -1.5*h), nt=15),
                            'flux': float('nan'),
-                           'exact': streamFunction((1., -1.5*h)) - streamFunction((1., 1.5*h)) + 1.,
+                           'exact': streamFunction((self.xymax[0], -1.5*h)) - \
+                                    streamFunction((self.xymax[0], +1.5*h)) + 1.,
                          },
-            'D': {'xyz': createLoop(xybeg=(0.91, 0.55), xyend=(0.91, -0.55), nt=15),
+            'D': {'xyz': createLoop(xybeg=(0.91*self.xymax[0], +0.55*self.xymax[1]),
+                                    xyend=(0.91*self.xymax[0], -0.55*self.xymax[1]), nt=15),
                            'flux': float('nan'),
-                           'exact': streamFunction((0.91, -0.55)) - streamFunction((0.91, 0.55)) + 1.,
+                           'exact': streamFunction((0.91*self.xymax[0], -0.55*self.xymax[1])) - \
+                                    streamFunction((0.91*self.xymax[0], +0.55*self.xymax[1])) + 1.,
                          },
         }
 
