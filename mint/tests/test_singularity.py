@@ -163,8 +163,10 @@ class ContourFluxes:
         for case in results:
 
             pli = PolylineIntegral()
+            pli.setGrid(self.grid)
             # no periodicity in x
-            pli.build(self.grid, results[case]['xyz'], counterclock=False, periodX=0.0)
+            pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
+            pli.computeWeights(results[case]['xyz'])
 
             results[case]['flux'] = pli.getIntegral(self.data)
 
