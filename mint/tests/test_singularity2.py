@@ -174,7 +174,7 @@ class ContourFluxes:
 
         for case in 'A', 'B', 'C':
             assert(abs(results[case]['flux'] - results[case]['exact']) < 1.e-10)
-        assert(abs(results['D']['flux'] - results['D']['exact']) < 0.03)
+        assert(abs(results['D']['flux'] - results['D']['exact']) < 2e-5)
 
 
 
