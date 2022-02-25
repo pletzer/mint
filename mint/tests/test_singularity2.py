@@ -74,7 +74,7 @@ class ContourFluxes:
         self.xymax = (+180., +90.)
 
         # create grid
-        self.grid = Grid()
+        self.grid = mint.Grid()
         # cubed-sphere
         self.grid.setFlags(1, 1)
         self.grid.loadFromUgrid2DFile(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
@@ -85,7 +85,7 @@ class ContourFluxes:
         dx = (self.xymax[0] - self.xymin[0]) / float(nx)
         dy = (self.xymax[1] - self.xymin[1]) / float(ny)
 
-        self.data = numpy.zeros((ncells, 4))
+        self.data = numpy.zeros((ncells, mint.NUM_EDGES_PER_QUAD))
         self.xymin = numpy.array([float('inf'), float('inf')])
         self.xymax = numpy.array([-float('inf'), -float('inf')])
 
@@ -107,9 +107,9 @@ class ContourFluxes:
             #  +-->--+
             #     0
 
-            for i0 in range(NUM_VERTS_PER_QUAD):
+            for i0 in range(mint.NUM_VERTS_PER_QUAD):
 
-                i1 = (i0 + 1) % NUM_VERTS_PER_QUAD
+                i1 = (i0 + 1) % mint.NUM_VERTS_PER_QUAD
 
                 p0 = self.points[k, i0, :]
                 p1 = self.points[k, i1, :]
@@ -170,7 +170,7 @@ class ContourFluxes:
 
         for case in results:
 
-            pli = PolylineIntegral()
+            pli = mint.PolylineIntegral()
             pli.setGrid(self.grid)
             # no periodicity in x
             pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
@@ -192,9 +192,9 @@ class ContourFluxes:
     def saveVectorField(self):
 
         nxv, nyv = 101, 101
-        vi = VectorInterp()
+        vi = mint.VectorInterp()
         vi.setGrid(self.grid)
-        vi.buildLocator(numCellsPerBucket=10, periodX=0.)
+        vi.buildLocator(numCellsPerBucket=100, periodX=0.)
         xx, yy = numpy.meshgrid(numpy.linspace(self.xymin[0], self.xymax[0], nxv), 
                                 numpy.linspace(self.xymin[1], self.xymax[1], nyv))
         xyz = numpy.zeros((nxv*nyv, 3), numpy.float64)
