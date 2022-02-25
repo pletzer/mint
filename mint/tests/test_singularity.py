@@ -202,6 +202,7 @@ class ContourFluxes:
 
         # add vector field
         vecData = vtk.vtkDoubleArray()
+        vecData.SetName('vector_field')
         vecData.SetNumberOfComponents(3)
         vecData.SetNumberOfTuples(nxv * nyv)
         vecData.SetVoidArray(vectors, nxv*nyv*3, 1)
