@@ -1,5 +1,4 @@
-from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
-from mint import VectorInterp, NUM_VERTS_PER_QUAD
+import mint
 import numpy
 import pytest
 import vtk
