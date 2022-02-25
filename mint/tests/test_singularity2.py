@@ -176,15 +176,15 @@ class ContourFluxes:
             pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
             pli.computeWeights(results[case]['xyz'])
 
-            results[case]['flux'] = pli.getIntegral(self.data)
+            flux = pli.getIntegral(self.data)
 
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')
 
-            print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]:.3g}')
+            print(f'{case}: flux = {flux} exact = {results[case]["exact"]} error = {flux - results[case]["exact"]:.3g}')
 
         # for case in 'A', 'B', 'C':
-        #     assert(abs(results[case]['flux'] - results[case]['exact']) < 1.e-10)
+        #     assert(abs(flux - results[case]['exact']) < 1.e-10)
         # assert(abs(results['D']['flux'] - results['D']['exact']) < 0.03)
 
 
