@@ -8,9 +8,10 @@ DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 
 def streamFunction(p):
-    # singularity is at (0, 0)
+    # singularity location
+    x0, y0 = 1.9, 2.1
     x, y = p[:2]
-    angle = numpy.arctan2(y, x)
+    angle = numpy.arctan2(y - y0, x - x0)
     return angle/(2*numpy.pi)
 
 
@@ -61,15 +62,9 @@ def saveLineVTK(xyz, filename):
 
 class ContourFluxes:
 
-    def __init__(self, nx, ny):
+    def __init__(self):
 
 
-
-        # the singularity must fall inside a cell
-        assert(nx % 2 == 1)
-        assert(ny % 2 == 1)
-
-        self.nx, self.ny = nx, ny
         self.xymin = (-180., -90.)
         self.xymax = (+180., +90.)
 
@@ -81,9 +76,6 @@ class ContourFluxes:
         self.points = self.grid.getPoints()
 
         ncells = self.grid.getNumberOfCells()
-
-        dx = (self.xymax[0] - self.xymin[0]) / float(nx)
-        dy = (self.xymax[1] - self.xymin[1]) / float(ny)
 
         self.data = numpy.zeros((ncells, mint.NUM_EDGES_PER_QUAD))
         self.xymin = numpy.array([float('inf'), float('inf')])
@@ -141,12 +133,8 @@ class ContourFluxes:
 
     def compute(self):
 
-        dx = (self.xymax[0] - self.xymin[0])/float(self.nx)
-        dy = (self.xymax[1] - self.xymin[1])/float(self.ny)
-        h = min(dx, dy)
-
         results = {
-            'A': {'xyz': createCircle(xycenter=(0., 0.), nt=8, radius=h),
+            'A': {'xyz': createCircle(xycenter=(0., 0.), nt=8, radius=20.0),
                           'flux': float('nan'),
                           'exact': 1.0,
                          },
@@ -154,17 +142,21 @@ class ContourFluxes:
                            'flux': float('nan'),
                            'exact': 1.0,
                          },
-            'C': {'xyz': createLoop(xybeg=(1.*self.xymax[0], +1.5*h),
-                                    xyend=(1.*self.xymax[0], -1.5*h), nt=15),
+            'C': {'xyz': createCircle(xycenter=(-73., -12.), nt=16, radius=35.),
                            'flux': float('nan'),
-                           'exact': streamFunction((1.*self.xymax[0], -1.5*h)) - \
-                                    streamFunction((1.*self.xymax[0], +1.5*h)) + 1.,
+                           'exact': 0.0,
                          },
-            'D': {'xyz': createLoop(xybeg=(0.91*self.xymax[0], +0.55*self.xymax[1]),
-                                    xyend=(0.91*self.xymax[0], -0.55*self.xymax[1]), nt=15),
+            'D': {'xyz': createLoop(xybeg=(1.*self.xymax[0], +22.5),
+                                    xyend=(1.*self.xymax[0], -22,5), nt=15),
                            'flux': float('nan'),
-                           'exact': streamFunction((0.91*self.xymax[0], -0.55*self.xymax[1])) - \
-                                    streamFunction((0.91*self.xymax[0], +0.55*self.xymax[1])) + 1.,
+                           'exact': streamFunction((1.*self.xymax[0], -22.5)) - \
+                                    streamFunction((1.*self.xymax[0], +22.5)) + 1.,
+                         },
+            'E': {'xyz': createLoop(xybeg=(162.5, +52.0),
+                                    xyend=(162.5, -52.0), nt=15),
+                           'flux': float('nan'),
+                           'exact': streamFunction((162.5, -52.0)) - \
+                                    streamFunction((162.5, +52.0)) + 1.,
                          },
         }
 
@@ -256,5 +248,5 @@ class ContourFluxes:
 
 
 if __name__ == '__main__':
-    cf = ContourFluxes(nx=21, ny=11)
+    cf = ContourFluxes()
     cf.compute()
