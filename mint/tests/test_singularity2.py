@@ -168,6 +168,7 @@ class ContourFluxes:
             grid2 = mint.Grid()
             grid2.setFlags(0, 0) # uniform
             grid2.loadFromUgrid2DFile(f'{DATA_DIR}/latlon{res}Shifted.nc$mesh')
+            grid2.dump(f'lonlat{res}.vtk')
 
             regridder = mint.RegridEdges()
             regridder.setSrcGrid(self.grid)
