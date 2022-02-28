@@ -5,13 +5,12 @@ import vtk
 from pathlib import Path
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
-
+XCENTRE, YCENTRE = 1.9, 2.1
 
 def streamFunction(p):
     # singularity location
-    x0, y0 = 1.9, 2.1
     x, y = p[:2]
-    angle = numpy.arctan2(y - y0, x - x0)
+    angle = numpy.arctan2(y - YCENTRE, x - XCENTRE)
     return angle/(2*numpy.pi)
 
 
@@ -134,23 +133,23 @@ class ContourFluxes:
     def compute(self):
 
         results = {
-            'A': {'xyz': createCircle(xycenter=(0., 0.), nt=8, radius=20.0),
+            'A': {'xyz': createCircle(xycenter=(XCENTRE, YCENTRE), nt=8, radius=1.0),
                           'flux': float('nan'),
                           'exact': 1.0,
                          },
-            'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=0.9*self.xymax[1]),
+            'B': {'xyz': createCircle(xycenter=(0., 0.), nt=32, radius=70.0),
                            'flux': float('nan'),
                            'exact': 1.0,
                          },
-            'C': {'xyz': createCircle(xycenter=(-73., -12.), nt=16, radius=35.),
+            'C': {'xyz': createCircle(xycenter=(-80., -30.), nt=16, radius=30.),
                            'flux': float('nan'),
                            'exact': 0.0,
                          },
-            'D': {'xyz': createLoop(xybeg=(1.*self.xymax[0], +22.5),
-                                    xyend=(1.*self.xymax[0], -22,5), nt=15),
+            'D': {'xyz': createLoop(xybeg=(180., +45.),
+                                    xyend=(180., -45.0), nt=15),
                            'flux': float('nan'),
-                           'exact': streamFunction((1.*self.xymax[0], -22.5)) - \
-                                    streamFunction((1.*self.xymax[0], +22.5)) + 1.,
+                           'exact': streamFunction((180., -45.)) - \
+                                    streamFunction((180., +45.)) + 1.,
                          },
             'E': {'xyz': createLoop(xybeg=(162.5, +52.0),
                                     xyend=(162.5, -52.0), nt=15),
@@ -160,23 +159,33 @@ class ContourFluxes:
                          },
         }
 
-        # regrid
-        grid2 = mint.Grid()
-        grid2.setFlags(0, 0) # uniform
-        grid2.loadFromUgrid2DFile(f'{DATA_DIR}/latlon100x50Shifted.nc$mesh')
-        grid2.dump('grid2.vtk')
 
-        regridder = mint.RegridEdges()
-        regridder.setSrcGrid(self.grid)
-        regridder.setDstGrid(grid2)
-        regridder.buildLocator(numCellsPerBucket=100, periodX=0.0, enableFolding=0)
-        regridder.computeWeights(debug=2)
+        targetData = []
+        targetGrids = []
+        resolutions = ('40x20', '80x40', '160x80')
+        for res in resolutions:
 
-        ncells2 = grid2.getNumberOfCells()
-        data2 = numpy.zeros((ncells2, mint.NUM_EDGES_PER_QUAD), numpy.float64)
-        regridder.apply(self.data, data2, placement=mint.CELL_BY_CELL_DATA)
+            grid2 = mint.Grid()
+            grid2.setFlags(0, 0) # uniform
+            grid2.loadFromUgrid2DFile(f'{DATA_DIR}/latlon{res}Shifted.nc$mesh')
+
+            regridder = mint.RegridEdges()
+            regridder.setSrcGrid(self.grid)
+            regridder.setDstGrid(grid2)
+            regridder.buildLocator(numCellsPerBucket=100, periodX=0.0, enableFolding=0)
+            regridder.computeWeights(debug=2)
+
+            ncells2 = grid2.getNumberOfCells()
+            data2 = numpy.zeros((ncells2, mint.NUM_EDGES_PER_QUAD), numpy.float64)
+            regridder.apply(self.data, data2, placement=mint.CELL_BY_CELL_DATA)
+
+            targetData.append(data2)
+            targetGrids.append(grid2)
+
 
         for case in results:
+
+            errors = []
 
             pli = mint.PolylineIntegral()
             pli.setGrid(self.grid)
@@ -188,22 +197,25 @@ class ContourFluxes:
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')
 
-            print(f'{case}  original: flux = {flux} exact = {results[case]["exact"]} error = {flux - results[case]["exact"]:.3g}')
+            error = flux - results[case]["exact"]
+            print(f'{case} errors cs: {error:.2g}', end='')
 
-            # same for the interpolated data
-            pli = mint.PolylineIntegral()
-            pli.setGrid(grid2)
-            # no periodicity in x
-            pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
-            pli.computeWeights(results[case]['xyz'])
-            flux2 = pli.getIntegral(data2)
-            print(f'{case} regridded: flux = {flux2} exact = {results[case]["exact"]} error = {flux2 - results[case]["exact"]:.3g}')
+            for ires in range(len(targetGrids)):
+            
+                pli = mint.PolylineIntegral()
 
+                grid2 = targetGrids[ires]
+                data2 = targetData[ires]
 
-        # for case in 'A', 'B', 'C':
-        #     assert(abs(flux - results[case]['exact']) < 1.e-10)
-        # assert(abs(results['D']['flux'] - results['D']['exact']) < 0.03)
+                pli.setGrid(grid2)
+                # no periodicity in x
+                pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
+                pli.computeWeights(results[case]['xyz'])
+                flux2 = pli.getIntegral(data2)
 
+                error = flux2 - results[case]["exact"]
+                print(f' {resolutions[ires]}: {error:.2g}', end='')
+            print('')
 
 
     def saveVectorField(self):
@@ -218,7 +230,8 @@ class ContourFluxes:
         xyz[:, 0] = xx.flat
         xyz[:, 1] = yy.flat
         vi.findPoints(xyz)
-        vectors = vi.getEdgeVectors(self.data, placement=mint.CELL_BY_CELL_DATA)
+        vectors_edge = vi.getEdgeVectors(self.data, placement=mint.CELL_BY_CELL_DATA)
+        vectors_face = vi.getFaceVectors(self.data, placement=mint.CELL_BY_CELL_DATA)
 
         ptsData = vtk.vtkDoubleArray()
         ptsData.SetNumberOfComponents(3)
@@ -229,16 +242,23 @@ class ContourFluxes:
         pts.SetData(ptsData)
 
         # add vector field
-        vecData = vtk.vtkDoubleArray()
-        vecData.SetName('vector_field')
-        vecData.SetNumberOfComponents(3)
-        vecData.SetNumberOfTuples(nxv * nyv)
-        vecData.SetVoidArray(vectors, nxv*nyv*3, 1)
+        vecDataEdge = vtk.vtkDoubleArray()
+        vecDataEdge.SetName('vector_edge')
+        vecDataEdge.SetNumberOfComponents(3)
+        vecDataEdge.SetNumberOfTuples(nxv * nyv)
+        vecDataEdge.SetVoidArray(vectors_edge, nxv*nyv*3, 1)
+
+        vecDataFace = vtk.vtkDoubleArray()
+        vecDataFace.SetName('vector_face')
+        vecDataFace.SetNumberOfComponents(3)
+        vecDataFace.SetNumberOfTuples(nxv * nyv)
+        vecDataFace.SetVoidArray(vectors_face, nxv*nyv*3, 1)
 
         sgrid = vtk.vtkStructuredGrid()
         sgrid.SetDimensions((nxv, nyv, 1))
         sgrid.SetPoints(pts)
-        sgrid.GetPointData().AddArray(vecData)
+        sgrid.GetPointData().AddArray(vecDataEdge)
+        sgrid.GetPointData().AddArray(vecDataFace)
 
         writer = vtk.vtkStructuredGridWriter()
         writer.SetFileName('vectors.vtk')
