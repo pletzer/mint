@@ -182,4 +182,6 @@ def test_2():
     mint.writeLogMessages('test_regrid_edges_latlon2cubedsphere.log')
 
 if __name__ == '__main__':
+    test_1()
     test_2()
+
