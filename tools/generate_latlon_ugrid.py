@@ -11,7 +11,7 @@ Generate grid and edge data on uniform grid and save result in UGRID file
 
 parser = argparse.ArgumentParser(description='Generate the output file storing the lat-lon grid and edge data in UGRID format')
 parser.add_argument('-o', dest='grid_file', default='', 
-                    help='Specify the netcdf file containing the grid and the mesh name in the format "FILENAME:MESHNAME"')
+                    help='Specify the netcdf file containing the grid and the mesh name in the format "FILENAME$MESHNAME"')
 parser.add_argument('-nx', default=1, type=int, 
                     help='Number of longitude cells')
 parser.add_argument('-ny', default=1, type=int, 
@@ -89,7 +89,7 @@ point_data = numpy.zeros((nnodes,), numpy.float64)
 for j in range(ny + 1):
     for i in range(nx + 1):
         index = i + (nx + 1)*j
-        lons[index] = 0.0 + i*dlon
+        lons[index] = -180.0 + i*dlon
         lats[index] = -90.0 + j*dlat
         x, y = lons[index], lats[index]
         point_data[index] = eval(args.stream_funct)

@@ -153,7 +153,7 @@ class ContourFluxes:
                          },
             'D': {'xyz': createLoop(xybeg=(0.91, 0.55), xyend=(0.91, -0.55), nt=15),
                            'flux': float('nan'),
-                           'exact': streamFunction((1., -0.55)) - streamFunction((1., 0.55)) + 1.,
+                           'exact': streamFunction((0.91, -0.55)) - streamFunction((0.91, 0.55)) + 1.,
                          },
         }
 
@@ -170,7 +170,7 @@ class ContourFluxes:
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')
 
-            print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]}')
+            print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]:.3g}')
 
         for case in 'A', 'B', 'C':
             assert(abs(results[case]['flux'] - results[case]['exact']) < 1.e-10)
@@ -202,6 +202,7 @@ class ContourFluxes:
 
         # add vector field
         vecData = vtk.vtkDoubleArray()
+        vecData.SetName('vector_field')
         vecData.SetNumberOfComponents(3)
         vecData.SetNumberOfTuples(nxv * nyv)
         vecData.SetVoidArray(vectors, nxv*nyv*3, 1)

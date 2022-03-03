@@ -16,8 +16,8 @@ dependencies:
 # Core dependencies.
   - libnetcdf
   - numpy
-  - vtk=9.1.0
+  - vtk=
 
 # Test dependencies.
   - pytest
-  - netcdf4=1.5.8
+  - netcdf4
