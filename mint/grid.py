@@ -117,7 +117,7 @@ class Grid(object):
 
     def setPoints(self, points):
         """
-        Set the points (vertices), cell by cell.
+        Set the points (vertices), cell by cell. The points should ordered in counterclockwise way.
 
         :param points: numpy contiguous array of shape (ncells,
                        num_verts_per_cell, 3) using C ordering

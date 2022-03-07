@@ -6,6 +6,44 @@ from pathlib import Path
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 
+def test_loadFromUgrid2DData():
+
+    # src grid
+    sg = Grid()
+    sg.setFlags(0, 0) # lon-lat
+    filename = str(DATA_DIR / Path('lonlatzt_100x50x3x2.nc'))
+    sg.loadFromUgrid2DFile(f'{filename}$mesh2d')
+
+    # dst grid
+    dg = Grid()
+    dg.setFlags(0, 0)
+
+    # 2 cells/faces
+    #
+    # 3..1<...2...>5..5
+    # :       :       :
+    # v       v       ^
+    # 6   0   3   1   4
+    # :       :       :
+    # 0..>2...1...>0..4
+    xyz = numpy.array([(0.,0.,0.),
+                       (1.,0.,0.),
+                       (1.,1.,0.),
+                       (0.,1.,0.),
+                       (2.,0.,0.),
+                       (2.,1.,0.),])
+    face2nodes = numpy.array([(0,1,2,3), (2,1,4,5)], numpy.uint64)
+    edge2nodes = numpy.array([(1,4), (2,3), (0,1), (2,1), (4,5), (2,5), (3,0)], numpy.uint64)
+    dg.loadFromUgrid2DData(xyz, face2nodes, edge2nodes)
+
+    # create a regridder
+    rg = RegridEdges()
+    rg.setSrcGrid(sg)
+    rg.setDstGrid(dg)
+    rg.buildLocator(numCellsPerBucket=128, periodX=0., enableFolding=False)
+    rg.computeWeights()
+
+
 def test_set_grids():
 
     # create and load src grid
