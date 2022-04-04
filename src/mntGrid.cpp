@@ -153,13 +153,14 @@ int mnt_grid_del(Grid_t** self) {
         (*self)->doubleArrays[i]->Delete();
     }
     if ((*self)->reader) {
+        // the grid was created by reding from a file
         (*self)->reader->Delete();
     }
     else {
+        if ((*self)->pointData) (*self)->pointData->Delete();
+        if ((*self)->points) (*self)->points->Delete();
         if ((*self)->grid) (*self)->grid->Delete();
     }
-    if ((*self)->points) (*self)->points->Delete();
-    if ((*self)->pointData) (*self)->pointData->Delete();
 
     if ((*self)->ownsVerts) {
         delete[] (*self)->verts;
@@ -483,6 +484,7 @@ int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
 
 LIBRARY_API
 int mnt_grid_load(Grid_t** self, const char* filename) {
+
     // check if the file exists
     if (!fstream(filename).good()) {
         mntlog::error(__FILE__, __func__, __LINE__, 
@@ -493,15 +495,19 @@ int mnt_grid_load(Grid_t** self, const char* filename) {
     if ((*self)->grid) {
         (*self)->grid->Delete();
     }
+
     (*self)->reader = vtkUnstructuredGridReader::New();
     (*self)->reader->SetFileName(filename);
     (*self)->reader->Update();
     (*self)->grid = (*self)->reader->GetOutput();
+    (*self)->points = (*self)->grid->GetPoints();
+    (*self)->verts = (double *) (*self)->points->GetData()->GetVoidPointer(0);
     return 0;
 }
 
 LIBRARY_API
 int mnt_grid_dump(Grid_t** self, const char* filename) {
+
     vtkUnstructuredGridWriter* writer = vtkUnstructuredGridWriter::New();
 #if (VTK_MAJOR_VERSION >= 9)
     writer->SetFileVersion(42); // want to write old legacy format
