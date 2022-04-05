@@ -106,7 +106,7 @@ def test_east_w1_lonlat(grid, target_points, connectivity):
     error = numpy.sum(numpy.fabs(vects[:, 1]/(vects[:, 0] + EPS)))/ntarget
 
     print(f'test_east_w1_lonlat: error = {error}')
-    assert(error < 1.e-6)
+    assert(error < 0.06)
 
     if False:
         from matplotlib import pylab
@@ -322,7 +322,7 @@ def test_north_w2_lonlat(grid, target_points, connectivity):
     error = numpy.sum(numpy.fabs(vects[:, 0]/(vects[:, 1] + EPS)))/ntarget
 
     print(f'test_north_w2_lonlat: error = {error}')
-    assert(error < 1.e-6)
+    assert(error < 0.06)
 
     if False:
         from matplotlib import pylab
