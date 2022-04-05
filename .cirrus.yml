@@ -144,7 +144,7 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
       VTK_VER: "9.1"
       LIBNETCDF_VER: "4.8.1"
   name: "Windows: py$PY_VER"
