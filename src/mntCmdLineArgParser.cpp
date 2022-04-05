@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include <mntCmdLineArgParser.h>
 #include <cstring>
 
