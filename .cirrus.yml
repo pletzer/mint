@@ -66,11 +66,11 @@ linux_task:
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
     populate_script:
-      - conda-lock --mamba --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
-      - mamba create --name py${PY_VER} --quiet --file conda-linux-64.lock
-      - cp conda-linux-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
-  pytest_script:
-    - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-linux-64.lock >&2
+      - conda-lock --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+      - conda-lock install --name py${PY_VER} conda-lock.yml
+      - cp conda-lock.yml ${HOME}/mambaforge/envs/py${PY_VER}
+  test_script:
+    - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-lock.yml >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
     - conda install --yes -c conda-forge netcdf-fortran doxygen 2>&1
