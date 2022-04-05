@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
-EPS = 1.22354235e-8
+EPS = 1.22354235e-10
 
 @pytest.fixture
 def filename():
@@ -106,7 +106,7 @@ def test_east_w1_lonlat(grid, target_points, connectivity):
     error = numpy.sum(numpy.fabs(vects[:, 1]/(vects[:, 0] + EPS)))/ntarget
 
     print(f'test_east_w1_lonlat: error = {error}')
-    assert(error < 2.e-8)
+    assert(error < 1.e-6)
 
     if False:
         from matplotlib import pylab
@@ -178,7 +178,7 @@ def test_east_w2_lonlat(grid, target_points, connectivity):
     error = numpy.sum(numpy.fabs(vects[:, 1]/(vects[:, 0] + EPS)))/ntarget
 
     print(f'test_east_w2_lonlat: error = {error}')
-    assert(error < 1.e-12)
+    assert(error < 1.e-6)
 
     if False:
         from matplotlib import pylab
@@ -250,7 +250,7 @@ def test_north_w1_lonlat(grid, target_points, connectivity):
     error = numpy.sum(numpy.fabs(vects[:, 0]/(vects[:, 1] + EPS)))/ntarget
 
     print(f'test_north_w1_lonlat: error = {error}')
-    assert(error < 1.e-12)
+    assert(error < 1.e-6)
 
     if False:
         from matplotlib import pylab
@@ -322,7 +322,7 @@ def test_north_w2_lonlat(grid, target_points, connectivity):
     error = numpy.sum(numpy.fabs(vects[:, 0]/(vects[:, 1] + EPS)))/ntarget
 
     print(f'test_north_w2_lonlat: error = {error}')
-    assert(error < 2.e-8)
+    assert(error < 1.e-6)
 
     if False:
         from matplotlib import pylab
