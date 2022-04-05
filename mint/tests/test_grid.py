@@ -68,6 +68,12 @@ def test_load_grid():
     ncells = gr.getNumberOfCells()
     print(f'ncells = {ncells}')
     assert(ncells == 2)
+    num_bad_cells = gr.check()
+    assert(num_bad_cells == 0)
+    points = gr.getPoints()
+    assert(points.shape[0] == ncells)
+    assert(points.shape[1] == 4)
+    assert(points.shape[2] == 3)
 
 
 def test_load_from_ugrid_file():
