@@ -149,7 +149,7 @@ win_task:
       LIBNETCDF_VER: "4.8.1"
   name: "Windows: py$PY_VER"
   windows_container:
-    image: cirrusci/windowsservercore:1803
+    image: cirrusci/windowsservercore:2019
   env:
     # use $VAR not %VAR%
     CONDA_DIR: $USERPROFILE\miniconda3
