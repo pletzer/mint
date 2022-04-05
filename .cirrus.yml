@@ -123,6 +123,7 @@ osx_task:
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
     populate_script:
       - conda-lock --mamba --platform osx-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+      - cat conda-osx-64.lock
       - mamba create --yes --name py${PY_VER} --quiet --file conda-osx-64.lock
       - cp conda-osx-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
   test_script:
