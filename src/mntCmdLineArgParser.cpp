@@ -1,6 +1,6 @@
-#define NOMINMAX
 #include <mntCmdLineArgParser.h>
 #include <cstring>
+#include <algorithm>
 
 LIBRARY_API
 int mnt_cmdlineargparser_new(CmdLineArgParser** self) {
