@@ -66,7 +66,7 @@ linux_task:
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
     populate_script:
-      - conda-lock --mamba --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
+      - conda-lock --mamba --platform linux-64 --lockfile conda-linux-64.lock --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
       - mamba create --name py${PY_VER} --quiet --file conda-linux-64.lock
       - cp conda-linux-64.lock ${HOME}/mambaforge/envs/py${PY_VER}
   pytest_script:
