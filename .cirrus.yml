@@ -150,7 +150,7 @@ win_task:
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
-    os_version: 1709
+    os_version: 2019
   env:
     # use $VAR not %VAR%
     CONDA_DIR: $USERPROFILE\miniconda3
@@ -165,7 +165,7 @@ win_task:
     - conda update -yn base conda
     - conda install --yes -c conda-forge setuptools
     - conda install --yes python=%PY_VER%
-    - conda install --yes pytest tbb cython numpy netcdf4 cmake
+    - conda install --yes pytest tbb cython numpy netcdf4
     - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=%LIBNETCDF_VER%
   install_script:
     - conda list
