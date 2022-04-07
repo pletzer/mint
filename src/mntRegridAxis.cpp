@@ -1,5 +1,6 @@
 #include <mntRegridAxis.h>
 #include <cmath>
+#include <algorithm>
 
 LIBRARY_API
 int mnt_regridaxis_new(RegridAxis_t** self) {

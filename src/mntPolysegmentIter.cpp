@@ -5,6 +5,7 @@
 #include <limits>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 struct TCmpFunctor {
     TCmpFunctor(const std::vector<double>& ts) {
