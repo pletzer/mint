@@ -141,6 +141,43 @@ def test_apply_weights():
     print(f'check sum test passsed: {check_sum}')
 
 
+def test_identity():
+
+    grid = Grid()
+    grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0) # uniform lat-lon
+    filename = str(DATA_DIR / Path('latlon4x2.nc'))
+    meshname = 'latlon'
+    grid.loadFromUgrid2DFile(f'{filename}${meshname}')
+
+    regridder = RegridEdges()
+    regridder.setSrcGrid(grid)
+    # destination and source grids are the same
+    regridder.setDstGrid(grid)
+
+    # compute the weights
+    regridder.buildLocator(numCellsPerBucket=100, periodX=0., enableFolding=False)
+    regridder.computeWeights(debug=2)
+
+    # create a mock field
+    num_edges = grid.getNumberOfEdges()
+    src_data = numpy.array(range(0, num_edges), numpy.float64)
+
+    # allocate space to receive the interpolated data
+    dst_data = numpy.empty((num_edges,), numpy.float64)
+
+    # apply the interpolation weights
+    regridder.apply(src_data, dst_data, placement=UNIQUE_EDGE_DATA)
+
+    print(f'src data = {src_data}')
+    print(f'dst data = {dst_data}')
+    print(f'diff = {src_data - dst_data}')
+
+    # check that we recover the original field
+    error = numpy.fabs(src_data - dst_data).sum()
+    print(f'error = {error}')
+    assert error < 1.e-6
+
+
 if __name__ == '__main__':
 
     test_compute_weights()
