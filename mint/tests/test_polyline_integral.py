@@ -1,6 +1,11 @@
+from errno import EBADARCH
 from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
 import numpy
 import pytest
+from pathlib import Path
+
+
+DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 
 def potentialFunc(p):
@@ -216,14 +221,13 @@ def test_completely_outside(nx, ny, potFunc):
     gr.setPoints(points)
 
     pli = PolylineIntegral()
+    pli.setGrid(gr)
 
     # create the polyline through which the flux will be integrated
     xyz = numpy.array([(0., 0., 0.),
                        (-1., 0., 0.),
                        (-1., 1., 0.),
                        (0., 1., 0.)])
-
-    pli.setGrid(gr)
 
     # no periodicity in x
     pli.buildLocator(numCellsPerBucket=128, periodX=0.0, enableFolding=False)
@@ -236,18 +240,43 @@ def test_completely_outside(nx, ny, potFunc):
     assert abs(flux - exactFlux) < 1.e-10
 
 
-if __name__ == '__main__':
+def test_identity():
 
-    # polyline through which the line integral will be computed
-    xyz = numpy.array([(1., 0., 0.),
-                       (0., 1., 0.)])
-    test_simple(3, 2, singularPotentialFunc, xyz)
+    grid = Grid()
+    grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True) # uniform lat-lon
+    filename = str(DATA_DIR / Path('latlon4x2.nc'))
+    meshname = 'latlon'
+    grid.loadFromUgrid2DFile(f'{filename}${meshname}')
+    num_edges = grid.getNumberOfEdges()
+    data = numpy.array(range(0, num_edges), numpy.float64)
+
+    pli = PolylineIntegral()
+    pli.setGrid(grid)
+    pli.buildLocator(numCellsPerBucket=100, periodX=0., enableFolding=False)
 
     xyz = numpy.array([(0., 0., 0.),
-                       (1., 0., 0.),
-                       (1., 1., 0.),
-                       (0., 1., 0.)])
-    test_simple(3, 2, potentialFunc, xyz)
+                       (90., 0., 0.),])
+    pli.computeWeights(xyz, counterclock=False)
+    flux = pli.getIntegral(data)
 
-    test_partially_outside(2, 3, potentialFunc)
-    test_completely_outside(2, 3, potentialFunc)
+    print(f'flux = {flux}')
+    # assert abs(flux - .) < 1.e-10
+
+
+if __name__ == '__main__':
+
+    test_identity()
+
+    # # polyline through which the line integral will be computed
+    # xyz = numpy.array([(1., 0., 0.),
+    #                    (0., 1., 0.)])
+    # test_simple(3, 2, singularPotentialFunc, xyz)
+
+    # xyz = numpy.array([(0., 0., 0.),
+    #                    (1., 0., 0.),
+    #                    (1., 1., 0.),
+    #                    (0., 1., 0.)])
+    # test_simple(3, 2, potentialFunc, xyz)
+
+    # test_partially_outside(2, 3, potentialFunc)
+    # test_completely_outside(2, 3, potentialFunc)

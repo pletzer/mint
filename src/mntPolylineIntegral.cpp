@@ -4,7 +4,7 @@
 #include <mntWeights.h>
 #include <iostream>
 
-//#define DEBUG
+#define DEBUG
 
 LIBRARY_API
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
@@ -73,16 +73,16 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
     // reset
     (*self)->weights.clear();
 
-    if (npoints <= 0) {
-        std::string mgs = "need at least one point";
+    if (npoints < 2) {
+        std::string mgs = "need at least two points";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return 1;
+        return -1;
     }
 
     if (!(*self)->vgrid) {
         std::string mgs = "need to build locator before computing the weights";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return 2;
+        return -2;
     }
 
     const double* xi0_xi1 = QUAD_POSITIVEXI_EDGE_DIRECTION;

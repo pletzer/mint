@@ -88,9 +88,12 @@ class PolylineIntegral(object):
             cc = 1
         ier = MINTLIB.mnt_polylineintegral_computeWeights(self.obj, xyz.shape[0],
                                                           xyz, cc)
-        if ier:
-            msg = f"Failed to locate points {xyz} (ok if some fall outside the domain)"
-            warning_handler(FILE, 'computeWeights', ier, detailedmsg=msg)
+        if ier == -1:
+            msg = f"Need at least two points, got {xyz.shape[0]} point(s)"
+            error_handler(FILE, 'computeWeights', ier, detailedmsg=msg)
+        elif ier == -2:
+            msg = f"Need to call buildLocator before invoking computeWeights"
+            error_handler(FILE, 'computeWeights', ier, detailedmsg=msg)
 
     def getIntegral(self, data):
         """
