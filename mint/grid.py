@@ -39,7 +39,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, '__del__', ier)
 
-    def setFlags(self, fixLonAcrossDateline, averageLonAtPole):
+    def setFlags(self, fixLonAcrossDateline, averageLonAtPole, degrees=True):
         """
         Set the grid flags.
 
@@ -48,14 +48,18 @@ class Grid(object):
                                      compact as possible
         :param averageLonAtPole: set to 1 if the longitudes at the poles should
                                  be the average of the cell's longitudes
+        :param degrees: set to False if coordinates are note in degrees
 
-        note:: a lon-lat grid requires 0, 0 and cubed sphere grid requires 1, 1
+        note:: a lon-lat grid requires fixLonAcrossDateline=0, averageLonAtPole=0 and 
+               cubed sphere grid requires fixLonAcrossDateline=1, averageLonAtPole=1
         note:: call this before reading the grid from file
         """
-        MINTLIB.mnt_grid_setFlags.argtypes = [POINTER(c_void_p), c_int, c_int]
+        MINTLIB.mnt_grid_setFlags.argtypes = [POINTER(c_void_p), c_int, c_int, c_int]
+        degrees_int = int(degrees)
         ier = MINTLIB.mnt_grid_setFlags(self.obj,
                                     fixLonAcrossDateline,
-                                    averageLonAtPole)
+                                    averageLonAtPole,
+                                    degrees_int)
         if ier:
             error_handler(FILE, 'setFlags', ier)
 
