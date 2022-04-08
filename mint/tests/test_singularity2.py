@@ -70,7 +70,7 @@ class ContourFluxes:
         # create grid
         self.grid = mint.Grid()
         # cubed-sphere
-        self.grid.setFlags(1, 1)
+        self.grid.setFlags(1, 1, degrees=True)
         self.grid.loadFromUgrid2DFile(f'{DATA_DIR}/lfric_diag_wind.nc$Mesh2d')
         self.points = self.grid.getPoints()
 
@@ -166,7 +166,7 @@ class ContourFluxes:
         for res in resolutions:
 
             grid2 = mint.Grid()
-            grid2.setFlags(0, 0) # uniform
+            grid2.setFlags(0, 0, degrees=True) # uniform
             grid2.loadFromUgrid2DFile(f'{DATA_DIR}/latlon{res}Shifted.nc$mesh')
             grid2.dump(f'lonlat{res}.vtk')
 
