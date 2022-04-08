@@ -168,12 +168,14 @@ def test_identity():
     # apply the interpolation weights
     regridder.apply(src_data, dst_data, placement=UNIQUE_EDGE_DATA)
 
+    diff = src_data - dst_data
+    for i in range(num_edges):
+        print(f'{i} {diff[i]}')
     print(f'src data = {src_data}')
     print(f'dst data = {dst_data}')
-    print(f'diff = {src_data - dst_data}')
 
     # check that we recover the original field
-    error = numpy.fabs(src_data - dst_data).sum()
+    error = numpy.fabs(diff).sum()
     print(f'error = {error}')
     assert error < 1.e-6
 
