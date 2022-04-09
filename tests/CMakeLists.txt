@@ -336,6 +336,7 @@ add_executable(testRegridEdgesIdentity testRegridEdgesIdentity.cxx)
 target_link_libraries(testRegridEdgesIdentity
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
