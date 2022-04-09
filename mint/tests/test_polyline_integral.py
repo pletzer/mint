@@ -1,4 +1,3 @@
-from errno import EBADARCH
 from mint import (Grid, PolylineIntegral, printLogMessages, writeLogMessages,
                  CELL_BY_CELL_DATA, UNIQUE_EDGE_DATA)
 import numpy
