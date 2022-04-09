@@ -128,7 +128,8 @@ int main(int argc, char** argv) {
         }
 
         double flux = 0.0;
-        ier = mnt_polylineintegral_getIntegral(&fluxCalc, (const double*) srcData, &flux);
+        ier = mnt_polylineintegral_getIntegral(&fluxCalc, (const double*) srcData,
+              MNT_CELL_BY_CELL_DATA, &flux);
 
         printf("Flux across the line: %5.18f\n", flux);
 

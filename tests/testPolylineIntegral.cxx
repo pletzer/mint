@@ -136,7 +136,8 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
     assert(ier == 0);    
 
     double totalFlux;
-    ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0], &totalFlux);
+    ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0],
+                                           MNT_CELL_BY_CELL_DATA, &totalFlux);
 
     // exact flux is the difference of potential between end and starting points
     double totalFluxExact = potentialFunc(&xyz[(npoints - 1)*3]) - potentialFunc(&xyz[0*3]);

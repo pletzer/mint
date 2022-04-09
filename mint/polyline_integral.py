@@ -1,5 +1,5 @@
 from ctypes import (c_void_p, c_double, c_int, byref, POINTER)
-from . import MINTLIB, NUM_EDGES_PER_QUAD
+from . import MINTLIB, NUM_EDGES_PER_QUAD, UNIQUE_EDGE_DATA, CELL_BY_CELL_DATA
 from . import error_handler, warning_handler
 import numpy
 
@@ -95,7 +95,7 @@ class PolylineIntegral(object):
             msg = f"Need to call buildLocator before invoking computeWeights"
             error_handler(FILE, 'computeWeights', ier, detailedmsg=msg)
 
-    def getIntegral(self, data):
+    def getIntegral(self, data, placement=UNIQUE_EDGE_DATA):
         """
         Get the flux integral over the polyline.
 
@@ -107,12 +107,16 @@ class PolylineIntegral(object):
                      (1, 0) -> (1, 1),
                      (0, 1) -> (1, 1) and
                      (0, 0) -> (0, 1) in parametric space
+        :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell
+                          (size num cells * mint.NUM_EDGES_PER_QUAD),
+                          assume unique edge Id data otherwise (size num edges)
         :returns the line/flux integral
         """
         MINTLIB.mnt_polylineintegral_getIntegral.argtypes = [POINTER(c_void_p),
-                                                         DOUBLE_ARRAY_PTR]
+                                                             DOUBLE_ARRAY_PTR, c_int,
+                                                             POINTER(c_double)]
         res = c_double()
-        ier = MINTLIB.mnt_polylineintegral_getIntegral(self.obj, data, byref(res))
+        ier = MINTLIB.mnt_polylineintegral_getIntegral(self.obj, data, placement, byref(res))
         if ier:
             error_handler(FILE, 'getIntegral', ier)
         return res.value

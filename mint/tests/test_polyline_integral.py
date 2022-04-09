@@ -1,5 +1,6 @@
 from errno import EBADARCH
-from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
+from mint import (Grid, PolylineIntegral, printLogMessages, writeLogMessages,
+                 CELL_BY_CELL_DATA, UNIQUE_EDGE_DATA)
 import numpy
 import pytest
 from pathlib import Path
@@ -83,7 +84,7 @@ def test_simple(nx, ny, potFunc, xyz):
 
     pli.computeWeights(xyz, counterclock=False)
 
-    flux = pli.getIntegral(data)
+    flux = pli.getIntegral(data=data, placement=CELL_BY_CELL_DATA)
     exactFlux = potFunc(xyz[-1, :]) - potFunc(xyz[0, :])
     print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
     assert abs(flux - exactFlux) < 1.e-10
@@ -154,7 +155,7 @@ def test_partially_outside(nx, ny, potFunc):
 
     pli.computeWeights(xyz, counterclock=False)
 
-    flux = pli.getIntegral(data)
+    flux = pli.getIntegral(data=data, placement=CELL_BY_CELL_DATA)
 
     # because the first point is outside the domain, only the contribution
     # stemming from the path inside the domain will be computed. Let's
@@ -234,7 +235,7 @@ def test_completely_outside(nx, ny, potFunc):
 
     pli.computeWeights(xyz, counterclock=False)
 
-    flux = pli.getIntegral(data)
+    flux = pli.getIntegral(data=data, placement=CELL_BY_CELL_DATA)
     exactFlux = 0.0
     print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
     assert abs(flux - exactFlux) < 1.e-10
@@ -257,7 +258,7 @@ def test_identity():
     xyz = numpy.array([(0., 0., 0.),
                        (90., 0., 0.),])
     pli.computeWeights(xyz, counterclock=False)
-    flux = pli.getIntegral(data)
+    flux = pli.getIntegral(data=data, placement=UNIQUE_EDGE_DATA)
 
     print(f'flux = {flux}')
     # assert abs(flux - .) < 1.e-10
