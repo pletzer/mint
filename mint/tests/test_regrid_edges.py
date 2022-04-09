@@ -144,23 +144,29 @@ def test_apply_weights():
 
 def test_identity():
 
-    grid = Grid()
-    grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0) # uniform lat-lon
+    srcGrid = Grid()
+    srcGrid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True) # uniform lat-lon
     filename = str(DATA_DIR / Path('latlon4x2.nc'))
     meshname = 'latlon'
-    grid.loadFromUgrid2DFile(f'{filename}${meshname}')
+    srcGrid.loadFromUgrid2DFile(f'{filename}${meshname}')
+
+    # destination and source grids are the same
+    dstGrid = Grid()
+    dstGrid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True) # uniform lat-lon
+    filename = str(DATA_DIR / Path('latlon4x2.nc'))
+    meshname = 'latlon'
+    dstGrid.loadFromUgrid2DFile(f'{filename}${meshname}')
 
     regridder = RegridEdges()
-    regridder.setSrcGrid(grid)
-    # destination and source grids are the same
-    regridder.setDstGrid(grid)
+    regridder.setSrcGrid(srcGrid)
+    regridder.setDstGrid(dstGrid)
 
     # compute the weights
-    regridder.buildLocator(numCellsPerBucket=100, periodX=0., enableFolding=False)
+    regridder.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
     regridder.computeWeights(debug=2)
 
     # create a mock field
-    num_edges = grid.getNumberOfEdges()
+    num_edges = srcGrid.getNumberOfEdges()
     src_data = numpy.array(range(0, num_edges), numpy.float64)
 
     # allocate space to receive the interpolated data
