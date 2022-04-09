@@ -4,7 +4,7 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
-configure_file(testRegridedgesIdentity.cpp testRegridedgesIdentity.cxx)
+configure_file(testRegridEdgesIdentity.cpp testRegridEdgesIdentity.cxx)
 configure_file(testPolylineIntegral.cpp testPolylineIntegral.cxx)
 configure_file(testLFRicVectorField.cpp testLFRicVectorField.cxx)
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
@@ -337,8 +337,6 @@ target_link_libraries(testRegridEdgesIdentity
                       mint
                       ${VTK_LIBRARIES}
 )
-
-
 
 add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
 add_test(NAME logger COMMAND testLogger)
@@ -710,4 +708,4 @@ set_tests_properties(regrid_axis PROPERTIES
                      PASS_REGULAR_EXPRESSION "Success")
 
 add_test(NAME testRegridEdgesIdentity
-        COMMAND "testRegridEdgesIdentity")
+         COMMAND "testRegridEdgesIdentity")
