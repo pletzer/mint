@@ -255,13 +255,13 @@ def test_identity():
     pli.setGrid(grid)
     pli.buildLocator(numCellsPerBucket=100, periodX=0., enableFolding=False)
 
-    xyz = numpy.array([(0., 0., 0.),
-                       (90., 0., 0.),])
+    xyz = numpy.array([(270., 0., 0.),
+                       (270., 90., 0.),])
     pli.computeWeights(xyz, counterclock=False)
     flux = pli.getIntegral(data=data, placement=UNIQUE_EDGE_DATA)
 
     print(f'flux = {flux}')
-    # assert abs(flux - .) < 1.e-10
+    assert abs(flux - 20.) < 1.e-10
 
 
 if __name__ == '__main__':
