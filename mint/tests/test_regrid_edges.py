@@ -158,6 +158,9 @@ def test_identity():
     dstGrid.loadFromUgrid2DFile(f'{filename}${meshname}')
 
     regridder = RegridEdges()
+
+    # even though the grids are the same, we still need to create two 
+    # grid instances
     regridder.setSrcGrid(srcGrid)
     regridder.setDstGrid(dstGrid)
 
