@@ -62,6 +62,8 @@ void testIdentityLatLon() {
     for (auto i = 0; i < numEdges; ++i) {
         error += std::abs(srcData[i] - dstData[i]);
     }
+    error /= (double) numEdges;
+
     std::cerr << "lat-lon error: " << error << '\n';
     assert(error < 1.e-10);
    
@@ -126,8 +128,10 @@ void testIdentityCubedSphere() {
     for (auto i = 0; i < numEdges; ++i) {
         error += std::abs(srcData[i] - dstData[i]);
     }
+    error /= (double) numEdges;
+
     std::cerr << "cubed-sphere error: " << error << '\n';
-    assert(error < 1.e-10);
+    assert(error < 1.e-7);
    
     // reclaim the memory
     ier = mnt_regridedges_del(&rg);
