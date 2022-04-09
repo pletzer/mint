@@ -4,6 +4,7 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
+configure_file(testPolylineIntegral.cpp testPolylineIntegral.cxx)
 configure_file(testLFRicVectorField.cpp testLFRicVectorField.cxx)
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
