@@ -268,16 +268,16 @@ if __name__ == '__main__':
 
     test_identity()
 
-    # # polyline through which the line integral will be computed
-    # xyz = numpy.array([(1., 0., 0.),
-    #                    (0., 1., 0.)])
-    # test_simple(3, 2, singularPotentialFunc, xyz)
+    # polyline through which the line integral will be computed
+    xyz = numpy.array([(1., 0., 0.),
+                       (0., 1., 0.)])
+    test_simple(3, 2, singularPotentialFunc, xyz)
 
-    # xyz = numpy.array([(0., 0., 0.),
-    #                    (1., 0., 0.),
-    #                    (1., 1., 0.),
-    #                    (0., 1., 0.)])
-    # test_simple(3, 2, potentialFunc, xyz)
+    xyz = numpy.array([(0., 0., 0.),
+                       (1., 0., 0.),
+                       (1., 1., 0.),
+                       (0., 1., 0.)])
+    test_simple(3, 2, potentialFunc, xyz)
 
-    # test_partially_outside(2, 3, potentialFunc)
-    # test_completely_outside(2, 3, potentialFunc)
+    test_partially_outside(2, 3, potentialFunc)
+    test_completely_outside(2, 3, potentialFunc)
