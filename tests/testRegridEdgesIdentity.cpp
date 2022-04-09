@@ -4,7 +4,7 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
-void testIdentity() {
+void testIdentityLatLon() {
     
     std::string fileMesh = "@CMAKE_SOURCE_DIR@/data/latlon4x2.nc$latlon";
 
@@ -14,8 +14,14 @@ void testIdentity() {
     ier = mnt_regridedges_new(&rg);
     assert(ier == 0);
 
-    // src and dst grids are the same
+    // lat-lon
+    int fixLonAcrossDateline = 0;
+    int averageLonAtPole = 0;
+    ier = mnt_regridedges_setSrcGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
+    ier = mnt_regridedges_setDstGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
+    assert(ier == 0);
 
+    // src and dst grids are the same
     ier = mnt_regridedges_loadSrcGrid(&rg, fileMesh.c_str(), (int) fileMesh.size());
     assert(ier == 0);
     ier = mnt_regridedges_loadDstGrid(&rg, fileMesh.c_str(), (int) fileMesh.size());
@@ -62,5 +68,5 @@ void testIdentity() {
 
 
 int main() {
-    testIdentity();
+    testIdentityLatLon();
 }
