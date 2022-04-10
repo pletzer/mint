@@ -1,6 +1,11 @@
-from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
+from mint import (Grid, PolylineIntegral, printLogMessages, writeLogMessages,
+                 CELL_BY_CELL_DATA, UNIQUE_EDGE_DATA)
 import numpy
 import pytest
+from pathlib import Path
+
+
+DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 
 def potentialFunc(p):
@@ -78,7 +83,7 @@ def test_simple(nx, ny, potFunc, xyz):
 
     pli.computeWeights(xyz, counterclock=False)
 
-    flux = pli.getIntegral(data)
+    flux = pli.getIntegral(data=data, placement=CELL_BY_CELL_DATA)
     exactFlux = potFunc(xyz[-1, :]) - potFunc(xyz[0, :])
     print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
     assert abs(flux - exactFlux) < 1.e-10
@@ -149,7 +154,7 @@ def test_partially_outside(nx, ny, potFunc):
 
     pli.computeWeights(xyz, counterclock=False)
 
-    flux = pli.getIntegral(data)
+    flux = pli.getIntegral(data=data, placement=CELL_BY_CELL_DATA)
 
     # because the first point is outside the domain, only the contribution
     # stemming from the path inside the domain will be computed. Let's
@@ -216,6 +221,7 @@ def test_completely_outside(nx, ny, potFunc):
     gr.setPoints(points)
 
     pli = PolylineIntegral()
+    pli.setGrid(gr)
 
     # create the polyline through which the flux will be integrated
     xyz = numpy.array([(0., 0., 0.),
@@ -223,20 +229,43 @@ def test_completely_outside(nx, ny, potFunc):
                        (-1., 1., 0.),
                        (0., 1., 0.)])
 
-    pli.setGrid(gr)
-
     # no periodicity in x
     pli.buildLocator(numCellsPerBucket=128, periodX=0.0, enableFolding=False)
 
     pli.computeWeights(xyz, counterclock=False)
 
-    flux = pli.getIntegral(data)
+    flux = pli.getIntegral(data=data, placement=CELL_BY_CELL_DATA)
     exactFlux = 0.0
     print(f'total flux: {flux:.3f} exact flux: {exactFlux:.3f}')
     assert abs(flux - exactFlux) < 1.e-10
 
 
+def test_identity():
+
+    grid = Grid()
+    grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True) # uniform lat-lon
+    filename = str(DATA_DIR / Path('latlon4x2.nc'))
+    meshname = 'latlon'
+    grid.loadFromUgrid2DFile(f'{filename}${meshname}')
+    num_edges = grid.getNumberOfEdges()
+    data = numpy.array(range(0, num_edges), numpy.float64)
+
+    pli = PolylineIntegral()
+    pli.setGrid(grid)
+    pli.buildLocator(numCellsPerBucket=100, periodX=0., enableFolding=False)
+
+    xyz = numpy.array([(0., 90., 0.),
+                       (360., 90., 0.),])
+    pli.computeWeights(xyz, counterclock=False)
+    flux = pli.getIntegral(data=data, placement=UNIQUE_EDGE_DATA)
+
+    print(f'flux = {flux}')
+    assert abs(flux - 38.) < 1.e-10
+
+
 if __name__ == '__main__':
+
+    test_identity()
 
     # polyline through which the line integral will be computed
     xyz = numpy.array([(1., 0., 0.),

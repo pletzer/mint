@@ -1,4 +1,5 @@
 #include "mntLogger.h"
+#include <mntGlobal.h>
 #include <mntPolylineIntegral.h>
 #include <mntPolysegmentIter.h>
 #include <mntWeights.h>
@@ -37,6 +38,7 @@ int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
 
     // get VTK grid
     mnt_grid_get(&grid, &(*self)->vgrid);
+    (*self)->gridObj = grid;
     (*self)->loc->SetDataSet((*self)->vgrid);
 
     return ier;
@@ -73,16 +75,16 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
     // reset
     (*self)->weights.clear();
 
-    if (npoints <= 0) {
-        std::string mgs = "need at least one point";
+    if (npoints < 2) {
+        std::string mgs = "need at least two points";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return 1;
+        return -1;
     }
 
     if (!(*self)->vgrid) {
         std::string mgs = "need to build locator before computing the weights";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return 2;
+        return -2;
     }
 
     const double* xi0_xi1 = QUAD_POSITIVEXI_EDGE_DIRECTION;
@@ -162,7 +164,8 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
 }
 
 LIBRARY_API
-int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[], double* result) {
+int mnt_polylineintegral_getIntegralOfCellByCellData(PolylineIntegral_t** self, const double data[],
+                                                     double* result) {
 
     *result = 0;
     for (auto it = (*self)->weights.cbegin(); it != (*self)->weights.cend(); ++it) {
@@ -192,4 +195,65 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
 #endif
 
     return 0;
+}
+
+LIBRARY_API
+int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, const double data[],
+                                                     double* result) {
+
+    *result = 0;
+    int ier;
+
+    // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
+    if (!(*self)->gridObj ||
+        (*self)->gridObj->faceNodeConnectivity.size() == 0 || 
+        (*self)->gridObj->faceEdgeConnectivity.size() == 0 ||
+        (*self)->gridObj->edgeNodeConnectivity.size() == 0) {
+        std::string msg = "grid connectivity not set (?) Read the grid from a netcdf Ufile";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
+
+    for (auto it = (*self)->weights.cbegin(); it != (*self)->weights.cend(); ++it) {
+
+        // get the cell Id
+        vtkIdType cellId = it->first.first;
+        // get the edge index
+        int edgeIndex = it->first.second;
+
+        std::size_t edgeId;
+        int edgeSign;
+        ier = mnt_grid_getEdgeId(&((*self)->gridObj), cellId, edgeIndex, &edgeId, &edgeSign);
+
+        // get the weight
+        double wght = it->second;
+
+        // add the contribution
+#ifdef DEBUG
+        std::string msg = "adding weight = " + std::to_string(wght) + " * edge integral = " + 
+                          std::to_string(data[edgeId] * edgeSign) + " to the flux (" +
+                          std::to_string(*result) + " so far) for cellId = " + 
+                          std::to_string(cellId) + " edgeIndex = " + std::to_string(edgeIndex);
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
+#endif
+        *result += wght * data[edgeId] * edgeSign;
+    }
+#ifdef DEBUG
+    std::string msg = "total flux = " + std::to_string(*result);
+    mntlog::info(__FILE__, __func__, __LINE__, msg);
+#endif
+
+    return 0;
+}
+
+LIBRARY_API
+int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[],
+                                     int placement, double* result) {
+
+    if (placement == MNT_CELL_BY_CELL_DATA) {
+        return mnt_polylineintegral_getIntegralOfCellByCellData(self, data, result);
+    }
+    else {
+        return mnt_polylineintegral_getIntegralOfUniqueEdgeData(self, data, result);
+    }
 }

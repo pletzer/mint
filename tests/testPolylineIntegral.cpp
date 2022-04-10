@@ -28,7 +28,6 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
                    double (*potentialFunc)(const double p[]), const std::vector<double>& xyz) {
 
     int ier;
-
     Grid_t* grd = NULL;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
@@ -136,12 +135,80 @@ void testCartesian(double xmin, double xmax, double ymin, double ymax, size_t nx
     assert(ier == 0);    
 
     double totalFlux;
-    ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0], &totalFlux);
+    ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0],
+                                           MNT_CELL_BY_CELL_DATA, &totalFlux);
 
     // exact flux is the difference of potential between end and starting points
     double totalFluxExact = potentialFunc(&xyz[(npoints - 1)*3]) - potentialFunc(&xyz[0*3]);
 
     std::cout << "testCartesian: total flux = " << totalFlux << " exact: " << totalFluxExact << 
+                 " error: " << totalFlux - totalFluxExact << '\n';
+    assert(std::abs(totalFlux - totalFluxExact) < 1.e-10);
+
+    ier = mnt_polylineintegral_del(&pli);
+    assert(ier == 0);
+
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
+}
+
+void testUniqueEdges() {
+
+    int ier;
+    Grid_t* grd = NULL;
+    ier = mnt_grid_new(&grd);
+    assert(ier == 0);
+
+    int fixLonAcrossDateline = 0;
+    int averageLonAtPole = 0;
+    int degrees = 1;
+    ier = mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
+    assert(ier == 0);
+    
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "@CMAKE_SOURCE_DIR@/data/latlon4x2.nc$latlon");
+    assert(ier == 0);
+
+    PolylineIntegral_t* pli = NULL;
+    ier = mnt_polylineintegral_new(&pli);
+    assert(ier == 0);
+
+    ier = mnt_polylineintegral_setGrid(&pli, grd);
+    assert(ier == 0);
+
+    int numCellsPerBucket = 128;
+    double periodX = 0;
+    int enableFolding = 0;
+    ier = mnt_polylineintegral_buildLocator(&pli, numCellsPerBucket, periodX, enableFolding);
+    assert(ier == 0);
+
+    // target points
+    std::vector<double> xyz({360., 0., 0.,
+                             360., 90., 0.,
+                             0., 90., 0.,
+                             0., 0., 0.});
+    int npoints = (int) xyz.size() / 3;
+    int counterclock = 0;
+    ier = mnt_polylineintegral_computeWeights(&pli, npoints, (const double*) &xyz[0], 
+                                              counterclock);
+    assert(ier == 0);
+
+    std::size_t numEdges;
+    ier = mnt_grid_getNumberOfEdges(&grd, &numEdges);
+    std::vector<double> data(numEdges);
+    // set the field values to the edge Ids
+    for (auto i = 0; i < numEdges; ++i) {
+        data[i] = (double) i;
+    }
+
+    // compute the flux/line integral
+    double totalFlux;
+    ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0],
+                                           MNT_UNIQUE_EDGE_DATA, &totalFlux);
+
+    // exact flux is the difference of potential between end and starting points
+    double totalFluxExact = 21 - 11 - 10 - 9 - 8 - 17;
+
+    std::cout << "testUniqueEdges: total flux = " << totalFlux << " exact: " << totalFluxExact << 
                  " error: " << totalFlux - totalFluxExact << '\n';
     assert(std::abs(totalFlux - totalFluxExact) < 1.e-10);
 

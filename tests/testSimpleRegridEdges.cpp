@@ -10,7 +10,6 @@
 #include <cassert>
 
 
-
 int main() {
 
     std::string srcFile = "@CMAKE_SOURCE_DIR@/data/tiny1x1.nc$physics";

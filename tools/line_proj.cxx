@@ -122,7 +122,8 @@ int main(int argc, char** argv) {
         double* srcData = (double*) aa->GetVoidPointer(0);
 
         double totFlux = 0.0;
-        ier = mnt_polylineintegral_getIntegral(&fluxCalc, (const double*) srcData, &totFlux);
+        ier = mnt_polylineintegral_getIntegral(&fluxCalc, (const double*) srcData,
+                                               MNT_CELL_BY_CELL_DATA, &totFlux);
         std::cout << "total flux is: " << totFlux << '\n';
 
         // cleanup

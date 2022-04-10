@@ -4,6 +4,8 @@ include_directories(
   ${CMAKE_Fortran_MODULE_DIRECTORY}
 )
 
+configure_file(testRegridEdgesIdentity.cpp testRegridEdgesIdentity.cxx)
+configure_file(testPolylineIntegral.cpp testPolylineIntegral.cxx)
 configure_file(testLFRicVectorField.cpp testLFRicVectorField.cxx)
 configure_file(testSimpleRegridEdges.cpp testSimpleRegridEdges.cxx)
 configure_file(testNetcdf.cpp testNetcdf.cxx)
@@ -330,6 +332,12 @@ target_link_libraries(testRegridAxis
                       ${VTK_LIBRARIES}
 )
 
+add_executable(testRegridEdgesIdentity testRegridEdgesIdentity.cxx)
+target_link_libraries(testRegridEdgesIdentity
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
 
 add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
 add_test(NAME logger COMMAND testLogger)
@@ -699,3 +707,6 @@ add_test(NAME regrid_axis
          COMMAND "testRegridAxis")
 set_tests_properties(regrid_axis PROPERTIES
                      PASS_REGULAR_EXPRESSION "Success")
+
+add_test(NAME testRegridEdgesIdentity
+         COMMAND "testRegridEdgesIdentity")

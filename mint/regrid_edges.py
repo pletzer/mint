@@ -1,6 +1,6 @@
 from ctypes import (c_void_p, c_double, c_int, byref, POINTER,
                    c_char_p, c_size_t)
-from . import MINTLIB, UNIQUE_EDGE_DATA, NUM_EDGES_PER_QUAD
+from . import MINTLIB, UNIQUE_EDGE_DATA, CELL_BY_CELL_DATA, NUM_EDGES_PER_QUAD
 from . import error_handler, warning_handler
 import numpy
 
