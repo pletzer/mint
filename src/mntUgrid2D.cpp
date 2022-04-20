@@ -92,7 +92,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readConnectivityData(ncid, meshid, 
                 "face_node_connectivity", this->face2Points);
     if (ier != NC_NOERR) {
-        msg = "variable \"" + meshname + "\" does not have attribute \"face_node_connectivity\"";
+        msg = "cannot read the face_node_connectivity of mesh \"" + meshname + "\"";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 3;
@@ -112,7 +112,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readConnectivityData(ncid, meshid, 
                 "edge_node_connectivity", this->edge2Points);
     if (ier != NC_NOERR) {
-        msg = "variable \"" + meshname + "\" does not have attribute \"edge_node_connectivity\"";
+        msg = "cannot read the edge_node_connectivity of mesh \"" + meshname + "\"";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 5;
@@ -122,6 +122,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readPoints(ncid, meshid);
     if (ier != NC_NOERR) {
         msg = "cannot read node coordinates for mesh \"" + meshname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 6;
     }
@@ -140,44 +141,76 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
                               std::vector<std::size_t>& data) {
 
     int ier;
+    std::string msg;
 
     // get the lengths of the attribute string
     std::size_t len;
     ier = nc_inq_attlen(ncid, meshid, role.c_str(), &len);
-    if (ier != NC_NOERR) return 1;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire attribute length of \"" + role + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
 
     // read the attribute value, ie the name of the variables we will need to read
     std::string varname(len, ' ');
     ier = nc_get_att_text(ncid, meshid, role.c_str(), &varname[0]);
-    if (ier != NC_NOERR) return 2;
+    if (ier != NC_NOERR) {
+        msg = "cannot get attribute text of \"" + role + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 2;
+    }
 
     // fetch the variable Id for this variable name
     int varid;
     ier = nc_inq_varid(ncid, varname.c_str(), &varid);
-    if (ier != NC_NOERR) return 3;
+    if (ier != NC_NOERR) {
+        msg = "cannot get variable Id for \"" + varname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 3;
+    }
 
     // dimensions of the variable to read
     int dimids[2];
     std::size_t n0, n1;
-    // either 0 or 1
-    int startIndex;
 
     // read the data
     ier = nc_inq_vardimid(ncid, varid, dimids);
-    if (ier != NC_NOERR) return 4;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire the dimension Ids for \"" + varname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 4;
+    }
 
     ier = nc_inq_dimlen(ncid, dimids[0], &n0);
-    if (ier != NC_NOERR) return 5;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire dimension 0 for \"" + varname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 5;
+    }
 
     ier = nc_inq_dimlen(ncid, dimids[1], &n1);
-    if (ier != NC_NOERR) return 6;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire dimension 1 for \"" + varname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 6;
+    }
 
+    int startIndex = 0;
     ier = nc_get_att_int(ncid, varid, "start_index", &startIndex);
-    if (ier != NC_NOERR) return 8;
+    if (ier != NC_NOERR) {
+        msg = "cannot get attribute value \"start_index\" of variable \"" + varname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 8;
+    }
 
     std::vector<unsigned long long> buffer(n0 * n1);
     ier = nc_get_var_ulonglong(ncid, varid, &buffer[0]);
-    if (ier != NC_NOERR) return 7;
+    if (ier != NC_NOERR) {
+        msg = "cannot read the values of \"" + varname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 7;
+    }
 
     // subtract start_index
     data.resize(n0 * n1);
