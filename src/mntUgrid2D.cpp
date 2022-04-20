@@ -147,7 +147,8 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     std::size_t len;
     ier = nc_inq_attlen(ncid, meshid, role.c_str(), &len);
     if (ier != NC_NOERR) {
-        msg = "cannot inquire attribute length of \"" + role + "\"";
+        msg = "cannot inquire attribute length of \"" + role + "\"; " +
+        nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
@@ -156,7 +157,8 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     std::string varname(len, ' ');
     ier = nc_get_att_text(ncid, meshid, role.c_str(), &varname[0]);
     if (ier != NC_NOERR) {
-        msg = "cannot get attribute text of \"" + role + "\"";
+        msg = "cannot get attribute text of \"" + role +
+              "\"; " + nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 2;
     }
@@ -165,7 +167,8 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     int varid;
     ier = nc_inq_varid(ncid, varname.c_str(), &varid);
     if (ier != NC_NOERR) {
-        msg = "cannot get variable Id for \"" + varname + "\"";
+        msg = "cannot get variable Id for \"" + varname +
+        "\"; " + nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 3;
     }
@@ -177,21 +180,24 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     // read the data
     ier = nc_inq_vardimid(ncid, varid, dimids);
     if (ier != NC_NOERR) {
-        msg = "cannot inquire the dimension Ids for \"" + varname + "\"";
+        msg = "cannot inquire the dimension Ids for \"" + varname +
+        "\"; " + nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 4;
     }
 
     ier = nc_inq_dimlen(ncid, dimids[0], &n0);
     if (ier != NC_NOERR) {
-        msg = "cannot inquire dimension 0 for \"" + varname + "\"";
+        msg = "cannot inquire dimension 0 for \"" + varname +
+        "\"; " + nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 5;
     }
 
     ier = nc_inq_dimlen(ncid, dimids[1], &n1);
     if (ier != NC_NOERR) {
-        msg = "cannot inquire dimension 1 for \"" + varname + "\"";
+        msg = "cannot inquire dimension 1 for \"" + varname +
+        "\"; " + nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 6;
     }
@@ -199,7 +205,8 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     int startIndex = 0;
     ier = nc_get_att_int(ncid, varid, "start_index", &startIndex);
     if (ier != NC_NOERR) {
-        msg = "cannot get attribute value \"start_index\" of variable \"" + varname + "\"";
+        msg = "cannot get attribute value \"start_index\" of variable \"" +
+        varname + "\"; " + nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 8;
     }
@@ -207,7 +214,8 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
     std::vector<unsigned long long> buffer(n0 * n1);
     ier = nc_get_var_ulonglong(ncid, varid, &buffer[0]);
     if (ier != NC_NOERR) {
-        msg = "cannot read the values of \"" + varname + "\"";
+        msg = "cannot read the values of \"" + varname +
+        "\"; " + nc_strerror(ier);
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 7;
     }
