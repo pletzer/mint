@@ -1,7 +1,7 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
                     c_size_t, c_longlong, c_double)
 from . import MINTLIB, NUM_VERTS_PER_QUAD, NUM_VERTS_PER_EDGE
-from . import error_handler, warning_handler
+from . import error_handler
 import numpy
 
 
@@ -128,7 +128,7 @@ class Grid(object):
         """
         ncells, num_verts_per_cell, ndim = points.shape
         if ndim != 3:
-            raise RuntimeError(f'ERROR: points.shape[2] != 3, got {ndim}!')
+            error_handler(FILE, f'setPoints: points.shape[2] != 3, got {ndim}!')
         MINTLIB.mnt_grid_setPointsPtr.argtypes = [POINTER(c_void_p),
                                               DOUBLE_ARRAY_PTR]
         MINTLIB.mnt_grid_build.argtypes = [POINTER(c_void_p), c_int, c_longlong]
@@ -137,7 +137,7 @@ class Grid(object):
             error_handler(FILE, 'setPointsPtr', ier)
         ier = MINTLIB.mnt_grid_build(self.obj, num_verts_per_cell, ncells)
         if ier:
-            error_handler(FILE, 'setPointsPtr', ier)
+            error_handler(FILE, 'build', ier)
 
     def getPoints(self):
         """
