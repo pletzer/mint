@@ -12,6 +12,7 @@ def error_handler(filename, methodname, ier, detailedmsg=''):
     msg = f'ier={ier} after calling {methodname} in {filename}!\n'
     msg += detailedmsg
     logging.error(msg)
+    MINTLIB.mnt_printLogMessages()
     raise RuntimeError(msg)
 
 def warning_handler(filename, methodname, ier, detailedmsg=''):
