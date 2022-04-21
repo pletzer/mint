@@ -4,13 +4,20 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
+
+void testIrisGrid() {
+    Grid_t* grd;
+    mnt_grid_new(&grd);
+    mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/gridlike_mesh.nc$example_mesh");
+    mnt_grid_del(&grd);
+}
+
 void testVTK() {
     Grid_t* grd;
     mnt_grid_new(&grd);
     mnt_grid_load(&grd, "${CMAKE_SOURCE_DIR}/data/cs.vtk");
     mnt_grid_del(&grd);
 }
-
 
 void testUgridData() {
 
@@ -169,6 +176,7 @@ void testUgrid() {
 
 int main(int argc, char** argv) {
 
+    //testIrisGrid();
     testLFRic();
     testUgrid();
     testVTK();

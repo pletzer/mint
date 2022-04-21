@@ -92,7 +92,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readConnectivityData(ncid, meshid, 
                 "face_node_connectivity", this->face2Points);
     if (ier != NC_NOERR) {
-        msg = "variable \"" + meshname + "\" does not have attribute \"face_node_connectivity\"";
+        msg = "cannot read the face_node_connectivity of mesh \"" + meshname + "\"";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 3;
@@ -112,7 +112,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readConnectivityData(ncid, meshid, 
                 "edge_node_connectivity", this->edge2Points);
     if (ier != NC_NOERR) {
-        msg = "variable \"" + meshname + "\" does not have attribute \"edge_node_connectivity\"";
+        msg = "cannot read the edge_node_connectivity of mesh \"" + meshname + "\"";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 5;
@@ -122,6 +122,7 @@ Ugrid2D::load(const std::string& filename, const std::string& meshname) {
     ier = this->readPoints(ncid, meshid);
     if (ier != NC_NOERR) {
         msg = "cannot read node coordinates for mesh \"" + meshname + "\"";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 6;
     }
@@ -140,44 +141,84 @@ Ugrid2D::readConnectivityData(int ncid, int meshid,
                               std::vector<std::size_t>& data) {
 
     int ier;
+    std::string msg;
 
     // get the lengths of the attribute string
     std::size_t len;
     ier = nc_inq_attlen(ncid, meshid, role.c_str(), &len);
-    if (ier != NC_NOERR) return 1;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire attribute length of \"" + role + "\"; " +
+        nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
 
     // read the attribute value, ie the name of the variables we will need to read
     std::string varname(len, ' ');
     ier = nc_get_att_text(ncid, meshid, role.c_str(), &varname[0]);
-    if (ier != NC_NOERR) return 2;
+    if (ier != NC_NOERR) {
+        msg = "cannot get attribute text of \"" + role +
+              "\"; " + nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 2;
+    }
 
     // fetch the variable Id for this variable name
     int varid;
     ier = nc_inq_varid(ncid, varname.c_str(), &varid);
-    if (ier != NC_NOERR) return 3;
+    if (ier != NC_NOERR) {
+        msg = "cannot get variable Id for \"" + varname +
+        "\"; " + nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 3;
+    }
 
     // dimensions of the variable to read
     int dimids[2];
     std::size_t n0, n1;
-    // either 0 or 1
-    int startIndex;
 
     // read the data
     ier = nc_inq_vardimid(ncid, varid, dimids);
-    if (ier != NC_NOERR) return 4;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire the dimension Ids for \"" + varname +
+        "\"; " + nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 4;
+    }
 
     ier = nc_inq_dimlen(ncid, dimids[0], &n0);
-    if (ier != NC_NOERR) return 5;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire dimension 0 for \"" + varname +
+        "\"; " + nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 5;
+    }
 
     ier = nc_inq_dimlen(ncid, dimids[1], &n1);
-    if (ier != NC_NOERR) return 6;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire dimension 1 for \"" + varname +
+        "\"; " + nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 6;
+    }
 
+    int startIndex = 0;
     ier = nc_get_att_int(ncid, varid, "start_index", &startIndex);
-    if (ier != NC_NOERR) return 8;
+    if (ier != NC_NOERR) {
+        msg = "cannot get attribute value \"start_index\" of variable \"" +
+        varname + "\"; " + nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 8;
+    }
 
     std::vector<unsigned long long> buffer(n0 * n1);
     ier = nc_get_var_ulonglong(ncid, varid, &buffer[0]);
-    if (ier != NC_NOERR) return 7;
+    if (ier != NC_NOERR) {
+        msg = "cannot read the values of \"" + varname +
+        "\"; " + nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 7;
+    }
 
     // subtract start_index
     data.resize(n0 * n1);
@@ -197,12 +238,22 @@ Ugrid2D::readPoints(int ncid, int meshid) {
     // get the lengths of the attribute string
     std::size_t len;
     ier = nc_inq_attlen(ncid, meshid, "node_coordinates", &len);
-    if (ier != NC_NOERR) return 10;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire attribute \"node_coordinates\"; " +
+        std::string(nc_strerror(ier));
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 10;
+    }
 
     // read the attribute, lists the name of the lon and lat coordinates
     std::string val(len, ' ');
     ier = nc_get_att_text(ncid, meshid, "node_coordinates", &val[0]);
-    if (ier != NC_NOERR) return 11;
+    if (ier != NC_NOERR) {
+        msg = "cannot get attribute \"node_coordinates\"; " +
+        std::string(nc_strerror(ier));
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 11;
+    }
 
     // val is "varx vary" where var{x,y} are the variable names
     std::size_t n = val.size();
@@ -219,9 +270,19 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 
     int varxid, varyid;
     ier = nc_inq_varid(ncid, varx.c_str(), &varxid);
-    if (ier != NC_NOERR) return 12;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire \"" + varx + "\"; " +
+        nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 12;
+    }
     ier = nc_inq_varid(ncid, vary.c_str(), &varyid);
-    if (ier != NC_NOERR) return 13;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire \"" + vary + "\"; " +
+        nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 13;
+    }
 
     int dimids[1];
 
@@ -235,7 +296,8 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         // get the attribute length
         ier = nc_inq_attlen(ncid, varid, "standard_name", &len);
         if (ier != NC_NOERR) {
-            msg = "variable with varid = " + std::to_string(varid) + " has no attribute \"standard_name\"";
+            msg = "cannot inquire attribute \"standard_name\" of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
             mntlog::error(__FILE__, __func__, __LINE__, msg);
             return 14;
         }
@@ -243,14 +305,29 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 
         // read the attribute
         ier = nc_get_att_text(ncid, varid, "standard_name", &var_stdn[0]);
-        if (ier != NC_NOERR) return 15;
+        if (ier != NC_NOERR) {
+            msg = "cannot get value of attribute \"standard_name\" of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return 15;
+        }
 
         // get the dimension
         ier = nc_inq_vardimid(ncid, varid, dimids);
-        if (ier != NC_NOERR) return 16;
+        if (ier != NC_NOERR) {
+            msg = "cannot inquire the dimension Ids of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return 16;
+        }
 
         ier = nc_inq_dimlen(ncid, dimids[0], &this->numPoints);
-        if (ier != NC_NOERR) return 17;
+        if (ier != NC_NOERR) {
+            msg = "cannot inquire dimension 0 of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return 17;
+        }
 
         // allocate/resize
         std::vector<double> data(this->numPoints);
@@ -261,12 +338,12 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         // read the data
         ier = nc_get_var_double(ncid, varid, &data[0]);
         if (ier != NC_NOERR) {
-            msg = "could not read \"" + varx + "\"";
+            msg = "could not read variable with varid = " + std::to_string(varid);
             mntlog::error(__FILE__, __func__, __LINE__, msg);
             return 18;
         }
         
-        // associate data  our coordinate variable
+        // associate data to coordinate variable
         std::size_t j;
         if (var_stdn == "longitude") {
             j = LON_INDEX;

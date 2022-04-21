@@ -162,6 +162,8 @@ def test_load_ugrid_data():
     assert(n0 == 0)
     assert(n1 == 3)
 
+    gr.dump('singleCell.vtk')
+
 
 if __name__ == '__main__':
 
