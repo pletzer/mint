@@ -1,10 +1,15 @@
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntPolylineIntegral.h>
+#include <mntLogger.h>
 #include <mntGrid.h>
 #undef NDEBUG // turn on asserts
 #include <cassert>
 #include <cmath>
 #include <iostream>
+
+double potentialFunc(const double* p) {
+    return p[0] + p[1];
+}
 
 void test2Triangles() {
     
@@ -63,11 +68,32 @@ void test2Triangles() {
                                               counterclock);
     assert(ier == 0);
 
-    std::vector<double> data{0, 1, 2, 3, 4, 5};
+    // set the data on each edge
+    std::vector<double> data(nedges);
+    for (std::size_t iedge = 0; iedge < nedges; ++iedge) {
+
+        std::size_t i0 = edge2nodes[iedge*MNT_NUM_VERTS_PER_EDGE + 0];
+        const double* p0 = &xyz[i0*MNT_NUM_VERTS_PER_QUAD];
+        double pot0 = potentialFunc(p0);
+
+        std::size_t i1 = edge2nodes[iedge*MNT_NUM_VERTS_PER_EDGE + 1];
+        const double* p1 = &xyz[i1*MNT_NUM_VERTS_PER_QUAD];
+        double pot1 = potentialFunc(p1);
+
+        data[iedge] = pot1 - pot0;
+    }
+
     double totalFlux;
     ier = mnt_polylineintegral_getIntegral(&pli, (const double*) &data[0],
-                                           MNT_CELL_BY_CELL_DATA, &totalFlux);
+                                           MNT_UNIQUE_EDGE_DATA, &totalFlux);
     assert(ier == 0);
+
+    // check
+    double exactFlux = potentialFunc(&xyz[(npoints - 1)*3]) - potentialFunc(&xyz[0]);
+    double error = totalFlux - exactFlux;
+    std::cout << "total flux: " << totalFlux << " exact flux: " << exactFlux << " error: " << error << '\n';
+    mnt_printLogMessages();
+    assert(std::abs(error) < 1.e-10);
 
     ier = mnt_polylineintegral_del(&pli);
     assert(ier == 0);
