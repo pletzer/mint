@@ -238,12 +238,22 @@ Ugrid2D::readPoints(int ncid, int meshid) {
     // get the lengths of the attribute string
     std::size_t len;
     ier = nc_inq_attlen(ncid, meshid, "node_coordinates", &len);
-    if (ier != NC_NOERR) return 10;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire attribute \"node_coordinates\"; " +
+        std::string(nc_strerror(ier));
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 10;
+    }
 
     // read the attribute, lists the name of the lon and lat coordinates
     std::string val(len, ' ');
     ier = nc_get_att_text(ncid, meshid, "node_coordinates", &val[0]);
-    if (ier != NC_NOERR) return 11;
+    if (ier != NC_NOERR) {
+        msg = "cannot get attribute \"node_coordinates\"; " +
+        std::string(nc_strerror(ier));
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 11;
+    }
 
     // val is "varx vary" where var{x,y} are the variable names
     std::size_t n = val.size();
@@ -260,9 +270,19 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 
     int varxid, varyid;
     ier = nc_inq_varid(ncid, varx.c_str(), &varxid);
-    if (ier != NC_NOERR) return 12;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire \"" + varx + "\"; " +
+        nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 12;
+    }
     ier = nc_inq_varid(ncid, vary.c_str(), &varyid);
-    if (ier != NC_NOERR) return 13;
+    if (ier != NC_NOERR) {
+        msg = "cannot inquire \"" + vary + "\"; " +
+        nc_strerror(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 13;
+    }
 
     int dimids[1];
 
@@ -276,7 +296,8 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         // get the attribute length
         ier = nc_inq_attlen(ncid, varid, "standard_name", &len);
         if (ier != NC_NOERR) {
-            msg = "variable with varid = " + std::to_string(varid) + " has no attribute \"standard_name\"";
+            msg = "cannot inquire attribute \"standard_name\" of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
             mntlog::error(__FILE__, __func__, __LINE__, msg);
             return 14;
         }
@@ -284,14 +305,29 @@ Ugrid2D::readPoints(int ncid, int meshid) {
 
         // read the attribute
         ier = nc_get_att_text(ncid, varid, "standard_name", &var_stdn[0]);
-        if (ier != NC_NOERR) return 15;
+        if (ier != NC_NOERR) {
+            msg = "cannot get value of attribute \"standard_name\" of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return 15;
+        }
 
         // get the dimension
         ier = nc_inq_vardimid(ncid, varid, dimids);
-        if (ier != NC_NOERR) return 16;
+        if (ier != NC_NOERR) {
+            msg = "cannot inquire the dimension Ids of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return 16;
+        }
 
         ier = nc_inq_dimlen(ncid, dimids[0], &this->numPoints);
-        if (ier != NC_NOERR) return 17;
+        if (ier != NC_NOERR) {
+            msg = "cannot inquire dimension 0 of variable with varid = " +
+            std::to_string(varid) + "; " + nc_strerror(ier);
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return 17;
+        }
 
         // allocate/resize
         std::vector<double> data(this->numPoints);
@@ -302,12 +338,12 @@ Ugrid2D::readPoints(int ncid, int meshid) {
         // read the data
         ier = nc_get_var_double(ncid, varid, &data[0]);
         if (ier != NC_NOERR) {
-            msg = "could not read \"" + varx + "\"";
+            msg = "could not read variable with varid = " + std::to_string(varid);
             mntlog::error(__FILE__, __func__, __LINE__, msg);
             return 18;
         }
         
-        // associate data  our coordinate variable
+        // associate data to coordinate variable
         std::size_t j;
         if (var_stdn == "longitude") {
             j = LON_INDEX;
