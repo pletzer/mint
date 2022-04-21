@@ -176,10 +176,10 @@ void testUgrid() {
 
 int main(int argc, char** argv) {
 
-    testIrisGrid();
-    // testLFRic();
-    // testUgrid();
-    // testVTK();
+    //testIrisGrid();
+    testLFRic();
+    testUgrid();
+    testVTK();
 
     mnt_printLogMessages();
 
