@@ -12,7 +12,7 @@ double potentialFunc(const double* p) {
 }
 
 
-void test1Triangle() {
+void test1Triangle(const std::vector<double>& targetLine, double exactFlux) {
     
     int ier;
     Grid_t* grd;
@@ -38,7 +38,7 @@ void test1Triangle() {
     std::size_t npoints = 4;
     std::vector<double> xyz{0.,0.,0.,
                             1.,0.,0.,
-                            1.,1.,0., // 0.,1.,0.,
+                            0.,1.,0.,
                             0.,1.,0.}; // degenerate
     std::vector<std::size_t> face2nodes{0, 1, 2, 3};
     std::vector<std::size_t> edge2nodes{0, 1,
@@ -61,14 +61,11 @@ void test1Triangle() {
     ier = mnt_polylineintegral_buildLocator(&pli, numCellsPerBucket, periodX, enableFolding);
     assert(ier == 0);
 
-    std::vector<double> targetPoints{0., 0., 0.,
-                                     1., 0., 0.};
-    std::size_t numTargetPoints = targetPoints.size() / 3;
+    std::size_t numTargetPoints = targetLine.size() / 3;
 
     int counterclock = 0;
-    ier = mnt_polylineintegral_computeWeights(&pli, numTargetPoints, (const double*) &targetPoints[0], 
+    ier = mnt_polylineintegral_computeWeights(&pli, numTargetPoints, (const double*) &targetLine[0], 
                                               counterclock);
-    mnt_printLogMessages();
     assert(ier == 0);
 
     // set the data on each edge
@@ -80,10 +77,9 @@ void test1Triangle() {
     assert(ier == 0);
 
     // check
-    double exactFlux = 10;
     double error = totalFlux - exactFlux;
     std::cout << "total flux: " << totalFlux << " exact flux: " << exactFlux << " error: " << error << '\n';
-    // mnt_printLogMessages();
+    mnt_printLogMessages();
     assert(std::abs(error) < 1.e-10);
 
     ier = mnt_polylineintegral_del(&pli);
@@ -188,7 +184,20 @@ void test2Triangles() {
 
 int main(int argc, char** argv) {
 
-    test1Triangle();
+    {
+        std::vector<double> targetLine{1., 0., 0.,
+                                       0., 1., 0.};
+        double exactFlux = 11;
+        test1Triangle(targetLine, exactFlux);
+    }
+
+    // {
+    //     std::vector<double> targetLine{0., 0., 0.,
+    //                                    1., 0., 0.};
+    //     double exactFlux = 10;
+    //     test1Triangle(targetLine, exactFlux);
+    // }
+    
     // test2Triangles();
 
     return 0;
