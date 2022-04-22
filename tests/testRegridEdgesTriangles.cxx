@@ -5,7 +5,7 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
-#define EPS 0.01
+#define EPS 0.5
 
 void test2Triangles() {
     
@@ -72,6 +72,9 @@ void test2Triangles() {
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rg, debug);
     assert(ier == 0);
+
+    std::string fname = "regridEdgesWeights.nc";
+    ier = mnt_regridedges_dumpWeights(&rg, fname.c_str(), (int) fname.size());
 
     // data values are the edge indices
     std::size_t numEdges;
