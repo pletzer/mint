@@ -5,7 +5,7 @@
 #include <mntWeights.h>
 #include <iostream>
 
-#define DEBUG
+//#define DEBUG
 
 LIBRARY_API
 int mnt_polylineintegral_new(PolylineIntegral_t** self) {
