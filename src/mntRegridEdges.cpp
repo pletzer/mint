@@ -86,7 +86,7 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 LIBRARY_API
 int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
 
-    int ier;
+    int ier = 0;
     if ((*self)->srcGridObj) {
         ier = mnt_grid_del(&((*self)->srcGridObj));
     }
@@ -97,7 +97,7 @@ int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
 LIBRARY_API
 int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid) {
 
-    int ier;
+    int ier = 0;
     if ((*self)->dstGridObj) {
         ier = mnt_grid_del(&((*self)->dstGridObj));
     }

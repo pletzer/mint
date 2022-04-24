@@ -343,6 +343,7 @@ add_executable(testRegridEdgesTriangles testRegridEdgesTriangles.cxx)
 target_link_libraries(testRegridEdgesTriangles
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_executable(testPolylineIntegralTriangles testPolylineIntegralTriangles.cxx)
