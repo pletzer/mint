@@ -136,7 +136,9 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
 
                 double weight = computeWeight(xi0, xi1, xia, xib);
 #ifdef DEBUG
-                msg = "cellId: " + std::to_string(cellId) + " edgeId: " + std::to_string(edgeIndex) + " weight: " + std::to_string(weight);
+                msg = "ip0: " + std::to_string(ip0) + " sgmt: " + std::to_string(i) + " cell " + std::to_string(cellId) + " edge: " + std::to_string(edgeIndex) + 
+                      " xi beg/end: " + std::to_string(xia[0]) + "," + std::to_string(xia[1]) + ' ' + 
+                      std::to_string(xib[0]) + "," + std::to_string(xib[1]) + " wght: " + std::to_string(weight);
                 mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
                 // increment the weight. note the default value is 0 for numeric values

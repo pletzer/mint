@@ -217,9 +217,23 @@ int mnt_grid_getPointsPtr(Grid_t** self, double** pointsPtr) {
 LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
+    std::string msg;
+
+    if ((*self)->grid && (*self)->points && (*self)->pointData) {
+        msg = "VTK grid has already been built, bailing out";
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
+        return 0;
+    }
+
     (*self)->pointData = vtkDoubleArray::New();
     (*self)->points = vtkPoints::New();
     (*self)->grid = vtkUnstructuredGrid::New();
+
+    if (!(*self)->verts) {
+        msg = "must call setPointsPtr before invoking build";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 2;
+    }
 
     int save = 1;
     int npoints = nVertsPerCell * ncells;
@@ -230,7 +244,8 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
     (*self)->points->SetData((*self)->pointData);
 
-    (*self)->grid->Allocate(ncells, 1);
+    (*self)->grid->Initialize();
+    (*self)->grid->AllocateExact(ncells, MNT_NUM_VERTS_PER_QUAD);
 
     int cellType = -1;
     if (nVertsPerCell == MNT_NUM_VERTS_PER_QUAD) {
@@ -241,6 +256,8 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
     }
     else {
         // error
+        std::string msg = "unsupported cell type";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
 
@@ -256,6 +273,8 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
     }
     (*self)->grid->SetPoints((*self)->points);
 
+    (*self)->grid->Squeeze();
+
     // clean
     ptIds->Delete();
 
@@ -266,6 +285,8 @@ LIBRARY_API
 int mnt_grid_attach(Grid_t** self, const char* varname, int nDataPerCell, const double data[]) {
 
     if (!(*self)->grid) {
+        std::string msg = "must build cell by cell grid before attaching a field";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
 
@@ -291,6 +312,8 @@ LIBRARY_API
 int mnt_grid_computeEdgeArcLengths(Grid_t** self) {
 
     if (!(*self)->grid) {
+        std::string msg = "must build cell by cell grid before computing arc lengths";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
 
@@ -352,8 +375,9 @@ LIBRARY_API
 int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, double* res) {
 
     if ((*self)->edgeArcLengths.size() == 0) {
-        mntlog::error(__FILE__, __func__, __LINE__, 
-            "you need to call mnt_grid_computeEdgeArcLengths before invoking mnt_grid_getEdgeArcLength");
+        std::string msg = 
+            "need to call mnt_grid_computeEdgeArcLengths before invoking getEdgeArcLength";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
     std::size_t k = cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex;
@@ -363,6 +387,13 @@ int mnt_grid_getEdgeArcLength(Grid_t** self, vtkIdType cellId, int edgeIndex, do
 
 LIBRARY_API
 int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
+
+    if (!(*self)->grid) {
+        std::string msg = "the cell by cell grid was not built";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
+
     *grid_ptr = (*self)->grid;
     return 0;
 }
@@ -370,6 +401,13 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr) {
 LIBRARY_API
 int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t nedges, std::size_t npoints, 
                                  const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]) {
+
+    if ((*self)->numEdges > 0) {
+        // data have already been loaded
+        std::string msg = "data have already been loaded from ugrid data and the grid has been built";
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
+        return 0;
+    }
 
     (*self)->numEdges = nedges;
 

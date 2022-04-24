@@ -339,6 +339,20 @@ target_link_libraries(testRegridEdgesIdentity
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testRegridEdgesTriangles testRegridEdgesTriangles.cxx)
+target_link_libraries(testRegridEdgesTriangles
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testPolylineIntegralTriangles testPolylineIntegralTriangles.cxx)
+target_link_libraries(testPolylineIntegralTriangles
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
 add_test(NAME logger COMMAND testLogger)
 add_test(NAME vecMat COMMAND testVecMat)
@@ -710,3 +724,9 @@ set_tests_properties(regrid_axis PROPERTIES
 
 add_test(NAME testRegridEdgesIdentity
          COMMAND "testRegridEdgesIdentity")
+
+add_test(NAME testRegridEdgesTriangles
+         COMMAND "testRegridEdgesTriangles")
+
+add_test(NAME testPolylineIntegralTriangles
+         COMMAND "testPolylineIntegralTriangles")
