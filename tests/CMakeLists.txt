@@ -350,6 +350,7 @@ add_executable(testPolylineIntegralTriangles testPolylineIntegralTriangles.cxx)
 target_link_libraries(testPolylineIntegralTriangles
                       mint
                       ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
 add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
