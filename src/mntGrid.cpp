@@ -236,7 +236,8 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
     (*self)->points->SetData((*self)->pointData);
 
-    (*self)->grid->Allocate(ncells, 1);
+    (*self)->grid->Initialize();
+    (*self)->grid->AllocateExact(ncells, 1);
 
     int cellType = -1;
     if (nVertsPerCell == MNT_NUM_VERTS_PER_QUAD) {
@@ -263,6 +264,8 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
         (*self)->grid->InsertNextCell(cellType, ptIds);
     }
     (*self)->grid->SetPoints((*self)->points);
+
+    (*self)->grid->Squeeze();
 
     // clean
     ptIds->Delete();
