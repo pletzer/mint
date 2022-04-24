@@ -123,7 +123,7 @@ void test2Triangles2() {
 }
 
 
-void test2Triangles() {
+void test2TrianglesSingleGrid() {
     
     int ier;
     Grid_t* grd;
@@ -187,45 +187,51 @@ void test2Triangles() {
 
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rg, debug);
-    assert(ier == 0);
+    // detect that src and dst grids are the same
+    assert(ier != 0);
 
-    std::string fname = "regridEdgesWeights.nc";
-    ier = mnt_regridedges_dumpWeights(&rg, fname.c_str(), (int) fname.size());
+    // assert(ier == 0);
 
-    // data values are the edge indices
-    std::size_t numEdges;
-    ier = mnt_regridedges_getNumSrcEdges(&rg, &numEdges);
-    assert(ier == 0);
+    // std::string fname = "regridEdgesWeights.nc";
+    // ier = mnt_regridedges_dumpWeights(&rg, fname.c_str(), (int) fname.size());
 
-    // set the edge field integrals to the edge Ids
-    std::vector<double> srcData(numEdges);
-    std::vector<double> dstData(numEdges);
-    for (auto i = 0; i < numEdges; ++i) {
-        srcData[i] = i;
-    }
-    // set the fluxes to zero on the small edges
-    srcData[2] = 0;
-    srcData[4] = 0;
+    // // data values are the edge indices
+    // std::size_t numEdges;
+    // ier = mnt_regridedges_getNumSrcEdges(&rg, &numEdges);
+    // assert(ier == 0);
 
-    // apply the weights
-    int placement = MNT_UNIQUE_EDGE_DATA;
-    ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0], placement);
-    assert(ier == 0);
+    // // set the edge field integrals to the edge Ids
+    // std::vector<double> srcData(numEdges);
+    // std::vector<double> dstData(numEdges);
+    // for (auto i = 0; i < numEdges; ++i) {
+    //     srcData[i] = i;
+    // }
+    // // set the fluxes to zero on the small edges
+    // srcData[2] = 0;
+    // srcData[4] = 0;
 
-    mnt_printLogMessages();
+    // // apply the weights
+    // int placement = MNT_UNIQUE_EDGE_DATA;
+    // ier = mnt_regridedges_apply(&rg, &srcData[0], &dstData[0], placement);
+    // assert(ier == 0);
 
-    // check
-    double error = 0;
-    for (auto i = 0; i < numEdges; ++i) {
-        error += std::abs(dstData[i] - srcData[i]);
-        std::cout << i << " srcData = " << srcData[i] << " dstData = " << dstData[i] << '\n';
-    }
-    error /= (double) numEdges;
+    // mnt_printLogMessages();
 
-    std::cerr << "2 triangles error: " << error << '\n';
-    assert(error < 1.e-10);
-   
+    // // check
+    // double error = 0;
+    // for (auto i = 0; i < numEdges; ++i) {
+    //     error += std::abs(dstData[i] - srcData[i]);
+    //     std::cout << i << " srcData = " << srcData[i] << " dstData = " << dstData[i] << '\n';
+    // }
+    // error /= (double) numEdges;
+
+    // std::cerr << "2 triangles error: " << error << '\n';
+    // assert(error < 1.e-10);
+
     // reclaim the memory
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
+
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
 }
@@ -233,8 +239,12 @@ void test2Triangles() {
 void test1Quad() {
     
     int ier;
-    Grid_t* grd;
-    ier = mnt_grid_new(&grd);
+    Grid_t* srcGrd;
+    ier = mnt_grid_new(&srcGrd);
+    assert(ier == 0);
+
+    Grid_t* dstGrd;
+    ier = mnt_grid_new(&dstGrd);
     assert(ier == 0);
 
     /* a single cell
@@ -258,24 +268,20 @@ void test1Quad() {
                                         3, 0,
                                         3, 2,
                                         1, 0};
-    ier = mnt_grid_loadFromUgrid2DData(&grd, ncells, nedges, npoints, &xyz[0], &face2nodes[0], &edge2nodes[0]);
+ 
+    // src and dst grids are the same
+    ier = mnt_grid_loadFromUgrid2DData(&srcGrd, ncells, nedges, npoints, &xyz[0], &face2nodes[0], &edge2nodes[0]);
+    assert(ier == 0);
+    ier = mnt_grid_loadFromUgrid2DData(&dstGrd, ncells, nedges, npoints, &xyz[0], &face2nodes[0], &edge2nodes[0]);
     assert(ier == 0);
 
     RegridEdges_t* rg = NULL;
     ier = mnt_regridedges_new(&rg);
     assert(ier == 0);
 
-    // lat-lon
-    int fixLonAcrossDateline = 0;
-    int averageLonAtPole = 0;
-    ier = mnt_regridedges_setSrcGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
-    ier = mnt_regridedges_setDstGridFlags(&rg, fixLonAcrossDateline, averageLonAtPole);
+    ier = mnt_regridedges_setSrcGrid(&rg, srcGrd);
     assert(ier == 0);
-
-    // src and dst grids are the same
-    ier = mnt_regridedges_setSrcGrid(&rg, grd);
-    assert(ier == 0);
-    ier = mnt_regridedges_setDstGrid(&rg, grd);
+    ier = mnt_regridedges_setDstGrid(&rg, dstGrd);
     assert(ier == 0);
 
     int num_cells_per_bucket = 128;
@@ -317,12 +323,17 @@ void test1Quad() {
     assert(error < 1.e-10);
    
     // reclaim the memory
+    ier = mnt_grid_del(&dstGrd);
+    assert(ier == 0);
+    ier = mnt_grid_del(&srcGrd);
+    assert(ier == 0);
+
     ier = mnt_regridedges_del(&rg);
     assert(ier == 0);
 }
 
 int main() {
-    test2Triangles();
+    test2TrianglesSingleGrid(); 
     test2Triangles2();
     test1Quad();
 }

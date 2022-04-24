@@ -217,12 +217,20 @@ int mnt_grid_getPointsPtr(Grid_t** self, double** pointsPtr) {
 LIBRARY_API
 int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
 
+    std::string msg;
+
+    if ((*self)->grid && (*self)->points && (*self)->pointData) {
+        msg = "VTK grid has already been built, bailing out";
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
+        return 0;
+    }
+
     (*self)->pointData = vtkDoubleArray::New();
     (*self)->points = vtkPoints::New();
     (*self)->grid = vtkUnstructuredGrid::New();
 
     if (!(*self)->verts) {
-        std::string msg = "must call setPointsPtr before invoking build";
+        msg = "must call setPointsPtr before invoking build";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 2;
     }
@@ -237,7 +245,7 @@ int mnt_grid_build(Grid_t** self, int nVertsPerCell, vtkIdType ncells) {
     (*self)->points->SetData((*self)->pointData);
 
     (*self)->grid->Initialize();
-    (*self)->grid->AllocateExact(ncells, 1);
+    (*self)->grid->AllocateExact(ncells, MNT_NUM_VERTS_PER_QUAD);
 
     int cellType = -1;
     if (nVertsPerCell == MNT_NUM_VERTS_PER_QUAD) {

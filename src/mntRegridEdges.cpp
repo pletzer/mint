@@ -579,6 +579,12 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
         return -2;
     }
 
+    if ((*self)->srcGridObj == (*self)->dstGridObj) {
+        msg = "source and destination grids cannot be the same instance (create a separate instance for the destination grid)";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -3;
+    }
+
     // compute the weights
     vtkIdList* dstPtIds = vtkIdList::New();
     vtkIdList* srcCellIds = vtkIdList::New();
