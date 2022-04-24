@@ -140,5 +140,5 @@ void testIdentityCubedSphere() {
 
 int main() {
     testIdentityLatLon();
-    testIdentityCubedSphere();
+    // testIdentityCubedSphere();
 }

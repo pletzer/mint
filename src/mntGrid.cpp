@@ -391,6 +391,13 @@ LIBRARY_API
 int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t nedges, std::size_t npoints, 
                                  const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]) {
 
+    if ((*self)->numEdges > 0) {
+        // data have already been loaded
+        std::string msg = "data have already been loaded from ugrid data and the grid has been built";
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
+        return 0;
+    }
+
     (*self)->numEdges = nedges;
 
     // copy the connectivity arrays and coordinates

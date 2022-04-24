@@ -130,7 +130,7 @@ void test2Triangles() {
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
 
-    /* 2 triangles
+    /* 2 cells, almost triangles, single grid
 
      5<2.4.....<6......3
      :    \            :
@@ -322,6 +322,7 @@ void test1Quad() {
 }
 
 int main() {
+    test2Triangles();
     test2Triangles2();
     test1Quad();
 }

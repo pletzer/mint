@@ -46,6 +46,9 @@ struct Grid_t {
     // number of unique edges, if loading from Ugrid2D
     std::size_t numEdges;
 
+    // number of vertices
+    std::size_t numPoints;
+
     // periodicity length, 360 if using degrees
     double periodX;
 
