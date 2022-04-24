@@ -494,7 +494,14 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
     std::string filename = std::string(fort_filename, n);
     mntlog::info(__FILE__, __func__, __LINE__, 
                  "loading src grid from file \"" + filename + "\"");
+
     int ier = mnt_grid_loadFromUgrid2DFile(&((*self)->srcGridObj), filename.c_str());
+    if (ier != 0) {
+        std::string msg = "could not load source grid from file " + filename;
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
+
     (*self)->srcGridIsOwned = true; // the regridder owns the src grid
     return ier;
 }
@@ -507,7 +514,14 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
     std::string filename = std::string(fort_filename, n);
     mntlog::info(__FILE__, __func__, __LINE__, 
                  "loading dst grid from file \"" + filename + "\"");
+    
     int ier = mnt_grid_loadFromUgrid2DFile(&((*self)->dstGridObj), filename.c_str());
+    if (ier != 0) {
+        std::string msg = "could not load destination grid from file " + filename;
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
+
     (*self)->dstGridIsOwned = true; // the regridder owns the dst grid
     return ier;
 }
@@ -519,7 +533,7 @@ int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
     std::string msg;
     // checks
     if (!(*self)->srcGridObj || !(*self)->srcGridObj->grid) {
-        msg = "must set source grid";
+        msg = "must have set or loaded source grid";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
@@ -540,6 +554,18 @@ LIBRARY_API
 int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
 
     std::string msg;
+
+    if (!(*self)->srcGridObj || !(*self)->srcGridObj->grid) {
+        msg = "source grid object has not been set or built";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
+
+    if (!(*self)->dstGridObj || !(*self)->dstGridObj->grid) {
+        msg = "destination grid object has not been set or built";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -2;
+    }
 
     // compute the weights
     vtkIdList* dstPtIds = vtkIdList::New();
@@ -706,12 +732,25 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
 
 LIBRARY_API
 int mnt_regridedges_getNumSrcCells(RegridEdges_t** self, std::size_t* n) {
+
+    if (!(*self)->srcGridObj || !(*self)->srcGridObj->grid) {
+        std::string msg = "source grid object has not been set or built";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
     *n = (*self)->srcGridObj->grid->GetNumberOfCells();
     return 0;
 }
 
 LIBRARY_API
 int mnt_regridedges_getNumDstCells(RegridEdges_t** self, std::size_t* n) {
+
+    if (!(*self)->dstGridObj || !(*self)->dstGridObj->grid) {
+        std::string msg = "destination grid object has not been set or built";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
+
     *n = (*self)->dstGridObj->grid->GetNumberOfCells();
     return 0;
 }
@@ -776,14 +815,22 @@ LIBRARY_API
 int mnt_regridedges_applyToUniqueEdgeData(RegridEdges_t** self, 
                           const double src_data[], double dst_data[]) {
 
-    // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
+    // make sure the connectivity of src and dst grids has been set/built
     if (!(*self)->srcGridObj ||
         (*self)->srcGridObj->faceNodeConnectivity.size() == 0 || 
         (*self)->srcGridObj->faceEdgeConnectivity.size() == 0 ||
         (*self)->srcGridObj->edgeNodeConnectivity.size() == 0) {
-        std::string msg = "src grid connectivity not set (?) Read the grid from a netcdf Ufile";
+        std::string msg = "source grid connectivity was not set, maybe you did not load the grid from UGRID file?";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
+    }
+    if (!(*self)->dstGridObj ||
+        (*self)->dstGridObj->faceNodeConnectivity.size() == 0 ||
+        (*self)->dstGridObj->faceEdgeConnectivity.size() == 0 ||
+        (*self)->dstGridObj->edgeNodeConnectivity.size() == 0) {
+        std::string msg = "destination grid connectivity was not set, maybe you did not load the grid from UGRID file?";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 2;
     }
 
     int ier;
