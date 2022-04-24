@@ -149,6 +149,18 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
     int ier = 0;
     std::string msg;
 
+    if (!(*self)->srcGridObj) {
+        msg = "source grid has not been loaded or built";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 10;
+    }
+
+    if (!(*self)->dstGridObj) {
+        msg = "destination grid has not been loaded or built";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 11;
+    }
+
     std::string srcFileAndMeshName = std::string(src_fort_filename, src_nFilenameLength);
     std::string dstFileAndMeshName = std::string(dst_fort_filename, dst_nFilenameLength);
     std::string fieldname = std::string(field_name, nFieldNameLength);
