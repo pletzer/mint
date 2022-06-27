@@ -6,8 +6,8 @@
 #include <sstream> // std::stringstream
 #include "mntLogger.h"
 
-#ifndef MNT_VECTOR_INTERP
-#define MNT_VECTOR_INTERP
+#ifndef MNT_EXTENSIVE_FIELD_CONVERTER
+#define MNT_EXTENSIVE_FIELD_CONVERTER
 
 
 struct VectorInterp_t {
@@ -238,4 +238,4 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
 
         return ier;
 }
-#endif // MNT_VECTOR_INTERP
+#endif // MNT_EXTENSIVE_FIELD_CONVERTER

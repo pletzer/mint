@@ -152,6 +152,7 @@ include_directories(
 
 message(STATUS "NetCDF include dirs: ${NETCDF_INCLUDE_DIRS}")
 message(STATUS "NetCDF libraries: ${NETCDF_LIBRARIES}")
+message(STATUS "HDF5 libraries: ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}")
 
 #
 # Doxygen (optional)
