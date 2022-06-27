@@ -181,12 +181,12 @@ win_task:
     - cd build-cmake
     - dir "C:\Program Files (x86)"
     - dir "C:\Program Files (x86)\Microsoft Visual Studio"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build"
-    - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022"
+    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"
+    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC"
+    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary"
+    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build"
+    - call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     # - where cl
     # - dir "%CONDA_LIB%\lib
     # - dir "%CONDA_LIB%\include\vtk-%VTK_VER%"
