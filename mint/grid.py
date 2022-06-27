@@ -285,5 +285,3 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'check', ier)
         return num_bad_cells.value
-
-

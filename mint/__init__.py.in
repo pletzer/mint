@@ -28,7 +28,7 @@ NUM_VERTS_PER_QUAD = 4
 NUM_VERTS_PER_EDGE = 2
 
 __all__ = ('regrid_edges', 'grid', 'polyline_integral',
-           'vector_interp', 'message_handler', 'utils',
+           'vector_interp', 'multi_array_iter', 'message_handler', 'utils',
            MINTLIB, CELL_BY_CELL_DATA, UNIQUE_EDGE_DATA, 
            NUM_EDGES_PER_QUAD, NUM_VERTS_PER_QUAD, NUM_VERTS_PER_EDGE)
 
@@ -37,5 +37,6 @@ from .regrid_edges import RegridEdges
 from .grid import Grid
 from .polyline_integral import PolylineIntegral
 from .vector_interp import VectorInterp
+from .multi_array_iter import MultiArrayIter
 from .utils import getIntegralsInLonLat, getIntegralsInXYZ
 

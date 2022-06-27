@@ -40,7 +40,7 @@ int mnt_extensivefieldconverter_getEdgeDataFromCellByCellData(ExtensiveFieldConv
 
     double point0[3];
     double point1[3];
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (vtkIdType icell = 0; icell < (vtkIdType) numCells; ++icell) {
         for (int iedge = 0; iedge < MNT_NUM_EDGES_PER_QUAD; ++iedge) {
             std::size_t k = icell * MNT_NUM_EDGES_PER_QUAD + iedge;
             double u = vx[k];
@@ -89,7 +89,7 @@ int mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeData(ExtensiveFieldConv
 
     double point0[3];
     double point1[3];
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (vtkIdType icell = 0; icell < (vtkIdType) numCells; ++icell) {
         for (int iedge = 0; iedge < MNT_NUM_EDGES_PER_QUAD; ++iedge) {
 
             ier = mnt_grid_getEdgeId(&(*self)->grid, icell, iedge, &edgeId, &edgeSign);
