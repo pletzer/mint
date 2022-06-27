@@ -179,13 +179,13 @@ win_task:
   test_script:
     - mkdir build-cmake
     - cd build-cmake
-    - dir "C:\Program Files (x86)"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary"
-    - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build"
+    # - dir "C:\Program Files (x86)"
+    # - dir "C:\Program Files (x86)\Microsoft Visual Studio"
+    # - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022"
+    # - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"
+    # - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC"
+    # - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary"
+    # - dir "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build"
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     # - where cl
     # - dir "%CONDA_LIB%\lib
