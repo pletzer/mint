@@ -179,7 +179,7 @@ int mnt_regridedges_initSliceIter(RegridEdges_t** self,
         return 1;
     }
 
-    // get tht variable id
+    // get the variable id
     ier = nc_inq_varid((*self)->srcNcid, fieldname.c_str(), &(*self)->srcVarid);
     if (ier != 0) {
         msg = "could not find variable " + fieldname + " in file " + srcFilename;
