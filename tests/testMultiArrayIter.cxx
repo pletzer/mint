@@ -21,7 +21,7 @@ void test0() {
     size_t niters;
     ier = mnt_multiarrayiter_getNumIters(&mai, &niters);
     assert(ier == 0);
-    assert(niters == 0);
+    assert(niters == 1);
 
     ier = mnt_multiarrayiter_del(&mai);
     assert(ier == 0);
