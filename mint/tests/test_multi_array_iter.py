@@ -10,7 +10,7 @@ def test_create_destroy():
     mai = MultiArrayIter([])
     mai.begin()
     num_iter = mai.getNumIters()
-    assert(num_iter == 1)
+    assert(num_iter == 0)
 
 def test_1():
     mai = MultiArrayIter([1])
