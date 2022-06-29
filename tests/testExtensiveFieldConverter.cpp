@@ -5,6 +5,58 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
+void test1Cell() {
+    Grid_t* grd = NULL;
+    mnt_grid_new(&grd);
+
+    vtkIdType numCells = 1;
+
+    std::vector<double> points({
+        0., 0., 0.,
+        1., 0., 0.,
+        1., 1., 0.,
+        0., 1., 0.,
+    });
+    mnt_grid_setPointsPtr(&grd, &points[0]);
+    mnt_grid_build(&grd, MNT_NUM_VERTS_PER_QUAD, numCells);
+
+    ExtensiveFieldConverter_t* efc = NULL;
+    double aRadius = 1;
+    int ier = mnt_extensivefieldconverter_new(&efc, aRadius);
+
+    int degrees = 0;
+    ier = mnt_extensivefieldconverter_setGrid(&efc, grd, degrees);
+    assert(ier == 0);
+
+    std::vector<double> data(4);
+
+    double tol = 1.e-15;
+
+    std::vector<double> uedge({1.0, 0.0, 2.0, 0.0});
+    std::vector<double> vedge({0.0, 1.0, 0.0, 3.0});
+    ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uedge[0], &vedge[0], &data[0]);
+    assert(ier == 0);
+    std::cerr << "test1Cell: edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(fabs(data[0] - (+1.0)) < tol);
+    assert(fabs(data[1] - (+2.0)) < tol);
+    assert(fabs(data[2] - (+3.0)) < tol);
+    assert(fabs(data[3] - (+4.0)) < tol);
+
+    std::vector<double> uface({0.0, 2.0, 0.0, 4.0});
+    std::vector<double> vface({1.0, 0.0, 3.0, 0.0});
+    ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uface[0], &vface[0], &data[0]);
+    assert(ier == 0);
+    std::cerr << "test1Cell: face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(fabs(data[0] - (+1.0)) < tol);
+    assert(fabs(data[1] - (+2.0)) < tol);
+    assert(fabs(data[2] - (+3.0)) < tol);
+    assert(fabs(data[3] - (+4.0)) < tol);
+
+
+
+    mnt_grid_del(&grd);
+}
+
 
 void testUgridData() {
 
@@ -52,7 +104,7 @@ void testUgridData() {
     std::vector<double> vedge({2.0, 4.0, 0.0, 0.0});
     ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uedge[0], &vedge[0], &data[0]);
     assert(ier == 0);
-    std::cerr << "edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    std::cerr << "testUgridData: edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
     assert(fabs(data[0] - (+1.0)) < tol);
     assert(fabs(data[1] - (+2.0)) < tol);
     assert(fabs(data[2] - (+3.0)) < tol);
@@ -62,7 +114,7 @@ void testUgridData() {
     std::vector<double> vface({0.0, 0.0, 3.0, 1.0});
     ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uface[0], &vface[0], &data[0]);
     assert(ier == 0);
-    std::cerr << "face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    std::cerr << "testUgridData: face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
     assert(fabs(data[0] - (+1.0)) < tol);
     assert(fabs(data[1] - (+2.0)) < tol);
     assert(fabs(data[2] - (+3.0)) < tol);
@@ -102,87 +154,11 @@ void testLFRic() {
     assert(ier == 0);
 }
 
-void testUgrid() {
-    int ier;
-    Grid_t* grd;
-    ier = mnt_grid_new(&grd);
-    assert(ier == 0);
-    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
-    assert(ier == 0);
-    ier = mnt_grid_print(&grd);
-    assert(ier == 0);
-    size_t numCells;
-    ier = mnt_grid_getNumberOfCells(&grd, &numCells);
-    assert(ier == 0);
-    std::cout << numCells << " cells\n";
-
-    std::vector<vtkIdType> cellIds{0, 1, 2, 3, 12, 456, 1535};
-
-    vtkIdType nodeIds[2];
-    size_t edgeId;
-    int signEdge;
-    for (auto cellId : cellIds) {
-        for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
-            ier = mnt_grid_getNodeIds(&grd, cellId, edgeIndex, nodeIds);
-            std::cout << " cell " << cellId << " edge index " << edgeIndex 
-                      << " connects to nodes "  << nodeIds[0] << ',' << nodeIds[1] << '\n';
-            assert(ier == 0);
-            ier = mnt_grid_getEdgeId(&grd, cellId, edgeIndex, &edgeId, &signEdge);
-            std::cout << " cell " << cellId << " edge index " << edgeIndex 
-                      << " maps to edge Id = " << edgeId << " (direction " << signEdge << ")\n";
-            assert(ier == 0);
-        }
-    }
-
-    // check that each face a positive area
-    std::size_t numBadCells = 0;
-    ier = mnt_grid_check(&grd, &numBadCells);
-    assert(ier == 0);
-    assert(numBadCells == 0);
-
-    // attach a field
-    std::vector<double> cellByCellData(numCells * 4);
-    for (size_t cellId = 0; cellId < numCells; ++cellId) {
-        for (int ie = 0; ie < 4; ++ie) {
-            ier = mnt_grid_getEdgeId(&grd, cellId, ie, &edgeId, &signEdge);
-            assert(ier == 0);
-            size_t k = cellId*4 + ie;
-            cellByCellData[k] = (double) edgeId * (double) signEdge;        }
-    }
-    const char fieldName[] = "edge_ids";
-    std::cout << "attaching edge field " << fieldName << " to grid\n";
-    ier = mnt_grid_attach(&grd, fieldName, 4, &cellByCellData[0]);
-    assert(ier == 0);
-
-    ier = mnt_grid_computeEdgeArcLengths(&grd);
-    assert(ier == 0);
-
-    // check that we can retrieve the edge arc lengths
-    for (auto cellId : cellIds) {
-        for (int edgeIndex = 0; edgeIndex < 4; ++edgeIndex) {
-            double arcLength;
-            ier = mnt_grid_getEdgeArcLength(&grd, cellId, edgeIndex, &arcLength);
-            assert(ier == 0);
-            assert(arcLength >= 0);
-            assert(arcLength <= M_PI);
-        }
-    }
-
-    // should be able to compute the edge arcs multiple times
-    ier = mnt_grid_computeEdgeArcLengths(&grd);
-    assert(ier == 0);    
-    
-    ier = mnt_grid_dump(&grd, "cs_16.vtk");
-    assert(ier == 0);
-
-    ier = mnt_grid_del(&grd);
-    assert(ier == 0);
-}
-
 
 int main(int argc, char** argv) {
 
     // testLFRic();
+    test1Cell();
     testUgridData();
 
     mnt_printLogMessages();
