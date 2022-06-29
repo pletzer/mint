@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntGrid.h>
 #include <mntExtensiveFieldConverter.h>
+#include <mntVectorInterp.h>
 #include <mntLogger.h>
 #undef NDEBUG // turn on asserts
 #include <cassert>
@@ -127,39 +128,102 @@ void testUgridData() {
 }
 
 
-void testLFRic() {
+void testUniformDegrees() {
+
+    double aRadius = 1;
+
     int ier;
-    Grid_t* grd;
+    Grid_t* grd = NULL;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
+
+    int fixLonAcrossDateline = 0; // lat-lon
+    int averageLonAtPole = 0; // lat-lon
+    int degrees = 1;
+    mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
+
     // filename$meshname
-    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/lfric_diag_wind.nc$Mesh2d");
-    assert(ier == 0);
-    std::size_t numBadCells = 0;
-    ier = mnt_grid_check(&grd, &numBadCells);
-    assert(numBadCells == 0);
-    double* verts;
-    ier = mnt_grid_getPointsPtr(&grd, &verts);
-    assert(ier == 0);
-    std::size_t numCells;
-    ier = mnt_grid_getNumberOfCells(&grd, &numCells);
-    for (auto cellId = 0; cellId < numCells; ++cellId) {
-        for (auto vIndex = 0; vIndex < 4; ++vIndex) {
-            auto k = 3*(cellId*4 + vIndex);
-            std::cout << "testLFRic: cell " << cellId << " node " << vIndex << " coords " << 
-                         verts[k + 0] << ',' << verts[k + 1] << ',' << verts[k + 2] << '\n';
+    mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/latlon4x2.nc$latlon");
+
+    std::size_t numCells = 0;
+    mnt_grid_getNumberOfCells(&grd, &numCells);
+    assert(numCells > 0);
+
+    std::size_t numEdges = 0;
+    mnt_grid_getNumberOfEdges(&grd, &numEdges);
+    assert(numEdges > 0);
+
+    std::vector<double> uEdge(numEdges);
+    std::vector<double> vEdge(numEdges);
+    std::vector<double> dataEdge(numCells * MNT_NUM_VERTS_PER_QUAD);
+    std::vector<double> dataFace(numCells * MNT_NUM_VERTS_PER_QUAD);
+
+    std::size_t edgeId;
+    int signEdge;
+    std::vector<double> p0(3), p1(3);
+    for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
+        for (int edgeIndex = 0; edgeIndex < MNT_NUM_VERTS_PER_QUAD; ++edgeIndex) {
+            mnt_grid_getEdgeId(&grd, cellId, edgeIndex, &edgeId, &signEdge);
+            uEdge[edgeId] = 1.0; // in m/s
+            vEdge[edgeId] = 0.0; // in m/s
         }
     }
-    ier = mnt_grid_del(&grd);
+
+    ExtensiveFieldConverter_t* efc = NULL;
+    ier = mnt_extensivefieldconverter_new(&efc, aRadius);
+
+    ier = mnt_extensivefieldconverter_setGrid(&efc, grd, degrees);
+    assert(ier == 0);
+
+    ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uEdge[0], &vEdge[0], &dataEdge[0]);
+    assert(ier == 0);
+
+    ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uEdge[0], &vEdge[0], &dataFace[0]);
+    assert(ier == 0);
+
+    for (auto cellId = 0; cellId < numCells; ++cellId) {
+        for (auto edgeIndex = 0; edgeIndex < MNT_NUM_VERTS_PER_QUAD; ++edgeIndex) {
+            auto k = cellId*MNT_NUM_VERTS_PER_QUAD + edgeIndex;
+            std::cout << "testUniformDegrees: edge integrated data cellId = " << cellId << " edgeIndex = " << edgeIndex << " edge val = " << dataEdge[k] << " face val = " << dataFace[k] << '\n';
+        }
+    }
+
+    VectorInterp_t* vi = NULL;
+    mnt_vectorinterp_new(&vi);
+    mnt_vectorinterp_setGrid(&vi, grd);
+    int numCellsPerBucket = 128;
+    double periodX = 360;
+    int enableFolding = 0;
+    mnt_vectorinterp_buildLocator(&vi, numCellsPerBucket, periodX, enableFolding);
+
+    std::size_t numPoints = 1;
+    std::vector<double> targetPoints({
+        45., 0., 0.
+    });
+    double tol = 1.e-10;
+    mnt_vectorinterp_findPoints(&vi, numPoints, &targetPoints[0], tol);
+
+    // data is always defined cell by cell
+    Vec3 targetVector;
+    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vi, &dataEdge[0], &targetVector[0]);
+    assert(ier == 0);
+    for (auto it = 0; it < numPoints; ++it) {
+        std::cout << "testUniformDegrees: target edge vector at point " << targetPoints[it*3+0] << ',' << targetPoints[it*3+1] << " is " << targetVector << '\n';
+    }
+
+    // clean up
+    mnt_grid_del(&grd);
+    mnt_vectorinterp_del(&vi);
+    ier = mnt_extensivefieldconverter_del(&efc);
     assert(ier == 0);
 }
 
 
 int main(int argc, char** argv) {
 
-    // testLFRic();
-    test1Cell();
-    testUgridData();
+    testUniformDegrees();
+    // test1Cell();
+    // testUgridData();
 
     mnt_printLogMessages();
 

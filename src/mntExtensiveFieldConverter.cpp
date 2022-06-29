@@ -58,13 +58,13 @@ int mnt_extensivefieldconverter_getEdgeDataFromCellByCellVectors(ExtensiveFieldC
             if (ier != 0) numFailures++;
 
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
-            double xmid = 0.5*(point1[LON_INDEX] + point0[LON_INDEX]);
+            double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
 
             // convert from degrees to metres
             if ((*self)->degrees) {
-                dx *= (*self)->aRadius * cos(xmid * M_PI/180.);
-                dy *= (*self)->aRadius;
+                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
+                dy *= (*self)->aRadius * M_PI/180.;
             }
 
             // line integral 
@@ -123,10 +123,19 @@ int mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(ExtensiveFieldC
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
 
             // convert from degrees to metres
+
+            double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
             if ((*self)->degrees) {
-                double xmid = 0.5*(point1[LON_INDEX] + point0[LON_INDEX]);
-                dx *= (*self)->aRadius * cos(xmid * M_PI/180.);
-                dy *= (*self)->aRadius;
+                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
+                dy *= (*self)->aRadius * M_PI/180.;
+            }
+
+            // debug
+            if (icell == 0 && iedge == 2) {
+                std::cout << "*** p0=" << point0[LON_INDEX] << ',' << point0[LAT_INDEX] 
+                             << " p1=" << point1[LON_INDEX] << ',' << point1[LAT_INDEX] 
+                             << " ymid=" << ymid << " dx=" << dx << " dy=" << dy
+                             << " u=" << u << " v=" << v << '\n';
             }
 
             // data is cell by cell even though vx and vy are on unique edges
@@ -172,9 +181,9 @@ int mnt_extensivefieldconverter_getFaceDataFromCellByCellVectors(ExtensiveFieldC
 
             // convert from degrees to metres
             if ((*self)->degrees) {
-                double xmid = 0.5*(point1[LON_INDEX] + point0[LON_INDEX]);
-                dx *= (*self)->aRadius * cos(xmid * M_PI/180.);
-                dy *= (*self)->aRadius;
+                double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
+                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
+                dy *= (*self)->aRadius * M_PI/180.;
             }
 
             // line integral 
@@ -237,9 +246,9 @@ int mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(ExtensiveFieldC
 
             // convert from degrees to metres
             if ((*self)->degrees) {
-                double xmid = 0.5*(point1[LON_INDEX] + point0[LON_INDEX]);
-                dx *= (*self)->aRadius * cos(xmid * M_PI/180.);
-                dy *= (*self)->aRadius;
+                double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
+                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
+                dy *= (*self)->aRadius * M_PI/180.;
             }
 
             // data is cell by cell even though vx and vy are on unique edges
