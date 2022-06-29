@@ -11,18 +11,24 @@
 
 
 struct ExtensiveFieldConverter_t {
-
     // grid
     Grid_t* grid;
+
+    // planet radius
+    double aRadius;
+
+    // whether the coordinates are in degrees
+    bool degrees;
 };
 
 /**
  * Constructor
  * @param self instance of ExtensiveFieldConverter_t
+ * @param aRadius radius of the planet
  * @return error code (0 = OK)
  */
 LIBRARY_API 
-int mnt_extensivefieldconverter_new(ExtensiveFieldConverter_t** self);
+int mnt_extensivefieldconverter_new(ExtensiveFieldConverter_t** self, double aRadius);
 
 /**
  * Destructor
@@ -36,11 +42,11 @@ int mnt_extensivefieldconverter_del(ExtensiveFieldConverter_t** self);
  * Set the grid
  * @param self instance of ExtensiveFieldConverter_t
  * @param grid grid (borrowed reference)
- * @param locator locator (borrowed reference)
+ * @param degrees set this to 1 if the coordinates are in degrees
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_extensivefieldconverter_setGrid(ExtensiveFieldConverter_t** self, Grid_t* grid);
+int mnt_extensivefieldconverter_setGrid(ExtensiveFieldConverter_t** self, Grid_t* grid, int degrees);
 
 /**
  * Get the edge integrated data from cell by cell edge vectors

@@ -1,24 +1,10 @@
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
 #include <mntGrid.h>
+#include <mntExtensiveFieldConverter.h>
 #include <mntLogger.h>
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
-
-// not currently working
-void testIrisGrid() {
-    Grid_t* grd;
-    mnt_grid_new(&grd);
-    mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/gridlike_mesh.nc$example_mesh");
-    mnt_grid_del(&grd);
-}
-
-void testVTK() {
-    Grid_t* grd;
-    mnt_grid_new(&grd);
-    mnt_grid_load(&grd, "${CMAKE_SOURCE_DIR}/data/cs.vtk");
-    mnt_grid_del(&grd);
-}
 
 void testUgridData() {
 
@@ -50,26 +36,42 @@ void testUgridData() {
                                         1, 0};
     ier = mnt_grid_loadFromUgrid2DData(&grd, ncells, nedges, npoints, &xyz[0], &face2nodes[0], &edge2nodes[0]);
 
-    std::vector<vtkIdType> edgeNodeIds(MNT_NUM_VERTS_PER_EDGE);
+    ExtensiveFieldConverter_t* efc = NULL;
+    double aRadius = 1;
+    ier = mnt_extensivefieldconverter_new(&efc, aRadius);
 
-    ier = mnt_grid_getNodeIds(&grd, 0, 0, &edgeNodeIds[0]);
-    assert(edgeNodeIds[0] == 0);
-    assert(edgeNodeIds[1] == 1);
-
-    ier = mnt_grid_getNodeIds(&grd, 0, 1, &edgeNodeIds[0]);
-    assert(edgeNodeIds[0] == 1);
-    assert(edgeNodeIds[1] == 2);
-
-    ier = mnt_grid_getNodeIds(&grd, 0, 2, &edgeNodeIds[0]);
-    assert(edgeNodeIds[0] == 3);
-    assert(edgeNodeIds[1] == 2);
-
-    ier = mnt_grid_getNodeIds(&grd, 0, 3, &edgeNodeIds[0]);
-    assert(edgeNodeIds[0] == 0);
-    assert(edgeNodeIds[1] == 3);
-
-    ier = mnt_grid_del(&grd);
+    int degrees = 0;
+    ier = mnt_extensivefieldconverter_setGrid(&efc, grd, degrees);
     assert(ier == 0);
+
+    std::vector<double> data(4);
+
+    double tol = 1.e-15;
+
+    std::vector<double> uedge({0.0, 0.0, 3.0, 1.0});
+    std::vector<double> vedge({2.0, 4.0, 0.0, 0.0});
+    ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uedge[0], &vedge[0], &data[0]);
+    assert(ier == 0);
+    std::cerr << "edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(fabs(data[0] - (+1.0)) < tol);
+    assert(fabs(data[1] - (+2.0)) < tol);
+    assert(fabs(data[2] - (+3.0)) < tol);
+    assert(fabs(data[3] - (+4.0)) < tol);
+
+    std::vector<double> uface({2.0, 4.0, 0.0, 0.0});
+    std::vector<double> vface({0.0, 0.0, 3.0, 1.0});
+    ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uface[0], &vface[0], &data[0]);
+    assert(ier == 0);
+    std::cerr << "face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(fabs(data[0] - (+1.0)) < tol);
+    assert(fabs(data[1] - (+2.0)) < tol);
+    assert(fabs(data[2] - (+3.0)) < tol);
+    assert(fabs(data[3] - (+4.0)) < tol);
+
+    // clean up
+    ier = mnt_grid_del(&grd);
+    ier = mnt_extensivefieldconverter_del(&efc);
+
 }
 
 
@@ -180,11 +182,8 @@ void testUgrid() {
 
 int main(int argc, char** argv) {
 
-    //testIrisGrid();
+    // testLFRic();
     testUgridData();
-    testLFRic();
-    testUgrid();
-    testVTK();
 
     mnt_printLogMessages();
 
