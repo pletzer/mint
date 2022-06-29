@@ -1,5 +1,5 @@
 #include <mntExtensiveFieldConverter.h>
-
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
 
 LIBRARY_API 
 int mnt_extensivefieldconverter_new(ExtensiveFieldConverter_t** self, double aRadius) {
