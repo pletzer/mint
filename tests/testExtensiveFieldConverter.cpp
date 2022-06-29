@@ -32,11 +32,11 @@ void test1Cell() {
 
     double tol = 1.e-15;
 
-    std::vector<double> uedge({1.0, 0.0, 2.0, 0.0});
-    std::vector<double> vedge({0.0, 1.0, 0.0, 3.0});
-    ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uedge[0], &vedge[0], &data[0]);
-    assert(ier == 0);
+    std::vector<double> uedge({1.0, 0.0, 3.0, 0.0});
+    std::vector<double> vedge({0.0, 2.0, 0.0, 4.0});
+    ier = mnt_extensivefieldconverter_getEdgeDataFromCellByCellVectors(&efc, &uedge[0], &vedge[0], &data[0]);
     std::cerr << "test1Cell: edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
     assert(fabs(data[1] - (+2.0)) < tol);
     assert(fabs(data[2] - (+3.0)) < tol);
@@ -44,9 +44,9 @@ void test1Cell() {
 
     std::vector<double> uface({0.0, 2.0, 0.0, 4.0});
     std::vector<double> vface({1.0, 0.0, 3.0, 0.0});
-    ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uface[0], &vface[0], &data[0]);
-    assert(ier == 0);
+    ier = mnt_extensivefieldconverter_getFaceDataFromCellByCellVectors(&efc, &uface[0], &vface[0], &data[0]);
     std::cerr << "test1Cell: face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
     assert(fabs(data[1] - (+2.0)) < tol);
     assert(fabs(data[2] - (+3.0)) < tol);
@@ -103,8 +103,8 @@ void testUgridData() {
     std::vector<double> uedge({0.0, 0.0, 3.0, 1.0});
     std::vector<double> vedge({2.0, 4.0, 0.0, 0.0});
     ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uedge[0], &vedge[0], &data[0]);
-    assert(ier == 0);
     std::cerr << "testUgridData: edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
     assert(fabs(data[1] - (+2.0)) < tol);
     assert(fabs(data[2] - (+3.0)) < tol);
@@ -113,8 +113,8 @@ void testUgridData() {
     std::vector<double> uface({2.0, 4.0, 0.0, 0.0});
     std::vector<double> vface({0.0, 0.0, 3.0, 1.0});
     ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uface[0], &vface[0], &data[0]);
-    assert(ier == 0);
     std::cerr << "testUgridData: face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
+    assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
     assert(fabs(data[1] - (+2.0)) < tol);
     assert(fabs(data[2] - (+3.0)) < tol);
