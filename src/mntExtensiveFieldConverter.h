@@ -109,7 +109,7 @@ int mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(ExtensiveFieldC
                                                               double data[]);
 
 /**
- * Get the edge integrated data from unique edge vectors
+ * Get the edge integrated data
  * @param self instance of ExtensiveFieldConverter_t
  * @param vx x component of vectors on edges, array of size numEdges
  * @param vy y component of vectors on edges, array of size numEdges
@@ -129,7 +129,7 @@ int mnt_extensivefieldconverter_getEdgeData(ExtensiveFieldConverter_t** self,
                                             double data[]);
 
 /**
- * Get the face integrated data from unique edge vectors
+ * Get the face integrated data
  * @param self instance of ExtensiveFieldConverter_t
  * @param vx x component of vectors on faces, array of size numEdges
  * @param vy y component of vectors on faces, array of size numEdges
