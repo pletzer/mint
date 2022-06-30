@@ -215,3 +215,32 @@ int mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(ExtensiveFieldC
 
     return numFailures;
 }
+
+LIBRARY_API
+int mnt_extensivefieldconverter_getEdgeData(ExtensiveFieldConverter_t** self,
+                                            const double vx[], const double vy[], int placement,
+                                            double data[]) {
+    int ier;
+    if (placement == MNT_CELL_BY_CELL_DATA) {
+        ier = mnt_extensivefieldconverter_getEdgeDataFromCellByCellVectors(self, vx, vy, data);
+    }
+    else {
+        ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(self, vx, vy, data);
+    }
+    return ier;
+}
+
+LIBRARY_API
+int mnt_extensivefieldconverter_getFaceData(ExtensiveFieldConverter_t** self,
+                                            const double vx[], const double vy[], int placement,
+                                            double data[]) {
+    int ier;
+    if (placement == MNT_CELL_BY_CELL_DATA) {
+        ier = mnt_extensivefieldconverter_getFaceDataFromCellByCellVectors(self, vx, vy, data);
+    }
+    else {
+        ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(self, vx, vy, data);
+    }
+    return ier;
+}
+

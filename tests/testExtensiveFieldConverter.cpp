@@ -33,7 +33,7 @@ void test1Cell() {
 
     std::vector<double> uedge({1.0, 0.0, 3.0, 0.0});
     std::vector<double> vedge({0.0, 2.0, 0.0, 4.0});
-    ier = mnt_extensivefieldconverter_getEdgeDataFromCellByCellVectors(&efc, &uedge[0], &vedge[0], &data[0]);
+    ier = mnt_extensivefieldconverter_getEdgeData(&efc, &uedge[0], &vedge[0], MNT_CELL_BY_CELL_DATA, &data[0]);
     std::cerr << "test1Cell: edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
     assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
@@ -43,7 +43,7 @@ void test1Cell() {
 
     std::vector<double> uface({0.0, 2.0, 0.0, 4.0});
     std::vector<double> vface({1.0, 0.0, 3.0, 0.0});
-    ier = mnt_extensivefieldconverter_getFaceDataFromCellByCellVectors(&efc, &uface[0], &vface[0], &data[0]);
+    ier = mnt_extensivefieldconverter_getFaceData(&efc, &uface[0], &vface[0], MNT_CELL_BY_CELL_DATA, &data[0]);
     std::cerr << "test1Cell: face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
     assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
@@ -193,7 +193,7 @@ void testUniform() {
 
     // data is always defined cell by cell
     Vec3 targetVector;
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vi, &dataEdge[0], &targetVector[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vi, &dataEdge[0], &targetVector[0], MNT_CELL_BY_CELL_DATA);
     assert(ier == 0);
     for (auto it = 0; it < numPoints; ++it) {
         std::cout << "testUniform: target edge vector at point " << targetPoints[it*3+0] << ',' << targetPoints[it*3+1] << " is " << targetVector << '\n';
@@ -297,7 +297,7 @@ void testMeterPerSecond() {
 
     // data is always defined cell by cell
     std::vector<double> targetVector(targetPoints.size());
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vi, &dataEdge[0], &targetVector[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vi, &dataEdge[0], &targetVector[0], MNT_CELL_BY_CELL_DATA);
     assert(ier == 0);
     for (auto ip = 0; ip < numPoints; ++ip) {
         std::cout << "testMeterPerSecond: target edge vector at point ";

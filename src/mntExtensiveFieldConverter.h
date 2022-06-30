@@ -92,4 +92,37 @@ int mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(ExtensiveFieldC
                                                               const double vx[], const double vy[],
                                                               double data[]);
 
+/**
+ * Get the edge integrated data from unique edge vectors
+ * @param self instance of ExtensiveFieldConverter_t
+ * @param vx x component of vectors on edges, array of size numEdges
+ * @param vy y component of vectors on edges, array of size numEdges
+ * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell (size num cells * MNT_NUM_EDGES_PER_QUAD),
+ *                  data are assumed to be on unique edges 
+ *                  otherwise (size num edges)
+ * @param data edge integrated data, array size is numCells * MNT_NUM_EDGES_PER_QUAD
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_extensivefieldconverter_getEdgeData(ExtensiveFieldConverter_t** self,
+                                            const double vx[], const double vy[], int placement,
+                                            double data[]);
+
+/**
+ * Get the face integrated data from unique edge vectors
+ * @param self instance of ExtensiveFieldConverter_t
+ * @param vx x component of vectors on faces, array of size numEdges
+ * @param vy y component of vectors on faces, array of size numEdges
+ * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell (size num cells * MNT_NUM_EDGES_PER_QUAD),
+ *                  data are assumed to be on unique edges 
+ *                  otherwise (size num edges)
+ * @param data edge integrated data, array size is numCells * MNT_NUM_EDGES_PER_QUAD
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_extensivefieldconverter_getFaceData(ExtensiveFieldConverter_t** self,
+                                            const double vx[], const double vy[], int placement,
+                                            double data[]);
+
+
 #endif // MNT_EXTENSIVE_FIELD_CONVERTER
