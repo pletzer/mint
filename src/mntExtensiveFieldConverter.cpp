@@ -4,11 +4,9 @@
 #include <mntExtensiveFieldConverter.h>
 
 LIBRARY_API 
-int mnt_extensivefieldconverter_new(ExtensiveFieldConverter_t** self, double aRadius) {
+int mnt_extensivefieldconverter_new(ExtensiveFieldConverter_t** self) {
     *self = new ExtensiveFieldConverter_t();
     (*self)->grid = NULL;
-    (*self)->aRadius = aRadius;
-    (*self)->degrees = false;
     return 0;
 }
 
@@ -19,12 +17,8 @@ int mnt_extensivefieldconverter_del(ExtensiveFieldConverter_t** self) {
 }
 
 LIBRARY_API
-int mnt_extensivefieldconverter_setGrid(ExtensiveFieldConverter_t** self, Grid_t* grid, int degrees) {
+int mnt_extensivefieldconverter_setGrid(ExtensiveFieldConverter_t** self, Grid_t* grid) {
     (*self)->grid = grid;
-    (*self)->degrees = false;
-    if (degrees == 1) {
-        (*self)->degrees = true;
-    }
     return 0;
 }
 
@@ -60,12 +54,6 @@ int mnt_extensivefieldconverter_getEdgeDataFromCellByCellVectors(ExtensiveFieldC
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
             double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
-
-            // convert from degrees to metres
-            if ((*self)->degrees) {
-                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
-                dy *= (*self)->aRadius * M_PI/180.;
-            }
 
             // line integral 
             data[k] = u*dx + v*dy;
@@ -122,22 +110,6 @@ int mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(ExtensiveFieldC
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
 
-            // convert from degrees to metres
-
-            double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
-            if ((*self)->degrees) {
-                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
-                dy *= (*self)->aRadius * M_PI/180.;
-            }
-
-            // debug
-            if (icell == 0 && iedge == 2) {
-                std::cout << "*** p0=" << point0[LON_INDEX] << ',' << point0[LAT_INDEX] 
-                             << " p1=" << point1[LON_INDEX] << ',' << point1[LAT_INDEX] 
-                             << " ymid=" << ymid << " dx=" << dx << " dy=" << dy
-                             << " u=" << u << " v=" << v << '\n';
-            }
-
             // data is cell by cell even though vx and vy are on unique edges
             std::size_t k = icell * MNT_NUM_EDGES_PER_QUAD + iedge;
             data[k] = u*dx + v*dy;
@@ -178,13 +150,6 @@ int mnt_extensivefieldconverter_getFaceDataFromCellByCellVectors(ExtensiveFieldC
 
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
-
-            // convert from degrees to metres
-            if ((*self)->degrees) {
-                double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
-                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
-                dy *= (*self)->aRadius * M_PI/180.;
-            }
 
             // line integral 
             double sign = 2*((iedge + 1) % 2) - 1;
@@ -243,13 +208,6 @@ int mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(ExtensiveFieldC
 
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
-
-            // convert from degrees to metres
-            if ((*self)->degrees) {
-                double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
-                dx *= (*self)->aRadius * cos(ymid * M_PI/180.) * M_PI/180.;
-                dy *= (*self)->aRadius * M_PI/180.;
-            }
 
             // data is cell by cell even though vx and vy are on unique edges
             std::size_t k = icell * MNT_NUM_EDGES_PER_QUAD + iedge;

@@ -22,11 +22,9 @@ void test1Cell() {
     mnt_grid_build(&grd, MNT_NUM_VERTS_PER_QUAD, numCells);
 
     ExtensiveFieldConverter_t* efc = NULL;
-    double aRadius = 1;
-    int ier = mnt_extensivefieldconverter_new(&efc, aRadius);
+    int ier = mnt_extensivefieldconverter_new(&efc);
 
-    int degrees = 0;
-    ier = mnt_extensivefieldconverter_setGrid(&efc, grd, degrees);
+    ier = mnt_extensivefieldconverter_setGrid(&efc, grd);
     assert(ier == 0);
 
     std::vector<double> data(4);
@@ -90,11 +88,9 @@ void testUgridData() {
     ier = mnt_grid_loadFromUgrid2DData(&grd, ncells, nedges, npoints, &xyz[0], &face2nodes[0], &edge2nodes[0]);
 
     ExtensiveFieldConverter_t* efc = NULL;
-    double aRadius = 1;
-    ier = mnt_extensivefieldconverter_new(&efc, aRadius);
+    ier = mnt_extensivefieldconverter_new(&efc);
 
-    int degrees = 0;
-    ier = mnt_extensivefieldconverter_setGrid(&efc, grd, degrees);
+    ier = mnt_extensivefieldconverter_setGrid(&efc, grd);
     assert(ier == 0);
 
     std::vector<double> data(4);
@@ -130,8 +126,6 @@ void testUgridData() {
 
 void testUniformDegrees() {
 
-    double aRadius = 1;
-
     int ier;
     Grid_t* grd = NULL;
     ier = mnt_grid_new(&grd);
@@ -160,19 +154,20 @@ void testUniformDegrees() {
 
     std::size_t edgeId;
     int signEdge;
-    std::vector<double> p0(3), p1(3);
+    Vec3 p0, p1;
     for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
         for (int edgeIndex = 0; edgeIndex < MNT_NUM_VERTS_PER_QUAD; ++edgeIndex) {
             mnt_grid_getEdgeId(&grd, cellId, edgeIndex, &edgeId, &signEdge);
-            uEdge[edgeId] = 1.0; // in m/s
-            vEdge[edgeId] = 0.0; // in m/s
+            // mnt_grid_getPoints(&grd, cellId, edgeIndex, &p0[0], &p1[0]);
+            uEdge[edgeId] = 1.0; // in deg/s since our coords are in deg
+            vEdge[edgeId] = 0.0; 
         }
     }
 
     ExtensiveFieldConverter_t* efc = NULL;
-    ier = mnt_extensivefieldconverter_new(&efc, aRadius);
+    ier = mnt_extensivefieldconverter_new(&efc);
 
-    ier = mnt_extensivefieldconverter_setGrid(&efc, grd, degrees);
+    ier = mnt_extensivefieldconverter_setGrid(&efc, grd);
     assert(ier == 0);
 
     ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uEdge[0], &vEdge[0], &dataEdge[0]);
@@ -222,8 +217,8 @@ void testUniformDegrees() {
 int main(int argc, char** argv) {
 
     testUniformDegrees();
-    // test1Cell();
-    // testUgridData();
+    test1Cell();
+    testUgridData();
 
     mnt_printLogMessages();
 
