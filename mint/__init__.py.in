@@ -38,5 +38,6 @@ from .grid import Grid
 from .polyline_integral import PolylineIntegral
 from .vector_interp import VectorInterp
 from .multi_array_iter import MultiArrayIter
+from .extensive_field_converter import ExtensiveFieldConverter
 from .utils import getIntegralsInLonLat, getIntegralsInXYZ
 
