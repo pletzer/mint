@@ -1,6 +1,3 @@
-#define _USE_MATH_DEFINES // M_PI for Visual Studio
-#include <cmath>
-
 #include <mntExtensiveFieldConverter.h>
 
 LIBRARY_API 
