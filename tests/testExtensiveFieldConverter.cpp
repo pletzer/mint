@@ -193,10 +193,11 @@ void testUniform() {
 
     // data is always defined cell by cell
     Vec3 targetVector;
-    ier = mnt_vectorinterp_getEdgeVectors(&vi, &dataEdge[0], &targetVector[0], MNT_CELL_BY_CELL_DATA);
+    ier = mnt_vectorinterp_getEdgeVectors(&vi, &dataEdge[0], MNT_CELL_BY_CELL_DATA, &targetVector[0]);
     assert(ier == 0);
     for (auto it = 0; it < numPoints; ++it) {
-        std::cout << "testUniform: target edge vector at point " << targetPoints[it*3+0] << ',' << targetPoints[it*3+1] << " is " << targetVector << '\n';
+        std::cout << "testUniform: target edge vector at point " << targetPoints[it*3+0] << ',' 
+        << targetPoints[it*3+1] << " is " << targetVector << '\n';
     }
 
     // clean up
@@ -297,7 +298,7 @@ void testMeterPerSecond() {
 
     // data is always defined cell by cell
     std::vector<double> targetVector(targetPoints.size());
-    ier = mnt_vectorinterp_getEdgeVectors(&vi, &dataEdge[0], &targetVector[0], MNT_CELL_BY_CELL_DATA);
+    ier = mnt_vectorinterp_getEdgeVectors(&vi, &dataEdge[0], MNT_CELL_BY_CELL_DATA, &targetVector[0]);
     assert(ier == 0);
     for (auto ip = 0; ip < numPoints; ++ip) {
         std::cout << "testMeterPerSecond: target edge vector at point ";

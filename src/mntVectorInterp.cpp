@@ -397,9 +397,8 @@ int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
 
 LIBRARY_API
 int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self, 
-                                    const double data[],
-                                    double vectors[],
-                                    int placement) {
+                                    const double data[], int placement,
+                                    double vectors[]) {
     int ier;
     if (placement == MNT_CELL_BY_CELL_DATA) {
         ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(self, data, vectors);
@@ -411,9 +410,8 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
 }
 
 int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self, 
-                                    const double data[],
-                                    double vectors[],
-                                    int placement) {
+                                    const double data[], int placement,
+                                    double vectors[]) {
     int ier;
     if (placement == MNT_CELL_BY_CELL_DATA) {
         ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(self, data, vectors);
