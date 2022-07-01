@@ -214,7 +214,11 @@ class ContourFluxes:
 
                 error = flux2 - results[case]["exact"]
                 print(f' {resolutions[ires]}: {error:.2g}', end='')
+                if case in ('B', 'C', 'D'):
+                    assert(abs(error) < 1e-9)
+
             print('')
+
 
 
     def saveVectorField(self):
@@ -264,10 +268,11 @@ class ContourFluxes:
         writer.SetInputData(sgrid)
         writer.Update()
 
-
-
-if __name__ == '__main__':
+def test_table():
     cf = ContourFluxes()
     cf.compute()
     #mint.printLogMessages()
 
+
+if __name__ == '__main__':
+    test_table()
