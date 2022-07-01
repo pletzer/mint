@@ -223,15 +223,15 @@ class RegridEdges(object):
         if ier:
             error_handler(FILE, 'loadWeights', ier)
 
-    def apply(self, srcdata, dstdata, placement=UNIQUE_EDGE_DATA):
+    def apply(self, srcdata, dstdata, placement):
         """
         Apply the regridding weights to an edge field
 
         :param srcdata: contiguous arrays of source field data (input), see below for expected size
         :param dstdata: contiguous arrays of destination field data (output), see below for expected size
         :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell
-                          (size num cells * mint.NUM_EDGES_PER_QUAD),
-                          assume unique edge Id data otherwise (size num edges)
+                          (size of array is numCells * mint.NUM_EDGES_PER_QUAD),
+                          assume unique edge Id data otherwise (size is numEdges)
         """
 
         MINTLIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p),

@@ -98,7 +98,7 @@ class VectorInterp(object):
                                                  targetPoints, tol2)
         return numBad
 
-    def getEdgeVectors(self, data, placement=UNIQUE_EDGE_DATA):
+    def getEdgeVectors(self, data, placement):
         """
         Get the edge vectors at given target points.
 
@@ -107,8 +107,8 @@ class VectorInterp(object):
                      units (typically degrees). For instance, a velocity field
                      in degrees/time expects a line integral in degrees^2/time.
         :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell 
-                          (size num cells * mint.NUM_EDGES_PER_QUAD),
-                          assume unique edge Id data otherwise (size num edges)
+                          (size of array is numCells * mint.NUM_EDGES_PER_QUAD),
+                          assume unique edge Id data otherwise (size is numEdges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
@@ -140,7 +140,7 @@ class VectorInterp(object):
                             detailedmsg=msg)
         return res
 
-    def getFaceVectors(self, data, placement=UNIQUE_EDGE_DATA):
+    def getFaceVectors(self, data, placement):
         """
         Get the lateral face vectors at given target points.
 
@@ -149,8 +149,8 @@ class VectorInterp(object):
                      (typically degrees). For instance, a velocity field
                      in degrees/time expects a flux in degrees^2/time.
         :param placement: mint.CELL_BY_CELL_DATA if data are cell by cell 
-                          (size num cells * mint.NUM_EDGES_PER_QUAD),
-                          assume unique edge Id data otherwise (size num edges)
+                          (size of array is numCells * mint.NUM_EDGES_PER_QUAD),
+                          assume unique edge Id data otherwise (size is numEdges)
         :returns vector array of size numTargetPoints times 3
         :note: call this after invoking findPoints.
         """
