@@ -170,7 +170,11 @@ class ContourFluxes:
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')
 
-            print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {results[case]["flux"] - results[case]["exact"]:.3g}')
+            error = results[case]["flux"] - results[case]["exact"]
+            assert(abs(error) < 1.e-4)
+            if case in ('A', 'B', 'C'):
+                assert(abs(error) < 1.e-12)
+            print(f'{case}: flux = {results[case]["flux"]} exact = {results[case]["exact"]} error = {error:.3g}')
 
         for case in 'A', 'B', 'C':
             assert(abs(results[case]['flux'] - results[case]['exact']) < 1.e-10)
@@ -218,7 +222,9 @@ class ContourFluxes:
         writer.Update()
 
 
-
-if __name__ == '__main__':
+def test_table():
     cf = ContourFluxes(nx=11, ny=11)
     cf.compute()
+
+if __name__ == '__main__':
+    test_table()
