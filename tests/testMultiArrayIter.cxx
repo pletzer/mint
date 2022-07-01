@@ -32,7 +32,6 @@ void test(const std::vector<size_t>& dims) {
     int ier;
 
     MultiArrayIter_t* mai;
-    
     int ndims = (int) dims.size();
     ier = mnt_multiarrayiter_new(&mai, ndims, &dims[0]);
     assert(ier == 0);

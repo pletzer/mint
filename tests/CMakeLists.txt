@@ -21,6 +21,7 @@ configure_file(testCellLocator.cpp testCellLocator.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
 configure_file(test_ncattributes.f90.in test_ncattributes.f90)
+configure_file(testExtensiveFieldConverter.cpp testExtensiveFieldConverter.cxx)
 
 
 if (BUILD_FORTRAN)
@@ -353,6 +354,14 @@ target_link_libraries(testPolylineIntegralTriangles
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testExtensiveFieldConverter testExtensiveFieldConverter.cxx)
+target_link_libraries(testExtensiveFieldConverter
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+
 add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
 add_test(NAME logger COMMAND testLogger)
 add_test(NAME vecMat COMMAND testVecMat)
@@ -381,6 +390,7 @@ add_test(NAME polysegmentIter3 COMMAND testPolysegmentIter3)
 add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME grid COMMAND testGrid)
+add_test(NAME extensiveFieldConverter COMMAND testExtensiveFieldConverter)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME vectorInterp COMMAND testVectorInterp)
 add_test(NAME exprParser COMMAND testExprParser)

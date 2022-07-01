@@ -75,9 +75,9 @@ def test_1():
     dflux.computeWeights(xyz)
 
     exactFlux = streamFunc(xyz[-1, :]) - streamFunc(xyz[0, :])
-    srcFluxVal = sflux.getIntegral(sdata)
+    srcFluxVal = sflux.getIntegral(sdata, placement=mint.UNIQUE_EDGE_DATA)
     errSrcFlux = srcFluxVal - exactFlux
-    dstFluxVal = dflux.getIntegral(ddata)
+    dstFluxVal = dflux.getIntegral(ddata, placement=mint.UNIQUE_EDGE_DATA)
     errDstFlux = dstFluxVal - exactFlux
     print(f'fluxes: exact={exactFlux} over grid src: {srcFluxVal} (error={errSrcFlux:.2g}) dst: {dstFluxVal} (error={errDstFlux:.2g})')
 
@@ -150,9 +150,9 @@ def test_1b():
     dflux.computeWeights(xyz)
 
     exactFlux = streamFunc(xyz[-1, :]) - streamFunc(xyz[0, :])
-    srcFluxVal = sflux.getIntegral(sdata)
+    srcFluxVal = sflux.getIntegral(sdata, placement=mint.UNIQUE_EDGE_DATA)
     errSrcFlux = srcFluxVal - exactFlux
-    dstFluxVal = dflux.getIntegral(ddata)
+    dstFluxVal = dflux.getIntegral(ddata, placement=mint.UNIQUE_EDGE_DATA)
     errDstFlux = dstFluxVal - exactFlux
     print(f'fluxes: exact={exactFlux} over grid src: {srcFluxVal} (error={errSrcFlux:.2g}) dst: {dstFluxVal} (error={errDstFlux:.2g})')
 
@@ -245,8 +245,8 @@ def test_2():
     dflux.buildLocator(numCellsPerBucket=128, periodX=0.) #360.0, enableFolding=False)
     dflux.computeWeights(xyz)
 
-    srcFluxVal = sflux.getIntegral(sdata)
-    dstFluxVal = dflux.getIntegral(ddata)
+    srcFluxVal = sflux.getIntegral(sdata, placement=mint.UNIQUE_EDGE_DATA)
+    dstFluxVal = dflux.getIntegral(ddata, placement=mint.UNIQUE_EDGE_DATA)
     print(f'flux: src: {srcFluxVal} dst: {dstFluxVal}')
 
     # save the grids and fields to VTK files

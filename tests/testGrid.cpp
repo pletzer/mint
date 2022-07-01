@@ -23,7 +23,7 @@ void testVTK() {
 void testUgridData() {
 
     int ier;
-    Grid_t* grd;
+    Grid_t* grd = NULL;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
 
@@ -67,6 +67,9 @@ void testUgridData() {
     ier = mnt_grid_getNodeIds(&grd, 0, 3, &edgeNodeIds[0]);
     assert(edgeNodeIds[0] == 0);
     assert(edgeNodeIds[1] == 3);
+
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
 }
 
 
@@ -178,6 +181,7 @@ void testUgrid() {
 int main(int argc, char** argv) {
 
     //testIrisGrid();
+    testUgridData();
     testLFRic();
     testUgrid();
     testVTK();

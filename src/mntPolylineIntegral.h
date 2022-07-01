@@ -90,17 +90,18 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
 /** 
  * Get the integral of the field along the line
  * @param self instance of the polyline integral object
- * @param data the edge integrated field values.
- *        This array is expected to be dimensioned ncells * MNT_NUM_EDGES_PER_QUAD. Each data value
- *        is a scalar representing the integral of the field over the edge. The directions of the
- *        edges should match the flag "counterclock" in the build method
- * * @param placement MNT_CELL_BY_CELL_DATA for cell by cell data, MNT_UNIQUE_EDGE_DATA for unique edge datas
+ * @param data edge integrated (extensive) field values.
+ * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell 
+ *                  (size of array is numCells * MNT_NUM_EDGES_PER_QUAD),
+ *                  otherwise data are assumed to be on unique edges 
+ *                  (size is numEdges)
  * @param result line integral of the field over the polyline
  * @return error code (0 is OK)
  */
 LIBRARY_API
-int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double data[],
-                                    int placement, double* result);
+int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self,
+                                     const double data[], int placement,
+                                     double* result);
 
 
 #endif // MNT_POLY_LINE_INTEGRAL

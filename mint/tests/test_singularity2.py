@@ -132,6 +132,7 @@ class ContourFluxes:
 
     def compute(self):
 
+        # store results in dictionary
         results = {
             'A': {'xyz': createCircle(xycenter=(XCENTRE, YCENTRE), nt=8, radius=1.0),
                           'flux': float('nan'),
@@ -159,15 +160,14 @@ class ContourFluxes:
                          },
         }
 
-
         targetData = []
         targetGrids = []
         resolutions = ('40x20', '80x40', '160x80')
         for res in resolutions:
 
             grid2 = mint.Grid()
-            grid2.setFlags(0, 0, degrees=True) # uniform
-            grid2.loadFromUgrid2DFile(f'{DATA_DIR}/latlon{res}Shifted.nc$mesh')
+            grid2.setFlags(0, 0, degrees=True) # uniform grid
+            grid2.loadFromUgrid2DFile(f'{DATA_DIR}/latlon{res}Shifted.nc$mesh') # -180...180
             grid2.dump(f'lonlat{res}.vtk')
 
             regridder = mint.RegridEdges()
@@ -183,7 +183,6 @@ class ContourFluxes:
             targetData.append(data2)
             targetGrids.append(grid2)
 
-
         for case in results:
 
             errors = []
@@ -193,7 +192,7 @@ class ContourFluxes:
             # no periodicity in x
             pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
             pli.computeWeights(results[case]['xyz'])
-            flux = pli.getIntegral(self.data)
+            flux = pli.getIntegral(self.data, placement=mint.CELL_BY_CELL_DATA)
 
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')
@@ -203,20 +202,23 @@ class ContourFluxes:
 
             for ires in range(len(targetGrids)):
             
-                pli = mint.PolylineIntegral()
-
                 grid2 = targetGrids[ires]
                 data2 = targetData[ires]
 
+                pli = mint.PolylineIntegral()
                 pli.setGrid(grid2)
                 # no periodicity in x
                 pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
                 pli.computeWeights(results[case]['xyz'])
-                flux2 = pli.getIntegral(data2)
+                flux2 = pli.getIntegral(data2, placement=mint.CELL_BY_CELL_DATA)
 
                 error = flux2 - results[case]["exact"]
                 print(f' {resolutions[ires]}: {error:.2g}', end='')
+                if case in ('B', 'C', 'D'):
+                    assert(abs(error) < 1e-9)
+
             print('')
+
 
 
     def saveVectorField(self):
@@ -266,8 +268,11 @@ class ContourFluxes:
         writer.SetInputData(sgrid)
         writer.Update()
 
+def test_table():
+    cf = ContourFluxes()
+    cf.compute()
+    #mint.printLogMessages()
 
 
 if __name__ == '__main__':
-    cf = ContourFluxes()
-    cf.compute()
+    test_table()
