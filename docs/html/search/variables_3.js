@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['faceedgeconnectivity_0',['faceEdgeConnectivity',['../struct_grid__t.html#ad5f92ea4629fac0ce9317600429b3e95',1,'Grid_t']]],
-  ['facenodeconnectivity_1',['faceNodeConnectivity',['../struct_grid__t.html#a0b17413cd9d24b0de429b53b57f1793d',1,'Grid_t']]],
-  ['fixlonacrossdateline_2',['fixLonAcrossDateline',['../struct_grid__t.html#aeb59ebe43895a220aa26444eadb6cdec',1,'Grid_t']]]
+  ['edge_5flength_5fname_0',['EDGE_LENGTH_NAME',['../struct_grid__t.html#ac22cb61172434ef1d844e565e8b5ae57',1,'Grid_t']]],
+  ['edgearclengths_1',['edgeArcLengths',['../struct_grid__t.html#a617badd1ed24be04a0d6d230d71801a8',1,'Grid_t']]],
+  ['edgeconnectivity_2',['edgeConnectivity',['../struct_regrid_edges__t.html#a79f0c713ad5b1252c8fe4325c14adf0a',1,'RegridEdges_t']]],
+  ['edgenodeconnectivity_3',['edgeNodeConnectivity',['../struct_grid__t.html#aec653d957005b005b04eaf7475cab643',1,'Grid_t']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['regridedges_5ft_0',['RegridEdges_t',['../struct_regrid_edges__t.html',1,'']]]
+  ['polylineintegral_5ft_0',['PolylineIntegral_t',['../struct_polyline_integral__t.html',1,'']]]
 ];
