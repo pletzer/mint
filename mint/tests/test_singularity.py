@@ -1,5 +1,5 @@
 from mint import Grid, PolylineIntegral, printLogMessages, writeLogMessages
-from mint import VectorInterp, NUM_VERTS_PER_QUAD
+from mint import VectorInterp, NUM_VERTS_PER_QUAD, CELL_BY_CELL_DATA
 import numpy
 import pytest
 import vtk
@@ -165,7 +165,7 @@ class ContourFluxes:
             pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
             pli.computeWeights(results[case]['xyz'])
 
-            results[case]['flux'] = pli.getIntegral(self.data)
+            results[case]['flux'] = pli.getIntegral(self.data, placement=CELL_BY_CELL_DATA)
 
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')

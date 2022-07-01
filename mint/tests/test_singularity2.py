@@ -193,7 +193,7 @@ class ContourFluxes:
             # no periodicity in x
             pli.buildLocator(numCellsPerBucket=128, periodX=0, enableFolding=False)
             pli.computeWeights(results[case]['xyz'])
-            flux = pli.getIntegral(self.data)
+            flux = pli.getIntegral(self.data, placement=mint.CELL_BY_CELL_DATA)
 
             # save the contour in VTK file
             saveLineVTK(results[case]['xyz'], case + '.vtk')
