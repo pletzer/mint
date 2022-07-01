@@ -128,12 +128,10 @@ class VectorInterp(object):
 
         MINTLIB.mnt_vectorinterp_getEdgeVectors.argtypes = [
                                                         POINTER(c_void_p),
-                                                        DOUBLE_ARRAY_PTR,
-                                                        DOUBLE_ARRAY_PTR,
-                                                        c_int]
+                                                        DOUBLE_ARRAY_PTR, c_int,
+                                                        DOUBLE_ARRAY_PTR]
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = MINTLIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, res,
-                                                      placement)
+        ier = MINTLIB.mnt_vectorinterp_getEdgeVectors(self.obj, data, placement, res)
         if ier:
             msg = "Some target lines fall outside the grid."
             warning_handler(FILE, 'getEdgeVectors', ier,
@@ -170,12 +168,10 @@ class VectorInterp(object):
 
         MINTLIB.mnt_vectorinterp_getFaceVectors.argtypes = [
                                                         POINTER(c_void_p),
-                                                        DOUBLE_ARRAY_PTR,
-                                                        DOUBLE_ARRAY_PTR,
-                                                        c_int]
+                                                        DOUBLE_ARRAY_PTR, c_int,
+                                                        DOUBLE_ARRAY_PTR]
         res = numpy.zeros((self.numTargetPoints, 3), numpy.float64)
-        ier = MINTLIB.mnt_vectorinterp_getFaceVectors(self.obj, data, res,
-                                                      placement)
+        ier = MINTLIB.mnt_vectorinterp_getFaceVectors(self.obj, data, placement, res)
         if ier:
             msg = "Some target lines fall outside the grid."
             warning_handler(FILE, 'getFaceVectors', ier,
