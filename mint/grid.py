@@ -67,7 +67,7 @@ class Grid(object):
         """
         Load a grid from 2D UGRID data structures.
 
-        :param xyz: array of vertex corrdinates, size npoints * 3
+        :param xyz: array of vertex coordinates, size npoints * 3
         :param face2nodes: array of face/cell connectivity to vertex Ids
         :param edge2nodes: array of edge connectivity to vertex Ids
         """
