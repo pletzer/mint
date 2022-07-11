@@ -99,17 +99,18 @@ class PolylineIntegral(object):
         """
         Get the flux integral over the polyline.
 
-        :param data: edge field data. This array is expected to be
-                     dimensioned (numCells, mint.NUM_EDGES_PER_QUAD). 
-                     Each value is a scalar representing the integral 
-                     of the field over the edge. The directions of the edges are
+        :param data: edge integrated field data. This array is expected 
+                     to be dimensioned either (numCells, mint.NUM_EDGES_PER_QUAD)
+                     if placement is mint.CELL_BY_CELL_DATA, or dimensioned
+                     (numEdges,) if placement is mint.UNIQUE_EDGE_DATA. In the 
+                     case where placement is mint.CELL_BY_CELL_DATA, the direction
+                     of the edges are
                      (0, 0) -> (1, 0),
                      (1, 0) -> (1, 1),
                      (0, 1) -> (1, 1) and
                      (0, 0) -> (0, 1) in parametric space
-        :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell
-                          (size or array is numCells * mint.NUM_EDGES_PER_QUAD),
-                          assume unique edge Id data otherwise (size is numEdges)
+        :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell or
+                          mint.UNIQUE_EDGE_DATA if each edge has a unique Id. 
         :returns the line/flux integral
         """
         MINTLIB.mnt_polylineintegral_getIntegral.argtypes = [POINTER(c_void_p),
