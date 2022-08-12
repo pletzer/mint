@@ -158,12 +158,12 @@ class VectorInterp(object):
         if placement == CELL_BY_CELL_DATA and n != self.numGridCells * NUM_EDGES_PER_QUAD:
             msg = f"data has wrong size (= {n}), num cells*NUM_EDGES_PER_QUAD = {self.numGridCells*NUM_EDGES_PER_QUAD}"
             ier = 10
-            error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
+            error_handler(FILE, 'getFaceVectors', ier, detailedmsg=msg)
             return
         elif placement != CELL_BY_CELL_DATA and n != self.numGridEdges:
             msg = f"data has wrong size (= {n}), num edges = {self.numGridEdges}"
             ier = 11
-            error_handler(FILE, 'getEdgeVectors', ier, detailedmsg=msg)
+            error_handler(FILE, 'getFaceVectors', ier, detailedmsg=msg)
             return
 
         MINTLIB.mnt_vectorinterp_getFaceVectors.argtypes = [
