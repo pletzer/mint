@@ -15,17 +15,13 @@ fields from source to destination grids.
 
 from ctypes import CDLL
 from pathlib import Path
+import site
 
 __version__ = "@VERSION@"
 
 # open shared library, the name of the shared object is always libmint.so 
 # even on Windows
-print(f'*** __path__ = {__path__}')
-print(f'*** __path__[0] = {__path__[0]}')
-print(f'*** Path(__path__[0]).parent = {Path(__path__[0]).parent}')
-for p in Path(__path__[0]).parent.glob("*"):
-    print(f'...p = {p}')
-MINTLIB = CDLL(str(Path(__path__[0]).parent / Path('libmint.so')))
+MINTLIB = CDLL(str(Path(site.getsitepackages()[0]) / Path("mint") / 'libmint.so'))
 CELL_BY_CELL_DATA = 0
 UNIQUE_EDGE_DATA = 1
 NUM_EDGES_PER_QUAD = 4

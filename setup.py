@@ -136,7 +136,7 @@ print(f"extra_compile_args   = {extra_compile_args}")
 
 extensions = [
     CTypesExtension(
-        f"lib{PACKAGE}",
+        f"mint.lib{PACKAGE}",
         sources=glob.glob("src/*.cpp"),
         define_macros=[],
         include_dirs=["src/", vtklib["VTK_INCLUDE_DIR"], nclib["NETCDF_INCLUDE_DIR"]],
