@@ -20,6 +20,10 @@ __version__ = "@VERSION@"
 
 # open shared library, the name of the shared object is always libmint.so 
 # even on Windows
+print(f'*** __path__ = {__path__}')
+print(f'*** __path__[0] = {_path__[0]}')
+print(f'*** Path(__path__[0]).parent = {Path(__path__[0]).parent}')
+print(f'*** files/directories under {Path(__path__[0]).parent}: {Path(__path__[0]).parent.glob("*")}')
 MINTLIB = CDLL(str(Path(__path__[0]).parent / Path('libmint.so')))
 CELL_BY_CELL_DATA = 0
 UNIQUE_EDGE_DATA = 1
