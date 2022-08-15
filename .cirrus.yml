@@ -75,7 +75,7 @@ linux_task:
     - conda activate py${PY_VER} >/dev/null 2>&1
     - conda install --yes -c conda-forge netcdf-fortran doxygen 2>&1
     - conda list
-    - python setup.py develop
+    - pip install --no-deps --editable .
     - pytest
     - mkdir build-cmake
     - cd build-cmake
@@ -129,7 +129,7 @@ osx_task:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-lock.yml >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
     - conda activate py${PY_VER} >/dev/null 2>&1
-    - python setup.py develop
+    - pip install --no-deps --editable .
     - pytest
     - mkdir build-cmake
     - cd build-cmake
