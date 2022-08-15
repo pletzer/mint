@@ -92,7 +92,7 @@ void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fl
     assert(ier == 0);
 
     // compute the velocity from fluxes at the edges and compare
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (auto icell = 0; icell < numCells; ++icell) {
 
         for (int ie = 0; ie < 4; ++ie) {
 
@@ -146,7 +146,7 @@ void testZonal() {
 
 
     // set the velocity
-    for (vtkIdType icell = 0; icell < numCells; ++icell) {
+    for (auto icell = 0; icell < numCells; ++icell) {
         for (int ie = 0; ie < 4; ++ie) {
 
             ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &signEdge);
