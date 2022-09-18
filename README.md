@@ -1,4 +1,11 @@
+
+<h1 align="center">
+   <img src="https://raw.githubusercontent.com/pletzer/mint/master/figures/mint-logo.png" alt="MINT" width="300"></a><br>
+</h1>
+
+
 # MINT - Mimetic INTerpolation on the Sphere
+
 
 <p align="left">
 <a href="https://cirrus-ci.com/github/pletzer/mint">
@@ -33,6 +40,7 @@ The development of the numerical method and its implementation are supported by 
 ## References
 
 Please refer to the following publications when using `MINT`.
+ * [MINT: a library that conserves vorticity or lateral fluxes when interpolating vector fields](https://dl.acm.org/doi/abs/10.1145/3539781.3539786)
  * [Mimetic Interpolation of Vector Fields on Arakawa C/D Grids](https://journals.ametsoc.org/view/journals/mwre/147/1/mwr-d-18-0146.1.xml).
  * [Conservative interpolation of edge and face data on n dimensional structured grids using differential forms](https://www.sciencedirect.com/science/article/pii/S0021999115005562?via%3Dihub).
 
