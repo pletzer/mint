@@ -26,12 +26,12 @@
 
 ## Overview
 
-This project aims to provide interpolating and regridding capability for horizontal edge/face centred fields on the sphere. 
-The source and destination grids are stored as a collection of grid cells with four vertices each (i.e. the cells are quadrilaterals). Thus, the grids 
-can be quite general - we support both structured and unstructured grids. `MINT` can read data stored in a 2D subset version of the [UGRID](https://ugrid-conventions.github.io/ugrid-conventions/) format.
+This project provides interpolating and regridding capability to horizontal edge/face centred fields on the sphere.
 
-MINT conserves lateral fluxes. The regridding method is mimetic in the sense that Stokes's or the divergence theorems are satisfied to near machine precision. In particular, the 
+MINT conserves lateral fluxes or vorticity, depending on the field's staggering. The regridding method is mimetic in the sense that Stokes's or the divergence theorems are satisfied to near machine precision. In particular, the 
 loop integrals of an interpolated vector field deriving from a gradient or streamfunction is zero.
+
+The source and destination grids are stored as a collection of grid cells with four vertices each (i.e. the cells are quadrilaterals). `MINT` can read data stored in a 2D subset version of the [UGRID](https://ugrid-conventions.github.io/ugrid-conventions/) format.
 
 ## Thank you
 
