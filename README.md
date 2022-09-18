@@ -1,4 +1,11 @@
+
+<h1 align="center">
+   <img src="https://raw.githubusercontent.com/pletzer/mint/master/figures/mint-logo.png" alt="Iris" width="300"></a><br>
+</h1>
+
+
 # MINT - Mimetic INTerpolation on the Sphere
+
 
 <p align="left">
 <a href="https://cirrus-ci.com/github/pletzer/mint">
