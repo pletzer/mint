@@ -49,7 +49,6 @@ int mnt_extensivefieldconverter_getEdgeDataFromCellByCellVectors(ExtensiveFieldC
             if (ier != 0) numFailures++;
 
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
-            double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
 
             // line integral 

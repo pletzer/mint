@@ -211,7 +211,7 @@ int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, 
         (*self)->gridObj->faceNodeConnectivity.size() == 0 || 
         (*self)->gridObj->faceEdgeConnectivity.size() == 0 ||
         (*self)->gridObj->edgeNodeConnectivity.size() == 0) {
-        std::string msg = "grid connectivity not set (?) Read the grid from a netcdf Ufile";
+        std::string msg = "grid connectivity not set (?) May need to read the grid from a netcdf Ufile";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
@@ -245,7 +245,7 @@ int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, 
     mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
 
-    return 0;
+    return ier;
 }
 
 LIBRARY_API
