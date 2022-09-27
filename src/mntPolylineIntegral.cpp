@@ -204,7 +204,7 @@ int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, 
                                                      double* result) {
 
     *result = 0;
-    int ier;
+    int ier = 0;
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
     if (!(*self)->gridObj ||
