@@ -72,8 +72,36 @@ def test_ugrid():
     dataFace = efc.getFaceData(vx, vy, placement=mint.UNIQUE_EDGE_DATA)
 
 
+def test_ugrid2():
+    gr = Grid()
+    gr.setFlags(1, 1)
+    filename = str(DATA_DIR / Path('cs_4.nc'))
+    gr.loadFromUgrid2DFile(f'{filename}$physics')
+    nedges = gr.getNumberOfEdges()
+    print(f'nedges = {nedges}')
+    assert(nedges == 192)
+    ncells = gr.getNumberOfCells()
+    points = gr.getPoints()
+    print(f'points shape: {points.shape}')
+
+    # create an array of edge values, the values are the edge indices
+    unique_edge_data = numpy.array(range(nedges), numpy.float64)
+
+    efc = ExtensiveFieldConverter()
+    efc.setGrid(gr)
+
+    # cell by cell data from unique edge data
+    cell_by_cell_data = efc.getCellByCellDataFromUniqueEdgeData(unique_edge_data)
+
+    for icell in range(ncells):
+        for ie in range(mint.NUM_EDGES_PER_QUAD):
+            edgeId, edgeSign = gr.getEdgeId(icell, ie)
+            k = icell*mint.NUM_EDGES_PER_QUAD + ie
+            assert(cell_by_cell_data[k] == edgeId*edgeSign)
+
 
 if __name__ == '__main__':
 
+    test_ugrid2()
     test_grid()
     test_ugrid()

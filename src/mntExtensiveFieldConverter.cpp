@@ -49,7 +49,6 @@ int mnt_extensivefieldconverter_getEdgeDataFromCellByCellVectors(ExtensiveFieldC
             if (ier != 0) numFailures++;
 
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
-            double ymid = 0.5*(point1[LAT_INDEX] + point0[LAT_INDEX]);
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
 
             // line integral 
@@ -242,5 +241,50 @@ int mnt_extensivefieldconverter_getFaceData(ExtensiveFieldConverter_t** self,
         ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(self, vx, vy, data);
     }
     return ier;
+}
+
+LIBRARY_API
+int mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData(ExtensiveFieldConverter_t** self,
+                                            const double uniqueEdgeData[],
+                                            double data[]) {
+    std::string msg;
+    int ier;
+    int numFailures = 0;
+
+    if (!(*self)->grid) {
+        msg ="must set the grid before calling this";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
+
+    std::size_t numEdges = 0;
+    ier = mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
+    if (ier !=0 || numEdges == 0) {
+        msg ="number of edges is zero, the grid was likely not built from a UGRID file";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -2;        
+    }
+
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
+    if (ier != 0) {
+        numFailures++;
+    }
+
+    std::size_t edgeId;
+    int edgeSign;
+
+    for (vtkIdType icell = 0; icell < (vtkIdType) numCells; ++icell) {
+        for (int iedge = 0; iedge < MNT_NUM_EDGES_PER_QUAD; ++iedge) {
+
+            ier = mnt_grid_getEdgeId(&(*self)->grid, icell, iedge, &edgeId, &edgeSign);
+            if (ier != 0) numFailures++;
+
+            data[icell*MNT_NUM_EDGES_PER_QUAD + iedge] = edgeSign * uniqueEdgeData[edgeId];;
+        }
+    }
+
+
+    return numFailures;
 }
 

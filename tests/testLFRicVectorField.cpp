@@ -118,9 +118,7 @@ void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fl
 
     ier = mnt_vectorinterp_del(&vp);
     assert(ier == 0);
-
 }
-
 
 void testZonal() {
 
@@ -161,7 +159,6 @@ void testZonal() {
     std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell
 
     getVectors(grd, cloc, fluxes);
-
 
     // clean up
     cloc->Delete();
@@ -209,7 +206,6 @@ void testMeridional() {
     std::vector<double> fluxes = computeFluxes(grd, u, v); // result is cell by cell
 
     getVectors(grd, cloc, fluxes);
-
 
     // clean up
     cloc->Delete();
