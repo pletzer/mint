@@ -162,7 +162,7 @@ class Grid(object):
 
         :param cellId: Id of the cell
         :param edgeIndex: edge index of the cell (0...3)
-        :returns an edge index, sign pair
+        :returns a unique edge Id, sign pair
         """
         MINTLIB.mnt_grid_getEdgeId.argtypes = [POINTER(c_void_p),
                                            c_longlong, c_int,

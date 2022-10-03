@@ -99,7 +99,7 @@ void testUgridData() {
 
     std::vector<double> uedge({0.0, 0.0, 3.0, 1.0});
     std::vector<double> vedge({2.0, 4.0, 0.0, 0.0});
-    ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uedge[0], &vedge[0], &data[0]);
+    ier = mnt_extensivefieldconverter_getEdgeData(&efc, &uedge[0], &vedge[0], MNT_UNIQUE_EDGE_DATA, &data[0]);
     std::cerr << "testUgridData: edge data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
     assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
@@ -109,7 +109,7 @@ void testUgridData() {
 
     std::vector<double> uface({2.0, 4.0, 0.0, 0.0});
     std::vector<double> vface({0.0, 0.0, 3.0, 1.0});
-    ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uface[0], &vface[0], &data[0]);
+    ier = mnt_extensivefieldconverter_getFaceData(&efc, &uface[0], &vface[0], MNT_UNIQUE_EDGE_DATA, &data[0]);
     std::cerr << "testUgridData: face data = " << data[0] << ',' << data[1] << ',' << data[2] << ',' << data[3] << '\n';
     assert(ier == 0);
     assert(fabs(data[0] - (+1.0)) < tol);
@@ -170,10 +170,10 @@ void testUniform() {
     ier = mnt_extensivefieldconverter_setGrid(&efc, grd);
     assert(ier == 0);
 
-    ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uEdge[0], &vEdge[0], &dataEdge[0]);
+    ier = mnt_extensivefieldconverter_getEdgeData(&efc, &uEdge[0], &vEdge[0], MNT_UNIQUE_EDGE_DATA, &dataEdge[0]);
     assert(ier == 0);
 
-    ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uEdge[0], &vEdge[0], &dataFace[0]);
+    ier = mnt_extensivefieldconverter_getFaceData(&efc, &uEdge[0], &vEdge[0], MNT_UNIQUE_EDGE_DATA, &dataFace[0]);
     assert(ier == 0);
 
     VectorInterp_t* vi = NULL;
@@ -257,10 +257,10 @@ void testMeterPerSecond() {
     ier = mnt_extensivefieldconverter_setGrid(&efc, grd);
     assert(ier == 0);
 
-    ier = mnt_extensivefieldconverter_getEdgeDataFromUniqueEdgeVectors(&efc, &uEdge[0], &vEdge[0], &dataEdge[0]);
+    ier = mnt_extensivefieldconverter_getEdgeData(&efc, &uEdge[0], &vEdge[0], MNT_UNIQUE_EDGE_DATA, &dataEdge[0]);
     assert(ier == 0);
 
-    ier = mnt_extensivefieldconverter_getFaceDataFromUniqueEdgeVectors(&efc, &uEdge[0], &vEdge[0], &dataFace[0]);
+    ier = mnt_extensivefieldconverter_getFaceData(&efc, &uEdge[0], &vEdge[0], MNT_UNIQUE_EDGE_DATA, &dataFace[0]);
     assert(ier == 0);
 
     // for (auto cellId = 0; cellId < numCells; ++cellId) {
