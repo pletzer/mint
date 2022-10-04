@@ -48,8 +48,10 @@ int mnt_extensivefieldconverter_getFaceData(ExtensiveFieldConverter_t** self,
     return ier;
 }
 
+// private methods
+
 LIBRARY_API
-int mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData(ExtensiveFieldConverter_t** self,
+int mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData(ExtensiveFieldConverter_t** self,
                                             const double uniqueEdgeData[],
                                             double data[]) {
     std::string msg;
@@ -65,7 +67,7 @@ int mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData(ExtensiveFie
     std::size_t numEdges = 0;
     ier = mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
     if (ier !=0 || numEdges == 0) {
-        msg ="number of edges is zero, the grid was likely not built from a UGRID file";
+        msg ="number of edges is zero, the grid was likely not built from UGRID file or data";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -2;        
     }
@@ -93,8 +95,55 @@ int mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData(ExtensiveFie
     return numFailures;
 }
 
+LIBRARY_API
+int mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData(ExtensiveFieldConverter_t** self,
+                                            const double uniqueEdgeData[],
+                                            double data[]) {
+    std::string msg;
+    int ier;
+    int numFailures = 0;
 
-// private methods
+    if (!(*self)->grid) {
+        msg ="must set the grid before calling this";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
+
+    std::size_t numEdges = 0;
+    ier = mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
+    if (ier !=0 || numEdges == 0) {
+        msg ="number of edges is zero, the grid was likely not built from UGRID file or data";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -2;        
+    }
+
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
+    if (ier != 0) {
+        numFailures++;
+    }
+
+    std::size_t edgeId;
+    int edgeSign;
+
+    for (vtkIdType icell = 0; icell < (vtkIdType) numCells; ++icell) {
+        for (int iedge = 0; iedge < MNT_NUM_EDGES_PER_QUAD; ++iedge) {
+
+            ier = mnt_grid_getEdgeId(&(*self)->grid, icell, iedge, &edgeId, &edgeSign);
+            if (ier != 0) numFailures++;
+
+            // our convention is to have the extensive fluxes pointing in the positive, logical direction.
+            // This requires flipping the sign for iedge = 0 and 2. 
+            double sign = 2*((iedge + 1) % 2) - 1;
+
+            data[icell*MNT_NUM_EDGES_PER_QUAD + iedge] = -sign*edgeSign * uniqueEdgeData[edgeId];;
+        }
+    }
+
+
+    return numFailures;
+}
+
 
 LIBRARY_API
 int mnt_extensivefieldconverter__getEdgeDataFromCellByCellVectors(ExtensiveFieldConverter_t** self, 
@@ -153,7 +202,7 @@ int mnt_extensivefieldconverter__getEdgeDataFromUniqueEdgeVectors(ExtensiveField
     std::size_t numEdges = 0;
     ier = mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
     if (ier !=0 || numEdges == 0) {
-        msg ="number of edges is zero, the grid was likely not built from a UGRID file";
+        msg ="number of edges is zero, the grid was likely not built from UGRID file or data";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -2;        
     }
@@ -224,7 +273,9 @@ int mnt_extensivefieldconverter__getFaceDataFromCellByCellVectors(ExtensiveField
             double dx = point1[LON_INDEX] - point0[LON_INDEX];
             double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
 
-            // line integral 
+            // line integral
+            // our convention is to have the extensive fluxes pointing in the positive, logical direction.
+            // This requires flipping the sign for iedge = 0 and 2. 
             double sign = 2*((iedge + 1) % 2) - 1;
             data[k] = -sign*(u*dy - v*dx); // assuming u and v are transformed when in spherical geometry
         }
@@ -250,7 +301,7 @@ int mnt_extensivefieldconverter__getFaceDataFromUniqueEdgeVectors(ExtensiveField
     std::size_t numEdges = 0;
     ier = mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
     if (ier !=0 || numEdges == 0) {
-        msg ="number of edges is zero, the grid was likely not built from a UGRID file";
+        msg ="number of edges is zero, the grid was likely not built from UGRID file or data";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -2;        
     }
@@ -284,8 +335,12 @@ int mnt_extensivefieldconverter__getFaceDataFromUniqueEdgeVectors(ExtensiveField
 
             // data is cell by cell even though vx and vy are on unique edges
             std::size_t k = icell * MNT_NUM_EDGES_PER_QUAD + iedge;
+
+            // our convention is to have the extensive fluxes pointing in the positive, logical direction.
+            // This requires flipping the sign for iedge = 0 and 2. 
             double sign = 2*((iedge + 1) % 2) - 1;
             data[k] = -sign*(u*dy - v*dx);  // assuming u and v are transformed when in spherical geometry
+
         }
     }
 

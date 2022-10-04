@@ -81,14 +81,26 @@ int mnt_extensivefieldconverter_getFaceData(ExtensiveFieldConverter_t** self,
                                             double data[]);
 
 /**
- * Get the cell by cell data from the unique edge (or face) data
+ * Get the edge cell by cell data from the unique edge (or face) data
  * @param self instance of ExtensiveFieldConverter_t
  * @param uniqueEdgeData, input array of size numEdges
  * @param data cell by cell data, to be filled out
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData(ExtensiveFieldConverter_t** self,
+int mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData(ExtensiveFieldConverter_t** self,
+                                            const double uniqueEdgeData[],
+                                            double data[]);
+
+/**
+ * Get the face cell by cell data from the unique edge (or face) data
+ * @param self instance of ExtensiveFieldConverter_t
+ * @param uniqueEdgeData, input array of size numEdges
+ * @param data cell by cell data, to be filled out
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData(ExtensiveFieldConverter_t** self,
                                             const double uniqueEdgeData[],
                                             double data[]);
 
