@@ -58,15 +58,16 @@ void testFromUniqueEdgesToCellByCell() {
 
     double tol = 1.e-15;
 
+    std::cerr << "edgeData = " << edgeData[0] << ',' << edgeData[1] << ',' << edgeData[2] << ',' << edgeData[3] << '\n';
     assert(fabs(edgeData[0] - (-2)) < tol);
     assert(fabs(edgeData[1] - (+3)) < tol);
     assert(fabs(edgeData[2] - (-4)) < tol);
     assert(fabs(edgeData[3] - (-1)) < tol);
 
     std::cerr << "faceData = " << faceData[0] << ',' << faceData[1] << ',' << faceData[2] << ',' << faceData[3] << '\n';
-    assert(fabs(faceData[0] - (+2)) < tol);
+    assert(fabs(faceData[0] - (+2)) < tol); // negative of the edge data
     assert(fabs(faceData[1] - (+3)) < tol);
-    assert(fabs(faceData[2] - (+4)) < tol);
+    assert(fabs(faceData[2] - (+4)) < tol); // negative of the edge data
     assert(fabs(faceData[3] - (-1)) < tol);
 
     mnt_grid_del(&grd);

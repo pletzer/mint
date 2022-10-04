@@ -92,12 +92,15 @@ def test_ugrid2():
 
     # cell by cell data from unique edge data
     edge_cell_by_cell_data = efc.getEdgeCellByCellDataFromUniqueEdgeData(unique_edge_data)
+    face_cell_by_cell_data = efc.getFaceCellByCellDataFromUniqueEdgeData(unique_edge_data)
 
     for icell in range(ncells):
         for ie in range(mint.NUM_EDGES_PER_QUAD):
             edgeId, edgeSign = gr.getEdgeId(icell, ie)
+            sign2 = 2*(ie % 2) - 1 # flip the sign of edge 0 and 2
             k = icell*mint.NUM_EDGES_PER_QUAD + ie
             assert(edge_cell_by_cell_data[k] == edgeId*edgeSign)
+            assert(face_cell_by_cell_data[k] == edgeId*edgeSign*sign2)
 
 
 if __name__ == '__main__':
