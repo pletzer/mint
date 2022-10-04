@@ -91,13 +91,13 @@ def test_ugrid2():
     efc.setGrid(gr)
 
     # cell by cell data from unique edge data
-    cell_by_cell_data = efc.getCellByCellDataFromUniqueEdgeData(unique_edge_data)
+    edge_cell_by_cell_data = efc.getEdgeCellByCellDataFromUniqueEdgeData(unique_edge_data)
 
     for icell in range(ncells):
         for ie in range(mint.NUM_EDGES_PER_QUAD):
             edgeId, edgeSign = gr.getEdgeId(icell, ie)
             k = icell*mint.NUM_EDGES_PER_QUAD + ie
-            assert(cell_by_cell_data[k] == edgeId*edgeSign)
+            assert(edge_cell_by_cell_data[k] == edgeId*edgeSign)
 
 
 if __name__ == '__main__':

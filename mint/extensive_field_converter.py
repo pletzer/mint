@@ -133,22 +133,40 @@ class ExtensiveFieldConverter(object):
                             detailedmsg=msg)
         return res
 
-    def getCellByCellDataFromUniqueEdgeData(self, unique_edge_data):
+    def getEdgeCellByCellDataFromUniqueEdgeData(self, unique_edge_data):
         """
-        Get the cell by cell data from the unique edge data
+        Get the edge cell by cell data from the unique edge data
         :param unique_edge_data: data defined on unique dege Ids, size of array should be numEdges
         :returns cell by cell data
         """
         n = self.numGridCells * NUM_EDGES_PER_QUAD
         res = numpy.empty(n, numpy.float64)
-        MINTLIB.mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData.argtypes = [
+        MINTLIB.mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData.argtypes = [
                                                                                 POINTER(c_void_p),
                                                                                 DOUBLE_ARRAY_PTR,
                                                                                 DOUBLE_ARRAY_PTR]
-        ier = MINTLIB.mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData(self.obj, unique_edge_data, res)
+        ier = MINTLIB.mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData(self.obj, unique_edge_data, res)
         if ier:
-            msg = "An error occurred after calling MINTLIB.mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData."
-            warning_handler(FILE, 'getCellByCellDataFromUniqueEdgeData', ier,
+            msg = "An error occurred after calling MINTLIB.mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData."
+            warning_handler(FILE, 'getEdgeCellByCellDataFromUniqueEdgeData', ier,
                             detailedmsg=msg)
         return res
 
+    def getFaceCellByCellDataFromUniqueEdgeData(self, unique_edge_data):
+        """
+        Get the face cell by cell data from the unique edge data
+        :param unique_edge_data: data defined on unique dege Ids, size of array should be numEdges
+        :returns cell by cell data
+        """
+        n = self.numGridCells * NUM_EDGES_PER_QUAD
+        res = numpy.empty(n, numpy.float64)
+        MINTLIB.mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData.argtypes = [
+                                                                                POINTER(c_void_p),
+                                                                                DOUBLE_ARRAY_PTR,
+                                                                                DOUBLE_ARRAY_PTR]
+        ier = MINTLIB.mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData(self.obj, unique_edge_data, res)
+        if ier:
+            msg = "An error occurred after calling MINTLIB.mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData."
+            warning_handler(FILE, 'getFaceCellByCellDataFromUniqueEdgeData', ier,
+                            detailedmsg=msg)
+        return res
