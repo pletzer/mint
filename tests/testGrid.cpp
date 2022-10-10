@@ -13,6 +13,23 @@ void testIrisGrid() {
     mnt_grid_del(&grd);
 }
 
+void testDisplacedUgrid() {
+    Grid_t* grd;
+    mnt_grid_new(&grd);
+    int fixLonAcrossDateline = 1;
+    int averageLonAtPole = 1;
+    int degrees = 1;
+    mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
+    mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs8_wind.nc$cs");
+    std::size_t numBadCells;
+    int ier = mnt_grid_check(&grd, &numBadCells);
+    mnt_printLogMessages();
+    std::cerr << "number of bad cells: " << numBadCells << '\n';
+    assert(numBadCells == 0);
+    mnt_grid_del(&grd);
+   
+}
+
 void testVTK() {
     Grid_t* grd;
     mnt_grid_new(&grd);
@@ -181,6 +198,7 @@ void testUgrid() {
 int main(int argc, char** argv) {
 
     //testIrisGrid();
+    testDisplacedUgrid();
     testUgridData();
     testLFRic();
     testUgrid();

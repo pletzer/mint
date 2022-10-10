@@ -54,10 +54,10 @@ class ExtensiveFieldConverter(object):
     def getEdgeData(self, vx, vy, placement):
         """
         Get the edge integrated data
-        :param vx: x component of vectors on edges, array of size numEdges
-        :param vy: y component of vectors on edges, array of size numEdges
-        :param placement: mint.CELL_BY_CELL_DATA if data are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
-                          data are assumed to be on unique edges otherwise (size num edges)
+        :param vx: x component of vectors on edges, array (see placement argument below)
+        :param vy: y component of vectors on edges, array (see placement argument below)
+        :param placement: mint.CELL_BY_CELL_DATA if vx and vy are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
+                          vx and vy are assumed to be on unique edges otherwise (size num edges)
         :returns edge integrated data, array size is numCells * mint.NUM_EDGES_PER_QUAD
         :note: vx and vy should be compatible with the grid's coordinates. For instance, if vx and vy are 
                velocities in m/s and the coordinates are in degrees then one needs transform 
@@ -95,10 +95,10 @@ class ExtensiveFieldConverter(object):
     def getFaceData(self, vx, vy, placement):
         """
         Get the face integrated data
-        :param vx: x component of vectors on edges, array of size numEdges
-        :param vy: y component of vectors on edges, array of size numEdges
-        :param placement: mint.CELL_BY_CELL_DATA if data are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
-                          data are assumed to be on unique edges otherwise (size num edges)
+        :param vx: x component of vectors on edges, array (see placement argument below)
+        :param vy: y component of vectors on edges, array (see placement argument below) 
+        :param placement: mint.CELL_BY_CELL_DATA if vx and vy are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
+                          vx and vy are assumed to be on unique edges otherwise (size num edges)
         :returns face integrated data, array size is numCells * mint.NUM_EDGES_PER_QUAD
         :note: vx and vy should be compatible with the grid's coordinates. For instance, if vx and vy are 
                velocities in m/s and the coordinates are in degrees then one needs transform 
@@ -133,22 +133,40 @@ class ExtensiveFieldConverter(object):
                             detailedmsg=msg)
         return res
 
-    def getCellByCellDataFromUniqueEdgeData(self, unique_edge_data):
+    def getEdgeCellByCellDataFromUniqueEdgeData(self, unique_edge_data):
         """
-        Get the cell by cell data from the unique edge data
+        Get the edge cell by cell data from the unique edge data
         :param unique_edge_data: data defined on unique dege Ids, size of array should be numEdges
         :returns cell by cell data
         """
         n = self.numGridCells * NUM_EDGES_PER_QUAD
         res = numpy.empty(n, numpy.float64)
-        MINTLIB.mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData.argtypes = [
+        MINTLIB.mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData.argtypes = [
                                                                                 POINTER(c_void_p),
                                                                                 DOUBLE_ARRAY_PTR,
                                                                                 DOUBLE_ARRAY_PTR]
-        ier = MINTLIB.mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData(self.obj, unique_edge_data, res)
+        ier = MINTLIB.mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData(self.obj, unique_edge_data, res)
         if ier:
-            msg = "An error occurred after calling MINTLIB.mnt_extensivefieldconverter_getCellByCellDataFromUniqueEdgeData."
-            warning_handler(FILE, 'getCellByCellDataFromUniqueEdgeData', ier,
+            msg = "An error occurred after calling MINTLIB.mnt_extensivefieldconverter_getEdgeCellByCellDataFromUniqueEdgeData."
+            warning_handler(FILE, 'getEdgeCellByCellDataFromUniqueEdgeData', ier,
                             detailedmsg=msg)
         return res
 
+    def getFaceCellByCellDataFromUniqueEdgeData(self, unique_edge_data):
+        """
+        Get the face cell by cell data from the unique edge data
+        :param unique_edge_data: data defined on unique dege Ids, size of array should be numEdges
+        :returns cell by cell data
+        """
+        n = self.numGridCells * NUM_EDGES_PER_QUAD
+        res = numpy.empty(n, numpy.float64)
+        MINTLIB.mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData.argtypes = [
+                                                                                POINTER(c_void_p),
+                                                                                DOUBLE_ARRAY_PTR,
+                                                                                DOUBLE_ARRAY_PTR]
+        ier = MINTLIB.mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData(self.obj, unique_edge_data, res)
+        if ier:
+            msg = "An error occurred after calling MINTLIB.mnt_extensivefieldconverter_getFaceCellByCellDataFromUniqueEdgeData."
+            warning_handler(FILE, 'getFaceCellByCellDataFromUniqueEdgeData', ier,
+                            detailedmsg=msg)
+        return res
