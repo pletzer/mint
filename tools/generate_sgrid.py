@@ -53,10 +53,14 @@ def main(*, nx: int=10, ny: int=5, output_file: str='sgrid.nc'):
 		uvar = nc.createVariable('u', 'f4', ('nyu', 'nxu'))
 		uvar.description = 'x-velocity'
 		uvar.units = 'm s-1'
+		uvar.grid = 'grid'
+		uvar.location = 'edge1' # Arakawa C
 
 		vvar = nc.createVariable('v', 'f4', ('nyv', 'nxv'))
 		vvar.description = 'y-velocity'
 		vvar.units = 'm s-1'
+		vvar.grid = 'grid'
+		vvar.location = 'edge2' # Arakawa C
 
 		gridvar = nc.createVariable('grid', 'int32', [])
 		gridvar.cf_role = 'grid_topology'
