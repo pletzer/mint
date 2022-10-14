@@ -80,9 +80,6 @@ linux_task:
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=ON -DNETCDF_INCLUDE_DIRS="${ENV_DIR}/include" -DNETCDF_LIBRARIES="-L${ENV_DIR}/lib -lnetcdf" -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
-    - ls ${ENV_DIR}
-    - ls ${ENV_DIR}/include
-    - ls ${ENV_DIR}/include/vtk-${VTK_VER}
     - make VERBOSE=1
     - ctest
 
@@ -95,7 +92,7 @@ osx_task:
   matrix:
     env:
       PY_VER: "3.10"
-      VTK_VER: "9.1"
+      VTK_VER: "9.2"
   name: "OSX: py${PY_VER}"
   osx_instance:
     image: big-sur-xcode
@@ -148,8 +145,8 @@ win_task:
   matrix:
     env:
       PY_VER: "3.9"
-      VTK_VER: "9.1"
-      LIBNETCDF_VER: "4.8.1"
+      VTK_VER: "9.2"
+      LIBNETCDF_VER: "4.9.0"
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
