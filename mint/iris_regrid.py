@@ -61,9 +61,9 @@ def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
     regridder.buildLocator(numCellsPerBucket, periodX, enableFolding)
     regridder.computeWeights()
 
-    obj = dict(src_grid=src_grid_obj, tgt_grid=tgt_grid_obj, 
+    regrid_info = dict(src_grid=src_grid_obj, tgt_grid=tgt_grid_obj, 
                regridder=regridder)
-    return obj
+    return regrid_info
 
 
 def _regrid(uv_data, regrid_info, **kwargs):
