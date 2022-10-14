@@ -33,7 +33,7 @@ linux_task:
       VTK_VER: "9.2"
     env:
       PY_VER: "3.9"
-      VTK_VER: "9.2"
+      VTK_VER: "9.1"
     env:
       PY_VER: "3.10"
       VTK_VER: "9.2"
@@ -145,8 +145,8 @@ win_task:
   matrix:
     env:
       PY_VER: "3.9"
-      VTK_VER: "9.2"
-      LIBNETCDF_VER: "4.9.0"
+      VTK_VER: "9.1"
+      LIBNETCDF_VER: "4.8.1"
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake

@@ -1,7 +1,4 @@
-from ssl import VERIFY_X509_TRUSTED_FIRST
-from turtle import shape
-from winreg import REG_DWORD_BIG_ENDIAN, EnableReflectionKey
-from iris.cube import Cube
+# from iris.cube import Cube
 import numpy as np
 from mint import NUM_EDGES_PER_QUAD, UNIQUE_EDGE_DATA, RegridEdges, Grid, regrid_edges
 from mint.extensive_field_converter import ExtensiveFieldConverter
@@ -81,7 +78,7 @@ def _regrid(uv_data, regrid_info, **kwargs):
         # earth's radius
         planet_radius = kwargs.get('A', 6371e3)
         # u on u points
-        u *= rad2deg / (planet_radius * np.cos(deg2rad*yyu)
+        u *= rad2deg / (planet_radius * np.cos(deg2rad*yyu))
         # v on v points
         v *= rad2deg / planet_radius
     else:
@@ -133,14 +130,13 @@ def _create_cube(data, src, src_dims, tgt_coords):
 def _prepare(src, tgt, **kwargs):
     src_coords = _get_coords(src)
     tgt_coords = _get_coords(tgt)
-    mint_regridder = _make_mint_regridder(src_coords, tgt_coords, **kwargs)
-    regrid_info = [tgt_coords, mint_regridder]
+    regrid_info = _make_mint_regridder(src_coords, tgt_coords, **kwargs)
     return regrid_info
 
 
-def _perform(uv, regrid_info):
-    data = _regrid(cube.data, mint_regridder)
-    return _create_cube(data, cube, dims, tgt_coords)
+# def _perform(uv, regrid_info):
+#     data = _regrid(cube.data, mint_regridder)
+#     return _create_cube(data, cube, dims, tgt_coords)
 
 
 class _MINTRegridder:
@@ -148,7 +144,9 @@ class _MINTRegridder:
         self.regrid_info = _prepare(src, tgt, **kwargs)
 
     def __call__(self, src):
-        return _perform(src, self.regrid_info)
+        # TO DO BUILD cube
+        return _regrid(src, regrid_info, **kwargs)
+        # return _perform(src, self.regrid_info)
 
 
 class MINTScheme:
