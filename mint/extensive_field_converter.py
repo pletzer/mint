@@ -54,10 +54,10 @@ class ExtensiveFieldConverter(object):
     def getEdgeData(self, vx, vy, placement):
         """
         Get the edge integrated data
-        :param vx: x component of vectors on edges, array of size numEdges
-        :param vy: y component of vectors on edges, array of size numEdges
-        :param placement: mint.CELL_BY_CELL_DATA if data are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
-                          data are assumed to be on unique edges otherwise (size num edges)
+        :param vx: x component of vectors on edges, array (size depends on placement, see below)
+        :param vy: y component of vectors on edges, array (size depends on placement, see below)
+        :param placement: mint.CELL_BY_CELL_DATA if (vx, vy) are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
+                          (vx, vy) are assumed to be on unique edges otherwise (size num edges)
         :returns edge integrated data, array size is numCells * mint.NUM_EDGES_PER_QUAD
         :note: vx and vy should be compatible with the grid's coordinates. For instance, if vx and vy are 
                velocities in m/s and the coordinates are in degrees then one needs transform 

@@ -1,6 +1,10 @@
+from ssl import VERIFY_X509_TRUSTED_FIRST
+from turtle import shape
+from winreg import REG_DWORD_BIG_ENDIAN, EnableReflectionKey
 from iris.cube import Cube
 import numpy as np
-from mint import RegridEdges, Grid
+from mint import NUM_EDGES_PER_QUAD, UNIQUE_EDGE_DATA, RegridEdges, Grid, regrid_edges
+from mint.extensive_field_converter import ExtensiveFieldConverter
 
 
 def _get_dims(cube):
@@ -15,77 +19,109 @@ def _get_coords(cube):
     return coords
 
 
-def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
-
-    # coordinates must be edge centred
-    src_x, src_y = src_coords
-    assert(src_x.location == src_y.location == 'edge')
-    tgt_x, tgt_y = tgt_coords
-    assert(tgt_x.location == tgt_y.location == 'edge')
-
-    # build the point arrays
-    src_points = []
-    src_face2nodes = []
-    src_edge2nodes = []
-    if len(src_x.shape) == len(src_y.shape) == 1:
-        # axes
-        xx, yy = np.meshgrid(src_x, src_y)
-        n = np.proc(xx.shape)
-        src_points = np.zeros((n, 3), np.float64)
-        src_points[:, 0] =  xx[:]
-        src_points[:, 1] =  yy[:]
-        
-    elif len(src_x.shape) == len(src_y.shape) == 2:
-        # curvilinear coordinates
-        n = np.proc(src_x.shape)
-        src_points = np.zeros((n, 3), np.float64)
-        src_points[:, 0] =  src_x[:]
-        src_points[:, 1] =  src_y[:]
-    else:
-        # TODO mesh
-        pass
+def _get_xyz_array(coords, **kwargs):
+    x, y = coords
+    n = np.prod(x.shape)
+    xyz = np.zeros((n, mint.NUM_VERTS_PER_QUAD), np.float64)
+    xyz[:, 0] = x
+    xyz[:, 1] = y
+    # elevation is always zero
+    return xyz
 
 
+def _build_grid(coords, **kwargs):
 
+    grid = Grid()
 
+    fixLonAcrossDateline, averageLonAtPole, degrees = kwargs.get('grid_flags', (0, 0, 1))
+    grid.setFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
 
-    # build the src grid
-    src_grid = Grid()
-    fixLonAcrossDateline, averageLonAtPole, degrees = kwargs.get('src_grid_flags', (0, 0, 1))
-    src_grid.setSrcGridFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
-    src_grid.loadFromUgrid2DData(src_xyz, src_face2nodes, src_edge2nodes)
+    xyz = _get_xyz_array(coords, **kwargs)
+    grid.setPoints(xyz)
 
-    # build the tgt grid
-    tgt_grid = Grid()
-    fixLonAcrossDateline, averageLonAtPole, degrees = kwargs.get('tgt_grid_flags', (0, 0, 1))
-    tgt_grid.setSrcGridFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
-    tgt_grid.loadFromUgrid2DData(tgt_xyz, tgt_face2nodes, tgt_edge2nodes)
-
-    # build the regridder
-    regridder = RegridEdges()
-    regridder.setSrcGrid(src_grid)
-
-    # compute the weights
-    numCellsPerBucket, periodX, enableFolding = kwargs.get('numCellsPerBucket', 128), 
-                                                kwargs.get('periodX', 360.0), 
-                                                kwargs.get('enableFolding', 0)
-    regridder.buildLocator(numCellsPerBucket, periodX, enableFolding)
-    regridder.computeWeights()
-
-    obj = dict(src_grid=src_grid, dst_grid=dst_grid, regridder=regridder, src_points=src_points, tgt_points=tgt_points)
+    obj = dict(grid=grid, xyz=xyz, coords=coords)
     return obj
 
 
-def _regrid(data, dims, regrid_info):
-    tgt_coords, mint_regridder = regrid_info
+def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
 
-    # TODO: replace dummy operation with actual regridding.
-    #  Actual operation should make use of mint_regridder.
-    out_shape = list[data.shape]
-    out_shape[dims[0]] = tgt_coords[0].shape[0]
-    new_data = np.oneslike(out_shape)
+    # build the src and tgt grid objects
+    src_grid_obj = _build_grid(src_coords, **kwargs['src'])
+    tgt_grid_obj = _build_grid(tgt_coords, **kwargs['tgt'])
 
-    return new_data
+    # build the regridder
+    regridder = RegridEdges()
+    regridder.setSrcGrid(src_grid_obj.grid)
+    regridder.setDstGrid(tgt_grid_obj.grid)
+
+    # compute the weights
+    numCellsPerBucket = kwargs.get('numCellsPerBucket', 128)
+    periodX = kwargs.get('periodX', 360.0)
+    enableFolding = kwargs.get('enableFolding', 0)                     
+    regridder.buildLocator(numCellsPerBucket, periodX, enableFolding)
+    regridder.computeWeights()
+
+    obj = dict(src_grid=src_grid_obj, tgt_grid=tgt_grid_obj, 
+               regridder=regridder)
+    return obj
+
+
+def _regrid(uv_data, regrid_info, **kwargs):
+
+    # compute the extensive field from the u, v vector fields
+    u, v = uv_data
+
+    rad2deg = 180./np.pi
+    deg2rad = np.pi/180.
+    if u.units == v.units == 'm s-1':
+        # velocity, transform to rad/s
+        yy = regrid_info['src_grid']['coords'][1]
+        # lat at u points
+        yyu = 0.5*(yy[1:,:] + yy[:-1, :])
+        # earth's radius
+        planet_radius = kwargs.get('A', 6371e3)
+        # u on u points
+        u *= rad2deg / (planet_radius * np.cos(deg2rad*yyu)
+        # v on v points
+        v *= rad2deg / planet_radius
+    else:
+        raise RuntimeError("unsupported vector field units -- don't know to transform to deg units")
+
+    src_num_u_egdes = np.prod(u.shape)
+    src_num_v_edges = np.prod(v.shape)
+    src_num_edges = src_num_u_egdes + src_num_v_edges
+
+    # the first src_num_u_edges are u edges, then followed by src_num_v_edges
+    src_vx_edges = np.zeros((src_num_edges,), np.float64)
+    src_vx_edges[:num_u_edges] = u
+    src_vy_edges = np.zeros((src_num_edges,), np.float64)
+    src_vy_edges[num_u_edges:] = v
+
+    efc = ExtensiveFieldConverter()
+    efc.setGrid(regrid_info['src_grid_obj']['grid'])
+    src_edge_data = efc.getFaceData(src_vx_edges, src_vy_edges, placement=mint.UNIQUE_EDGE_DATA)
+
+    mint_regridder = regrid_info['regridder']
+
+    tgt_xx, tgt_yy = regrid_info['tgt_grid_obj']['coords']
+    tgt_num_u_edges = np.prod(tgt_xx[1:,:].shape)
+    tgt_num_v_edges = np.prod(tgt_xx[:,1:].shape)
+    tgt_num_edges = tgt_num_u_edges + tgt_num_v_edges
+    out_edge_data = np.empty((out_num_edge,), np.float64)
+    
+    mint_regridder.apply(src_edge_data, tgt_edge_data, placement=mint.UNIQUE_EDGE_DATA)
+
+    tgt_ny1, tgt_nx1 = tgt_xx.shape
+    tgt_nx = tgt_nx1 - 1
+    tgt_ny = tgt_ny1 - 1
+    new_u = np.empty((tgt_ny, tgt_nx1), dtype=uv_data[0].dtype())  # Arakawa C
+    new_v = np.empty((tgt_ny1, tgt_nx), dtype=uv_data[1].dtype())  # Arakawa C
+
+    # divide by edge lengths to recover vectors from fluxes
+    new_u[:] = tgt_edge_data[:tgt_num_u_edges] / (tgt_yy[1:, :] - tgt_yy[:-1, :])
+    new_v[:] = tgt_edge_data[tgt_num_u_edges:] / (tgt_xx[:, 1:] - tgt_xx[:, :-1])
+
+    return (new_u, new_v)
 
 
 def _create_cube(data, src, src_dims, tgt_coords):
@@ -102,10 +138,8 @@ def _prepare(src, tgt, **kwargs):
     return regrid_info
 
 
-def _perform(cube, regrid_info):
-    tgt_coords, mint_regridder = regrid_info
-    dims = _get_dims(cube)
-    data = _regrid(cube.data, dims, mint_regridder)
+def _perform(uv, regrid_info):
+    data = _regrid(cube.data, mint_regridder)
     return _create_cube(data, cube, dims, tgt_coords)
 
 
