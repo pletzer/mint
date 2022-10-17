@@ -33,7 +33,7 @@ linux_task:
       VTK_VER: "9.2"
     env:
       PY_VER: "3.9"
-      VTK_VER: "9.1"
+      VTK_VER: "9.2"
     env:
       PY_VER: "3.10"
       VTK_VER: "9.2"
