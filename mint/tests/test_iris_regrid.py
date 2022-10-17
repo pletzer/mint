@@ -24,7 +24,7 @@ def test_sgrid():
     tgt_coords = coords
 
     # create a regridder
-    regridder = MINTScheme().regridder(src_coords, tgt_coords) # add some parameters
+    regridder = MINTScheme(numCellsPerBucket=64, src_grid={'flags': (0, 0, 1)}).regridder(src_coords, tgt_coords)
 
 
 

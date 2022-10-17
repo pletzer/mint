@@ -57,10 +57,10 @@ def _build_grid(coords, **kwargs):
 
     grid = Grid()
 
-    fixLonAcrossDateline, averageLonAtPole, degrees = kwargs.get('grid_flags', (0, 0, 1))
+    fixLonAcrossDateline, averageLonAtPole, degrees = kwargs.get('flags', (0, 0, 1))
     grid.setFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
 
-    xyz = _build_cell_by_cell_xyz(coords, **kwargs)
+    xyz = _build_cell_by_cell_xyz(coords)
     grid.setPoints(xyz)
 
     obj = dict(grid=grid, xyz=xyz, coords=coords)
@@ -74,8 +74,8 @@ def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
     :param tgt_coords: target grid coordinates (tgt_x, tgt_y)
     """
     # get all the flags for the src and tgt grids
-    src_kwargs = kwargs.get('src', {})
-    tgt_kwargs = kwargs.get('tgt', {})
+    src_kwargs = kwargs.get('src_grid', {})
+    tgt_kwargs = kwargs.get('tgt_grid', {})
 
     # build the src and tgt grid objects
     src_grid_obj = _build_grid(src_coords, **src_kwargs)
@@ -90,6 +90,7 @@ def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
     numCellsPerBucket = kwargs.get('numCellsPerBucket', 128)
     periodX = kwargs.get('periodX', 360.0)
     enableFolding = kwargs.get('enableFolding', 0)                     
+    print(f'numCellsPerBucket={numCellsPerBucket} periodX={periodX} enableFolding={enableFolding}')
     regridder.buildLocator(numCellsPerBucket, periodX, enableFolding)
     regridder.computeWeights()
 
