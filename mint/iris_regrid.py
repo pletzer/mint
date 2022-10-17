@@ -1,6 +1,6 @@
 # from iris.cube import Cube
 import numpy as np
-from mint import NUM_EDGES_PER_QUAD, UNIQUE_EDGE_DATA, RegridEdges, Grid, regrid_edges
+from mint import NUM_VERTS_PER_QUAD, UNIQUE_EDGE_DATA, RegridEdges, Grid, regrid_edges
 from mint.extensive_field_converter import ExtensiveFieldConverter
 
 
@@ -16,13 +16,40 @@ def _get_coords(cube):
     return coords
 
 
-def _get_xyz_array(coords, **kwargs):
+def _build_cell_by_cell_xyz(coords):
+    """
+    Build the cell be cell coordinate arrays
+    :param src_coords: source grid coordinates (src_x, src_y), src_x and src_y have dimensions (src_ny, src_nx)
+    :param tgt_coords: target grid coordinates (tgt_x, tgt_y)
+    """
     x, y = coords
-    n = np.prod(x.shape)
-    xyz = np.zeros((n, mint.NUM_VERTS_PER_QUAD), np.float64)
-    xyz[:, 0] = x
-    xyz[:, 1] = y
-    # elevation is always zero
+
+    ny1, nx1 = x.shape
+    ny, nx = ny1 - 1, nx1 - 1
+    num_cells = ny * nx
+
+    # allocate
+    xyz = np.zeros((num_cells, NUM_VERTS_PER_QUAD, 3), np.float64)
+
+    # vertex ordering
+    #  3......2
+    #  :      :
+    #  0......1
+
+    # set the lons
+    xyz[:, 0, 0] = x[:-1, :-1].ravel()
+    xyz[:, 1, 0] = x[:-1, 1:].ravel()
+    xyz[:, 2, 0] = x[1:, 1:].ravel()
+    xyz[:, 3, 0] = x[1:, :-1].ravel()
+
+    # set the lats
+    xyz[:, 0, 1] = y[:-1, :-1].ravel()
+    xyz[:, 1, 1] = y[:-1, 1:].ravel()
+    xyz[:, 2, 1] = y[1:, 1:].ravel()
+    xyz[:, 3, 1] = y[1:, :-1].ravel()
+    
+    # elevs are zero
+
     return xyz
 
 
@@ -33,7 +60,7 @@ def _build_grid(coords, **kwargs):
     fixLonAcrossDateline, averageLonAtPole, degrees = kwargs.get('grid_flags', (0, 0, 1))
     grid.setFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
 
-    xyz = _get_xyz_array(coords, **kwargs)
+    xyz = _build_cell_by_cell_xyz(coords, **kwargs)
     grid.setPoints(xyz)
 
     obj = dict(grid=grid, xyz=xyz, coords=coords)
@@ -41,15 +68,23 @@ def _build_grid(coords, **kwargs):
 
 
 def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
+    """
+    Make a MINT regridder
+    :param src_coords: source grid coordinates (src_x, src_y), src_x and src_y have dimensions (src_ny, src_nx)
+    :param tgt_coords: target grid coordinates (tgt_x, tgt_y)
+    """
+    # get all the flags for the src and tgt grids
+    src_kwargs = kwargs.get('src', {})
+    tgt_kwargs = kwargs.get('tgt', {})
 
     # build the src and tgt grid objects
-    src_grid_obj = _build_grid(src_coords, **kwargs['src'])
-    tgt_grid_obj = _build_grid(tgt_coords, **kwargs['tgt'])
+    src_grid_obj = _build_grid(src_coords, **src_kwargs)
+    tgt_grid_obj = _build_grid(tgt_coords, **tgt_kwargs)
 
     # build the regridder
     regridder = RegridEdges()
-    regridder.setSrcGrid(src_grid_obj.grid)
-    regridder.setDstGrid(tgt_grid_obj.grid)
+    regridder.setSrcGrid(src_grid_obj['grid'])
+    regridder.setDstGrid(tgt_grid_obj['grid'])
 
     # compute the weights
     numCellsPerBucket = kwargs.get('numCellsPerBucket', 128)
@@ -104,9 +139,9 @@ def _regrid(uv_data, regrid_info, **kwargs):
     tgt_num_u_edges = np.prod(tgt_xx[1:,:].shape)
     tgt_num_v_edges = np.prod(tgt_xx[:,1:].shape)
     tgt_num_edges = tgt_num_u_edges + tgt_num_v_edges
-    out_edge_data = np.empty((out_num_edge,), np.float64)
+    tgt_edge_data = np.empty((tgt_num_edges,), np.float64)
     
-    mint_regridder.apply(src_edge_data, tgt_edge_data, placement=mint.UNIQUE_EDGE_DATA)
+    mint_regridder.apply(src_edge_data, tgt_edge_data, placement=UNIQUE_EDGE_DATA)
 
     tgt_ny1, tgt_nx1 = tgt_xx.shape
     tgt_nx = tgt_nx1 - 1
@@ -128,9 +163,7 @@ def _create_cube(data, src, src_dims, tgt_coords):
 
 
 def _prepare(src, tgt, **kwargs):
-    src_coords = _get_coords(src)
-    tgt_coords = _get_coords(tgt)
-    regrid_info = _make_mint_regridder(src_coords, tgt_coords, **kwargs)
+    regrid_info = _make_mint_regridder(src, tgt, **kwargs)
     return regrid_info
 
 
@@ -141,11 +174,20 @@ def _prepare(src, tgt, **kwargs):
 
 class _MINTRegridder:
     def __init__(self, src, tgt, **kwargs):
+        """
+        Create a MINT regridder
+        :param src: source grid coordinates (src_x, src_y), src_x and src_y have dimensions (src_ny, src_nx)
+        :param tgt: target grid coordinates (tgt_x, tgt_y)
+        """
         self.regrid_info = _prepare(src, tgt, **kwargs)
 
     def __call__(self, src):
-        # TO DO BUILD cube
-        return _regrid(src, regrid_info, **kwargs)
+        """
+        Apply the regridding weights
+        :param src: (src_u, src_v) arrays on source grid edges
+        :returns (tgt_u, tgt_v) arrays on target grid edges
+        """
+        return _regrid(src, self.regrid_info, **kwargs)
         # return _perform(src, self.regrid_info)
 
 
@@ -154,4 +196,10 @@ class MINTScheme:
         self.kwargs = kwargs
 
     def regridder(self, src, tgt):
+        """
+        Get a regridder instance
+        :param src: source grid coordinates (src_x, src_y), src_x and src_y have dimensions (src_ny, src_nx)
+        :param tgt: target grid coordinates (tgt_x, tgt_y)
+        :returns a regridder instance
+        """
         return _MINTRegridder(src, tgt, **self.kwargs)
