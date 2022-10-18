@@ -11,13 +11,17 @@ def test_sgrid():
     """
     Test regridding from data stored using SGRID conventions https://sgrid.github.io/sgrid/
     """
+
     with netCDF4.Dataset(DATA_DIR / Path("sgrid.nc"), 'r') as nc:
+
         g = nc.variables['grid']
         xname, yname = g.node_coordinates.split()
-        # read the vertex coordinates
+
+        # read the vertex coordinates as 2d arrays
         xx = nc.variables[xname][:]
         yy = nc.variables[yname][:]
         coords = (xx, yy)
+
         # read the (u, v) components
         uu = nc.variables['u'][:]
         vv = nc.variables['v'][:]
@@ -25,11 +29,11 @@ def test_sgrid():
         vv.units = nc.variables['v'].units
         uv = (uu, vv)
 
-    # target and source grids are the same
+    # choose the target grid to be the same as the source grid
     src_coords = coords
     tgt_coords = coords
 
-    # create a regridder
+    # create a regridder (will compute the weights)
     regridder = MINTScheme(numCellsPerBucket=64, src_grid={'flags': (0, 0, 1)}).regridder(src_coords, tgt_coords)
 
     # regrid

@@ -93,6 +93,7 @@ def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
     enableFolding = kwargs.get('enableFolding', 0)                     
     print(f'numCellsPerBucket={numCellsPerBucket} periodX={periodX} enableFolding={enableFolding}')
     regridder.buildLocator(numCellsPerBucket, periodX, enableFolding)
+    
     regridder.computeWeights()
 
     regrid_info = dict(src_grid=src_grid_obj, tgt_grid=tgt_grid_obj, 
@@ -116,7 +117,7 @@ def _regrid(uv_data, regrid_info, **kwargs):
 
     #
     # assume the (u, v) components to be a velocity field in m/s
-    # for the time being
+    # for the time being. Also assuming Arakawa C grid.
     #
 
     deg2rad = np.pi/180.
@@ -130,10 +131,17 @@ def _regrid(uv_data, regrid_info, **kwargs):
         # v on v points
         v /= (planet_radius * np.cos(deg2rad*yyv)) # Arakawa C
     else:
-        raise RuntimeError("unsupported vector field units -- don't know to transform to deg units")
+        raise RuntimeError("unsupported vector field units -- don't know how to transform to deg units")
 
     # convert the (u, v) to be cell by cell
     src_num_cells = v.shape[1] * u.shape[0]
+
+    # Arakawa C
+    #  x....^.....x
+    #  :          :
+    #  >          > 
+    #  :          :
+    #  x....^.....x
 
     src_u_cell_by_cell = np.zeros( (src_num_cells, NUM_EDGES_PER_QUAD), np.float64 )
     src_u_cell_by_cell[:, 1] = u[:, 1:].ravel()  # Arakawa C
@@ -156,7 +164,7 @@ def _regrid(uv_data, regrid_info, **kwargs):
 
     tgt_edge_data = np.empty((tgt_num_cells, NUM_EDGES_PER_QUAD), np.float64)
     
-    # apply the interpolation weights. tgt_edge_data holds the result
+    # apply the interpolation weights to src_edge_data. tgt_edge_data holds the result
     regrid_info['regridder'].apply(src_edge_data, tgt_edge_data, placement=CELL_BY_CELL_DATA)
 
     # convert the line integrals to vector field components
@@ -187,7 +195,6 @@ def _regrid(uv_data, regrid_info, **kwargs):
     # convert to m/s
     new_u *= planet_radius
     new_v *= planet_radius * np.cos(0.5*(tgt_yy[:, :-1] + tgt_yy[:, 1:])*deg2rad)
-
 
     return (new_u, new_v)
 
