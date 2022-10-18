@@ -111,7 +111,7 @@ class ExtensiveFieldConverter(object):
         if placement == CELL_BY_CELL_DATA and (vx.shape[0] != n0 or vy.shape[0] != n0):
             msg = f"vx, vy have wrong size (= {vx.shape[0]}, {vy.shape[0]}), num cells*NUM_EDGES_PER_QUAD = {n0}"
             ier = 10
-            error_handler(FILE, 'getEdgeData', ier, detailedmsg=msg)
+            error_handler(FILE, 'getFaceData', ier, detailedmsg=msg)
             return
         elif placement != CELL_BY_CELL_DATA and (vx.shape[0] != self.numGridEdges or vy.shape[0] != self.numGridEdges):
             msg = f"vx, vy have wrong size (= {vx.shape[0]}, {vy.shape[0]}), num edges = {self.numGridEdges}"

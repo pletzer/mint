@@ -1,6 +1,7 @@
 # from iris.cube import Cube
+from wsgiref import validate
 import numpy as np
-from mint import NUM_VERTS_PER_QUAD, UNIQUE_EDGE_DATA, RegridEdges, Grid, regrid_edges
+from mint import NUM_EDGES_PER_QUAD, NUM_VERTS_PER_QUAD, UNIQUE_EDGE_DATA, CELL_BY_CELL_DATA, RegridEdges, Grid, regrid_edges
 from mint.extensive_field_converter import ExtensiveFieldConverter
 
 
@@ -101,18 +102,25 @@ def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
 
 def _regrid(uv_data, regrid_info, **kwargs):
 
+    # earth's radius
+    planet_radius = kwargs.get('A', 6371e3)
+
     # compute the extensive field from the u, v vector fields
-    u, v = uv_data
+    u, v = uv_data[0].copy(), uv_data[1].copy()
+    u.units, v.units = uv_data[0].units, uv_data[1].units
+
+    #
+    # assume the (u, v) components to be a velocity field in m/s
+    # for the time being
+    #
 
     rad2deg = 180./np.pi
     deg2rad = np.pi/180.
-    if u.units == v.units == 'm s-1':
+    if (u.units == 'm s-1') and (v.units == 'm s-1'):
         # velocity, transform to rad/s
         yy = regrid_info['src_grid']['coords'][1]
         # lat at u points
         yyu = 0.5*(yy[1:,:] + yy[:-1, :])
-        # earth's radius
-        planet_radius = kwargs.get('A', 6371e3)
         # u on u points
         u *= rad2deg / (planet_radius * np.cos(deg2rad*yyu))
         # v on v points
@@ -120,39 +128,61 @@ def _regrid(uv_data, regrid_info, **kwargs):
     else:
         raise RuntimeError("unsupported vector field units -- don't know to transform to deg units")
 
-    src_num_u_egdes = np.prod(u.shape)
-    src_num_v_edges = np.prod(v.shape)
-    src_num_edges = src_num_u_egdes + src_num_v_edges
+    # convert the (u, v) to be cell by cell
+    src_num_cells = v.shape[1] * u.shape[0]
 
-    # the first src_num_u_edges are u edges, then followed by src_num_v_edges
-    src_vx_edges = np.zeros((src_num_edges,), np.float64)
-    src_vx_edges[:num_u_edges] = u
-    src_vy_edges = np.zeros((src_num_edges,), np.float64)
-    src_vy_edges[num_u_edges:] = v
+    src_u_cell_by_cell = np.zeros( (src_num_cells, NUM_EDGES_PER_QUAD), np.float64 )
+    src_u_cell_by_cell[:, 1] = u[:, 1:].ravel()  # Arakawa C
+    src_u_cell_by_cell[:, 3] = u[:, :-1].ravel() # Arakawa C
 
+    src_v_cell_by_cell = np.zeros( (src_num_cells, NUM_EDGES_PER_QUAD), np.float64 )
+    src_v_cell_by_cell[:, 0] = v[:-1, :].ravel() # Arakawa C
+    src_v_cell_by_cell[:, 2] = v[1:, :].ravel()  # Arakawa C
+
+    # flatten
+    src_u_cell_by_cell = src_u_cell_by_cell.ravel()
+    src_v_cell_by_cell = src_v_cell_by_cell.ravel()
+
+    # compute the edge integrals
     efc = ExtensiveFieldConverter()
-    efc.setGrid(regrid_info['src_grid_obj']['grid'])
-    src_edge_data = efc.getFaceData(src_vx_edges, src_vy_edges, placement=mint.UNIQUE_EDGE_DATA)
+    efc.setGrid(regrid_info['src_grid']['grid'])
+    src_edge_data = efc.getFaceData(src_u_cell_by_cell, src_v_cell_by_cell, placement=CELL_BY_CELL_DATA)
 
-    mint_regridder = regrid_info['regridder']
-
-    tgt_xx, tgt_yy = regrid_info['tgt_grid_obj']['coords']
-    tgt_num_u_edges = np.prod(tgt_xx[1:,:].shape)
-    tgt_num_v_edges = np.prod(tgt_xx[:,1:].shape)
-    tgt_num_edges = tgt_num_u_edges + tgt_num_v_edges
-    tgt_edge_data = np.empty((tgt_num_edges,), np.float64)
+    tgt_num_cells = regrid_info['tgt_grid']['grid'].getNumberOfCells()
+    tgt_edge_data = np.empty((tgt_num_cells, NUM_EDGES_PER_QUAD), np.float64)
     
-    mint_regridder.apply(src_edge_data, tgt_edge_data, placement=UNIQUE_EDGE_DATA)
+    # apply the interpolation weights. tgt_edge_data holds the result
+    regrid_info['regridder'].apply(src_edge_data, tgt_edge_data, placement=CELL_BY_CELL_DATA)
 
+    # convert the line integrals to vector field components
+    tgt_xx, tgt_yy = regrid_info['tgt_grid']['coords']
     tgt_ny1, tgt_nx1 = tgt_xx.shape
     tgt_nx = tgt_nx1 - 1
     tgt_ny = tgt_ny1 - 1
-    new_u = np.empty((tgt_ny, tgt_nx1), dtype=uv_data[0].dtype())  # Arakawa C
-    new_v = np.empty((tgt_ny1, tgt_nx), dtype=uv_data[1].dtype())  # Arakawa C
+    new_u = np.empty((tgt_ny, tgt_nx1), dtype=uv_data[0].dtype)  # Arakawa C
+    new_v = np.empty((tgt_ny1, tgt_nx), dtype=uv_data[1].dtype)  # Arakawa C
 
-    # divide by edge lengths to recover vectors from fluxes
-    new_u[:] = tgt_edge_data[:tgt_num_u_edges] / (tgt_yy[1:, :] - tgt_yy[:-1, :])
-    new_v[:] = tgt_edge_data[tgt_num_u_edges:] / (tgt_xx[:, 1:] - tgt_xx[:, :-1])
+    tgt_edge_data = tgt_edge_data.reshape((tgt_num_cells, NUM_EDGES_PER_QUAD))
+
+    # set u on the left side of the cells
+    new_u[:, :-1] = tgt_edge_data[:, 3].reshape((tgt_ny, tgt_nx))  # Arakawa C
+    # set u on the right side of the cells
+    new_u[:, 1:] = tgt_edge_data[:, 1].reshape((tgt_ny, tgt_nx))  # Arakawa C
+
+    # set v on the bottom of the cells
+    new_v[:-1, :] = tgt_edge_data[:, 0].reshape((tgt_ny, tgt_nx))  # Arakawa C
+    # set v on the top of the cells
+    new_v[1:, :] = tgt_edge_data[:, 2].reshape((tgt_ny, tgt_nx))  # Arakawa C
+
+    # divide by edge lengths to recover vectors from fluxes. new_u and new_v are the 
+    # vector components perpendicular to the edge!
+    new_u /= (tgt_yy[1:, :] - tgt_yy[:-1, :]) # Arakawa C
+    new_v /= (tgt_xx[:, 1:] - tgt_xx[:, :-1]) # Arakawa C
+
+    # convert to m/s, DO WE NEED TP MULTIPLY BY deg2rad????
+    new_u *= planet_radius * deg2rad
+    new_v *= planet_radius * deg2rad * np.cos(0.5*(tgt_yy[:, :-1] + tgt_yy[:, 1:])*deg2rad)
+
 
     return (new_u, new_v)
 
@@ -188,7 +218,7 @@ class _MINTRegridder:
         :param src: (src_u, src_v) arrays on source grid edges
         :returns (tgt_u, tgt_v) arrays on target grid edges
         """
-        return _regrid(src, self.regrid_info, **kwargs)
+        return _regrid(src, self.regrid_info)
         # return _perform(src, self.regrid_info)
 
 
