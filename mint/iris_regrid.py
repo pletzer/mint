@@ -108,7 +108,7 @@ def _regrid(uv_data, regrid_info, **kwargs):
     """
 
     # earth's radius
-    planet_radius = kwargs.get('A', 6371e3)
+    planet_radius = 1.0
 
     # compute the extensive field from the u, v vector fields
     u, v = uv_data[0].copy(), uv_data[1].copy()
