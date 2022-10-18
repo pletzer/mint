@@ -101,6 +101,11 @@ def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
 
 
 def _regrid(uv_data, regrid_info, **kwargs):
+    """
+    Apply the regridding weights to the source field
+    :param uv_data: (u, v) velocity components on the source grid, assumed to be Arakawa C
+    :returns (u, v) on the target grid
+    """
 
     # earth's radius
     planet_radius = kwargs.get('A', 6371e3)
@@ -114,17 +119,16 @@ def _regrid(uv_data, regrid_info, **kwargs):
     # for the time being
     #
 
-    rad2deg = 180./np.pi
     deg2rad = np.pi/180.
     if (u.units == 'm s-1') and (v.units == 'm s-1'):
         # velocity, transform to rad/s
         yy = regrid_info['src_grid']['coords'][1]
-        # lat at u points
-        yyu = 0.5*(yy[1:,:] + yy[:-1, :])
+        # lat at v points
+        yyv = 0.5*(yy[:,:-1] + yy[:, 1:])
         # u on u points
-        u *= rad2deg / (planet_radius * np.cos(deg2rad*yyu))
+        u /= planet_radius # Arakawa C
         # v on v points
-        v *= rad2deg / planet_radius
+        v /= (planet_radius * np.cos(deg2rad*yyv)) # Arakawa C
     else:
         raise RuntimeError("unsupported vector field units -- don't know to transform to deg units")
 
@@ -149,6 +153,7 @@ def _regrid(uv_data, regrid_info, **kwargs):
     src_edge_data = efc.getFaceData(src_u_cell_by_cell, src_v_cell_by_cell, placement=CELL_BY_CELL_DATA)
 
     tgt_num_cells = regrid_info['tgt_grid']['grid'].getNumberOfCells()
+
     tgt_edge_data = np.empty((tgt_num_cells, NUM_EDGES_PER_QUAD), np.float64)
     
     # apply the interpolation weights. tgt_edge_data holds the result
@@ -179,9 +184,9 @@ def _regrid(uv_data, regrid_info, **kwargs):
     new_u /= (tgt_yy[1:, :] - tgt_yy[:-1, :]) # Arakawa C
     new_v /= (tgt_xx[:, 1:] - tgt_xx[:, :-1]) # Arakawa C
 
-    # convert to m/s, DO WE NEED TP MULTIPLY BY deg2rad????
-    new_u *= planet_radius * deg2rad
-    new_v *= planet_radius * deg2rad * np.cos(0.5*(tgt_yy[:, :-1] + tgt_yy[:, 1:])*deg2rad)
+    # convert to m/s
+    new_u *= planet_radius
+    new_v *= planet_radius * np.cos(0.5*(tgt_yy[:, :-1] + tgt_yy[:, 1:])*deg2rad)
 
 
     return (new_u, new_v)

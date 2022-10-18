@@ -24,7 +24,6 @@ def test_sgrid():
         uu.units = nc.variables['u'].units
         vv.units = nc.variables['v'].units
         uv = (uu, vv)
-    print(uu)
 
     # target and source grids are the same
     src_coords = coords
@@ -35,8 +34,14 @@ def test_sgrid():
 
     # regrid
     tgt_uu, tgt_vv = regridder(uv)
-    print(tgt_uu)
 
+    # check
+    n = len(uu.ravel())
+    error_u = numpy.fabs(uu - tgt_uu).sum() / n
+    error_v = numpy.fabs(vv - tgt_vv).sum() / n
+    print(f'error u, v: {error_u} {error_v}')
+    assert(error_u < 1.e-7)
+    assert(error_v < 1.e-7)
 
 
 if __name__ == '__main__':
