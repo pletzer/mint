@@ -16,6 +16,7 @@ dependencies:
 # Core dependencies.
   - libnetcdf
   - numpy
+  - iris
   - vtk=
 
 # Test dependencies.
