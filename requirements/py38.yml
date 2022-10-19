@@ -11,13 +11,13 @@ dependencies:
   - cython
   - setuptools
   - tbb-devel
+  - numpy
   - pip
 
 # Core dependencies.
   - libnetcdf
-  - numpy
-  - iris
-  - vtk=
+  - scitools-iris
+  - vtk
 
 # Test dependencies.
   - pytest

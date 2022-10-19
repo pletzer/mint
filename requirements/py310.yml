@@ -16,7 +16,7 @@ dependencies:
 
 # Core dependencies.
   - libnetcdf
-  - iris
+  - scitools-iris
   - vtk
 
 # Test dependencies.
