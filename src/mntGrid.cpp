@@ -142,6 +142,7 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->periodX = 360.0; // if in radians, only used if the above switches are set
     (*self)->verts = NULL;
     (*self)->ownsVerts = false;
+    (*self)->degrees = false;
 
     return 0;
 }
@@ -188,6 +189,11 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
     if (degrees == 0) {
       // lon-lat are in radians
       (*self)->periodX = 2 * M_PI;
+    }
+
+    (*self)->degrees = false;
+    if (degrees != 0) {
+        (*self)->degrees = true;
     }
 
     return 0;
