@@ -157,7 +157,7 @@ def test_mesh_to_mesh_basic():
 
     # extensive field regridding
     out_cube = rg.regrid_extensive_field(src)
-    print
+    print(out_cube)
 
     # for extensive fields, data and out_data would represent the extensive fields
     # aka flux integrals over edges
