@@ -42,17 +42,20 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, co
                                               double* data, int placement, int fs) {
 
     int ier;
+    std::string msg = "NOT IMPLEMENTED YET";
 
     switch (placement) {
 
         case MNT_CELL_BY_CELL_DATA:
 
-            if (fs == MNT_FUNC_SPACE_W1) {
-                ier = mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(self, u, v, data);
-            }
-            else {
-                ier = mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(self, u, v, data);
-            }
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+
+            // if (fs == MNT_FUNC_SPACE_W1) {
+            //     ier = mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(self, u, v, data);
+            // }
+            // else {
+            //     ier = mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(self, u, v, data);
+            // }
 
             break;
 
