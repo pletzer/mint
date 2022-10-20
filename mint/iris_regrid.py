@@ -24,9 +24,11 @@ class IrisToMintMeshAdaptor:
         Create a MINT grid from an Iris mesh
         """
 
+        # vertex points
         x = iris_mesh.node_coords.node_x.points
         y = iris_mesh.node_coords.node_y.points
         num_points = x.shape[0]
+
         # needs to be 3d
         self.points = np.zeros((num_points, 3), np.float64)
         self.points[:, 0] = x
@@ -37,7 +39,7 @@ class IrisToMintMeshAdaptor:
         self.edge2nodes = np.array(iris_mesh.edge_node_connectivity.indices_by_location(), 
             np.uint64)
 
-        # connectivity can be 1 or 0 based
+        # connectivity is zero based in Mint
         self.face2nodes -= iris_mesh.face_node_connectivity.start_index
         self.edge2nodes -= iris_mesh.edge_node_connectivity.start_index
         
@@ -64,8 +66,8 @@ class IrisMintRegridder:
     def __init__(self, src_mesh, tgt_mesh, **kwargs):
         """
         Constructor.
-        :param src_mesh: source mesh with coordinates and connectivity
-        :param tgt_mesh: target mesh with coordinates and connectivity
+        :param src_mesh: source iris mesh with coordinates and connectivity
+        :param tgt_mesh: target iris mesh with coordinates and connectivity
         """
 
         self.src = IrisToMintMeshAdaptor(src_mesh)
@@ -84,12 +86,14 @@ class IrisMintRegridder:
         debug = kwargs.get('debug', 0)
         self.regridder.computeWeights(debug)
 
-    def regrid(self, uv_data, function_space, dims, **kwargs):
+    def regrid_vector_field(self, u_cube, v_cube, **kwargs):
+        pass
+
+    def regrid_extensive_field(self, cube, function_space, **kwargs):
         """
         Regrid
         :param uv_data: tuple of (u, v) vector fields defined on horizontal edges
         :param function_space: function space, e.g 'w1' or 'w2'
-        :param dims: ?
         """
         u, v = uv_data
         dims = u.shape[:-1]
@@ -194,9 +198,16 @@ def _perform(cube, regrid_info):
 
 class _MINTRegridder:
     def __init__(self, src, tgt, **kwargs):
+        """
+        src and tgt are cubes
+        """
         self.regrid_info = _prepare(src, tgt, **kwargs)
 
     def __call__(self, src):
+        """
+        src is a cube
+        returns a cube
+        """
         return _perform(src, self.regrid_info)
 
 

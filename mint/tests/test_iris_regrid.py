@@ -131,11 +131,13 @@ def _gridlike_mesh(n_lons, n_lats):
 
 def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
     mesh = _gridlike_mesh(n_lons, n_lats)
-    mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
-    data = np.zeros_like(mesh_coord_x.points)
-    cube = Cube(data)
-    cube.add_aux_coord(mesh_coord_x, 0)
-    cube.add_aux_coord(mesh_coord_y, 0)
+    # create a cube built on a mesh
+    
+    # mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
+    # data = np.zeros_like(mesh_coord_x.points)
+    # cube = Cube(data)
+    # cube.add_aux_coord(mesh_coord_x, 0)
+    # cube.add_aux_coord(mesh_coord_y, 0)
     return cube
 
 
@@ -144,7 +146,22 @@ def test_mesh_to_mesh_basic():
     # tgt = _gridlike_mesh_cube(6, 3)
     src_mesh = _gridlike_mesh(4, 5)
     tgt_mesh = _gridlike_mesh(6, 3)
+    # will compute the regridding weights
     rg = IrisMintRegridder(src_mesh, tgt_mesh)
+
+    # for extensive fields, data and out_data would represent the extensive fields
+    # aka flux integrals over edges
+    # out_data = rg(data, data_type='extensive')
+
+    # other option, the regridder takes vector fields on edges (u, v)
+    # (Denis, u=eastward, v=northward)
+    # out_u, out_v = rg((u, v), data_type='n,e components', function_space='w2') 
+
+    # maybe if there is demand
+    # other option, the regridder takes the perp component of the vector field on each edge
+    # out_v = rg(v, data_type='perp component') # W2
+    # out_v = rg(v, data_type='parallel component') # W1
+
 
     # res = src.regrid(tgt, MINTScheme())
     # expected = _gridlike_mesh_cube(6, 3)
