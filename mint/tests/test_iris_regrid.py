@@ -131,14 +131,17 @@ def _gridlike_mesh(n_lons, n_lats):
 
 def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
     mesh = _gridlike_mesh(n_lons, n_lats)
-    # create a cube built on a mesh
-    
-    # mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
-    # data = np.zeros_like(mesh_coord_x.points)
-    # cube = Cube(data)
-    # cube.add_aux_coord(mesh_coord_x, 0)
-    # cube.add_aux_coord(mesh_coord_y, 0)
+    mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
+    data = np.zeros_like(mesh_coord_x.points)
+    cube = Cube(data)
+    cube.add_aux_coord(mesh_coord_x, 0)
+    cube.add_aux_coord(mesh_coord_y, 0)
+    # cube has a mesh (cube.mesh)
     return cube
+
+def test_cube_mesh():
+    cube = _gridlike_mesh_cube(5, 6)
+    print(cube.mesh)
 
 
 def test_mesh_to_mesh_basic():

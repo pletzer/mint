@@ -167,7 +167,7 @@ win_task:
     - conda install --yes -c conda-forge vtk=%VTK_VER%
   install_script:
     - conda list
-    - pip install --no-deps --editable .    
+    - python setup.py develop
     - python -c "import mint; print(dir(mint))"
     # - pytest mint\tests
     # - ps: Get-Command python
