@@ -78,7 +78,8 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, co
 }
 
 LIBRARY_API
-int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self, const double* data, double* u, double* v,
+int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self, 
+                                            const double* data, double* u, double* v,
                                             int placement, int fs);
 
 // private methods

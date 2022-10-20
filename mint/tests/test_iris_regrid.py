@@ -5,7 +5,28 @@ import numpy as np
 from numpy import ma
 
 from mint.iris_regrid import MINTScheme
-from mint import IrisMintRegridder
+import mint
+
+
+def _set_extensive_field_data_from_streamfct(cube):
+    x = cube.mesh.node_coords.node_x.points
+    y = cube.mesh.node_coords.node_y.points
+
+    e2n = cube.mesh.edge_node_connectivity.indices_by_location()
+    # make sure the edge to node connectivity is zero based
+    e2n -= cube.mesh.edge_node_connectivity.start_index
+
+    num_edges = e2n.shape[0]
+    deg2rad = np.pi/180.
+    for edge in range(num_edges):
+        n0, n1 = e2n[edge, :]
+        # the end points of the edge
+        x0, x1 = x[n0], x[n1]
+        y0, y1 = y[n0], y[n1]
+        s0 = np.sin(y0*deg2rad) + np.cos(y0*deg2rad)*np.cos(x0*deg2rad)
+        s1 = np.sin(y1*deg2rad) + np.cos(y1*deg2rad)*np.cos(x1*deg2rad)
+        cube.data[edge] = s1 - s0
+
 
 
 def _gridlike_mesh(n_lons, n_lats):
@@ -153,11 +174,10 @@ def test_mesh_to_mesh_basic():
     tgt_mesh = tgt.mesh
 
     # compute the regridding weights
-    rg = IrisMintRegridder(src_mesh, tgt_mesh)
+    rg = mint.IrisMintRegridder(src_mesh, tgt_mesh)
 
     # extensive field regridding
     out_cube = rg.regrid_extensive_field(src)
-    print(out_cube)
 
     # for extensive fields, data and out_data would represent the extensive fields
     # aka flux integrals over edges
@@ -176,3 +196,30 @@ def test_mesh_to_mesh_basic():
     # res = src.regrid(tgt, MINTScheme())
     # expected = _gridlike_mesh_cube(6, 3)
     # assert res == expected
+
+
+def test_mesh_to_mesh_streamfunction():
+
+    # Create source cubes on unstructured meshes.
+    src = _gridlike_mesh_cube(20, 10)
+    tgt = _gridlike_mesh_cube(30, 20)
+    rg = mint.IrisMintRegridder(src.mesh, tgt.mesh)
+
+    # Set the edge data from a stream function [= sin(theta) + cos(theta)*cos(lambda)].
+    _set_extensive_field_data_from_streamfct(src)
+    _set_extensive_field_data_from_streamfct(tgt)
+
+    # Regrid.
+    result = rg.regrid_extensive_field(src)
+
+    mint.printLogMessages()
+
+    # Check the result.
+    error = np.mean(np.fabs(result.data - tgt.data))
+    print(f'error = {error}')
+
+    #assert error < 1.e-3
+    
+
+
+
