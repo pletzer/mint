@@ -5,6 +5,7 @@ import numpy as np
 from numpy import ma
 
 from mint.iris_regrid import MINTScheme
+from mint import IrisMintRegridder
 
 
 def _gridlike_mesh(n_lons, n_lats):
@@ -125,7 +126,6 @@ def _gridlike_mesh(n_lons, n_lats):
         edge_y=edge_lat_coord,
     )
     mesh.long_name = "example mesh"
-    print(f'mesh = {mesh}')
     return mesh
 
 
@@ -140,8 +140,12 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
 
 
 def test_mesh_to_mesh_basic():
-    src = _gridlike_mesh_cube(4, 5)
-    tgt = _gridlike_mesh_cube(6, 3)
-    res = src.regrid(tgt, MINTScheme())
-    expected = _gridlike_mesh_cube(6, 3)
-    assert res == expected
+    # src = _gridlike_mesh_cube(4, 5)
+    # tgt = _gridlike_mesh_cube(6, 3)
+    src_mesh = _gridlike_mesh(4, 5)
+    tgt_mesh = _gridlike_mesh(6, 3)
+    rg = IrisMintRegridder(src_mesh, tgt_mesh)
+
+    # res = src.regrid(tgt, MINTScheme())
+    # expected = _gridlike_mesh_cube(6, 3)
+    # assert res == expected

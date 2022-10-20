@@ -17,7 +17,7 @@ class _DummyMintRegridder:
             new_shape[dim] = size
         return np.zeros(self.shape)
 
-class IrisToMINTMeshAdaptor:
+class IrisToMintMeshAdaptor:
 
     def __init__(self, iris_mesh, **kwargs):
         """
@@ -30,27 +30,28 @@ class IrisToMINTMeshAdaptor:
         # needs to be 3d
         self.points = np.zeros((num_points, 3), np.float64)
         self.points[:, 0] = x
-        self.points[:, y] = y
+        self.points[:, 1] = y
 
-        self.face2node = np.array(iris_mesh.face_node_connectivity.indices_by_location(), 
-            np.int64)
+        self.face2nodes = np.array(iris_mesh.face_node_connectivity.indices_by_location(), 
+            np.uint64)
         self.edge2nodes = np.array(iris_mesh.edge_node_connectivity.indices_by_location(), 
-            np.int64)
+            np.uint64)
 
         # connectivity can be 1 or 0 based
-        self.face2node -= iris_mesh.face_node_connectivity.start_index
-        self.edge2node -= iris_mesh.edge_node_connectivity.start_index
+        self.face2nodes -= iris_mesh.face_node_connectivity.start_index
+        self.edge2nodes -= iris_mesh.edge_node_connectivity.start_index
         
         self.grid = mint.Grid()
         fixLonAcrossDateline = kwargs.get('fixLonAcrossDateline', 0)
         averageLonAtPole = kwargs.get('averageLonAtPole', 0)
-        degrees = False
-        if iris_mesh.node_coords.node_x.points.units == 'degrees':
-            degrees = True
-        self.grid.setFlagsflags(fixLonAcrossDateline, averageLonAtPole, degrees)
-        self.grid.loadFromUgrid2DData(self.points, self.face2node, self.edge2node)
+        # degrees = False
+        # if iris_mesh.node_coords.node_x.points.units == 'degrees':
+        #     degrees = True
+        degrees = True
+        self.grid.setFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
+        self.grid.loadFromUgrid2DData(self.points, self.face2nodes, self.edge2nodes)
 
-        self.num_faces = self.face2node.shape[0]
+        self.num_faces = self.face2nodes.shape[0]
         self.num_edges = self.edge2nodes.shape[0]
         self.num_points = num_points
 
@@ -58,7 +59,7 @@ class IrisToMINTMeshAdaptor:
         return self.grid
 
 
-class _MintRegridder:
+class IrisMintRegridder:
 
     def __init__(self, src_mesh, tgt_mesh, **kwargs):
         """
@@ -67,8 +68,8 @@ class _MintRegridder:
         :param tgt_mesh: target mesh with coordinates and connectivity
         """
 
-        self.src = IrisToMINTMeshAdaptor(src_mesh)
-        self.tgt = IrisToMINTMeshAdaptor(tgt_mesh)
+        self.src = IrisToMintMeshAdaptor(src_mesh)
+        self.tgt = IrisToMintMeshAdaptor(tgt_mesh)
 
         # build the regridder
         self.regridder = mint.RegridEdges()
@@ -84,7 +85,12 @@ class _MintRegridder:
         self.regridder.computeWeights(debug)
 
     def regrid(self, uv_data, function_space, dims, **kwargs):
-
+        """
+        Regrid
+        :param uv_data: tuple of (u, v) vector fields defined on horizontal edges
+        :param function_space: function space, e.g 'w1' or 'w2'
+        :param dims: ?
+        """
         u, v = uv_data
         dims = u.shape[:-1]
         tgt_num_edges = self.tgt.get_grid.get_num_edges()
@@ -110,8 +116,10 @@ def _get_coords(cube):
     return coords
 
 
-def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
-    return _DummyMintRegridder(src_coords, tgt_coords, **kwargs)
+# def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
+#     return _DummyMintRegridder(src_coords, tgt_coords, **kwargs)
+def _make_mint_regridder(src_mesh, tgt_mesh, **kwargs):
+    return _MintRegridder(src_mesh, tgt_mesh, **kwargs)
 
 
 def _regrid(data, dims, mint_regridder):
