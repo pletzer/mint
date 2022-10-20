@@ -105,6 +105,8 @@ def _gridlike_mesh(n_lons, n_lats):
     )
     lons = AuxCoord(node_lons, standard_name="longitude")
     lats = AuxCoord(node_lats, standard_name="latitude")
+
+    # Create the mesh
     mesh = Mesh(2, ((lons, "x"), (lats, "y")), [fnc, enc])
 
     # In order to add a mesh to a cube, face locations must be added.
@@ -123,6 +125,7 @@ def _gridlike_mesh(n_lons, n_lats):
         edge_y=edge_lat_coord,
     )
     mesh.long_name = "example mesh"
+    print(f'mesh = {mesh}')
     return mesh
 
 
