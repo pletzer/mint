@@ -187,9 +187,9 @@ int mnt_extensivefieldadaptor__fromVectorFieldFaceUniqueIdData(ExtensiveFieldAda
 
             // our convention is to have the extensive fluxes pointing in the positive, logical direction.
             // This requires flipping the sign for iedge = 0 and 2. 
-            double sign = 2*((iedge + 1) % 2) - 1;
+            double sign = -2*((iedge + 1) % 2) + 1;
 
-            data[edgeId] = -edgeSign*sign*(u[edgeId]*dy - (v[edgeId] * cosTheta)*dx);
+            data[edgeId] = edgeSign*sign*(u[edgeId]*dy - (v[edgeId] * cosTheta)*dx);
         }
     }
 

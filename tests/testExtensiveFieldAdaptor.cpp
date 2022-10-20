@@ -55,21 +55,35 @@ void testFromUniqueEdgesCartesian() {
     std::vector<double> v({10., 20., 30., 40.});
     std::vector<double> data(4);
 
+    // edge integrals
     ier = mnt_extensivefieldadaptor_fromVectorField(&efa, &u[0], &v[0], &data[0], MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W1);
     assert(ier == 0);
 
-
     for (auto edgeId = 0; edgeId < 4; ++edgeId) {
-        std::cout << "testFromUniqueEdgesCartesian: edge=" << edgeId << " extensive val=" << data[edgeId] << "\n";
+        std::cout << "testFromUniqueEdgesCartesian: edge=" << edgeId << " edge extval=" << data[edgeId] << "\n";
     }
 
     const double tol = 1.e-15;
 
-    // check
+    // check edge integrals
     assert(fabs(data[0] - (-10.0)) < tol);
     assert(fabs(data[1] - (-2.0)) < tol);
     assert(fabs(data[2] - (+30.0)) < tol);
     assert(fabs(data[3] - (-4.0)) < tol);
+
+    // edge integrals
+    ier = mnt_extensivefieldadaptor_fromVectorField(&efa, &u[0], &v[0], &data[0], MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+
+    for (auto edgeId = 0; edgeId < 4; ++edgeId) {
+        std::cout << "testFromUniqueEdgesCartesian: edge=" << edgeId << " face extval=" << data[edgeId] << "\n";
+    }
+
+    // check face integrals
+    assert(fabs(data[0] - (-1.0)) < tol); // flux is positive beut edge points down
+    assert(fabs(data[1] - (-20.0)) < tol); // flux is positive but edge points to the left
+    assert(fabs(data[2] - (+3.0)) < tol);  // flux is positive and edge points up
+    assert(fabs(data[3] - (-40.0)) < tol); // flux is positive but edge points to the left
 
     mnt_grid_del(&grd);
     mnt_extensivefieldadaptor_del(&efa);
