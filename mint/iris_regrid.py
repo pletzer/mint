@@ -7,6 +7,16 @@ import numpy as np
 
 import mint
 
+class _DummyMintRegridder:
+    def __init__(self, src_coords, tgt_coords, **kwargs):
+        self.shape = tgt_coords[0].shape
+
+    def regrid(self, data, dims, **kwargs):
+        new_shape = list(data.shape)
+        for dim, size in zip(dims, self.shape):
+            new_shape[dim] = size
+        return np.zeros(self.shape)
+
 class IrisToMINTMeshAdaptor:
 
     def __init__(self, iris_mesh, **kwargs):
@@ -48,32 +58,6 @@ class IrisToMINTMeshAdaptor:
         return self.grid
 
 
-class IrisToMINTDataAdaptor:
-
-    def __init__(self, grid, function_space, **kwargs):
-        
-        self.efc = mint.ExtensiveFieldConverter()
-        self.efc.setGrid(grid)
-
-        self.getData = self.efc.getFaceData
-        if function_space.lower == 'w1':
-            self.getData = self.efc.getEdgeData
-
-    def get_extensive_data(self, u, v):
-        return self.getData(u, v, placement=mint.UNIQUE_EDGE_DATA)
-
-
-
-class _DummyMintRegridder:
-    def __init__(self, src_coords, tgt_coords, **kwargs):
-        self.shape = tgt_coords[0].shape
-
-    def regrid(self, data, dims, **kwargs):
-        new_shape = list(data.shape)
-        for dim, size in zip(dims, self.shape):
-            new_shape[dim] = size
-        return np.zeros(self.shape)
-
 class _MintRegridder:
 
     def __init__(self, src_mesh, tgt_mesh, **kwargs):
@@ -101,52 +85,15 @@ class _MintRegridder:
 
     def regrid(self, uv_data, function_space, dims, **kwargs):
 
-        efc = IrisToMINTDataAdaptor(self.src.get_grid(), function_space, **kwargs)
-
-        src_dims = uv_data[0].shape
-
-        # last dimension is number of edges, all other dimensions are shared between
-        # the src and tgt data
-        dims = src_dims[:-1]
-
-        src_num_edges = self.src.get_grid().get_num_edges()
-        tgt_num_edges = self.tgt.get_grid().get_num_edges()
-        tgt_num_faces = self.tgt.get_grid().get_num_faces()
-
-        # allocate the output containers
-        out_u = np.empty(dims + (tgt_num_edges), np.float64)
-        out_v = np.empty(dims + (tgt_num_edges), np.float64)
-        tgt_data = np.empty(dims + (tgt_num_faces*mint.NUM_EDGES_PER_QUAD,), np.float64)
-
         u, v = uv_data
+        dims = u.shape[:-1]
+        tgt_num_edges = self.tgt.get_grid.get_num_edges()
 
-        # assume last dimension to be edge Id
-        # iterate over all the axes other than the edges
-        mai = mint.MultiArrayIter(dims)
-        mai.begin()
-        for _ in range(mai.getNumIters()):
+        # TO DO: apply the regridding weights
 
-            inds = tuple(mai.getIndices())
-
-            # index set for the src data on unique edges
-            slab = inds + (slice(0, src_num_edges,))
-
-            # index set 
-
-            # TO DO transform components here
-
-            # u and v on the UGRID
-            src_data = \
-                efc.getData(u.data[slab], v.data[slab], placement=mint.UNIQUE_EDGE_DATA)
-            
-            self.regridder.apply(src_data, tgt_data, placement=mint.CELL_BY_CELL_DATA)
-
-            # divide by the edges' length
-
-            # 
-
-
-            mai.next()
+        out_dims = dims + (tgt_num_edges,)
+        out_u = np.zeros(out_dims, np.float64)
+        out_v = np.zeros(out_dims, np.float64)
 
         return (out_u, out_v)
 
