@@ -8,7 +8,6 @@ LIBRARY_API
 int mnt_extensivefieldadaptor_new(ExtensiveFieldAdaptor_t** self) {
      *self = new ExtensiveFieldAdaptor_t();
     (*self)->grid = NULL;
-    (*self)->geo = -1;
     (*self)->numCells = 0;
     (*self)->numEdges = 0;
     return 0;   
@@ -21,10 +20,9 @@ int mnt_extensivefieldadaptor_del(ExtensiveFieldAdaptor_t** self) {
 }
 
 LIBRARY_API
-int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* grid, int geo) {
+int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* grid) {
 
     (*self)->grid = grid;
-    (*self)->geo = geo;
 
     int ier;
 
@@ -135,12 +133,68 @@ int mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData(ExtensiveFieldAda
     }
 
     return numFailures;
-
 }
 
 int mnt_extensivefieldadaptor__fromVectorFieldFaceUniqueIdData(ExtensiveFieldAdaptor_t** self,
                                                             const double* u, const double* v,
-                                                            double* data);
+                                                            double* data) {
+    std::string msg;
+    int ier, numFailures = 0;
+
+    if (!(*self)->grid) {
+        msg ="must set the grid before calling this";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
+
+    if ((*self)->numEdges == 0) {
+        msg ="number of edges is zero, the grid was likely not built from UGRID file or data";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -2;        
+    }
+
+    std::size_t edgeId;
+    int edgeSign;
+
+    double deg2rad = 0;
+    if ((*self)->grid->degrees) {
+        deg2rad = M_PI/180.0;
+    }
+
+    double point0[3];
+    double point1[3];
+    for (vtkIdType icell = 0; icell < (vtkIdType) (*self)->numCells; ++icell) {
+
+        for (int iedge = 0; iedge < MNT_NUM_EDGES_PER_QUAD; ++iedge) {
+
+            ier = mnt_grid_getEdgeId(&(*self)->grid, icell, iedge, &edgeId, &edgeSign);
+            if (ier != 0) numFailures++;
+        
+            ier = mnt_grid_getPoints(&(*self)->grid, icell, iedge, point0, point1);
+            if (ier != 0) numFailures++;
+
+            double x0 = point0[LON_INDEX];
+            double x1 = point1[LON_INDEX];
+            double dx = x1 - x0;
+            double y0 = point0[LAT_INDEX];
+            double y1 = point1[LAT_INDEX];
+            double dy = y1 - y0;
+
+            // length on the surface of the sphere (1 if no spherical)
+            double cosTheta = cos( deg2rad * 0.5 * (y1 + y0) );
+
+            // flux integral
+
+            // our convention is to have the extensive fluxes pointing in the positive, logical direction.
+            // This requires flipping the sign for iedge = 0 and 2. 
+            double sign = 2*((iedge + 1) % 2) - 1;
+
+            data[edgeId] = -edgeSign*sign*(u[edgeId]*dy - (v[edgeId] * cosTheta)*dx);
+        }
+    }
+
+    return numFailures;
+}
 
 int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldAdaptor_t** self,
                                                             const double* u, const double* v,

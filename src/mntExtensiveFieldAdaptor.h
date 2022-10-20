@@ -42,11 +42,10 @@ int mnt_extensivefieldadaptor_del(ExtensiveFieldAdaptor_t** self);
  * Set the grid
  * @param self instance of ExtensiveFieldAdaptor_t
  * @param grid grid (borrowed reference)
- * @param geo either MNT_GEO_CARTESIAN or MNT_GEO_SPHERICAL
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* grid, int geo);
+int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* grid);
 
 /**
  * Get the extensive field from a vector field
