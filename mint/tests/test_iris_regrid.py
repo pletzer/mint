@@ -141,16 +141,23 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
 
 def test_cube_mesh():
     cube = _gridlike_mesh_cube(5, 6)
-    print(cube.mesh)
+    assert hasattr(cube, 'shape')
+    assert hasattr(cube, 'data')
+    assert hasattr(cube, 'mesh')
 
 
 def test_mesh_to_mesh_basic():
-    # src = _gridlike_mesh_cube(4, 5)
-    # tgt = _gridlike_mesh_cube(6, 3)
-    src_mesh = _gridlike_mesh(4, 5)
-    tgt_mesh = _gridlike_mesh(6, 3)
-    # will compute the regridding weights
+    src = _gridlike_mesh_cube(4, 5)
+    tgt = _gridlike_mesh_cube(6, 3)
+    src_mesh = src.mesh
+    tgt_mesh = tgt.mesh
+
+    # compute the regridding weights
     rg = IrisMintRegridder(src_mesh, tgt_mesh)
+
+    # extensive field regridding
+    out_cube = rg.regrid_extensive_field(src)
+    print
 
     # for extensive fields, data and out_data would represent the extensive fields
     # aka flux integrals over edges

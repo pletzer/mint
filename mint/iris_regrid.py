@@ -70,8 +70,13 @@ class IrisMintRegridder:
         :param tgt_mesh: target iris mesh with coordinates and connectivity
         """
 
+        self.tgt_mesh = tgt_mesh
+
         self.src = IrisToMintMeshAdaptor(src_mesh)
         self.tgt = IrisToMintMeshAdaptor(tgt_mesh)
+
+        self.src_num_edges = self.src.get_grid().getNumberOfEdges()
+        self.tgt_num_edges = self.tgt.get_grid().getNumberOfEdges()
 
         # build the regridder
         self.regridder = mint.RegridEdges()
@@ -86,26 +91,48 @@ class IrisMintRegridder:
         debug = kwargs.get('debug', 0)
         self.regridder.computeWeights(debug)
 
-    def regrid_vector_field(self, u_cube, v_cube, **kwargs):
-        pass
-
-    def regrid_extensive_field(self, cube, function_space, **kwargs):
+    def regrid_vector_field(self, u_cube, v_cube, function_space, **kwargs):
         """
         Regrid
         :param uv_data: tuple of (u, v) vector fields defined on horizontal edges
         :param function_space: function space, e.g 'w1' or 'w2'
         """
-        u, v = uv_data
-        dims = u.shape[:-1]
-        tgt_num_edges = self.tgt.get_grid.get_num_edges()
+        raise RuntimeError('Not implemented')
 
-        # TO DO: apply the regridding weights
+    def regrid_extensive_field(self, cube, **kwargs):
+        """
+        Regrid
+        :param cube: source data of size num edges
+        :returns a new cube on the target mesh
+        """
 
-        out_dims = dims + (tgt_num_edges,)
-        out_u = np.zeros(out_dims, np.float64)
-        out_v = np.zeros(out_dims, np.float64)
+        # all the dimensions other than horizontal
+        dims = cube.shape[:-1]
+        tgt_data = np.empty(dims + (self.tgt_num_edges,), np.float64)
 
-        return (out_u, out_v)
+        mai = mint.MultiArrayIter(dims)
+        mai.begin()
+        for _ in range(mai.getNumIters()):
+
+            inds = tuple(mai.getIndices())
+
+            src_slab = inds + (slice(0, self.src_num_edges),)
+            tgt_slab = inds + (slice(0, self.src_num_edges),)
+
+            src_d = cube.data[src_slab]
+            tgt_d = tgt_data[tgt_slab]
+
+            self.regridder.apply(src_d, tgt_d, placement=mint.UNIQUE_EDGE_DATA)
+
+            mai.next()
+
+        # build the cube
+        out_cube = Cube(tgt_data)
+        tgt_mesh_coord_x, tgt_mesh_coord_y = self.tgt_mesh.to_MeshCoords("edge")
+        out_cube.add_aux_coord(tgt_mesh_coord_x, 0)
+        out_cube.add_aux_coord(tgt_mesh_coord_y, 0)
+
+        return out_cube
 
 
 def _get_dims(cube):
