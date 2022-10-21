@@ -38,7 +38,8 @@ int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* gr
 }
 
 LIBRARY_API
-int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, const double* u, const double* v,
+int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self,
+                                              const double* u, const double* v,
                                               double* data, int placement, int fs) {
 
     int ier;
