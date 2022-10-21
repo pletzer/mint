@@ -65,16 +65,19 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, co
 /**
  * Get the vector field from an extensive field array
  * @param self instance of ExtensiveFieldAdaptor_t
- * @param data extensive field, size of array depends on placement, see below
+ * @param edgeData extensive edge field, size of array depends on placement, see below
+ * @param faceData extensive face field, size of array depends on placement, see below
  * @param u x-component, size of array depends on placement, see below (output)
  * @param v y-component, size of array depends on placement, see below (output)
- * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. In the former case the size of the 
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. In the former case the size of the
  *                  arrays should be num_cells*MNT_NUM_EDGES_PER_QUAD while in the latter it should be num_edges
  * @param fs function space, either MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self, const double* data, double* u, double* v,
+int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self,
+                                            const double* edgeData, const double* faceData,
+                                            double* u, double* v,
                                             int placement, int fs);
 
 // private methods
@@ -90,19 +93,13 @@ int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldA
 int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldAdaptor_t** self,
                                                             const double* u, const double* v,
                                                             double* data);
-int mnt_extensivefieldadaptor__toVectorFieldEdgeUniqueIdData(ExtensiveFieldAdaptor_t** self,
-                                                           const double* data,
+int mnt_extensivefieldadaptor__toVectorFieldUniqueIdData(ExtensiveFieldAdaptor_t** self,
+                                                           const double* edgeData,
+                                                           const double* faceData,
                                                            double* u, double* v);
-int mnt_extensivefieldadaptor__toVectorFieldFaceUniqueIdData(ExtensiveFieldAdaptor_t** self,
-                                                           const double* data,
+int mnt_extensivefieldadaptor__toVectorFieldCellByCellData(ExtensiveFieldAdaptor_t** self,
+                                                           const double* edgeData,
+                                                           const double* faceData,
                                                            double* u, double* v);
-int mnt_extensivefieldadaptor__toVectorFieldEdgeCellByCellData(ExtensiveFieldAdaptor_t** self,
-                                                           const double* data,
-                                                           double* u, double* v);
-int mnt_extensivefieldadaptor__toVectorFieldFaceCellByCellData(ExtensiveFieldAdaptor_t** self,
-                                                           const double* data,
-                                                           double* u, double* v);
-
-
 
 #endif // MNT_EXTENSIVE_FIELD_ADAPTOR

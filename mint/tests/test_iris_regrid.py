@@ -205,6 +205,9 @@ def test_mesh_to_mesh_streamfunction():
     tgt = _gridlike_mesh_cube(30, 20)
     rg = mint.IrisMintRegridder(src.mesh, tgt.mesh)
 
+    rg.src.get_grid().dump('src.vtk')
+    rg.src.get_grid().dump('tgt.vtk')
+
     # Set the edge data from a stream function [= sin(theta) + cos(theta)*cos(lambda)].
     _set_extensive_field_data_from_streamfct(src)
     _set_extensive_field_data_from_streamfct(tgt)
