@@ -80,7 +80,31 @@ int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self,
                                             const double* edgeData,
                                             const double* faceData,
                                             double* u, double* v,
-                                            int placement, int fs);
+                                            int placement) {
+    int ier;
+
+    switch (placement) {
+
+        case MNT_CELL_BY_CELL_DATA:
+
+            ier = mnt_extensivefieldadaptor__toVectorFieldCellByCellData(self,
+                                                    edgeData, faceData, u, v);
+            break;
+
+        case MNT_UNIQUE_EDGE_DATA:
+
+            ier = mnt_extensivefieldadaptor__toVectorFieldUniqueIdData(self,
+                                                    edgeData, faceData, u, v);
+            break;
+
+        default:
+
+            return -1;
+    }
+
+    return ier;
+
+}
 
 // private methods
 int mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData(ExtensiveFieldAdaptor_t** self,

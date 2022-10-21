@@ -71,14 +71,13 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, co
  * @param v y-component, size of array depends on placement, see below (output)
  * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. In the former case the size of the
  *                  arrays should be num_cells*MNT_NUM_EDGES_PER_QUAD while in the latter it should be num_edges
- * @param fs function space, either MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2
  * @return error code (0 = OK)
  */
 LIBRARY_API
 int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self,
                                             const double* edgeData, const double* faceData,
                                             double* u, double* v,
-                                            int placement, int fs);
+                                            int placement);
 
 // private methods
 int mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData(ExtensiveFieldAdaptor_t** self,
