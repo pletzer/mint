@@ -27,6 +27,103 @@ def _set_extensive_field_data_from_streamfct(cube):
         s1 = np.sin(y1*deg2rad) + np.cos(y1*deg2rad)*np.cos(x1*deg2rad)
         cube.data[edge] = s1 - s0
 
+def _gridlike_mesh2(n_lons, n_lats):
+    """
+    Generate a global mesh with geometry similar to a rectilinear grid.
+    The resulting mesh will have n_lons cells spanning its longitudes and
+    n_lats cells spanning its latitudes for a total of (n_lons * n_lats) cells.
+    """
+    n_lons1 = n_lons + 1
+    n_lats1 = n_lats + 1
+
+    # Latitude and longitude values are set.
+    lat_values = np.linspace(-90, 90, n_lats1)
+    lon_values = np.linspace(-180, 180, n_lons1)
+    lon_array, lat_array = np.meshgrid(lon_values, lat_values)
+
+    lon_array = lon_array.flatten()
+    lat_array = lat_array.flatten()
+    n_points = lon_array.shape[0]
+
+    # Build the face to node connectivity.
+    n_cells = n_lons * n_lats
+    face_lons = np.empty((n_cells,), np.float64)
+    face_lats = np.empty((n_cells,), np.float64)
+
+    fnc_array = np.empty((n_cells, 4), np.int)
+    cell_index = 0
+    for j0 in range(n_lats):
+        j1 = j0 + 1
+        for i0 in range(n_lons):
+            i1 = i0 + 1
+            node_inds = (i0 + n_lons*j0, i1 + n_lons*j0, i1 + n_lons*j1, i0 + n_lons*j1)
+            fnc_array[cell_index, :] = node_inds
+            face_lons[cell_index] = lon_array.take(node_inds).mean()
+            face_lats[cell_index] = lat_array.take(node_inds).mean()
+            cell_index += 1
+
+    # Build the edge to node connectivity.
+    n_edges = n_lons*(n_lats + 1) + (n_lons + 1)*n_lats
+    edge_lons = np.empty((n_edges,), np.float64)
+    edge_lats = np.empty((n_edges,), np.float64)
+    enc_array = np.empty((n_edges, 2), np.int)
+    # horizontal edges
+    edge_index = 0
+    for j in range(n_lats1):
+        for i0 in range(n_lons):
+            i1 = i0 + 1
+            node_inds = (i0 + n_lons1*j, i1 + n_lons1*j)
+            enc_array[edge_index] = node_inds
+            edge_lons[edge_index] = lon_array.take(node_inds).mean()
+            edge_lats[edge_index] = lat_array.take(node_inds).mean()
+            edge_index += 1
+    for j0 in range(n_lats):
+        j1 = j0 + 1
+        for i in range(n_lons1):
+            node_inds = (i + n_lons1*j0, i + n_lons1*j1)
+            enc_array[edge_index] = node_inds
+            edge_lons[edge_index] = lon_array.take(node_inds).mean()
+            edge_lats[edge_index] = lat_array.take(node_inds).mean()
+            edge_index += 1
+    
+    # Translate the mesh information into iris objects.
+    fnc = Connectivity(
+        fnc_array,
+        cf_role="face_node_connectivity",
+        start_index=0,
+    )
+    enc = Connectivity(
+        enc_array,
+        cf_role="edge_node_connectivity",
+        start_index=0,
+    )
+    lons = AuxCoord(lon_array, standard_name="longitude")
+    lats = AuxCoord(lat_array, standard_name="latitude")
+
+    # In order to add a mesh to a cube, face locations must be added.
+    face_lon_coord = AuxCoord(face_lons, standard_name="longitude")
+    face_lat_coord = AuxCoord(face_lats, standard_name="latitude")
+
+    # Add edge coords.
+    edge_lon_coord = AuxCoord(edge_lons, standard_name="longitude")
+    edge_lat_coord = AuxCoord(edge_lats, standard_name="latitude")
+
+    print(f'lons={lons}')
+    print(f'lats={lats}')
+    print(f'fnc={fnc}')
+    print(f'enc={enc}')
+
+    mesh = Mesh(2, ((lons, "x"), (lats, "y")), [fnc, enc])
+
+    mesh.add_coords(
+        face_x=face_lon_coord,
+        face_y=face_lat_coord,
+        edge_x=edge_lon_coord,
+        edge_y=edge_lat_coord,
+    )
+    mesh.long_name = "example mesh"
+    return mesh
+
 
 
 def _gridlike_mesh(n_lons, n_lats):
@@ -129,6 +226,12 @@ def _gridlike_mesh(n_lons, n_lats):
     lats = AuxCoord(node_lats, standard_name="latitude")
 
     # Create the mesh
+    print(f'lons={lons}')
+    print(f'lats={lats}')
+    print(f'fnc={fnc}')
+    print(f'enc={enc}')
+    for icell in range(fnc.shape[0]):
+        print(f'cell {icell} has connectivity {fnc[icell,:]}')
     mesh = Mesh(2, ((lons, "x"), (lats, "y")), [fnc, enc])
 
     # In order to add a mesh to a cube, face locations must be added.
@@ -151,7 +254,7 @@ def _gridlike_mesh(n_lons, n_lats):
 
 
 def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
-    mesh = _gridlike_mesh(n_lons, n_lats)
+    mesh = _gridlike_mesh2(n_lons, n_lats)
     mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
     data = np.zeros_like(mesh_coord_x.points)
     cube = Cube(data)
@@ -161,13 +264,13 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
     return cube
 
 def test_cube_mesh():
-    cube = _gridlike_mesh_cube(5, 6)
+    cube = _gridlike_mesh_cube(2, 3)
     assert hasattr(cube, 'shape')
     assert hasattr(cube, 'data')
     assert hasattr(cube, 'mesh')
 
 
-def test_mesh_to_mesh_basic():
+def xtest_mesh_to_mesh_basic():
     src = _gridlike_mesh_cube(4, 5)
     tgt = _gridlike_mesh_cube(6, 3)
     src_mesh = src.mesh
@@ -198,7 +301,7 @@ def test_mesh_to_mesh_basic():
     # assert res == expected
 
 
-def test_mesh_to_mesh_streamfunction():
+def xtest_mesh_to_mesh_streamfunction():
 
     # Create source cubes on unstructured meshes.
     src = _gridlike_mesh_cube(20, 10)
