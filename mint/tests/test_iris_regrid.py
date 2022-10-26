@@ -147,7 +147,7 @@ def test_mesh_to_mesh_basic():
     rg = mint.IrisMintRegridder(src_mesh, tgt_mesh)
 
     # extensive field regridding
-    out_cube = rg.regrid_extensive_field(src)
+    out_cube = rg.regrid_extensive_cube(src)
 
     # for extensive fields, data and out_data would represent the extensive fields
     # aka flux integrals over edges
@@ -183,7 +183,7 @@ def test_mesh_to_mesh_streamfunction():
     _set_extensive_field_data_from_streamfct(tgt)
 
     # Regrid.
-    result = rg.regrid_extensive_field(src)
+    result = rg.regrid_extensive_cube(src)
 
     mint.printLogMessages()
 

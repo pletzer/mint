@@ -8,6 +8,7 @@ import numpy as np
 import mint
 
 class _DummyMintRegridder:
+
     def __init__(self, src_coords, tgt_coords, **kwargs):
         self.shape = tgt_coords[0].shape
 
@@ -16,6 +17,7 @@ class _DummyMintRegridder:
         for dim, size in zip(dims, self.shape):
             new_shape[dim] = size
         return np.zeros(self.shape)
+
 
 class IrisToMintMeshAdaptor:
 
@@ -91,23 +93,90 @@ class IrisMintRegridder:
         debug = kwargs.get('debug', 0)
         self.regridder.computeWeights(debug)
 
-    def regrid_vector_field(self, u_cube, v_cube, function_space, **kwargs):
-        """
-        Regrid
-        :param uv_data: tuple of (u, v) vector fields defined on horizontal edges
-        :param function_space: function space, e.g 'w1' or 'w2'
-        """
-        raise RuntimeError('Not implemented')
 
-    def regrid_extensive_field(self, cube, **kwargs):
+    def regrid_vector_cubes(self, u_cube, v_cube, **kwargs):
         """
-        Regrid
-        :param cube: source data of size num edges
+        Regrid a vector field
+        :param u_cube: zonal component of the vector fields defined on horizontal edges
+        :param v_cube: meridional component of the vector fields defined on horizontal edges
+        :returns (u, v) cubes
+        """
+        # compute the extensive fields
+        ef = mint.ExtensiveFieldAdaptor()
+        ef.setGrid(self.src.get_grid())
+
+        # we need both the W1 and W2 extensive fields
+        src_edge_data = ef.fromVectoField(u_cube.data, v_cube.data, mint.FUNC_SPACE_W1)
+        src_face_data = ef.fromVectoField(u_cube.data, v_cube.data, mint.FUNC_SPACE_W2)
+
+        # apply the regridding weights
+        tgt_edge_data = self.regrid_extensive_data(src_edge_data, kwargs)
+        tgt_face_data = self.regrid_extensive_data(src_face_data, kwargs)
+
+        # rebuild the vector fields on the edges/faces
+        dims = tgt_edge_data.shape[:-1] # last dimension is assumed to be the number of edges
+        tgt_u_data = np.empty_like(tgt_edge_data)
+        tgt_v_data = np.emoty_like(tgt_edge_data)
+        mai = mint.MultiArrayIter(dims)
+        mai.begin()
+        for _ in range(mai.getNumIters()):
+
+            inds = tuple(mai.getIndices())
+
+            tgt_slab = inds + (slice(0, self.tgt_num_edges),)
+
+            # fill in the tgt_u_data and tgt_v_data slices
+            ef.toVectorField(tgt_edge_data, tgt_face_data, \
+                             tgt_u_data[tgt_slab], \
+                             tgt_v_data[tgt_slab], 
+                             placement=mint.UNIQUE_EDGE_DATA)
+                        
+            mai.next()
+
+        # build the cubes
+        tgt_mesh_coord_x, tgt_mesh_coord_y = self.tgt_mesh.to_MeshCoords("edge")
+
+        out_u_cube = Cube(tgt_u_data)
+        out_u_cube.add_aux_coord(tgt_mesh_coord_x, 0)
+        out_u_cube.add_aux_coord(tgt_mesh_coord_y, 0)
+
+        out_v_cube = Cube(tgt_v_data)
+        out_v_cube.add_aux_coord(tgt_mesh_coord_x, 0)
+        out_v_cube.add_aux_coord(tgt_mesh_coord_y, 0)
+
+        return (out_u_cube, out_v_cube)
+
+
+    def regrid_extensive_cube(self, cube, **kwargs):
+        """
+        Regrid the extensive cube data
+        :param cube: source cube on Mesh, of size of data is ..., num edges
         :returns a new cube on the target mesh
         """
 
-        # all the dimensions other than horizontal
-        dims = cube.shape[:-1]
+        tgt_data = self.regrid_extensive_data(cube.data, **kwargs)
+    
+        # build the cube
+        out_cube = Cube(tgt_data)
+        tgt_mesh_coord_x, tgt_mesh_coord_y = self.tgt_mesh.to_MeshCoords("edge")
+        out_cube.add_aux_coord(tgt_mesh_coord_x, 0)
+        out_cube.add_aux_coord(tgt_mesh_coord_y, 0)
+
+        return out_cube
+
+
+
+    def regrid_extensive_data(self, data, **kwargs):
+        """
+        Regrid the extensive data
+        :param data: source data of size ..., num edges
+        :returns regridded data on the target mesh
+        """
+
+        # all the dimensions other than horizontal. Assuming 
+        # that the last dimension is the number of edges
+        dims = data.shape[:-1]
+        
         tgt_data = np.empty(dims + (self.tgt_num_edges,), np.float64)
 
         mai = mint.MultiArrayIter(dims)
@@ -119,20 +188,14 @@ class IrisMintRegridder:
             src_slab = inds + (slice(0, self.src_num_edges),)
             tgt_slab = inds + (slice(0, self.src_num_edges),)
 
-            src_d = cube.data[src_slab]
+            src_d = data[src_slab]
             tgt_d = tgt_data[tgt_slab]
 
             self.regridder.apply(src_d, tgt_d, placement=mint.UNIQUE_EDGE_DATA)
 
             mai.next()
 
-        # build the cube
-        out_cube = Cube(tgt_data)
-        tgt_mesh_coord_x, tgt_mesh_coord_y = self.tgt_mesh.to_MeshCoords("edge")
-        out_cube.add_aux_coord(tgt_mesh_coord_x, 0)
-        out_cube.add_aux_coord(tgt_mesh_coord_y, 0)
-
-        return out_cube
+        return tgt_data
 
 
 def _get_dims(cube):
