@@ -23,7 +23,7 @@ class ExtensiveFieldAdaptor(object):
         self.ptr = c_void_p()
         self.obj = byref(self.ptr)
 
-        MINTLIB.mnt_extensivefieldadpator_new.argtypes = [POINTER(c_void_p)]
+        MINTLIB.mnt_extensivefieldadaptor_new.argtypes = [POINTER(c_void_p)]
         ier = MINTLIB.mnt_extensivefieldadaptor_new(self.obj)
         if ier:
             error_handler(FILE, '__init__', ier)

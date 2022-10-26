@@ -8,7 +8,11 @@ from mint.iris_regrid import MINTScheme
 import mint
 
 
-def _set_extensive_field_data_from_streamfct(cube):
+def _set_extensive_field_from_streamfct(cube):
+    """
+    Set extensive field values from streamfunction sin(y) + cos(y)*cos(x)
+    :param cube: the cube for which we will fill in the values
+    """
     x = cube.mesh.node_coords.node_x.points
     y = cube.mesh.node_coords.node_y.points
 
@@ -26,6 +30,34 @@ def _set_extensive_field_data_from_streamfct(cube):
         s0 = np.sin(y0*deg2rad) + np.cos(y0*deg2rad)*np.cos(x0*deg2rad)
         s1 = np.sin(y1*deg2rad) + np.cos(y1*deg2rad)*np.cos(x1*deg2rad)
         cube.data[edge] = s1 - s0
+
+def _set_vector_field_from_streamfct(u_cube, v_cube):
+    """
+    Set vector field values from streamfunction sin(y) + cos(y)*cos(x), the
+      corresponding components are u = cos(y), v = sin(x)
+    :param u_cube: the x-component cube for which we will fill in the values
+    :param v_cube: the y-component cube for which we will fill in the values
+    """
+    x = u_cube.mesh.node_coords.node_x.points
+    y = u_cube.mesh.node_coords.node_y.points
+
+    e2n = u_cube.mesh.edge_node_connectivity.indices_by_location()
+    # make sure the edge to node connectivity is zero based
+    e2n -= u_cube.mesh.edge_node_connectivity.start_index
+
+    num_edges = e2n.shape[0]
+    deg2rad = np.pi/180.
+    for edge in range(num_edges):
+        n0, n1 = e2n[edge, :]
+        # the end points of the edge
+        x0, x1 = x[n0], x[n1]
+        y0, y1 = y[n0], y[n1]
+        # mid point on the edge
+        xm = 0.5*(x0 + x1)
+        ym = 0.5*(y0 + y1)
+        u_cube.data[edge] = np.cos(ym*deg2rad)
+        v_cube.data[edge] = np.sin(xm*deg2rad)
+
 
 def _gridlike_mesh(n_lons, n_lats):
     """
@@ -149,24 +181,6 @@ def test_mesh_to_mesh_basic():
     # extensive field regridding
     out_cube = rg.regrid_extensive_cube(src)
 
-    # for extensive fields, data and out_data would represent the extensive fields
-    # aka flux integrals over edges
-    # out_data = rg(data, data_type='extensive')
-
-    # other option, the regridder takes vector fields on edges (u, v)
-    # (Denis, u=eastward, v=northward)
-    # out_u, out_v = rg((u, v), data_type='n,e components', function_space='w2') 
-
-    # maybe if there is demand
-    # other option, the regridder takes the perp component of the vector field on each edge
-    # out_v = rg(v, data_type='perp component') # W2
-    # out_v = rg(v, data_type='parallel component') # W1
-
-
-    # res = src.regrid(tgt, MINTScheme())
-    # expected = _gridlike_mesh_cube(6, 3)
-    # assert res == expected
-
 
 def test_mesh_to_mesh_streamfunction():
 
@@ -175,23 +189,33 @@ def test_mesh_to_mesh_streamfunction():
     tgt = _gridlike_mesh_cube(30, 20)
     rg = mint.IrisMintRegridder(src.mesh, tgt.mesh)
 
-    rg.src.get_grid().dump('src.vtk')
-    rg.src.get_grid().dump('tgt.vtk')
-
-    # Set the edge data from a stream function [= sin(theta) + cos(theta)*cos(lambda)].
-    _set_extensive_field_data_from_streamfct(src)
-    _set_extensive_field_data_from_streamfct(tgt)
-
-    # Regrid.
+    # Regrid the extensive field from stream function sin(y) + cos(y)*cos(x).
+    _set_extensive_field_from_streamfct(src)
+    _set_extensive_field_from_streamfct(tgt)
     result = rg.regrid_extensive_cube(src)
-
-    mint.printLogMessages()
 
     # Check the result.
     error = np.mean(np.fabs(result.data - tgt.data))
-    print(f'error = {error}')
-
+    print(f'extensive field regridding error = {error}')
     assert error < 0.007
+
+    # Regrid the vector field from stream function sin(y) + cos(y)*cos(x).
+    src_u = _gridlike_mesh_cube(20, 10)
+    src_v = _gridlike_mesh_cube(20, 10)
+    tgt_u = _gridlike_mesh_cube(30, 20)
+    tgt_v = _gridlike_mesh_cube(30, 20)
+    _set_vector_field_from_streamfct(src_u, src_v)
+    _set_vector_field_from_streamfct(tgt_u, tgt_v)
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v)
+
+    # Check the result.
+    error = 0.5*np.mean(np.fabs(result_u.data - tgt_u.data))
+    error += 0.5*np.mean(np.fabs(result_v.data - tgt_v.data))
+    print(f'vector field regridding error = {error}')
+    assert error < 0.007
+
+
+
     
 
 
