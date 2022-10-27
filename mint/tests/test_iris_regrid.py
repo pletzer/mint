@@ -163,6 +163,7 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
     return cube
 
 def test_cube_mesh():
+
     cube = _gridlike_mesh_cube(4, 5)
     assert hasattr(cube, 'shape')
     assert hasattr(cube, 'data')
@@ -170,6 +171,7 @@ def test_cube_mesh():
 
 
 def test_mesh_to_mesh_basic():
+
     src = _gridlike_mesh_cube(4, 5)
     tgt = _gridlike_mesh_cube(6, 3)
     src_mesh = src.mesh
@@ -231,7 +233,7 @@ def test_streamfunction_vector_field():
     error = 0.5*np.mean(np.fabs(result_u.data - tgt_u.data))
     error += 0.5*np.mean(np.fabs(result_v.data - tgt_v.data))
     print(f'vector field regridding error = {error}')
-    assert error < 0.05
+    assert error < 0.04
 
 
 

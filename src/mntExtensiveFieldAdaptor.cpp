@@ -298,10 +298,20 @@ int mnt_extensivefieldadaptor__toVectorFieldUniqueIdData(ExtensiveFieldAdaptor_t
             // This requires flipping the sign for iedge = 0 and 2.
             double sign = -2*((iedge + 1) % 2) + 1;
 
-            double len_sq = cosTheDx * cosTheDx + dy * dy + 1.e-10; // allow for a small epsilon at the poles
+            double len_sq = cosTheDx * cosTheDx + dy * dy;
+            if (len_sq <= 0) {
+                // happens at the pole
+                // edgeData and faceData should be zero there and u, v are ill defined there
+                // set to zero (?)
+                u[edgeId] = 0;
+                v[edgeId] = 0;
+            }
+            else {
+                // normal case
+                u[edgeId] = edgeSign * (cosTheDx * edgeData[edgeId] + sign * dy * faceData[edgeId] ) / len_sq;
+                v[edgeId] = edgeSign * (dy * edgeData[edgeId] - sign * cosTheDx * faceData[edgeId] ) / len_sq;
+            }
 
-            u[edgeId] = edgeSign * (cosTheDx * edgeData[edgeId] + sign * dy * faceData[edgeId] ) / len_sq;
-            v[edgeId] = edgeSign * (dy * edgeData[edgeId] - sign * cosTheDx * faceData[edgeId] ) / len_sq;
         }
     }
 
