@@ -86,27 +86,27 @@ void test2Cells() {
     assert(fabs(edgeData[0] - (+10.)) < tol);
     assert(fabs(edgeData[1] - (-22.)) < tol);
     assert(fabs(edgeData[2] - (-24.)) < tol);
-    assert(fabs(edgeData[3] - (-13.)) < tol);
-    assert(fabs(edgeData[4] - (-14.)) < tol);
-    assert(fabs(edgeData[5] - (+15.)) < tol);
+    assert(fabs(edgeData[3] - (-130.)) < tol);
+    assert(fabs(edgeData[4] - (-140.)) < tol);
+    assert(fabs(edgeData[5] - (+150.)) < tol);
     assert(fabs(edgeData[6] - (-16.)) < tol);
 
     // edge integrals
     ier = mnt_extensivefieldadaptor_fromVectorField(&efa, &u[0], &v[0], &faceData[0], MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
     assert(ier == 0);
 
-    for (auto edgeId = 0; edgeId < 4; ++edgeId) {
-        std::cout << "testFromUniqueEdgesCartesian: edge=" << edgeId << " face extval=" << faceData[edgeId] << "\n";
+    for (auto edgeId = 0; edgeId < numEdges; ++edgeId) {
+        std::cout << "test2Cells: edge Id=" << edgeId << " face extval=" << faceData[edgeId] << "\n";
     }
 
     // check face integrals
-    assert(fabs(faceData[0] - (-100.)) < tol); // flux is positive but edge points down
-    assert(fabs(faceData[1] - (+210.)) < tol);
-    assert(fabs(faceData[2] - (+240.)) < tol);
-    assert(fabs(faceData[3] - (-130.0)) < tol);
-    assert(fabs(faceData[4] - (-140.0)) < tol);
-    assert(fabs(faceData[5] - (+150.0)) < tol);
-    assert(fabs(faceData[6] - (+160.0)) < tol);
+    assert(fabs(faceData[0] - (+100.)) < tol); // flux is positive but edge points down
+    assert(fabs(faceData[1] - (-220.)) < tol);
+    assert(fabs(faceData[2] - (-240.)) < tol);
+    assert(fabs(faceData[3] - (-13.)) < tol);
+    assert(fabs(faceData[4] - (-14.)) < tol);
+    assert(fabs(faceData[5] - (+15.)) < tol);
+    assert(fabs(faceData[6] - (-160.0)) < tol);
 
     // recover the vector field from the extensive field values
     ier = mnt_extensivefieldadaptor_toVectorField(&efa, &edgeData[0], &faceData[0],
@@ -115,10 +115,11 @@ void test2Cells() {
 
     // check
     for (auto i = 0; i < u.size(); ++i) {
-        std::cout << "edge Id=" << i << " u=" << u[i] << " == " << u2[i] << 
-                                     " v=" << v[i] << " == " << v2[i] << '\n';
-        assert(fabs(u[i] - u2[i]) < 1.e-8);
-        assert(fabs(v[i] - v2[i]) < 1.e-8);
+        std::cout << "edge Id=" << i << " u = " << u[i] << " == " << u2[i] << 
+                                     " v = " << v[i] << " == " << v2[i] << '\n';
+        std::cout << " u error = " << fabs(u[i] - u2[i]) << " v error = " << fabs(v[i] - v2[i]) << '\n';
+        assert(fabs(u[i] - u2[i]) < 1.e-7);
+        assert(fabs(v[i] - v2[i]) < 1.e-7);
     }
 
     mnt_grid_del(&grd);
@@ -181,7 +182,7 @@ void testCartesian() {
     assert(ier == 0);
 
     for (auto edgeId = 0; edgeId < numEdges; ++edgeId) {
-        std::cout << "testCartesian: edge=" << edgeId << " edge extval=" << edgeData[edgeId] << "\n";
+        std::cout << "testCartesian: edge Id=" << edgeId << " edge extval=" << edgeData[edgeId] << "\n";
     }
 
     const double tol = 1.e-15;
@@ -197,11 +198,11 @@ void testCartesian() {
     assert(ier == 0);
 
     for (auto edgeId = 0; edgeId < numEdges; ++edgeId) {
-        std::cout << "testCartesian: edge=" << edgeId << " face extval=" << faceData[edgeId] << "\n";
+        std::cout << "testCartesian: edge Id=" << edgeId << " face extval=" << faceData[edgeId] << "\n";
     }
 
     // check face integrals
-    assert(fabs(faceData[0] - (-1.0)) < tol); // flux is positive beut edge points down
+    assert(fabs(faceData[0] - (-1.0)) < tol); // flux is positive but edge points down
     assert(fabs(faceData[1] - (-20.0)) < tol); // flux is positive but edge points to the left
     assert(fabs(faceData[2] - (+3.0)) < tol);  // flux is positive and edge points up
     assert(fabs(faceData[3] - (-40.0)) < tol); // flux is positive but edge points to the left
@@ -227,8 +228,8 @@ void testCartesian() {
 
 int main(int argc, char** argv) {
 
-    test2Cells();
     testCartesian();
+    test2Cells();
 
     mnt_printLogMessages();
 
