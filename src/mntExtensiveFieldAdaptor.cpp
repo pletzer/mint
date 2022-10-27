@@ -60,6 +60,7 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self,
         case MNT_UNIQUE_EDGE_DATA:
 
             if (fs == MNT_FUNC_SPACE_W1) {
+                std::cerr << "*** calling mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData\n";
                 ier = mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData(self, u, v, data);
             }
             else {
@@ -111,6 +112,8 @@ int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self,
 int mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData(ExtensiveFieldAdaptor_t** self,
                                                             const double* u, const double* v,
                                                             double* data) {
+
+    std::cerr << ">>>> inside mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData \n";
     std::string msg;
     int ier, numFailures = 0;
 
@@ -153,12 +156,17 @@ int mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData(ExtensiveFieldAda
             double y1 = point1[LAT_INDEX];
             double dy = y1 - y0;
 
-            // length on the surface of the sphere (1 if no spherical)
+            // length on the surface of the sphere (1 if not spherical)
             double cosTheta = cos( deg2rad * 0.5 * (y1 + y0) );
             double cosTheDx = cosTheta * dx;
 
             // edge integral
             data[edgeId] = edgeSign * ( u[edgeId] * cosTheDx + v[edgeId] * dy );
+            //if (edgeId == 1) { // DEBUG
+                std::cerr << "edgeId=" << edgeId << " x0,y0=" << x0 << ',' << y0 << " x1,y1=" << x1 << ',' << y1 << 
+                             " cosTheDx,dy=" << cosTheDx << ',' << dy << " edgeSign=" << edgeSign << 
+                             " u,v=" << u[edgeId] << ',' << v[edgeId] << " data=" << data[edgeId] << '\n';
+            //}
         }
     }
 
