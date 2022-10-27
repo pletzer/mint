@@ -182,11 +182,17 @@ def test_mesh_to_mesh_basic():
     out_cube = rg.regrid_extensive_cube(src)
 
 
-def test_mesh_to_mesh_streamfunction():
+def test_streamfunction_extensive_field():
 
     # Create source cubes on unstructured meshes.
+    src_nx, src_ny = 20, 10
+    src_nx1, src_ny1 = src_nx + 1, src_ny + 1
+    src_num_edges = src_nx*src_ny1 + src_nx1*src_ny
+    src = _gridlike_mesh_cube(src_nx, src_ny)
+
     src = _gridlike_mesh_cube(20, 10)
     tgt = _gridlike_mesh_cube(30, 20)
+    
     rg = mint.IrisMintRegridder(src.mesh, tgt.mesh)
 
     # Regrid the extensive field from stream function sin(y) + cos(y)*cos(x).
@@ -199,20 +205,33 @@ def test_mesh_to_mesh_streamfunction():
     print(f'extensive field regridding error = {error}')
     assert error < 0.007
 
+
+def test_streamfunction_vector_field():
+
     # Regrid the vector field from stream function sin(y) + cos(y)*cos(x).
-    src_u = _gridlike_mesh_cube(20, 10)
-    src_v = _gridlike_mesh_cube(20, 10)
-    tgt_u = _gridlike_mesh_cube(30, 20)
-    tgt_v = _gridlike_mesh_cube(30, 20)
+    src_nx, src_ny = 18, 14
+    src_nx1, src_ny1 = src_nx + 1, src_ny + 1
+    src_num_edges = src_nx*src_ny1 + src_nx1*src_ny
+    src_u = _gridlike_mesh_cube(src_nx, src_ny)
+    src_v = _gridlike_mesh_cube(src_nx, src_ny)
     _set_vector_field_from_streamfct(src_u, src_v)
+    assert src_u.shape[-1] == src_v.shape[-1] == src_num_edges
+
+    tgt_nx, tgt_ny = 14, 12
+    tgt_nx1, tgt_ny1 = tgt_nx + 1, tgt_ny + 1
+    tgt_num_edges = tgt_nx*tgt_ny1 + tgt_nx1*tgt_ny
+    tgt_u = _gridlike_mesh_cube(tgt_nx, tgt_ny)
+    tgt_v = _gridlike_mesh_cube(tgt_nx, tgt_ny)
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
+
+    rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh)
     result_u, result_v = rg.regrid_vector_cubes(src_u, src_v)
 
     # Check the result.
     error = 0.5*np.mean(np.fabs(result_u.data - tgt_u.data))
     error += 0.5*np.mean(np.fabs(result_v.data - tgt_v.data))
     print(f'vector field regridding error = {error}')
-    assert error < 0.007
+    assert error < 0.05
 
 
 

@@ -74,7 +74,7 @@ class ExtensiveFieldAdaptor(object):
             n0 = self.numGridEdges
 
         if u.shape[-1] != n0 or v.shape[-1] != n0 or data.shape[-1] != n0:
-            msg = f"u, v have wrong size (= {u.shape[-1]}, {v.shape[-1], {data.shape[-1]}} != {n0})"
+            msg = f"u, v have wrong size (= {u.shape[-1]}, {v.shape[-1]}, {data.shape[-1]} != {n0})"
             ier = 10
             error_handler(FILE, 'fromVectorField', ier, detailedmsg=msg)
 

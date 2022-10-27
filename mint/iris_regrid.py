@@ -131,6 +131,9 @@ class IrisMintRegridder:
             src_ef.fromVectorField(u_cube.data, v_cube.data, src_edge_data,
                                 placement=mint.UNIQUE_EDGE_DATA,
                                 fs=mint.FUNC_SPACE_W1)            
+            src_ef.fromVectorField(u_cube.data, v_cube.data, src_face_data,
+                                placement=mint.UNIQUE_EDGE_DATA,
+                                fs=mint.FUNC_SPACE_W2)            
 
             # Regrid the extensive fields.
             self.regridder.apply(src_edge_data, tgt_edge_data, placement=mint.UNIQUE_EDGE_DATA)
