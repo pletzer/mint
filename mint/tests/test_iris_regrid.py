@@ -1,12 +1,17 @@
+import iris
 from iris.coords import AuxCoord
 from iris.cube import Cube
-from iris.experimental.ugrid import Connectivity, Mesh
+from iris.experimental.ugrid import Connectivity, Mesh, PARSE_UGRID_ON_LOAD
 import numpy as np
 from numpy import ma
+from pathlib import Path
 
 from mint.iris_regrid import MINTScheme
 import mint
 
+
+
+DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 def _set_extensive_field_from_streamfct(cube):
     """
@@ -57,6 +62,24 @@ def _set_vector_field_from_streamfct(u_cube, v_cube):
         ym = 0.5*(y0 + y1)
         u_cube.data[edge] = np.cos(ym*deg2rad)
         v_cube.data[edge] = np.sin(xm*deg2rad)
+
+
+def _u_v_cubes_from_ugrid_file(filename, 
+                               u_std_name: str="eastward_wind_at_cell_faces",
+                               v_std_name: str="northward_wind_at_cell_faces"):
+    """
+    Get u, v components cubes from a Ugrid file
+    :param filename: netCDF file name
+    :param u_std_name: standard name for the zonal component of the vector field
+    :param v_std_name: standard name for the meridional component of the vector field
+    :returns (u_cube, v_cube)
+    """
+    u_std_name = "eastward_wind_at_cell_faces"
+    v_std_name = "eastward_wind_at_cell_faces"
+    with PARSE_UGRID_ON_LOAD.context():
+        u_cube = iris.load_cube(filename, u_std_name)
+        v_cube = iris.load_cube(filename, v_std_name)
+    return (u_cube, v_cube)
 
 
 def _gridlike_mesh(n_lons, n_lats):
@@ -161,6 +184,10 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
     cube.add_aux_coord(mesh_coord_y, 0)
     # cube has a mesh (cube.mesh)
     return cube
+
+
+def test_read_ugrid_file():
+    u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
 
 def test_cube_mesh():
 
