@@ -142,6 +142,7 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->periodX = 360.0; // if in radians, only used if the above switches are set
     (*self)->verts = NULL;
     (*self)->ownsVerts = false;
+    (*self)->degrees = false;
 
     return 0;
 }
@@ -188,6 +189,11 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
     if (degrees == 0) {
       // lon-lat are in radians
       (*self)->periodX = 2 * M_PI;
+    }
+
+    (*self)->degrees = false;
+    if (degrees != 0) {
+        (*self)->degrees = true;
     }
 
     return 0;
@@ -590,8 +596,27 @@ int mnt_grid_print(Grid_t** self) {
         for (int j = 0; j < cell->GetNumberOfPoints(); ++j) {
             vtkIdType k = cell->GetPointId(j);
             (*self)->points->GetPoint(k, &pt[0]);
-            std::cout << "\tpoint " << pt[0] << ',' << pt[1] << ',' << pt[2] << '\n';
+            std::cout << "\t point " << pt[0] << ',' << pt[1] << ',' << pt[2] << std::endl;
         }
+    }
+
+    for (auto i = 0; i < (*self)->faceNodeConnectivity.size(); 
+            i += MNT_NUM_VERTS_PER_QUAD) {
+        auto icell = i / MNT_NUM_VERTS_PER_QUAD;
+        std::cout << "\t face " << icell << ": nodes";
+        for (auto k = 0; k < MNT_NUM_VERTS_PER_QUAD; ++k) {
+            std::cout << " " << (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + k];
+        }
+        std::cout << std::endl;
+    }
+    for (auto i = 0; i < (*self)->edgeNodeConnectivity.size();
+             i += MNT_NUM_VERTS_PER_EDGE) {
+        auto iedge = i / MNT_NUM_VERTS_PER_EDGE;
+        std::cout << "\t edge " << iedge << ": nodes";
+        for (auto k = 0; k < MNT_NUM_VERTS_PER_EDGE; ++k) {
+            std::cout << " " << (*self)->edgeNodeConnectivity[iedge*MNT_NUM_VERTS_PER_EDGE + k];
+        }
+        std::cout << std::endl;
     }
 
     return 0;

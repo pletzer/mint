@@ -65,6 +65,9 @@ struct Grid_t {
     // whether the longitudes should be adjusted at the poles to
     // minimize the cell sizes in lon-lat coordinates
     bool averageLonAtPole;
+
+    // whether or not the grid uses degrees coordinates
+    bool degrees;
 };
 
 /**
