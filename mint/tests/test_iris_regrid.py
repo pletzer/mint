@@ -1,5 +1,5 @@
 import iris
-from iris.coords import AuxCoord
+from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.experimental.ugrid import Connectivity, Mesh, PARSE_UGRID_ON_LOAD
 import numpy as np
@@ -175,13 +175,27 @@ def _gridlike_mesh(n_lons, n_lats):
     return mesh
 
 
-def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
+def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None):
     mesh = _gridlike_mesh(n_lons, n_lats)
     mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
-    data = np.zeros_like(mesh_coord_x.points)
+    shape = mesh_coord_x.points.shape
+    extra_coords = []
+    if time is not None:
+        shape += (time,)
+        time_coord = DimCoord(np.arange(time), standard_name="time", units="days since 1970-01-01")
+        time_coord.guess_bounds()
+        extra_coords.append((time_coord, len(extra_coords) + 1))
+    if height is not None:
+        shape += (height,)
+        height_coord = DimCoord(np.arange(height), standard_name="height", units="meters")
+        height_coord.guess_bounds()
+        extra_coords.append((height_coord, len(extra_coords) + 1))
+    data = np.zeros(shape)
     cube = Cube(data)
     cube.add_aux_coord(mesh_coord_x, 0)
     cube.add_aux_coord(mesh_coord_y, 0)
+    for coord, dim in extra_coords:
+        cube.add_dim_coord(coord, dim)
     # cube has a mesh (cube.mesh)
     return cube
 
@@ -284,10 +298,4 @@ def test_streamfunction_vector_field():
     error += 0.5*np.mean(np.fabs(result_v.data - tgt_v.data))
     print(f'vector field regridding error = {error}')
     assert error < 0.04
-
-
-
-    
-
-
 
