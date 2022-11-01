@@ -189,6 +189,29 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge"):
 def test_read_ugrid_file():
     u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
 
+
+def test_lonlat_to_cubedsphere():
+
+    src_u = _gridlike_mesh_cube(9, 5)
+    src_v = _gridlike_mesh_cube(9, 5)
+
+    tgt_u, tgt_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
+
+    rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh)
+
+    _set_vector_field_from_streamfct(src_u, src_v)
+    _set_vector_field_from_streamfct(tgt_u, tgt_v)
+
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v)
+
+    # Check.
+    error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
+                 np.fabs(result_v.data - tgt_v.data).mean())
+    print(f'test_lonlat_to_cubedsphere = {error}')
+    assert error < 0.05
+
+
+
 def test_cube_mesh():
 
     cube = _gridlike_mesh_cube(4, 5)
