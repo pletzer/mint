@@ -317,7 +317,18 @@ void testLatLon2Itself() {
     ier = mnt_regridedges_apply(&rgd, &src_faceIntegrals[0], &dst_faceIntegrals[0],
         MNT_UNIQUE_EDGE_DATA);
     assert(ier == 0);
-    
+
+    // check that the src and dst extensive fields are the same
+    double error = 0;
+    for (auto i = 0; i < src_edgeIntegrals.size(); ++i) {
+        std::cout << i << 
+        " edge: " << src_edgeIntegrals[i] << ' ' << dst_edgeIntegrals[i] << 
+        " face: " << src_faceIntegrals[i] << ' ' << dst_faceIntegrals[i] << '\n';
+        error += fabs(src_edgeIntegrals[i] - dst_edgeIntegrals[i]) + 
+                 fabs(src_faceIntegrals[i] - dst_faceIntegrals[i]);
+    }
+    assert(error < 1.e-8);
+
     // rebuild the vector field on the destination grid
     ExtensiveFieldAdaptor_t* dst_efa = NULL;
     ier = mnt_extensivefieldadaptor_new(&dst_efa);
@@ -328,9 +339,21 @@ void testLatLon2Itself() {
     std::vector<double> dst_u2(dst_numEdges);
     std::vector<double> dst_v2(dst_numEdges);
     ier = mnt_extensivefieldadaptor_toVectorField(&dst_efa, 
-                                                  &dst_edgeIntegrals[0], &dst_edgeIntegrals[0],
+                                                  &dst_edgeIntegrals[0], &dst_faceIntegrals[0],
                                                   &dst_u2[0], &dst_v2[0], MNT_UNIQUE_EDGE_DATA);
     assert(ier == 0);
+
+    // check that the rebuilt vector field is the same as the original one
+    error = 0;
+    for (auto i = 0; i < src_u.size(); ++i) {
+        std::cout << i << 
+        " u: " << src_u[i] << ' ' << dst_u2[i] << 
+        " v: " << src_v[i] << ' ' << dst_v2[i] << '\n';
+        error += fabs(src_u[i] - dst_u2[i]) + 
+                 fabs(src_v[i] - dst_v2[i]);
+    }
+    assert(error < 1.e-8);
+
 
     mnt_extensivefieldadaptor_del(&dst_efa);
     mnt_regridedges_del(&rgd);
