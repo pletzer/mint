@@ -362,13 +362,158 @@ void testLatLon2Itself() {
     mnt_grid_del(&src_grd);
 }
 
+void testCubedSphere2Itself() {
+
+    int ier;
+
+    // read the src/dst grids
+    Grid_t* src_grd = NULL;
+    mnt_grid_new(&src_grd);
+    mnt_grid_setFlags(&src_grd, 1, 1, 1); // lat-lon, degrees
+    mnt_grid_loadFromUgrid2DFile(&src_grd, "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics");
+    std::size_t src_numEdges;
+    mnt_grid_getNumberOfEdges(&src_grd, &src_numEdges);
+    std::size_t src_numCells;
+    mnt_grid_getNumberOfCells(&src_grd, &src_numCells);
+
+    Grid_t* dst_grd = NULL;
+    mnt_grid_new(&dst_grd);
+    mnt_grid_setFlags(&dst_grd, 1, 1, 1); // cubed-sphere, degrees
+    mnt_grid_loadFromUgrid2DFile(&dst_grd, "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics");
+    std::size_t dst_numEdges;
+    mnt_grid_getNumberOfEdges(&dst_grd, &dst_numEdges);
+    std::size_t dst_numCells;
+    mnt_grid_getNumberOfCells(&dst_grd, &dst_numCells);
+
+    // set the vector field, which corresponds to streamfunction sin(theta) + cos(theta)*cos(lambda)
+    std::vector<double> src_u(src_numEdges);
+    std::vector<double> src_v(src_numEdges);
+    std::size_t src_edgeId;
+    Vec3 src_pt0, src_pt1;
+    int src_edgeSign;
+    for (vtkIdType src_cellId = 0; src_cellId < src_numCells; ++src_cellId) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            mnt_grid_getEdgeId(&src_grd, src_cellId, ie, &src_edgeId, &src_edgeSign);
+            mnt_grid_getPoints(&src_grd, src_cellId, ie, &src_pt0[0], &src_pt1[0]);
+            Vec3 pm = 0.5*(src_pt0 + src_pt1);
+            src_u[src_edgeId] = cos(pm[LAT_INDEX]*M_PI/180.);
+            src_v[src_edgeId] = sin(pm[LON_INDEX]*M_PI/180.);
+        }
+    }
+
+    std::vector<double> dst_u(dst_numEdges);
+    std::vector<double> dst_v(dst_numEdges);
+    std::size_t dst_edgeId;
+    Vec3 dst_pt0, dst_pt1;
+    int dst_edgeSign;
+    for (vtkIdType dst_cellId = 0; dst_cellId < dst_numCells; ++dst_cellId) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            mnt_grid_getEdgeId(&dst_grd, dst_cellId, ie, &dst_edgeId, &dst_edgeSign);
+            mnt_grid_getPoints(&dst_grd, dst_cellId, ie, &dst_pt0[0], &dst_pt1[0]);
+            Vec3 pm = 0.5*(dst_pt0 + dst_pt1);
+            dst_u[dst_edgeId] = cos(pm[LAT_INDEX]*M_PI/180.);
+            dst_v[dst_edgeId] = sin(pm[LON_INDEX]*M_PI/180.);
+        }
+    }
+
+    std::vector<double> src_edgeIntegrals(src_numEdges);
+    std::vector<double> src_faceIntegrals(src_numEdges);
+
+    // compute edge/face integrals
+    ExtensiveFieldAdaptor_t* src_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&src_efa);
+
+    ier = mnt_extensivefieldadaptor_setGrid(&src_efa, src_grd);
+    assert(ier == 0);
+
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_u[0], &src_v[0], &src_edgeIntegrals[0],
+                                                    MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_u[0], &src_v[0], &src_faceIntegrals[0],
+                                                    MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+
+    // regrid
+    std::vector<double> dst_edgeIntegrals(dst_numEdges);
+    std::vector<double> dst_faceIntegrals(dst_numEdges);
+    RegridEdges_t* rgd = NULL;
+    ier = mnt_regridedges_new(&rgd);
+    assert(ier == 0);
+    ier = mnt_regridedges_setSrcGrid(&rgd, src_grd);
+    assert(ier == 0);
+    ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
+    assert(ier == 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 1024, 360., 0);
+    assert(ier == 0);
+    int debug = 2;
+    ier = mnt_regridedges_computeWeights(&rgd, debug);
+    assert(ier == 0);
+    ier = mnt_regridedges_apply(&rgd, &src_edgeIntegrals[0], &dst_edgeIntegrals[0],
+        MNT_UNIQUE_EDGE_DATA);
+    assert(ier == 0);
+    ier = mnt_regridedges_apply(&rgd, &src_faceIntegrals[0], &dst_faceIntegrals[0],
+        MNT_UNIQUE_EDGE_DATA);
+    assert(ier == 0);
+
+    // check that the src and dst extensive fields are the same
+    double error = 0;
+    for (auto i = 0; i < src_edgeIntegrals.size(); ++i) {
+        double e = fabs(src_edgeIntegrals[i] - dst_edgeIntegrals[i]) + 
+                   fabs(src_faceIntegrals[i] - dst_faceIntegrals[i]);
+        if (e > 1.e-8) {
+            std::cout << "cs_4.nc$physics: " << i << 
+            " edge: " << src_edgeIntegrals[i] << ' ' << dst_edgeIntegrals[i] << 
+            " face: " << src_faceIntegrals[i] << ' ' << dst_faceIntegrals[i] << '\n';     
+        }
+        error += e;
+    }
+    std::cout << "error = " << error << '\n';
+    assert(error < 1.e-6);
+
+    // rebuild the vector field on the destination grid
+    ExtensiveFieldAdaptor_t* dst_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&dst_efa);
+
+    ier = mnt_extensivefieldadaptor_setGrid(&dst_efa, dst_grd);
+    assert(ier == 0);
+
+    std::vector<double> dst_u2(dst_numEdges);
+    std::vector<double> dst_v2(dst_numEdges);
+    ier = mnt_extensivefieldadaptor_toVectorField(&dst_efa, 
+                                                  &dst_edgeIntegrals[0], &dst_faceIntegrals[0],
+                                                  &dst_u2[0], &dst_v2[0], MNT_UNIQUE_EDGE_DATA);
+    assert(ier == 0);
+
+    // check that the rebuilt vector field is the same as the original one
+    error = 0;
+    for (auto i = 0; i < src_u.size(); ++i) {
+        double e = fabs(src_u[i] - dst_u2[i]) + 
+                 fabs(src_v[i] - dst_v2[i]);
+        if (e > 1.e-8) {
+            std::cout << "cs_4.nc$physics: " << i << 
+            " u: " << src_u[i] << ' ' << dst_u2[i] << 
+            " v: " << src_v[i] << ' ' << dst_v2[i] << '\n';
+        }
+        error += e;
+    }
+    std::cout << "error = " << error << '\n';
+    assert(error < 1.e-8);
+
+
+    mnt_extensivefieldadaptor_del(&dst_efa);
+    mnt_regridedges_del(&rgd);
+    mnt_extensivefieldadaptor_del(&src_efa);
+    mnt_grid_del(&dst_grd);
+    mnt_grid_del(&src_grd);
+}
 
 
 int main(int argc, char** argv) {
 
-    testLatLon2Itself();
-    testCartesian();
-    test2Cells();
+    testCubedSphere2Itself();
+    // testLatLon2Itself();
+    // testCartesian();
+    // test2Cells();
 
     mnt_printLogMessages();
 

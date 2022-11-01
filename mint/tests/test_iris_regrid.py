@@ -176,6 +176,14 @@ def _gridlike_mesh(n_lons, n_lats):
 
 
 def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None):
+    """
+    Create a grid-like mesh cube
+    :param n_lons: number of lon cells
+    :param n_lats: number of lat cells
+    :param location: edge mesh?
+    :param time: number of time intervals (int)
+    :param height: number of elevation intervals (int)
+    """
     mesh = _gridlike_mesh(n_lons, n_lats)
     mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
     shape = mesh_coord_x.points.shape
