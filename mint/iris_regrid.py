@@ -21,9 +21,12 @@ class _DummyMintRegridder:
 
 class IrisToMintMeshAdaptor:
 
-    def __init__(self, iris_mesh, **kwargs):
+    def __init__(self, iris_mesh, flags):
         """
         Create a MINT grid from an Iris mesh
+        :param iris_mesh: Iris mesh object
+        :param flags: flags to pass to the grid. Example (0, 0, 1) for a regular grid 
+                      and (1, 1, 1) for a cubed-sphere grid. 
         """
 
         # vertex points
@@ -46,13 +49,7 @@ class IrisToMintMeshAdaptor:
         self.edge2nodes -= iris_mesh.edge_node_connectivity.start_index
         
         self.grid = mint.Grid()
-        fixLonAcrossDateline = kwargs.get('fixLonAcrossDateline', 0)
-        averageLonAtPole = kwargs.get('averageLonAtPole', 0)
-        # degrees = False
-        # if iris_mesh.node_coords.node_x.points.units == 'degrees':
-        #     degrees = True
-        degrees = True
-        self.grid.setFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
+        self.grid.setFlags(flags[0], flags[1], flags[2])
         self.grid.loadFromUgrid2DData(self.points, self.face2nodes, self.edge2nodes)
 
         self.num_faces = self.face2nodes.shape[0]
@@ -65,17 +62,21 @@ class IrisToMintMeshAdaptor:
 
 class IrisMintRegridder:
 
-    def __init__(self, src_mesh, tgt_mesh, **kwargs):
+    def __init__(self, src_mesh, tgt_mesh, src_flags, tgt_flags, **kwargs):
         """
         Constructor.
         :param src_mesh: source iris mesh with coordinates and connectivity
         :param tgt_mesh: target iris mesh with coordinates and connectivity
+        :param src_flags: flags to pass to the source grid. Example (0, 0, 1) for a regular grid 
+                      and (1, 1, 1) for a cubed-sphere grid. 
+        :param tgt_flags: flags to pass to the target grid. Example (0, 0, 1) for a regular grid 
+                      and (1, 1, 1) for a cubed-sphere grid. 
         """
 
         self.tgt_mesh = tgt_mesh
 
-        self.src = IrisToMintMeshAdaptor(src_mesh)
-        self.tgt = IrisToMintMeshAdaptor(tgt_mesh)
+        self.src = IrisToMintMeshAdaptor(src_mesh, flags=src_flags)
+        self.tgt = IrisToMintMeshAdaptor(tgt_mesh, flags=tgt_flags)
 
         self.src_num_edges = self.src.get_grid().getNumberOfEdges()
         self.tgt_num_edges = self.tgt.get_grid().getNumberOfEdges()
