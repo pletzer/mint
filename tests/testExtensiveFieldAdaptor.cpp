@@ -511,9 +511,9 @@ void testCubedSphere2Itself() {
 int main(int argc, char** argv) {
 
     testCubedSphere2Itself();
-    // testLatLon2Itself();
-    // testCartesian();
-    // test2Cells();
+    testLatLon2Itself();
+    testCartesian();
+    test2Cells();
 
     mnt_printLogMessages();
 
