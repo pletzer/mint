@@ -237,11 +237,45 @@ int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldA
 }
 
 int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldAdaptor_t** self,
-                                                            const double* u, const double* v,
+                                                            const double u[], const double v[],
                                                             double* data) {
-    std::string msg = "NOT IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return -1;
+
+    int numFailures = 0;
+    int ier;
+
+    double coef = 0;
+    if ((*self)->grid->degrees) {
+        coef = M_PI/180.0;
+    }
+    double deg2rad = M_PI / 180.;
+
+    double point0[3];
+    double point1[3];
+    for (vtkIdType icell = 0; icell < (vtkIdType) (*self)->numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+
+            ier = mnt_grid_getPoints(&(*self)->grid, icell, ie, point0, point1);
+            if (ier != 0) numFailures++;
+
+            double x0 = point0[LON_INDEX] * deg2rad;
+            double x1 = point1[LON_INDEX] * deg2rad;
+            double dx = x1 - x0;
+            double y0 = point0[LAT_INDEX] * deg2rad;
+            double y1 = point1[LAT_INDEX] * deg2rad;
+            double dy = y1 - y0;
+
+            // length on the surface of the sphere (1 if no spherical)
+            double cosTheDx = cos( coef * 0.5 * (y1 + y0) ) * dx;
+
+            double len_sq = cosTheDx * cosTheDx + dy * dy;
+
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            data[k] = u[k]*dy - v[k]*cosTheDx;
+        }
+    }
+
+    return numFailures;
+
 }
 
 int mnt_extensivefieldadaptor__toVectorFieldUniqueIdData(ExtensiveFieldAdaptor_t** self,
