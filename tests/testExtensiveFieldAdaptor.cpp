@@ -219,22 +219,44 @@ void testCs() {
     assert(ier == 0);
     ier = mnt_extensivefieldadaptor_setGrid(&dst_efa, dst_grd);
     assert(ier == 0);
-    ier = mnt_extensivefieldadaptor_toVectorField(&dst_efa, &dst_edgeData[0], &dst_edgeData[0],
+    ier = mnt_extensivefieldadaptor_toVectorField(&dst_efa, &dst_edgeData[0], &dst_faceData[0],
                                                   &dst_u2[0], &dst_v2[0], MNT_CELL_BY_CELL_DATA);
     assert(ier == 0);
 
-    // convert to unique edge Id data
-    // TO DO
+    // convert cell by cell data to unique edge Id data
 
-    // check accuracy
+    std::vector<double> dst_u2edge(dst_numEdges);
+    std::vector<double> dst_v2edge(dst_numEdges);
+    error = 0;
+    for (auto icell = 0; icell < dst_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
 
-    // save to file
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
 
+            // NOTE: to degrees conversion
+            dst_u2edge[edgeId] = (180/M_PI) * dst_u2[k];
+            dst_v2edge[edgeId] = (180/M_PI) * dst_v2[k];
 
-    mnt_regridedges_del(&rgd);
-    mnt_extensivefieldadaptor_del(&src_efa);
-    mnt_grid_del(&dst_grd);
-    mnt_grid_del(&src_grd);
+            double lamMid = dst_edgePoints[edgeId*3 + 0] * deg2rad;
+            double theMid = dst_edgePoints[edgeId*3 + 1] * deg2rad;
+
+            double uExact = -sin(theMid)*cos(lamMid);
+            double vExact = sin(lamMid);
+
+            error += fabs(dst_u2edge[edgeId] - uExact);
+            error += fabs(dst_v2edge[edgeId] - vExact);            
+            
+            std::cout << "dst icell = " << icell << " ie = " << ie << 
+                          " u2edge = " << dst_u2edge[edgeId] << " exact = " << uExact << 
+                          " v2edge = " << dst_v2edge[edgeId] << " exact = " << uExact << '\n';
+        }
+    }
+    saveEdgeVectors(dst_grd, dst_u2edge, dst_v2edge, "testCs_dst_vectors2.vtk");
+    error /= dst_numEdges;
+    std::cout << "vector avg error from from using toVector: " << error << '\n';
+    assert(error < 0.6);
+
 }
 
 void test2Cells() {
