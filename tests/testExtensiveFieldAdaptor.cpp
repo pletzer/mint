@@ -36,6 +36,7 @@ void testCs() {
     std::vector<double> src_v(src_numCells * MNT_NUM_EDGES_PER_QUAD);
     std::vector<double> src_uedge(src_numEdges);
     std::vector<double> src_vedge(src_numEdges);
+    std::vector<double> src_edgeData(src_numCells * MNT_NUM_EDGES_PER_QUAD);
     std::vector<double> src_faceData(src_numCells * MNT_NUM_EDGES_PER_QUAD);
     std::vector<double> src_faceDataExact(src_numCells * MNT_NUM_EDGES_PER_QUAD);
     Vec3 p0, p1, pm;
@@ -77,6 +78,9 @@ void testCs() {
     assert(ier == 0);
     ier = mnt_extensivefieldadaptor_setGrid(&src_efa, src_grd);
     assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_u[0], &src_v[0], &src_edgeData[0],
+         MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
     ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_u[0], &src_v[0], &src_faceData[0],
          MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W2);
     assert(ier == 0);
@@ -112,6 +116,7 @@ void testCs() {
     std::cout << "testCs: dst num cells: " << dst_numCells << " num edges: " << dst_numEdges << '\n';
 
     // regrid
+    std::vector<double> dst_edgeData(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
     std::vector<double> dst_faceData(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
     RegridEdges_t* rgd = NULL;
     ier = mnt_regridedges_new(&rgd);
@@ -124,6 +129,9 @@ void testCs() {
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
+    assert(ier == 0);
+    ier = mnt_regridedges_apply(&rgd, &src_edgeData[0], &dst_edgeData[0],
+            MNT_CELL_BY_CELL_DATA);
     assert(ier == 0);
     ier = mnt_regridedges_apply(&rgd, &src_faceData[0], &dst_faceData[0],
             MNT_CELL_BY_CELL_DATA);
@@ -150,8 +158,8 @@ void testCs() {
             double s1 = cos(the1)*cos(lam1);
             double dst_faceDataExact = s1 - s0;
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
-            std::cout << "dst icell = " << icell << " ie = " << ie << 
-                         " faceData = " << dst_faceData[k] << " exact = " << dst_faceDataExact << '\n';
+            // std::cout << "dst icell = " << icell << " ie = " << ie << 
+            //              " faceData = " << dst_faceData[k] << " exact = " << dst_faceDataExact << '\n';
             error += fabs(dst_faceData[k] - dst_faceDataExact);
         }
     }
@@ -159,7 +167,7 @@ void testCs() {
     std::cout << "avg error: " << error << '\n';
     assert(error < 0.07);
 
-    // compute the vectors at the edge points
+    // compute the vectors at the edge points using VectorInterp
     std::vector<double> dst_faceVectors(dst_numEdges * 3);
     VectorInterp_t* vp = NULL;
     ier = mnt_vectorinterp_new(&vp);
@@ -182,6 +190,7 @@ void testCs() {
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
 
+            // convert to degrees
             dst_u[edgeId] = (180./M_PI) * dst_faceVectors[edgeId*3 + 0];
             dst_v[edgeId] = (180./M_PI) * dst_faceVectors[edgeId*3 + 1];
 
@@ -194,15 +203,33 @@ void testCs() {
 
             error += fabs(dst_u[edgeId] - uExact);
             error += fabs(dst_v[edgeId] - vExact);
-            std::cout << "dst cell " << icell << " ie=" << ie << " edgeId=" << edgeId << 
-                         " face vect=" << dst_u[edgeId] << "(exact " << uExact << ")" <<
-                         ',' << dst_v[edgeId] << "(exact " << vExact << ")" << '\n';
         }
     }
     error /= dst_numCells * MNT_NUM_EDGES_PER_QUAD;
     std::cout << "vector avg error from face vect interp: " << error << '\n';
+    assert(error < 0.2);
 
     saveEdgeVectors(dst_grd, dst_u, dst_v, "testCs_dst_vectors.vtk");
+
+    // use the ExtensiveFieldAdaptor class to compute the vectors from the regridded edge/face data
+    std::vector<double> dst_u2(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> dst_v2(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    ExtensiveFieldAdaptor_t* dst_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&dst_efa);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_setGrid(&dst_efa, dst_grd);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_toVectorField(&dst_efa, &dst_edgeData[0], &dst_edgeData[0],
+                                                  &dst_u2[0], &dst_v2[0], MNT_CELL_BY_CELL_DATA);
+    assert(ier == 0);
+
+    // convert to unique edge Id data
+    // TO DO
+
+    // check accuracy
+
+    // save to file
+
 
     mnt_regridedges_del(&rgd);
     mnt_extensivefieldadaptor_del(&src_efa);

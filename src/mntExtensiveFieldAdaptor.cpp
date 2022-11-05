@@ -39,8 +39,8 @@ int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* gr
 
 LIBRARY_API
 int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self,
-                                               const double* u, const double* v,
-                                              double* data, int placement, int fs) {
+                                               const double u[], const double v[],
+                                               double data[], int placement, int fs) {
 
     int ier;
 
@@ -78,9 +78,9 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self,
 
 LIBRARY_API
 int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self, 
-                                            const double* edgeData,
-                                            const double* faceData,
-                                            double* u, double* v,
+                                            const double edgeData[],
+                                            const double faceData[],
+                                            double u[], double v[],
                                             int placement) {
     int ier;
 
@@ -229,16 +229,8 @@ int mnt_extensivefieldadaptor__fromVectorFieldFaceUniqueIdData(ExtensiveFieldAda
 }
 
 int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldAdaptor_t** self,
-                                                            const double* u, const double* v,
-                                                            double* data) {
-    std::string msg = "NOT IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return -1;
-}
-
-int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldAdaptor_t** self,
                                                             const double u[], const double v[],
-                                                            double* data) {
+                                                            double data[]) {
 
     int numFailures = 0;
     int ier;
@@ -255,7 +247,48 @@ int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldA
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
 
             ier = mnt_grid_getPoints(&(*self)->grid, icell, ie, point0, point1);
-            if (ier != 0) numFailures++;
+            numFailures += ier;
+
+            double x0 = point0[LON_INDEX] * deg2rad;
+            double x1 = point1[LON_INDEX] * deg2rad;
+            double dx = x1 - x0;
+            double y0 = point0[LAT_INDEX] * deg2rad;
+            double y1 = point1[LAT_INDEX] * deg2rad;
+            double dy = y1 - y0;
+
+            // length on the surface of the sphere (1 if no spherical)
+            double cosTheDx = cos( coef * 0.5 * (y1 + y0) ) * dx;
+
+            double len_sq = cosTheDx * cosTheDx + dy * dy;
+
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            data[k] = u[k]*cosTheDx + v[k]*dy;
+        }
+    }
+
+    return numFailures;
+}
+
+int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldAdaptor_t** self,
+                                                            const double u[], const double v[],
+                                                            double data[]) {
+
+    int numFailures = 0;
+    int ier;
+
+    double coef = 0;
+    if ((*self)->grid->degrees) {
+        coef = M_PI/180.0;
+    }
+    double deg2rad = M_PI / 180.;
+
+    double point0[3];
+    double point1[3];
+    for (vtkIdType icell = 0; icell < (vtkIdType) (*self)->numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+
+            ier = mnt_grid_getPoints(&(*self)->grid, icell, ie, point0, point1);
+            numFailures += ier;
 
             double x0 = point0[LON_INDEX] * deg2rad;
             double x1 = point1[LON_INDEX] * deg2rad;
@@ -275,7 +308,6 @@ int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldA
     }
 
     return numFailures;
-
 }
 
 int mnt_extensivefieldadaptor__toVectorFieldUniqueIdData(ExtensiveFieldAdaptor_t** self,
@@ -324,9 +356,11 @@ int mnt_extensivefieldadaptor__toVectorFieldUniqueIdData(ExtensiveFieldAdaptor_t
             double y1 = point1[LAT_INDEX];
             double dy = y1 - y0;
 
+            // TO CHECK: do we want dx, dy in rad or degrees? We will need to be consistent between the
+            // toVector and fromVector calls
+
             // length on the surface of the sphere (1 if no spherical)
-            double cosTheta = cos( deg2rad * 0.5 * (y1 + y0) );
-            double cosTheDx = cosTheta * dx;
+            double cosTheDx = cos( deg2rad * 0.5 * (y1 + y0) ) * dx;
 
             // our convention is to have the extensive fluxes pointing in the positive, logical direction.
             // This requires flipping the sign for iedge = 0 and 2.
@@ -356,7 +390,55 @@ int mnt_extensivefieldadaptor__toVectorFieldCellByCellData(ExtensiveFieldAdaptor
                                                            const double* edgeData,
                                                            const double* faceData,
                                                            double* u, double* v) {
-    std::string msg = "NOT IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return -1;
+    std::string msg;
+    int ier, numFailures = 0;
+
+    double deg2rad = 0;
+    if ((*self)->grid->degrees) {
+        deg2rad = M_PI/180.0;
+    }
+
+    double point0[3];
+    double point1[3];
+    for (vtkIdType icell = 0; icell < (vtkIdType) (*self)->numCells; ++icell) {
+
+        for (int iedge = 0; iedge < MNT_NUM_EDGES_PER_QUAD; ++iedge) {
+
+            ier = mnt_grid_getPoints(&(*self)->grid, icell, iedge, point0, point1);
+            if (ier != 0) numFailures++;
+
+            double x0 = point0[LON_INDEX];
+            double x1 = point1[LON_INDEX];
+            double dx = x1 - x0;
+            double y0 = point0[LAT_INDEX];
+            double y1 = point1[LAT_INDEX];
+            double dy = y1 - y0;
+
+            // TO CHECK: do we want dx, dy in rad or degrees? We will need to be consistent between the
+            // toVector and fromVector calls
+
+            // length on the surface of the sphere (1 if no spherical)
+            double cosTheDx = cos( deg2rad * 0.5 * (y1 + y0) ) * dx;
+
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + iedge;
+
+            double len_sq = cosTheDx * cosTheDx + dy * dy;
+            if (len_sq <= 0) {
+                // happens at the pole
+                // edgeData and faceData should be zero there and u, v are ill defined there
+                // set to zero (?)
+                u[k] = 0;
+                v[k] = 0;
+            }
+            else {
+                // TO CHECK: signs???
+                // normal case
+                u[k] = (cosTheDx * edgeData[k] + dy * faceData[k] ) / len_sq;
+                v[k] = (dy * edgeData[k] - cosTheDx * faceData[k] ) / len_sq;
+            }
+
+        }
+    }
+
+    return numFailures;
 }

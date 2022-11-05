@@ -59,8 +59,8 @@ int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* gr
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, const double* u, const double* v,
-                                              double* data, int placement, int fs);
+int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, const double u[], const double v[],
+                                              double data[], int placement, int fs);
 
 /**
  * Get the vector field from an extensive field array
@@ -75,30 +75,30 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, co
  */
 LIBRARY_API
 int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self,
-                                            const double* edgeData, const double* faceData,
-                                            double* u, double* v,
+                                            const double edgeData[], const double faceData[],
+                                            double u[], double v[],
                                             int placement);
 
 // private methods
 int mnt_extensivefieldadaptor__fromVectorFieldEdgeUniqueIdData(ExtensiveFieldAdaptor_t** self,
-                                                            const double* u, const double* v,
-                                                            double* data);
+                                                            const double u[], const double v[],
+                                                            double data[]);
 int mnt_extensivefieldadaptor__fromVectorFieldFaceUniqueIdData(ExtensiveFieldAdaptor_t** self,
-                                                            const double* u, const double* v,
-                                                            double* data);
+                                                            const double u[], const double v[],
+                                                            double data[]);
 int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldAdaptor_t** self,
-                                                            const double* u, const double* v,
-                                                            double* data);
+                                                            const double u[], const double v[],
+                                                            double data[]);
 int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldAdaptor_t** self,
-                                                            const double* u, const double* v,
-                                                            double* data);
+                                                            const double u[], const double v[],
+                                                            double data[]);
 int mnt_extensivefieldadaptor__toVectorFieldUniqueIdData(ExtensiveFieldAdaptor_t** self,
-                                                           const double* edgeData,
-                                                           const double* faceData,
-                                                           double* u, double* v);
+                                                           const double edgeData[],
+                                                           const double faceData[],
+                                                           double u[], double v[]);
 int mnt_extensivefieldadaptor__toVectorFieldCellByCellData(ExtensiveFieldAdaptor_t** self,
-                                                           const double* edgeData,
-                                                           const double* faceData,
-                                                           double* u, double* v);
+                                                           const double edgeData[],
+                                                           const double faceData[],
+                                                           double u[], double v[]);
 
 #endif // MNT_EXTENSIVE_FIELD_ADAPTOR
