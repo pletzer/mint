@@ -10,6 +10,256 @@
 
 #include "saveEdgeVectors.h"
 
+void testLatLon2Cs() {
+
+    int ier;
+
+    // read the src/dst grids
+    Grid_t* src_grd = NULL;
+    mnt_grid_new(&src_grd);
+    mnt_grid_setFlags(&src_grd, 0, 0, 1); // lon-lat, degrees
+    ier = mnt_grid_loadFromUgrid2DFile(&src_grd, "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc$latlon");
+    assert(ier == 0);
+
+    std::size_t src_numEdges;
+    mnt_grid_getNumberOfEdges(&src_grd, &src_numEdges);
+    std::size_t src_numCells;
+    mnt_grid_getNumberOfCells(&src_grd, &src_numCells);
+    std::cout << "testLatLonCs: num cells: " << src_numCells << " src_num edges: " << src_numEdges << '\n';
+
+    mnt_grid_dump(&src_grd, "testLatLon2Cs_src.vtk");
+
+    std::size_t edgeId;
+    int edgeSign;
+    const double deg2rad = M_PI / 180.;
+    std::vector<double> src_u(src_numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_v(src_numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_uedge(src_numEdges);
+    std::vector<double> src_vedge(src_numEdges);
+    std::vector<double> src_edgeData(src_numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_faceData(src_numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_faceDataExact(src_numCells * MNT_NUM_EDGES_PER_QUAD);
+    Vec3 p0, p1, pm;
+    for (auto icell = 0; icell < src_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            mnt_grid_getEdgeId(&src_grd, icell, ie, &edgeId, &edgeSign);
+            mnt_grid_getPoints(&src_grd, icell, ie, &p0[0], &p1[0]);
+            double lam0 = p0[LON_INDEX] * deg2rad;
+            double the0 = p0[LAT_INDEX] * deg2rad;
+            double lam1 = p1[LON_INDEX] * deg2rad;
+            double the1 = p1[LAT_INDEX] * deg2rad;
+            pm = 0.5*(p0 + p1);
+            double lamMid = pm[LON_INDEX] * deg2rad;
+            double theMid = pm[LAT_INDEX] * deg2rad;
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+
+            // src_u[k] = cos(theMid);
+            // src_v[k] = 0.0;
+            // double s0 = sin(the0);
+            // double s1 = sin(the1);
+
+            src_u[k] = -sin(theMid)*cos(lamMid);
+            src_v[k] = sin(lamMid);
+            double s0 = cos(the0)*cos(lam0);
+            double s1 = cos(the1)*cos(lam1);
+
+            src_uedge[edgeId] = src_u[k];
+            src_vedge[edgeId] = src_v[k];
+
+            src_faceDataExact[k] = s1 - s0;
+        }
+    }
+
+    saveEdgeVectors(src_grd, src_uedge, src_vedge, "testLatLonCs_src_vectors.vtk");
+
+    // test from vector method
+    ExtensiveFieldAdaptor_t* src_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&src_efa);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_setGrid(&src_efa, src_grd);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_u[0], &src_v[0], &src_edgeData[0],
+         MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_u[0], &src_v[0], &src_faceData[0],
+         MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+
+    // check extensive field
+    double error = 0;
+    for (auto icell = 0; icell < src_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            // std::cout << "icell = " << icell << " ie = " << ie << 
+            //              " faceData = " << src_faceData[k] << " exact = " << src_faceDataExact[k] << '\n';
+            error += fabs(src_faceData[k] - src_faceDataExact[k]);
+        }
+    }
+    error /= src_numCells * MNT_NUM_EDGES_PER_QUAD;
+    std::cout << "avg error: " << error << '\n';
+    assert(error < 0.008);
+
+    // destination grid 
+    Grid_t* dst_grd = NULL;
+    mnt_grid_new(&dst_grd);
+    mnt_grid_setFlags(&dst_grd, 1, 1, 1); // cubed-sphere, degrees
+    ier = mnt_grid_loadFromUgrid2DFile(&dst_grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
+    assert(ier == 0);
+
+    mnt_grid_dump(&dst_grd, "testLatLonCs_dst.vtk");
+
+
+    std::size_t dst_numEdges;
+    mnt_grid_getNumberOfEdges(&dst_grd, &dst_numEdges);
+    std::size_t dst_numCells;
+    mnt_grid_getNumberOfCells(&dst_grd, &dst_numCells);
+    std::cout << "testLatLonCs: dst num cells: " << dst_numCells << " num edges: " << dst_numEdges << '\n';
+
+    // regrid
+    std::vector<double> dst_edgeData(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> dst_faceData(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    RegridEdges_t* rgd = NULL;
+    ier = mnt_regridedges_new(&rgd);
+    assert(ier == 0);
+    ier = mnt_regridedges_setSrcGrid(&rgd, src_grd);
+    assert(ier == 0);
+    ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
+    assert(ier == 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0);
+    assert(ier == 0);
+    int debug = 2;
+    ier = mnt_regridedges_computeWeights(&rgd, debug);
+    assert(ier == 0);
+    ier = mnt_regridedges_apply(&rgd, &src_edgeData[0], &dst_edgeData[0],
+            MNT_CELL_BY_CELL_DATA);
+    assert(ier == 0);
+    ier = mnt_regridedges_apply(&rgd, &src_faceData[0], &dst_faceData[0],
+            MNT_CELL_BY_CELL_DATA);
+    assert(ier == 0);
+
+    // check the accuracy of the regridded extensive field
+    std::vector<double> dst_edgePoints(dst_numEdges*3);
+    error = 0;
+    for (auto icell = 0; icell < dst_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
+            mnt_grid_getPoints(&dst_grd, icell, ie, &p0[0], &p1[0]);
+            double lam0 = p0[LON_INDEX] * deg2rad;
+            double the0 = p0[LAT_INDEX] * deg2rad;
+            double lam1 = p1[LON_INDEX] * deg2rad;
+            double the1 = p1[LAT_INDEX] * deg2rad;
+            pm = 0.5*(p0 + p1);
+            double lamMid = pm[LON_INDEX] * deg2rad;
+            double theMid = pm[LAT_INDEX] * deg2rad;
+            dst_edgePoints[edgeId*3 + 0] = pm[LON_INDEX];
+            dst_edgePoints[edgeId*3 + 1] = pm[LAT_INDEX];
+            dst_edgePoints[edgeId*3 + 2] = 0.;
+            double s0 = cos(the0)*cos(lam0);
+            double s1 = cos(the1)*cos(lam1);
+            double dst_faceDataExact = s1 - s0;
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            // std::cout << "dst icell = " << icell << " ie = " << ie << 
+            //              " faceData = " << dst_faceData[k] << " exact = " << dst_faceDataExact << '\n';
+            error += fabs(dst_faceData[k] - dst_faceDataExact);
+        }
+    }
+    error /= dst_numCells * MNT_NUM_EDGES_PER_QUAD;
+    std::cout << "avg error: " << error << '\n';
+    assert(error < 0.07);
+
+    // compute the vectors at the edge points using VectorInterp
+    std::vector<double> dst_faceVectors(dst_numEdges * 3);
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_buildLocator(&vp, 256, 360., 0);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_findPoints(&vp, dst_numEdges, &dst_edgePoints[0], 1.e-10);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &dst_faceData[0], &dst_faceVectors[0]);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_del(&vp);
+    assert(ier == 0);
+
+    std::vector<double> dst_u(dst_numEdges);
+    std::vector<double> dst_v(dst_numEdges);
+    error = 0;
+    for (auto icell = 0; icell < dst_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
+
+            // convert to degrees
+            dst_u[edgeId] = (180./M_PI) * dst_faceVectors[edgeId*3 + 0];
+            dst_v[edgeId] = (180./M_PI) * dst_faceVectors[edgeId*3 + 1];
+
+
+            double lamMid = dst_edgePoints[edgeId*3 + 0] * deg2rad;
+            double theMid = dst_edgePoints[edgeId*3 + 1] * deg2rad;
+
+            double uExact = -sin(theMid)*cos(lamMid);
+            double vExact = sin(lamMid);
+
+            error += fabs(dst_u[edgeId] - uExact);
+            error += fabs(dst_v[edgeId] - vExact);
+        }
+    }
+    error /= dst_numCells * MNT_NUM_EDGES_PER_QUAD;
+    std::cout << "vector avg error from face vect interp: " << error << '\n';
+    assert(error < 0.2);
+
+    saveEdgeVectors(dst_grd, dst_u, dst_v, "testLatLonCs_dst_vectors.vtk");
+
+    // use the ExtensiveFieldAdaptor class to compute the vectors from the regridded edge/face data
+    std::vector<double> dst_u2(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> dst_v2(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    ExtensiveFieldAdaptor_t* dst_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&dst_efa);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_setGrid(&dst_efa, dst_grd);
+    assert(ier == 0);
+    ier = mnt_extensivefieldadaptor_toVectorField(&dst_efa, &dst_edgeData[0], &dst_faceData[0],
+                                                  &dst_u2[0], &dst_v2[0], MNT_CELL_BY_CELL_DATA);
+    assert(ier == 0);
+
+    // convert cell by cell data to unique edge Id data
+
+    std::vector<double> dst_u2edge(dst_numEdges);
+    std::vector<double> dst_v2edge(dst_numEdges);
+    error = 0;
+    for (auto icell = 0; icell < dst_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
+
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+
+            // NOTE: to degrees conversion
+            dst_u2edge[edgeId] = (180/M_PI) * dst_u2[k];
+            dst_v2edge[edgeId] = (180/M_PI) * dst_v2[k];
+
+            double lamMid = dst_edgePoints[edgeId*3 + 0] * deg2rad;
+            double theMid = dst_edgePoints[edgeId*3 + 1] * deg2rad;
+
+            double uExact = -sin(theMid)*cos(lamMid);
+            double vExact = sin(lamMid);
+
+            error += fabs(dst_u2edge[edgeId] - uExact);
+            error += fabs(dst_v2edge[edgeId] - vExact);            
+            
+            // std::cout << "dst icell = " << icell << " ie = " << ie << 
+            //               " u2edge = " << dst_u2edge[edgeId] << " exact = " << uExact << 
+            //               " v2edge = " << dst_v2edge[edgeId] << " exact = " << uExact << '\n';
+        }
+    }
+    saveEdgeVectors(dst_grd, dst_u2edge, dst_v2edge, "testLatLonCs_dst_vectors2.vtk");
+    error /= dst_numEdges;
+    std::cout << "vector avg error from from using toVector: " << error << '\n';
+    assert(error < 0.81);
+
+}
+
+
 void testCs() {
 
     int ier;
@@ -106,7 +356,7 @@ void testCs() {
     ier = mnt_grid_loadFromUgrid2DFile(&dst_grd, "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics");
     assert(ier == 0);
 
-    mnt_grid_dump(&src_grd, "testCs_dst.vtk");
+    mnt_grid_dump(&dst_grd, "testCs_dst.vtk");
 
 
     std::size_t dst_numEdges;
@@ -247,9 +497,9 @@ void testCs() {
             error += fabs(dst_u2edge[edgeId] - uExact);
             error += fabs(dst_v2edge[edgeId] - vExact);            
             
-            std::cout << "dst icell = " << icell << " ie = " << ie << 
-                          " u2edge = " << dst_u2edge[edgeId] << " exact = " << uExact << 
-                          " v2edge = " << dst_v2edge[edgeId] << " exact = " << uExact << '\n';
+            // std::cout << "dst icell = " << icell << " ie = " << ie << 
+            //               " u2edge = " << dst_u2edge[edgeId] << " exact = " << uExact << 
+            //               " v2edge = " << dst_v2edge[edgeId] << " exact = " << uExact << '\n';
         }
     }
     saveEdgeVectors(dst_grd, dst_u2edge, dst_v2edge, "testCs_dst_vectors2.vtk");
@@ -762,6 +1012,7 @@ void testCubedSphere2Itself() {
 
 int main(int argc, char** argv) {
 
+    testLatLon2Cs();
     testCs();
     testCubedSphere2Itself();
     testLatLon2Itself();
