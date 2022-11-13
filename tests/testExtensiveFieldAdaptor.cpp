@@ -130,6 +130,7 @@ void testLatLon2Cs() {
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
     assert(ier == 0);
+    // the same weights can be applied to edge and face data
     ier = mnt_regridedges_apply(&rgd, &src_edgeData[0], &dst_edgeData[0],
             MNT_CELL_BY_CELL_DATA);
     assert(ier == 0);

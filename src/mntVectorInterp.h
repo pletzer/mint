@@ -186,6 +186,21 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     const double data[], int placement,
                                     double vectors[]);
 
+
+/**
+ * Get the Face vectors at the edge locations from the unique edge Id data
+ * @param self instance of VectorInterp_t
+ * @param data edge integrated (extensive) data
+ * @param u x-component of the output vectors, size numEdges
+ * @param v y-component of the output vectors, size numEdges
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+
+
 /* private */
 
 inline double crossDotZHat(const Vec3& a, const Vec3& b) {

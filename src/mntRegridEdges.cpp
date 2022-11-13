@@ -3,6 +3,8 @@
 #include <mntPolysegmentIter.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
+#include <mntExtensiveFieldAdaptor.h>
+#include <mntVectorInterp.h>
 #include <mntWeights.h>
 #include "mntFileMeshNameExtractor.h"
 
@@ -909,6 +911,113 @@ int mnt_regridedges_apply(RegridEdges_t** self,
         return mnt_regridedges_applyToUniqueEdgeData(self, src_data, dst_data);
     }
 }
+
+
+int mnt_regridedges_edgeVectorApplyToCellByCellData(RegridEdges_t** self,
+                                  const double src_u[], const double src_v[],
+                                  double dst_u[], double dst_v[]) {
+
+    std::string msg = "NOT IMPLEMENTED";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return 1;
+}
+
+int mnt_regridedges_faceVectorApplyToCellByCellData(RegridEdges_t** self,
+                                  const double src_u[], const double src_v[],
+                                  double dst_u[], double dst_v[]) {
+
+    std::string msg = "NOT IMPLEMENTED";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return 1;
+}
+
+int mnt_regridedges_edgeVectorApplyToUniqueEdgeData(RegridEdges_t** self,
+                                  const double src_u[], const double src_v[],
+                                  double dst_u[], double dst_v[]) {
+
+    std::string msg = "NOT IMPLEMENTED";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return 1;
+}
+
+int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
+                                  const double src_u[], const double src_v[],
+                                  double dst_u[], double dst_v[]) {
+
+    int ier;
+    int numFailures = 0;
+
+    // compute the face extensive field from src_u and src_v
+    ExtensiveFieldAdaptor_t* efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&efa);
+    if (ier != 0) numFailures++;
+    ier = mnt_extensivefieldadaptor_setGrid(&efa, (*self)->dstGridObj);
+    if (ier != 0) numFailures++;
+
+    std::size_t src_numEdges;
+    ier =  mnt_regridedges_getNumSrcEdges(self, &src_numEdges);
+    if (ier != 0) numFailures++;
+    std::vector<double> srcData(src_numEdges);
+
+    ier = mnt_extensivefieldadaptor_fromVectorField(&efa, &src_u[0], &src_v[0], &srcData[0],
+         MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W2);
+    if (ier != 0) numFailures++;
+    ier = mnt_extensivefieldadaptor_del(&efa);
+    if (ier != 0) numFailures++;
+
+    std::size_t dst_numEdges;
+    ier =  mnt_regridedges_getNumDstEdges(self, &dst_numEdges);
+    if (ier != 0) numFailures++;
+    std::vector<double> dstData(dst_numEdges);
+
+    // regrid the extensive field
+    ier = mnt_regridedges_applyToUniqueEdgeData(self, &srcData[0], &dstData[0]);
+    if (ier != 0) numFailures++;
+
+    std::size_t dst_numCells;
+    ier =  mnt_regridedges_getNumDstCells(self, &dst_numCells);
+    if (ier != 0) numFailures++;
+
+    // compute the u, v components on the destination grid from the extensive field
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    if (ier != 0) numFailures++;
+    ier = mnt_vectorinterp_setGrid(&vp, (*self)->dstGridObj);
+    if (ier != 0) numFailures++;
+    ier = mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(&vp, &dstData[0],
+                                                                     dst_u, dst_v);
+    if (ier != 0) numFailures++;
+
+    ier = mnt_vectorinterp_del(&vp);
+    if (ier != 0) numFailures++;
+ 
+    return numFailures;
+}
+
+LIBRARY_API
+int mnt_regridedges_vectorApply(RegridEdges_t** self, 
+                          const double src_u[], const double src_v[],
+                          double dst_u[], double dst_v[],
+                          int placement, int fs) {
+
+    if (placement == MNT_CELL_BY_CELL_DATA) {
+        if (fs == MNT_FUNC_SPACE_W2) {
+            return mnt_regridedges_faceVectorApplyToCellByCellData(self, src_u, src_v, dst_u, dst_v);
+        }
+        else {
+            return mnt_regridedges_edgeVectorApplyToCellByCellData(self, src_u, src_v, dst_u, dst_v);
+        }
+    }
+    else {
+        if (fs == MNT_FUNC_SPACE_W2) {
+            return mnt_regridedges_faceVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v); 
+        }
+        else {
+            return mnt_regridedges_edgeVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v);
+        }
+    }
+}
+
 
 LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 
