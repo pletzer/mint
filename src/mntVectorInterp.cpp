@@ -433,11 +433,6 @@ int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** 
     int ier;
     int numFailures = 0;
 
-    if (!(*self)->calledFindPoints) {
-        msg ="must call findPoints before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -1;
-    }
     if (!(*self)->grid) {
         msg ="must set the grid before calling this";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
@@ -445,8 +440,8 @@ int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** 
     }
 
     Vec3 drdXsi, drdEta;
-    std::size_t edgeId;
-    int edgeSign;
+    std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
+    int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
 
     std::size_t numCells;
     ier =  mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
@@ -459,13 +454,8 @@ int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** 
     // count the number of cells that are adjacent to each edge
     std::vector<int> numAjdacentCells(numEdges, 0);
 
-    // mid edge location in param space of each of the edges in a cell
-    const double xsis[] = {0.5, 1.0, 0.5, 0.0};
-    const double etas[] = {0.0, 0.5, 1.0, 0.5};
-
     // vertex positions
     Vec3 v0, v1, v2, v3;
-    double xsi, eta, isx, ate;
 
     // initialize the vector field to zero
     for (auto i = 0; i < numEdges; ++i) {
@@ -505,52 +495,45 @@ int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** 
             ier = 1;
         }
 
+
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
+        if (ier != 0) numFailures++;
+
         // cotangent vectors obtained by finite differencing and linearly interpolating
         drdXsi = 0.5*(a + c);
         drdEta = 0.5*(d + b);
 
+        // note: negative sign for edges 0 and 2
+        double value0 = - data[edgeId0]*edgeSign0/jac;
+        double value1 = + data[edgeId1]*edgeSign1/jac;
+        double value2 = - data[edgeId2]*edgeSign2/jac;
+        double value3 = + data[edgeId3]*edgeSign3/jac;
+
         // edge 0
-        eta = etas[0];
-        ate = 1.0 - eta;
-
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId, &edgeSign);
-        if (ier != 0) numFailures++;
-
-        u[edgeId] +=  - data[edgeId]*edgeSign*ate*drdEta[0]/jac;
-        v[edgeId] +=  - data[edgeId]*edgeSign*ate*drdEta[1]/jac;
-        numAjdacentCells[edgeId]++;
+        u[edgeId0] +=  value0*drdEta[0] + 0.5*(value1 + value3)*drdXsi[0];
+        v[edgeId0] +=  value0*drdEta[1] + 0.5*(value1 + value3)*drdXsi[1];
+        numAjdacentCells[edgeId0]++;
 
         // edge 1
-        xsi = xsis[1];
-
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId, &edgeSign);
-        if (ier != 0) numFailures++;
-
-        u[edgeId] +=  data[edgeId]*edgeSign*xsi*drdXsi[0]/jac;
-        v[edgeId] +=  data[edgeId]*edgeSign*xsi*drdXsi[1]/jac;
-        numAjdacentCells[edgeId]++;
+        u[edgeId1] +=  value1*drdXsi[0] + 0.5*(value0 + value2)*drdEta[0];
+        v[edgeId1] +=  value1*drdXsi[1] + 0.5*(value0 + value2)*drdEta[1];
+        numAjdacentCells[edgeId1]++;
 
         // edge 2
-        eta = etas[2];
-
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId, &edgeSign);
-        if (ier != 0) numFailures++;
-
-        u[edgeId] +=  - data[edgeId]*edgeSign*eta*drdEta[0]/jac;
-        v[edgeId] +=  - data[edgeId]*edgeSign*eta*drdEta[1]/jac;
-        numAjdacentCells[edgeId]++;
-
+        u[edgeId2] +=  value2*drdEta[0] + 0.5*(value1 + value3)*drdXsi[0];
+        v[edgeId2] +=  value2*drdEta[1] + 0.5*(value1 + value3)*drdXsi[1];
+        numAjdacentCells[edgeId2]++;
 
         // edge 3
-        xsi = xsis[3];
-        isx = 1.0 - xsi;
-
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId, &edgeSign);
-        if (ier != 0) numFailures++;
-
-        u[edgeId] +=  data[edgeId]*edgeSign*isx*drdXsi[0]/jac;
-        v[edgeId] +=  data[edgeId]*edgeSign*isx*drdXsi[0]/jac;
-        numAjdacentCells[edgeId]++;
+        u[edgeId3] +=  value3*drdXsi[0] + 0.5*(value2 + value0)*drdEta[0];
+        v[edgeId3] +=  value3*drdXsi[1] + 0.5*(value2 + value0)*drdEta[1];
+        numAjdacentCells[edgeId3]++;
 
     }
 

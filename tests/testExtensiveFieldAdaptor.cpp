@@ -258,6 +258,14 @@ void testLatLon2Cs() {
     std::cout << "vector avg error from from using toVector: " << error << '\n';
     assert(error < 0.81);
 
+    // use regrid
+    std::vector<double> dst_uedge3(dst_numEdges);
+    std::vector<double> dst_vedge3(dst_numEdges);
+    ier = mnt_regridedges_vectorApply(&rgd, &src_uedge[0], &src_vedge[0],
+         &dst_uedge3[0], &dst_vedge3[0], MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+    saveEdgeVectors(dst_grd, dst_uedge3, dst_vedge3, "testLatLonCs_dst_vectors3.vtk");
+
 }
 
 
