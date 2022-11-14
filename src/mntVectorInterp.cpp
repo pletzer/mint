@@ -453,6 +453,7 @@ int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
     return ier;
 }
 
+LIBRARY_API
 int mnt_vectorinterp__getEdgeectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
@@ -462,6 +463,7 @@ int mnt_vectorinterp__getEdgeectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** se
 
 }
 
+LIBRARY_API
 int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
@@ -470,7 +472,7 @@ int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
     return -1;
 }
 
-
+LIBRARY_API
 int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
@@ -619,7 +621,7 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
     return numFailures;
 }
 
-
+LIBRARY_API
 int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {

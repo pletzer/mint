@@ -226,18 +226,19 @@ int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
 
 /* private */
 
+LIBRARY_API
 int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]);
-
+LIBRARY_API
 int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]);
-
+LIBRARY_API
 int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]);
-
+LIBRARY_API
 int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]);
