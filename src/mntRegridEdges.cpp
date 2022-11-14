@@ -1019,27 +1019,15 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
     if (ier != 0) numFailures++;
-    ier = mnt_vectorinterp_buildLocator(&vp, 256, 360., 0);
-    if (ier != 0) numFailures++;
-    ier = mnt_vectorinterp_findPoints(&vp, dst_numEdges, &dst_edgePoints[0], 1.e-10);
-    if (ier != 0) numFailures++;
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &dst_faceData[0], &dst_faceVectors[0]);
+
+    // rescale
+    for (auto i = 0; i < dst_faceData.size(); ++i) {
+        dst_faceData[i] *= (180./M_PI);
+    }
+    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellDataOnEdges(&vp, &dst_faceData[0], dst_u, dst_v);
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_del(&vp);
     if (ier != 0) numFailures++;
-
-    // fill in the output arrays
-    for (auto icell = 0; icell < dst_numCells; ++icell) {
-        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
-            ier = mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
-            if (ier != 0) numFailures++;
-
-            // convert to degrees
-            dst_u[edgeId] = (180./M_PI) * dst_faceVectors[edgeId*3 + 0];
-            dst_v[edgeId] = (180./M_PI) * dst_faceVectors[edgeId*3 + 1];
-
-        }
-    }
 
     return numFailures;
 }

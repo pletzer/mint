@@ -132,7 +132,7 @@ void test1() {
     saveEdgeVectors(src_grd, src_u, src_v, "test1_src_vectors.vtk");
     saveEdgeVectors(dst_grd, dst_u, dst_v, "test1_dst_vectors.vtk");
 
-    assert(error < 0.06);
+    assert(error < 0.025);
 
     // cleanup
     mnt_regridedges_del(&rgd);
