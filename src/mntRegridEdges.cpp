@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
+#include <cmath>
+
 #include "mntLogger.h"
 #include <mntRegridEdges.h>
 #include <mntPolysegmentIter.h>
@@ -1024,94 +1027,11 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     for (auto i = 0; i < dst_faceData.size(); ++i) {
         dst_faceData[i] *= (180./M_PI);
     }
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellDataOnEdges(&vp, &dst_faceData[0], dst_u, dst_v);
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA, dst_u, dst_v);
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_del(&vp);
     if (ier != 0) numFailures++;
 
-    return numFailures;
-}
-
-
-int mnt_regridedges_faceVectorApplyToUniqueEdgeData2(RegridEdges_t** self,
-                                  const double src_u[], const double src_v[],
-                                  double dst_u[], double dst_v[]) {
-
-    int ier;
-    int numFailures = 0;
-
-    // compute the face extensive field from src_u and src_v
-    ExtensiveFieldAdaptor_t* efa = NULL;
-    ier = mnt_extensivefieldadaptor_new(&efa);
-    if (ier != 0) numFailures++;
-    ier = mnt_extensivefieldadaptor_setGrid(&efa, (*self)->srcGridObj);
-    if (ier != 0) numFailures++;
-
-    std::size_t src_numEdges;
-    ier =  mnt_regridedges_getNumSrcEdges(self, &src_numEdges);
-    if (ier != 0) numFailures++;
-
-    // allocate the extensive field on the src grid
-    std::vector<double> srcData(src_numEdges);
-
-
-    // compute the extensive field on the src grid
-    ier = mnt_extensivefieldadaptor_fromVectorField(&efa, &src_u[0], &src_v[0], &srcData[0],
-         MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
-    if (ier != 0) numFailures++;
-    ier = mnt_extensivefieldadaptor_del(&efa);
-    if (ier != 0) numFailures++;
-
-    std::size_t dst_numEdges;
-    ier =  mnt_regridedges_getNumDstEdges(self, &dst_numEdges);
-    if (ier != 0) numFailures++;
-
-    // allocate the extensive field on the dst grid
-    std::vector<double> dstData(dst_numEdges);
-
-    // regrid the extensive field
-    ier = mnt_regridedges_apply(self, &srcData[0], &dstData[0], MNT_UNIQUE_EDGE_DATA);
-    if (ier != 0) numFailures++;
-
-    std::size_t dst_numCells;
-    ier =  mnt_regridedges_getNumDstCells(self, &dst_numCells);
-    if (ier != 0) numFailures++;
-
-    // DEBUG
-    Vec3 p0, p1;
-    std::size_t edgeId;
-    int edgeSign;
-    double error = 0;
-    for (auto icell = 0; icell < dst_numCells; ++icell) {
-        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
-            mnt_grid_getEdgeId(&(*self)->dstGridObj, icell, ie, &edgeId, &edgeSign);
-            mnt_grid_getPoints(&(*self)->dstGridObj, icell, ie, &p0[0], &p1[0]);
-            double lam0 = p0[0]*M_PI/180;
-            double lam1 = p1[0]*M_PI/180;
-            double the0 = p0[1]*M_PI/180;
-            double the1 = p1[1]*M_PI/180;
-            double s0 = cos(the0)*cos(lam0);
-            double s1 = cos(the1)*cos(lam1);
-            error += fabs(edgeSign*(s1 - s0) - dstData[edgeId]);
-            std::cerr << "... icell=" << icell << " ie=" << ie << " dstData=" << dstData[edgeId] << " exact=" << edgeSign*(s1 - s0) << '\n';
-        }
-    }
-    error /= (dst_numCells * MNT_NUM_EDGES_PER_QUAD);
-    std::cerr << "avg error from regridding extensive fields: " << error << '\n';
-    // END DEBUG
-
-    // compute the u, v components on the destination grid from the extensive field
-    VectorInterp_t* vp = NULL;
-    ier = mnt_vectorinterp_new(&vp);
-    if (ier != 0) numFailures++;
-    ier = mnt_vectorinterp_setGrid(&vp, (*self)->dstGridObj);
-    if (ier != 0) numFailures++;
-    ier = mnt_vectorinterp_getFaceVectorsFromUniqueEdgeDataOnEdges(&vp, &dstData[0], dst_u, dst_v);
-    if (ier != 0) numFailures++;
-
-    ier = mnt_vectorinterp_del(&vp);
-    if (ier != 0) numFailures++;
- 
     return numFailures;
 }
 

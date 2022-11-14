@@ -425,8 +425,8 @@ void testCubedSphereFaceVectorsOnEdge() {
         }
     }
 
-    ier = mnt_vectorinterp_getFaceVectorsFromUniqueEdgeDataOnEdges(&vp,
-        &faceData[0], &uedge[0], &vedge[0]);
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp,
+        &faceData[0], MNT_UNIQUE_EDGE_DATA, &uedge[0], &vedge[0]);
     assert(ier == 0);
 
     // rescale

@@ -324,7 +324,7 @@ int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
 }
 
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self, 
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self, 
                                                       const double data[],
                                                       double vectors[]) {
 
@@ -423,9 +423,55 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
     return ier;
 }
 
+LIBRARY_API
+int mnt_vectorinterp_getEdgeVectorsOnEdges(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[]) {
+    int ier;
+    if (placement == MNT_CELL_BY_CELL_DATA) {
+        ier = mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(self, data, u, v);
+    }
+    else {
+        ier = mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeDataOnEdges(self, data, u, v);
+    }
+    return ier;
+}
 
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
+int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[]) {
+    int ier;
+    if (placement == MNT_CELL_BY_CELL_DATA) {
+        ier = mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(self, data, u, v);
+    }
+    else {
+        ier = mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(self, data, u, v);
+    }
+    return ier;
+}
+
+int mnt_vectorinterp__getEdgeectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]) {
+    std::string msg ="NOT YET IMPLEMENTED";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return -1;
+
+}
+
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]) {
+    std::string msg ="NOT YET IMPLEMENTED";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return -1;
+}
+
+
+int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
 
@@ -574,9 +620,7 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** se
 }
 
 
-
-LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
 

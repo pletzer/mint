@@ -186,35 +186,62 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     const double data[], int placement,
                                     double vectors[]);
 
-
 /**
- * Get the face vectors at the edge locations from the unique edge Id data
+ * Get the edge vectors at the mid edge locations from the extensive field
  * @param self instance of VectorInterp_t
- * @param data edge integrated (extensive) data
+ * @param data edge integrated (extensive) data, size depends on placement (see below)
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
+ *                  If placement == MNT_CELL_BY_CELL_DATA then data size is 
+ *                  num cells * num edges per cell, if MNT_UNIQUE_EDGE_DATA then
+ *                  data size should be num edges.
  * @param u x-component of the output vectors, size numEdges
  * @param v y-component of the output vectors, size numEdges
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
-                                                          const double data[],
-                                                          double u[], double v[]);
+int mnt_vectorinterp_getEdgeVectorsOnEdges(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[]);
 
 /**
- * Get the face vectors at the edge locations from the cell be cell data
+ * Get the face vectors at the mid edge locations from the extensive field
  * @param self instance of VectorInterp_t
- * @param data edge integrated (extensive) data
+ * @param data edge integrated (extensive) data, size depends on placement (see below)
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
+ *                  If placement == MNT_CELL_BY_CELL_DATA then data size is 
+ *                  num cells * num edges per cell, if MNT_UNIQUE_EDGE_DATA then
+ *                  data size should be num edges.
  * @param u x-component of the output vectors, size numEdges
  * @param v y-component of the output vectors, size numEdges
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
-                                                          const double data[],
-                                                          double u[], double v[]);
+int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[]);
+
 
 
 /* private */
+
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+
+int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+
 
 inline double crossDotZHat(const Vec3& a, const Vec3& b) {
     return a[0]*b[1] - a[1]*b[0];
