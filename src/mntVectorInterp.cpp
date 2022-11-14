@@ -425,7 +425,7 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
 
 
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** self,
+int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
 
@@ -509,31 +509,57 @@ int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** 
         drdXsi = 0.5*(a + c);
         drdEta = 0.5*(d + b);
 
-        // note: negative sign for edges 0 and 2
-        double value0 = - data[edgeId0]*edgeSign0/jac;
-        double value1 = + data[edgeId1]*edgeSign1/jac;
-        double value2 = - data[edgeId2]*edgeSign2/jac;
-        double value3 = + data[edgeId3]*edgeSign3/jac;
+
+        // interpolate
+        double data0 = data[edgeId0] * edgeSign0;
+        double data1 = data[edgeId1] * edgeSign1;
+        double data2 = data[edgeId2] * edgeSign2;
+        double data3 = data[edgeId3] * edgeSign3;
 
         // edge 0
-        u[edgeId0] +=  value0*drdEta[0] + 0.5*(value1 + value3)*drdXsi[0];
-        v[edgeId0] +=  value0*drdEta[1] + 0.5*(value1 + value3)*drdXsi[1];
+        double xsi = 0.5;
+        double eta = 0.0;
+        double isx = 1.0 - xsi;
+        double ate = 1.0 - eta;
+        u[edgeId0] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
+                    - (data0*ate + data2*eta)*drdEta[0]/jac;
+        v[edgeId0] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
+                    - (data0*ate + data2*eta)*drdEta[1]/jac;
         numAjdacentCells[edgeId0]++;
 
         // edge 1
-        u[edgeId1] +=  value1*drdXsi[0] + 0.5*(value0 + value2)*drdEta[0];
-        v[edgeId1] +=  value1*drdXsi[1] + 0.5*(value0 + value2)*drdEta[1];
+        xsi = 1.0;
+        eta = 0.5;
+        isx = 1.0 - xsi;
+        ate = 1.0 - eta;
+        u[edgeId1] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
+                    - (data0*ate + data2*eta)*drdEta[0]/jac;
+        v[edgeId1] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
+                    - (data0*ate + data2*eta)*drdEta[1]/jac;
         numAjdacentCells[edgeId1]++;
 
         // edge 2
-        u[edgeId2] +=  value2*drdEta[0] + 0.5*(value1 + value3)*drdXsi[0];
-        v[edgeId2] +=  value2*drdEta[1] + 0.5*(value1 + value3)*drdXsi[1];
+        xsi = 0.5;
+        eta = 1.0;
+        isx = 1.0 - xsi;
+        ate = 1.0 - eta;
+        u[edgeId2] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
+                    - (data0*ate + data2*eta)*drdEta[0]/jac;
+        v[edgeId2] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
+                    - (data0*ate + data2*eta)*drdEta[1]/jac;
         numAjdacentCells[edgeId2]++;
 
         // edge 3
-        u[edgeId3] +=  value3*drdXsi[0] + 0.5*(value2 + value0)*drdEta[0];
-        v[edgeId3] +=  value3*drdXsi[1] + 0.5*(value2 + value0)*drdEta[1];
+        xsi = 0.0;
+        eta = 0.5;
+        isx = 1.0 - xsi;
+        ate = 1.0 - eta;
+        u[edgeId3] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
+                    - (data0*ate + data2*eta)*drdEta[0]/jac;
+        v[edgeId3] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
+                    - (data0*ate + data2*eta)*drdEta[1]/jac;
         numAjdacentCells[edgeId3]++;
+
 
     }
 

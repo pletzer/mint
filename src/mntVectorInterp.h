@@ -196,7 +196,7 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromToUniqueEdgeDataOnEdges(VectorInterp_t** self,
+int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]);
 

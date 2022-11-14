@@ -3,6 +3,8 @@
 #include <mntGrid.h>
 #include <mntVectorInterp.h>
 #include <mntMatMxN.h>
+#include "saveEdgeVectors.h"
+
 #undef NDEBUG // turn on asserts
 #include <cassert>
 #include <cmath>
@@ -364,8 +366,100 @@ void testUniformGrid(int nx, int ny) {
     mnt_grid_del(&mgrid);
 }
 
+void testCubedSphereFaceVectorsOnEdge() {
+
+    int ier;
+
+    // read the grid
+    Grid_t* grd = NULL;
+    mnt_grid_new(&grd);
+    mnt_grid_setFlags(&grd, 1, 1, 1); // cubed-sphere, degrees
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
+    assert(ier == 0);
+
+    std::size_t numEdges;
+    mnt_grid_getNumberOfEdges(&grd, &numEdges);
+    std::size_t numCells;
+    mnt_grid_getNumberOfCells(&grd, &numCells);
+    std::cout << "testCubedSphereFaceVectorsOnEdge: num cells: " << numCells << " num edges: " << numEdges << '\n';
+
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, grd);
+    assert(ier == 0);
+    // mnt_vectorinterp_buildLocator(&vp, 256, 360., 0);
+
+    std::vector<double> faceData(numEdges);
+    std::vector<double> uedge(numEdges);
+    std::vector<double> vedge(numEdges);
+    std::vector<double> uedgeExact(numEdges);
+    std::vector<double> vedgeExact(numEdges);
+    std::size_t edgeId;
+    int edgeSign;
+    Vec3 p0, p1;
+    std::vector<Vec3> p0s(numEdges);
+    std::vector<Vec3> p1s(numEdges);
+
+    for (std::size_t icell = 0; icell < numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &edgeSign);
+            assert(ier == 0);
+            ier = mnt_grid_getPoints(&grd, icell, ie, &p0[0], &p1[0]);
+            assert(ier == 0);
+            double lam0 = p0[0] * M_PI/180;
+            double lam1 = p1[0] * M_PI/180;
+            double the0 = p0[1] * M_PI/180;
+            double the1 = p1[1] * M_PI/180;
+            double s0 = cos(the0) * cos(lam0);
+            double s1 = cos(the1) * cos(lam1);
+            double lamMid = 0.5*(lam0 + lam1);
+            double theMid = 0.5*(the0 + the1);
+
+            faceData[edgeId] = edgeSign * (s1 - s0);
+            uedgeExact[edgeId] = - sin(theMid) * cos(lamMid);
+            vedgeExact[edgeId] = sin(lamMid);
+
+            p0s[edgeId] = p0;
+            p1s[edgeId] = p1;
+        }
+    }
+
+    ier = mnt_vectorinterp_getFaceVectorsFromUniqueEdgeDataOnEdges(&vp,
+        &faceData[0], &uedge[0], &vedge[0]);
+    assert(ier == 0);
+
+    // rescale
+    for (auto i = 0; i < numEdges; ++i) {
+        uedge[i] *= 180./M_PI;
+        vedge[i] *= 180./M_PI;
+    }
+
+    // check
+    double error = 0;
+    for (auto i = 0; i < numEdges; ++i) {
+        error += fabs(uedgeExact[i] - uedge[i]) + fabs(vedgeExact[i] - vedge[i]);
+        std::cerr << "testCubedSphereFaceVectorsOnEdge: edge=" << i << " points " << p0s[edgeId] << ';' << p1s[edgeId]
+                  << " u=" << uedge[i] << " (exact " << uedgeExact[i] 
+                  << ") v=" << vedge[i] << " (exact " << vedgeExact[i] << ")\n";
+    }
+    error /= numEdges;
+    std::cerr << "testCubedSphereFaceVectorsOnEdge error: " << error << '\n';
+    assert(error < 0.14);
+
+    mnt_grid_dump(&grd, "testCubedSphereFaceVectorsOnEdge_grid.vtk");
+    saveEdgeVectors(grd, uedge, vedge, "testCubedSphereFaceVectorsOnEdge_vectors.vtk");
+    saveEdgeVectors(grd, uedgeExact, vedgeExact, "testCubedSphereFaceVectorsOnEdge_vectorsExact.vtk");
+
+
+    // destroy
+    mnt_vectorinterp_del(&vp);
+    mnt_grid_del(&grd);
+}
+
 int main(int argc, char** argv) {
 
+    testCubedSphereFaceVectorsOnEdge();
     testSimple();
     testRotated();
     testUniformGrid(8, 4);
