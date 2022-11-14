@@ -108,7 +108,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
 }
 
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self, 
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self, 
                                                       const double data[],
                                                       double vectors[]) {
 
@@ -180,7 +180,7 @@ int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
 }
 
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self, 
+int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self, 
                                                       const double data[],
                                                       double vectors[]) {
 
@@ -245,7 +245,7 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
 }
 
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self, 
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self, 
                                                       const double data[],
                                                       double vectors[]) {
     
@@ -401,10 +401,10 @@ int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
                                     double vectors[]) {
     int ier;
     if (placement == MNT_CELL_BY_CELL_DATA) {
-        ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(self, data, vectors);
+        ier = mnt_vectorinterp__getEdgeVectorsFromCellByCellData(self, data, vectors);
     }
     else {
-        ier = mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(self, data, vectors);
+        ier = mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(self, data, vectors);
     }
     return ier;
 }
@@ -415,10 +415,10 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     double vectors[]) {
     int ier;
     if (placement == MNT_CELL_BY_CELL_DATA) {
-        ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(self, data, vectors);
+        ier = mnt_vectorinterp__getFaceVectorsFromCellByCellData(self, data, vectors);
     }
     else {
-        ier = mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(self, data, vectors);
+        ier = mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(self, data, vectors);
     }
     return ier;
 }
@@ -454,7 +454,7 @@ int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
 }
 
 LIBRARY_API
-int mnt_vectorinterp__getEdgeectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
     std::string msg ="NOT YET IMPLEMENTED";
@@ -506,7 +506,7 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
     Vec3 v0, v1, v2, v3;
 
     // initialize the vector field to zero
-    for (auto i = 0; i < numEdges; ++i) {
+    for (std::size_t i = 0; i < numEdges; ++i) {
         u[i] = 0.0;
         v[i] = 0.0;
     }
@@ -612,7 +612,7 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
     }
 
     // all the edges that divide two cells have been double counted, now correcting
-    for (auto i = 0; i < numEdges; ++i) {
+    for (std::size_t i = 0; i < numEdges; ++i) {
         int count = std::max(1, numAjdacentCells[i]);
         u[i] /= count;
         v[i] /= count;
@@ -655,7 +655,7 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
     Vec3 v0, v1, v2, v3;
 
     // initialize the vector field to zero
-    for (auto i = 0; i < numEdges; ++i) {
+    for (std::size_t i = 0; i < numEdges; ++i) {
         u[i] = 0.0;
         v[i] = 0.0;
     }
@@ -761,7 +761,7 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
     }
 
     // all the edges that divide two cells have been double counted, now correcting
-    for (auto i = 0; i < numEdges; ++i) {
+    for (std::size_t i = 0; i < numEdges; ++i) {
         int count = std::max(1, numAjdacentCells[i]);
         u[i] /= count;
         v[i] /= count;

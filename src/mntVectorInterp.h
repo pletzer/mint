@@ -102,7 +102,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
@@ -117,7 +117,7 @@ int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
+int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 /**
@@ -131,7 +131,7 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
@@ -146,7 +146,7 @@ int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 

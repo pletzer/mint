@@ -179,7 +179,7 @@ void testLatLon2Cs() {
     assert(ier == 0);
     ier = mnt_vectorinterp_findPoints(&vp, dst_numEdges, &dst_edgePoints[0], 1.e-10);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &dst_faceData[0], &dst_faceVectors[0]);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA, &dst_faceVectors[0]);
     assert(ier == 0);
     ier = mnt_vectorinterp_del(&vp);
     assert(ier == 0);
@@ -444,7 +444,7 @@ void testCs() {
     assert(ier == 0);
     ier = mnt_vectorinterp_findPoints(&vp, dst_numEdges, &dst_edgePoints[0], 1.e-10);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &dst_faceData[0], &dst_faceVectors[0]);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA, &dst_faceVectors[0]);
     assert(ier == 0);
     ier = mnt_vectorinterp_del(&vp);
     assert(ier == 0);

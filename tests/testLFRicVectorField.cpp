@@ -107,8 +107,9 @@ void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fl
             assert(ier == 0);
 
             // estimate the vector at the edge location
-            ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &fluxes[0],
-                                                            &velocity[0]);
+            ier = mnt_vectorinterp_getFaceVectors(&vp, &fluxes[0],
+                                                  MNT_CELL_BY_CELL_DATA,
+                                                  &velocity[0]);
             assert(ier == 0);
 
             std::cout << "cell " << icell << " edge " << ie << " p0;p1=" << p0 << ";" << p1 << " flx=" << fluxes[4*icell+ie] << " v=" << velocity << '\n';

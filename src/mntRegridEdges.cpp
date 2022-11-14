@@ -977,7 +977,7 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     int edgeSign;
     std::vector<double> src_uCellByCell(src_numCells*MNT_NUM_EDGES_PER_QUAD);
     std::vector<double> src_vCellByCell(src_numCells*MNT_NUM_EDGES_PER_QUAD);
-    for (auto icell = 0; icell < src_numCells; ++icell) {
+    for (std::size_t icell = 0; icell < src_numCells; ++icell) {
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             ier = mnt_grid_getEdgeId(&src_grd, icell, ie, &edgeId, &edgeSign);
             if (ier != 0) numFailures++;
@@ -1004,7 +1004,7 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     std::vector<double> dst_faceVectors(dst_numEdges * 3);
     std::vector<double> dst_edgePoints(dst_numEdges * 3);
     Vec3 p0, p1, pMid;
-    for (auto icell = 0; icell < dst_numCells; ++icell) {
+    for (std::size_t icell = 0; icell < dst_numCells; ++icell) {
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             ier = mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
             if (ier != 0) numFailures++;
@@ -1024,7 +1024,7 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     if (ier != 0) numFailures++;
 
     // rescale
-    for (auto i = 0; i < dst_faceData.size(); ++i) {
+    for (std::size_t i = 0; i < dst_faceData.size(); ++i) {
         dst_faceData[i] *= (180./M_PI);
     }
     ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA, dst_u, dst_v);
