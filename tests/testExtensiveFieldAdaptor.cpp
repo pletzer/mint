@@ -259,12 +259,19 @@ void testLatLon2Cs() {
     assert(error < 0.81);
 
     // use regrid
-    std::vector<double> dst_uedge3(dst_numEdges);
-    std::vector<double> dst_vedge3(dst_numEdges);
+    std::vector<double> dst_u3edge(dst_numEdges);
+    std::vector<double> dst_v3edge(dst_numEdges);
     ier = mnt_regridedges_vectorApply(&rgd, &src_uedge[0], &src_vedge[0],
-         &dst_uedge3[0], &dst_vedge3[0], MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
+         &dst_u3edge[0], &dst_v3edge[0], MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
     assert(ier == 0);
-    saveEdgeVectors(dst_grd, dst_uedge3, dst_vedge3, "testLatLonCs_dst_vectors3.vtk");
+
+    // convert to degrees
+    for (auto i = 0; i < dst_u3edge.size(); ++i) {
+        dst_u3edge[i] *= (180./M_PI);
+        dst_v3edge[i] *= (180./M_PI);
+    }
+
+    saveEdgeVectors(dst_grd, dst_u3edge, dst_v3edge, "testLatLonCs_dst_vectors3.vtk");
 
 }
 
@@ -1022,11 +1029,11 @@ void testCubedSphere2Itself() {
 int main(int argc, char** argv) {
 
     testLatLon2Cs();
-    testCs();
-    testCubedSphere2Itself();
-    testLatLon2Itself();
-    testCartesian();
-    test2Cells();
+    //testCs();
+    // testCubedSphere2Itself();
+    // testLatLon2Itself();
+    // testCartesian();
+    // test2Cells();
 
     mnt_printLogMessages();
 
