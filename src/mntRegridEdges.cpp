@@ -1027,7 +1027,8 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     for (std::size_t i = 0; i < dst_faceData.size(); ++i) {
         dst_faceData[i] *= (180./M_PI);
     }
-    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA, dst_u, dst_v);
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA,
+                                                 dst_u, dst_v);
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_del(&vp);
     if (ier != 0) numFailures++;
