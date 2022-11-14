@@ -1000,33 +1000,22 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
 
     Grid_t* dst_grd = (*self)->dstGridObj;
 
-    // compute the vectors at the edge points using VectorInterp
-    std::vector<double> dst_faceVectors(dst_numEdges * 3);
-    std::vector<double> dst_edgePoints(dst_numEdges * 3);
-    Vec3 p0, p1, pMid;
-    for (std::size_t icell = 0; icell < dst_numCells; ++icell) {
-        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
-            ier = mnt_grid_getEdgeId(&dst_grd, icell, ie, &edgeId, &edgeSign);
-            if (ier != 0) numFailures++;
-            ier = mnt_grid_getPoints(&dst_grd, icell, ie, &p0[0], &p1[0]);
-            if (ier != 0) numFailures++;
-            // edge mid-point
-            dst_edgePoints[edgeId*3 + 0] = 0.5*(p0[0] + p1[0]);
-            dst_edgePoints[edgeId*3 + 1] = 0.5*(p0[1] + p1[1]);
-            dst_edgePoints[edgeId*3 + 2] = 0.0;
-        }
-    }
-
+    // turn the regridded extensive field into a vector field
     VectorInterp_t* vp = NULL;
     ier = mnt_vectorinterp_new(&vp);
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
     if (ier != 0) numFailures++;
 
-    // rescale
-    for (std::size_t i = 0; i < dst_faceData.size(); ++i) {
-        dst_faceData[i] *= (180./M_PI);
+    // rescale, NEED TO CHECK THIS, needs to be consistent with the src_faceData
+    if (src_grd->degrees && dst_grd->degrees) {
+        for (std::size_t i = 0; i < dst_faceData.size(); ++i) {
+            dst_faceData[i] *= (180./M_PI);
+        }
     }
+
+    // note: the data are cell by cell but the vectors are dimensioned num edges
+    // we don't need to find the points in this case
     ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA,
                                                  dst_u, dst_v);
     if (ier != 0) numFailures++;
