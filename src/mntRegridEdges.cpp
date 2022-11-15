@@ -972,7 +972,7 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     // compute the extensive field from the vector field
     std::vector<double> src_data(src_numCells*MNT_NUM_EDGES_PER_QUAD);
     ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_uCellByCell[0], &src_vCellByCell[0],
-         &src_data[0], MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W2);
+         &src_data[0], MNT_CELL_BY_CELL_DATA, fs);
     if (ier != 0) numFailures++;
 
     // regrid the extensive fields
@@ -998,8 +998,14 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
 
     // note: the data are cell by cell but the vectors are dimensioned num edges
     // we don't need to find the points in this case
-    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
-                                                 dst_u, dst_v);
+    if (fs == MNT_FUNC_SPACE_W2) {
+        ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
+                                                     dst_u, dst_v);
+    }
+    else {
+        ier = mnt_vectorinterp_getEdgeVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
+                                                     dst_u, dst_v);
+    }
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_del(&vp);
     if (ier != 0) numFailures++;
