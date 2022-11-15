@@ -93,7 +93,7 @@ void test1() {
     std::vector<double> dst_u(dst_numEdges), dst_v(dst_numEdges);
     ier = mnt_regridedges_vectorApply(&rgd, &src_u[0], &src_v[0],
                                             &dst_u[0], &dst_v[0],
-                                            MNT_UNIQUE_EDGE_DATA, MNT_FUNC_SPACE_W2);
+                                            MNT_FUNC_SPACE_W2);
     assert(ier == 0);
 
     // check

@@ -374,11 +374,10 @@ int mnt_regridedges_apply(RegridEdges_t** self,
 /**
  * Apply the interpolation weights to an edge field with unique edge Ids
  * @param self instance of the regridding object
- * @param src_u edge x component of the velocity on the source grid (input)
- * @param src_v edge y component of the velocity on the source grid (input)
- * @param dst_u x component of the velocity on the destination grid (output)
- * @param dst_v y component of the velocity on the destination grid (output)
- * @param placement MNT_CELL_BY_CELL_DATA for cell by cell data, MNT_UNIQUE_EDGE_DATA for unique edge data
+ * @param src_u edge x component of the velocity on the source grid (input), size is num edges
+ * @param src_v edge y component of the velocity on the source grid (input), size is num edges
+ * @param dst_u x component of the velocity on the destination grid (output), size is num edges
+ * @param dst_v y component of the velocity on the destination grid (output), size is num edges
  * @param fs function space (MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2)
  * @return error code (0 is OK)
  */
@@ -386,7 +385,7 @@ LIBRARY_API
 int mnt_regridedges_vectorApply(RegridEdges_t** self, 
                           const double src_u[], const double src_v[],
                           double dst_u[], double dst_v[],
-                          int placement, int fs);
+                          int fs);
 
 /**
  * Load the weights from file

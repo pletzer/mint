@@ -916,24 +916,6 @@ int mnt_regridedges_apply(RegridEdges_t** self,
 }
 
 
-int mnt_regridedges_edgeVectorApplyToCellByCellData(RegridEdges_t** self,
-                                  const double src_u[], const double src_v[],
-                                  double dst_u[], double dst_v[]) {
-
-    std::string msg = "NOT IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return 1;
-}
-
-int mnt_regridedges_faceVectorApplyToCellByCellData(RegridEdges_t** self,
-                                  const double src_u[], const double src_v[],
-                                  double dst_u[], double dst_v[]) {
-
-    std::string msg = "NOT IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return 1;
-}
-
 int mnt_regridedges_edgeVectorApplyToUniqueEdgeData(RegridEdges_t** self,
                                   const double src_u[], const double src_v[],
                                   double dst_u[], double dst_v[]) {
@@ -1029,23 +1011,13 @@ LIBRARY_API
 int mnt_regridedges_vectorApply(RegridEdges_t** self, 
                           const double src_u[], const double src_v[],
                           double dst_u[], double dst_v[],
-                          int placement, int fs) {
+                          int fs) {
 
-    if (placement == MNT_CELL_BY_CELL_DATA) {
-        if (fs == MNT_FUNC_SPACE_W2) {
-            return mnt_regridedges_faceVectorApplyToCellByCellData(self, src_u, src_v, dst_u, dst_v);
-        }
-        else {
-            return mnt_regridedges_edgeVectorApplyToCellByCellData(self, src_u, src_v, dst_u, dst_v);
-        }
+    if (fs == MNT_FUNC_SPACE_W2) {
+        return mnt_regridedges_faceVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v); 
     }
     else {
-        if (fs == MNT_FUNC_SPACE_W2) {
-            return mnt_regridedges_faceVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v); 
-        }
-        else {
-            return mnt_regridedges_edgeVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v);
-        }
+        return mnt_regridedges_edgeVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v);
     }
 }
 

@@ -176,9 +176,9 @@ Functions</h2></td></tr>
 <tr class="memitem:af6d9017b55316e2236513b7e81811a62"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#af6d9017b55316e2236513b7e81811a62">mnt_regridedges_apply</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const double src_data[], double dst_data[], int placement)</td></tr>
 <tr class="memdesc:af6d9017b55316e2236513b7e81811a62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the interpolation weights to an edge field with unique edge Ids.  <a href="mnt_regrid_edges_8h.html#af6d9017b55316e2236513b7e81811a62">More...</a><br /></td></tr>
 <tr class="separator:af6d9017b55316e2236513b7e81811a62"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34101cf882471394917ad88871a55130"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#a34101cf882471394917ad88871a55130">mnt_regridedges_vectorApply</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const double src_u[], const double src_v[], double dst_u[], double dst_v[], int placement, int fs)</td></tr>
-<tr class="memdesc:a34101cf882471394917ad88871a55130"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the interpolation weights to an edge field with unique edge Ids.  <a href="mnt_regrid_edges_8h.html#a34101cf882471394917ad88871a55130">More...</a><br /></td></tr>
-<tr class="separator:a34101cf882471394917ad88871a55130"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe60e4a2e763c876c5e4310acae7c3bf"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#afe60e4a2e763c876c5e4310acae7c3bf">mnt_regridedges_vectorApply</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const double src_u[], const double src_v[], double dst_u[], double dst_v[], int fs)</td></tr>
+<tr class="memdesc:afe60e4a2e763c876c5e4310acae7c3bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the interpolation weights to an edge field with unique edge Ids.  <a href="mnt_regrid_edges_8h.html#afe60e4a2e763c876c5e4310acae7c3bf">More...</a><br /></td></tr>
+<tr class="separator:afe60e4a2e763c876c5e4310acae7c3bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2900dcefc3194b04449df18956bb235"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mnt_regrid_edges_8h.html#ac2900dcefc3194b04449df18956bb235">mnt_regridedges_loadWeights</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
 <tr class="memdesc:ac2900dcefc3194b04449df18956bb235"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load the weights from file.  <a href="mnt_regrid_edges_8h.html#ac2900dcefc3194b04449df18956bb235">More...</a><br /></td></tr>
 <tr class="separator:ac2900dcefc3194b04449df18956bb235"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1410,8 +1410,8 @@ Supplying the length of the filename string allows one to call this function fro
 
 </div>
 </div>
-<a id="a34101cf882471394917ad88871a55130" name="a34101cf882471394917ad88871a55130"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a34101cf882471394917ad88871a55130">&#9670;&nbsp;</a></span>mnt_regridedges_vectorApply()</h2>
+<a id="afe60e4a2e763c876c5e4310acae7c3bf" name="afe60e4a2e763c876c5e4310acae7c3bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe60e4a2e763c876c5e4310acae7c3bf">&#9670;&nbsp;</a></span>mnt_regridedges_vectorApply()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1450,12 +1450,6 @@ Supplying the length of the filename string allows one to call this function fro
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>placement</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>fs</em>&#160;</td>
         </tr>
         <tr>
@@ -1470,11 +1464,10 @@ Supplying the length of the filename string allows one to call this function fro
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
-    <tr><td class="paramname">src_u</td><td>edge x component of the velocity on the source grid (input) </td></tr>
-    <tr><td class="paramname">src_v</td><td>edge y component of the velocity on the source grid (input) </td></tr>
-    <tr><td class="paramname">dst_u</td><td>x component of the velocity on the destination grid (output) </td></tr>
-    <tr><td class="paramname">dst_v</td><td>y component of the velocity on the destination grid (output) </td></tr>
-    <tr><td class="paramname">placement</td><td>MNT_CELL_BY_CELL_DATA for cell by cell data, MNT_UNIQUE_EDGE_DATA for unique edge data </td></tr>
+    <tr><td class="paramname">src_u</td><td>edge x component of the velocity on the source grid (input), size is num edges </td></tr>
+    <tr><td class="paramname">src_v</td><td>edge y component of the velocity on the source grid (input), size is num edges </td></tr>
+    <tr><td class="paramname">dst_u</td><td>x component of the velocity on the destination grid (output), size is num edges </td></tr>
+    <tr><td class="paramname">dst_v</td><td>y component of the velocity on the destination grid (output), size is num edges </td></tr>
     <tr><td class="paramname">fs</td><td>function space (MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2) </td></tr>
   </table>
   </dd>
