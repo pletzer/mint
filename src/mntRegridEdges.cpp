@@ -926,9 +926,9 @@ int mnt_regridedges_edgeVectorApplyToUniqueEdgeData(RegridEdges_t** self,
 }
 
 LIBRARY_API
-int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
-                                  const double src_u[], const double src_v[],
-                                  double dst_u[], double dst_v[]) {
+int mnt_regridedges_vectorApply(RegridEdges_t** self,
+                                const double src_u[], const double src_v[],
+                                double dst_u[], double dst_v[], int fs) {
 
     int ier;
     int numFailures = 0;
@@ -970,14 +970,14 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     }
 
     // compute the extensive field from the vector field
-    std::vector<double> src_faceData(src_numCells*MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_data(src_numCells*MNT_NUM_EDGES_PER_QUAD);
     ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_uCellByCell[0], &src_vCellByCell[0],
-         &src_faceData[0], MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W2);
+         &src_data[0], MNT_CELL_BY_CELL_DATA, MNT_FUNC_SPACE_W2);
     if (ier != 0) numFailures++;
 
     // regrid the extensive fields
-    std::vector<double> dst_faceData(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
-    ier = mnt_regridedges_apply(self, &src_faceData[0], &dst_faceData[0], MNT_CELL_BY_CELL_DATA);
+    std::vector<double> dst_data(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    ier = mnt_regridedges_apply(self, &src_data[0], &dst_data[0], MNT_CELL_BY_CELL_DATA);
     if (ier != 0) numFailures++;
 
     Grid_t* dst_grd = (*self)->dstGridObj;
@@ -989,36 +989,22 @@ int mnt_regridedges_faceVectorApplyToUniqueEdgeData(RegridEdges_t** self,
     ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
     if (ier != 0) numFailures++;
 
-    // rescale, NEED TO CHECK THIS, needs to be consistent with the src_faceData
+    // rescale, NEED TO CHECK THIS, needs to be consistent with the src_data
     if (src_grd->degrees && dst_grd->degrees) {
-        for (std::size_t i = 0; i < dst_faceData.size(); ++i) {
-            dst_faceData[i] *= (180./M_PI);
+        for (std::size_t i = 0; i < dst_data.size(); ++i) {
+            dst_data[i] *= (180./M_PI);
         }
     }
 
     // note: the data are cell by cell but the vectors are dimensioned num edges
     // we don't need to find the points in this case
-    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_faceData[0], MNT_CELL_BY_CELL_DATA,
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
                                                  dst_u, dst_v);
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_del(&vp);
     if (ier != 0) numFailures++;
 
     return numFailures;
-}
-
-LIBRARY_API
-int mnt_regridedges_vectorApply(RegridEdges_t** self, 
-                          const double src_u[], const double src_v[],
-                          double dst_u[], double dst_v[],
-                          int fs) {
-
-    if (fs == MNT_FUNC_SPACE_W2) {
-        return mnt_regridedges_faceVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v); 
-    }
-    else {
-        return mnt_regridedges_edgeVectorApplyToUniqueEdgeData(self, src_u, src_v, dst_u, dst_v);
-    }
 }
 
 
