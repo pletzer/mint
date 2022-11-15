@@ -32,8 +32,8 @@ def _set_extensive_field_from_streamfct(cube):
         # the end points of the edge
         x0, x1 = x[n0], x[n1]
         y0, y1 = y[n0], y[n1]
-        s0 = np.sin(y0*deg2rad) + np.cos(y0*deg2rad)*np.cos(x0*deg2rad)
-        s1 = np.sin(y1*deg2rad) + np.cos(y1*deg2rad)*np.cos(x1*deg2rad)
+        s0 = np.cos(y0*deg2rad)*np.cos(x0*deg2rad)
+        s1 = np.cos(y1*deg2rad)*np.cos(x1*deg2rad)
         cube.data[edge] = s1 - s0
 
 def _set_vector_field_from_streamfct(u_cube, v_cube):
@@ -60,7 +60,7 @@ def _set_vector_field_from_streamfct(u_cube, v_cube):
         # mid point on the edge
         xm = 0.5*(x0 + x1)
         ym = 0.5*(y0 + y1)
-        u_cube.data[edge] = np.cos(ym*deg2rad)
+        u_cube.data[edge] = - np.sin(ym*deg2rad) * np.cos(xm*deg2rad)
         v_cube.data[edge] = np.sin(xm*deg2rad)
 
 
@@ -227,7 +227,7 @@ def test_cubedsphere8_to_cubedsphere2():
     _set_vector_field_from_streamfct(src_u, src_v)
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
 
-    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v)
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
     # Check.
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
@@ -251,13 +251,13 @@ def test_cubedsphere8_to_cubedsphere8():
     _set_vector_field_from_streamfct(src_u, src_v)
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
 
-    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v)
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
     # Check.
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
                  np.fabs(result_v.data - tgt_v.data).mean())
     print(f'test_cubedsphere8_to_cubedsphere8 = {error}')
-    assert error < 0.04
+    assert error < 0.06
 
 
 def xtest_lonlat_to_cubedsphere():
@@ -277,7 +277,7 @@ def xtest_lonlat_to_cubedsphere():
     _set_vector_field_from_streamfct(src_u, src_v)
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
 
-    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v)
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
     # Check.
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
@@ -357,7 +357,7 @@ def test_streamfunction_vector_field():
 
     rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh, \
                                 src_flags=(0, 0, 1), tgt_flags=(0, 0, 1))
-    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v)
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
     # Check the result.
     error = 0.5*np.mean(np.fabs(result_u.data - tgt_u.data))
