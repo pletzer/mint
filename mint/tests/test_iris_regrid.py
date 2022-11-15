@@ -36,10 +36,35 @@ def _set_extensive_field_from_streamfct(cube):
         s1 = np.cos(y1*deg2rad)*np.cos(x1*deg2rad)
         cube.data[edge] = s1 - s0
 
+def _set_vector_field_from_potentialfct(u_cube, v_cube):
+    """
+    Set vector field values from potential cos(y)*cos(x)
+    :param u_cube: the x-component cube for which we will fill in the values
+    :param v_cube: the y-component cube for which we will fill in the values
+    """
+    x = u_cube.mesh.node_coords.node_x.points
+    y = u_cube.mesh.node_coords.node_y.points
+
+    e2n = u_cube.mesh.edge_node_connectivity.indices_by_location()
+    # make sure the edge to node connectivity is zero based
+    e2n -= u_cube.mesh.edge_node_connectivity.start_index
+
+    num_edges = e2n.shape[0]
+    deg2rad = np.pi/180.
+    for edge in range(num_edges):
+        n0, n1 = e2n[edge, :]
+        # the end points of the edge
+        x0, x1 = x[n0], x[n1]
+        y0, y1 = y[n0], y[n1]
+        # mid point on the edge
+        xm = 0.5*(x0 + x1)
+        ym = 0.5*(y0 + y1)
+        u_cube.data[edge] = - np.sin(xm*deg2rad)
+        v_cube.data[edge] = - np.sin(ym*deg2rad) * np.sin(xm*deg2rad)
+
 def _set_vector_field_from_streamfct(u_cube, v_cube):
     """
-    Set vector field values from streamfunction sin(y) + cos(y)*cos(x), the
-      corresponding components are u = cos(y), v = sin(x)
+    Set vector field values from streamfunction cos(y)*cos(x)
     :param u_cube: the x-component cube for which we will fill in the values
     :param v_cube: the y-component cube for which we will fill in the values
     """
@@ -236,7 +261,30 @@ def test_cubedsphere8_to_cubedsphere2():
     assert error < 0.29
 
 
-def test_cubedsphere8_to_cubedsphere8():
+def test_cubedsphere8_to_cubedsphere8_w1():
+
+    src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
+    tgt_u, tgt_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
+
+    # grid options for a cubed-sphere grid
+    src_flags = (1, 1, 1)
+    # grid options for a cubed-sphere grid
+    tgt_flags = (1, 1, 1)
+    rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh, \
+                                src_flags=src_flags, tgt_flags=tgt_flags)
+
+    _set_vector_field_from_potentialfct(src_u, src_v)
+    _set_vector_field_from_potentialfct(tgt_u, tgt_v)
+
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W1)
+
+    # Check.
+    error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
+                 np.fabs(result_v.data - tgt_v.data).mean())
+    print(f'test_cubedsphere8_to_cubedsphere8_w1 = {error}')
+    assert error < 0.06
+
+def test_cubedsphere8_to_cubedsphere8_w2():
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
     tgt_u, tgt_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
@@ -256,7 +304,7 @@ def test_cubedsphere8_to_cubedsphere8():
     # Check.
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
                  np.fabs(result_v.data - tgt_v.data).mean())
-    print(f'test_cubedsphere8_to_cubedsphere8 = {error}')
+    print(f'test_cubedsphere8_to_cubedsphere8_w2 = {error}')
     assert error < 0.06
 
 

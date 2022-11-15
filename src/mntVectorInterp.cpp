@@ -467,9 +467,156 @@ LIBRARY_API
 int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]) {
-    std::string msg ="NOT YET IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return -1;
+
+    std::string msg;
+    int ier;
+    int numFailures = 0;
+
+    if (!(*self)->grid) {
+        msg ="must set the grid before calling this";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -2;
+    }
+
+    Vec3 drdXsi, drdEta;
+    std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
+    int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
+
+    std::size_t numCells;
+    ier =  mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
+    if (ier != 0) numFailures++;
+
+    std::size_t numEdges;
+    ier =  mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
+    if (ier != 0) numFailures++;
+
+    // count the number of cells that are adjacent to each edge
+    std::vector<int> numAjdacentCells(numEdges, 0);
+
+    // vertex positions
+    Vec3 v0, v1, v2, v3;
+
+    // initialize the vector field to zero
+    for (std::size_t i = 0; i < numEdges; ++i) {
+        u[i] = 0.0;
+        v[i] = 0.0;
+    }
+
+
+    Vec3 gradXsi, gradEta;
+    for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
+
+        // get the vertex coords
+        ier = mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
+        if (ier != 0) numFailures++;
+
+        ier = mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
+        if (ier != 0) numFailures++;
+
+        Vec3 a = v1 - v0;
+        Vec3 b = v2 - v1;
+        Vec3 c = v2 - v3;
+        Vec3 d = v3 - v0;
+
+        // Jacobians attached to each vertex (can be zero if points are degenerate)
+        double a013 = crossDotZHat(a, d);
+        double a120 = crossDotZHat(a, b);
+        double a231 = crossDotZHat(c, b);
+        double a302 = crossDotZHat(c, d);
+
+        // Jacobian for this quad, should be a strictly positive quantity if nodes are
+        // ordered correctly
+        double jac = 0.25*(a013 + a120 + a231 + a302);
+        if (jac <= 0) {
+            std::stringstream msg;
+            msg << "bad cell " << cellId << " vertices: " <<
+                            v0 << ";" << v1 << ";" << v2  << ";" << v3;
+            mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
+            ier = 1;
+        }
+
+
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
+        if (ier != 0) numFailures++;
+
+        // cotangent vectors obtained by finite differencing and linearly interpolating
+        drdXsi = 0.5*(a + c);
+        drdEta = 0.5*(d + b);
+
+        // contravariant bases
+        gradXsi[0] = + drdEta[1]/jac;
+        gradXsi[1] = - drdEta[0]/jac;
+        gradXsi[2] = 0.0;
+
+        gradEta[0] = - drdXsi[1]/jac;
+        gradEta[1] = + drdXsi[0]/jac;
+        gradEta[2] = 0.0;
+
+        double data0 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 0];
+        double data1 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 1];
+        double data2 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 2];
+        double data3 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 3];
+
+        // edge 0
+        double xsi = 0.5;
+        double eta = 0.0;
+        double isx = 1.0 - xsi;
+        double ate = 1.0 - eta;
+        u[edgeId0] += (data0*ate + data2*eta)*gradXsi[0] +
+                      (data3*isx + data1*xsi)*gradEta[0];
+        v[edgeId0] += (data0*ate + data2*eta)*gradXsi[1] +
+                      (data3*isx + data1*xsi)*gradEta[1];
+        numAjdacentCells[edgeId0]++;
+
+        // edge 1
+        xsi = 1.0;
+        eta = 0.5;
+        isx = 1.0 - xsi;
+        ate = 1.0 - eta;
+        u[edgeId1] += (data0*ate + data2*eta)*gradXsi[0] +
+                      (data3*isx + data1*xsi)*gradEta[0];
+        v[edgeId1] += (data0*ate + data2*eta)*gradXsi[1] +
+                      (data3*isx + data1*xsi)*gradEta[1];
+        numAjdacentCells[edgeId1]++;
+
+        // edge 2
+        xsi = 0.5;
+        eta = 1.0;
+        isx = 1.0 - xsi;
+        ate = 1.0 - eta;
+        u[edgeId2] += (data0*ate + data2*eta)*gradXsi[0] +
+                      (data3*isx + data1*xsi)*gradEta[0];
+        v[edgeId2] += (data0*ate + data2*eta)*gradXsi[1] +
+                      (data3*isx + data1*xsi)*gradEta[1];
+        numAjdacentCells[edgeId2]++;
+
+        // edge 3
+        xsi = 0.0;
+        eta = 0.5;
+        isx = 1.0 - xsi;
+        ate = 1.0 - eta;
+        u[edgeId3] += (data0*ate + data2*eta)*gradXsi[0] +
+                      (data3*isx + data1*xsi)*gradEta[0];
+        v[edgeId3] += (data0*ate + data2*eta)*gradXsi[1] +
+                      (data3*isx + data1*xsi)*gradEta[1];
+        numAjdacentCells[edgeId3]++;
+
+    }
+
+    // all the edges that divide two cells have been double counted, now correcting
+    for (std::size_t i = 0; i < numEdges; ++i) {
+        int count = std::max(1, numAjdacentCells[i]);
+        u[i] /= count;
+        v[i] /= count;
+    }
+
+    return numFailures;
 }
 
 LIBRARY_API
@@ -687,7 +834,7 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
         if (jac <= 0) {
             std::stringstream msg;
             msg << "bad cell " << cellId << " vertices: " <<
-                            v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+                            v0 << ";" << v1 << ";" << v2  << ";" << v3;
             mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
             ier = 1;
         }
