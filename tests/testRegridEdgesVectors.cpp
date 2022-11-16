@@ -3,6 +3,7 @@
 #include <mntRegridEdges.h>
 #include <mntLogger.h>
 #include "saveEdgeVectors.h"
+#include "saveEdgeVectorsXYZ.h"
 
 #undef NDEBUG // turn on asserts
 #include <cassert>
@@ -131,6 +132,9 @@ void test1() {
 
     saveEdgeVectors(src_grd, src_u, src_v, "test1_src_vectors.vtk");
     saveEdgeVectors(dst_grd, dst_u, dst_v, "test1_dst_vectors.vtk");
+
+    saveEdgeVectors(src_grd, src_u, src_v, "test1_src_vectorsXYZ.vtk");
+    saveEdgeVectors(dst_grd, dst_u, dst_v, "test1_dst_vectorsXYZ.vtk");
 
     assert(error < 0.025);
 
