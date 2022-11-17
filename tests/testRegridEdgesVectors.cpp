@@ -77,7 +77,7 @@ void test1() {
     assert(ier == 0);
     int numCellsPerBucket = 256;
     double periodX = 360.;
-    int enableFolding = 0;
+    int enableFolding = 1;
     ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding);
     assert(ier == 0);
 
@@ -133,8 +133,8 @@ void test1() {
     saveEdgeVectors(src_grd, src_u, src_v, "test1_src_vectors.vtk");
     saveEdgeVectors(dst_grd, dst_u, dst_v, "test1_dst_vectors.vtk");
 
-    saveEdgeVectors(src_grd, src_u, src_v, "test1_src_vectorsXYZ.vtk");
-    saveEdgeVectors(dst_grd, dst_u, dst_v, "test1_dst_vectorsXYZ.vtk");
+    saveEdgeVectorsXYZ(src_grd, src_u, src_v, "test1_src_vectorsXYZ.vtk");
+    saveEdgeVectorsXYZ(dst_grd, dst_u, dst_v, "test1_dst_vectorsXYZ.vtk");
 
     assert(error < 0.025);
 

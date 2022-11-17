@@ -478,26 +478,22 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
             }
             avgLon /= count;
 
-            // check if there if one of the cell nodes is at the north/south pole. In
-            // this case the longitude is ill-defined. Set the longitude there to the
+            // check if one of the nodes is at the north/south pole. In
+            // this case the longitude is ill-defined. Set the longitude there to be the
             // average of the 3 other longitudes.
 
             if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
                 (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = avgLon;
             }
 
-            // run through another date line check
+            // run through another date line correction
             if ((*self)->fixLonAcrossDateline) {
                 lonBase = (*self)->verts[LON_INDEX + 0*3 + icell*MNT_NUM_VERTS_PER_QUAD*3];
-                double lon1 = (*self)->verts[LON_INDEX + 1*3 + icell*MNT_NUM_VERTS_PER_QUAD*3];
-                double lon2 = (*self)->verts[LON_INDEX + 2*3 + icell*MNT_NUM_VERTS_PER_QUAD*3];
-                double lon3 = (*self)->verts[LON_INDEX + 3*3 + icell*MNT_NUM_VERTS_PER_QUAD*3];
-                lon1 = fixLongitude((*self)->periodX, lonBase, lon1);
-                lon2 = fixLongitude((*self)->periodX, lonBase, lon2);
-                lon3 = fixLongitude((*self)->periodX, lonBase, lon3);
-                (*self)->verts[LON_INDEX + 1*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lon1;
-                (*self)->verts[LON_INDEX + 2*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lon2;
-                (*self)->verts[LON_INDEX + 3*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lon3;
+                for (auto nodeIdx = 1; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
+                    double lon = (*self)->verts[LON_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3];
+                    lon = fixLongitude((*self)->periodX, lonBase, lon);
+                    (*self)->verts[LON_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lon;
+                }
             }
         }
     }
