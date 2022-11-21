@@ -10,6 +10,8 @@
 
 void test1() {
 
+    // testting vector to vector regridding
+
     int ier;
 
     // read the src/dst grids
@@ -147,6 +149,8 @@ void test1() {
 
 void test2() {
 
+    // testing extensive field regridding
+
     int ier;
 
     // read the src/dst grids
@@ -226,6 +230,10 @@ void test2() {
     std::cout << "dst num cells: " << dst_numCells << " dst num edges: " << dst_numEdges << '\n';
 
     std::vector<double> dstData(dst_numEdges);
+    std::vector<double> dstUFluxApprox(dst_numEdges);
+    std::vector<double> dstVFluxApprox(dst_numEdges);
+    std::vector<double> dstUFluxExact(dst_numEdges);
+    std::vector<double> dstVFluxExact(dst_numEdges);
     ier = mnt_regridedges_apply(&rgd, &srcData[0], &dstData[0], MNT_UNIQUE_EDGE_DATA);
     assert(ier == 0);
 
@@ -241,17 +249,34 @@ void test2() {
             double the0 = p0[1] * deg2rad;
             double the1 = p1[1] * deg2rad;
 
+            double lamMid = 0.5*(lam0 + lam1);
+            double theMid = 0.5*(the0 + the1);
+
             // stream function
             double s0 = cos(the0) * cos(lam0);
             double s1 = cos(the1) * cos(lam1);
             double dstDataExact = edgeSign * (s1 - s0);
 
+            double uMid = - sin(theMid) * cos(lamMid);
+            double vMid = sin(lamMid);
+            dstUFluxApprox[edgeId] = uMid * (the1 - the0);
+            dstVFluxApprox[edgeId] = - vMid * (lam1 - lam0) * cos(theMid);
+
+            // int u d theta = - int sin(theta)*cos(lambda) dtheta
+            dstUFluxExact[edgeId] = ((the0-the1)*((the0-the1)*cos(lam0)*cos(the0)-(the0-the1)*cos(lam1)*cos(the1)+(lam0-lam1)*(sin(lam0)*sin(the0)-sin(lam1)*sin(the1))))/((lam0-lam1+the0-the1)*(lam0-lam1-the0+the1));
+            // - int  v cos(theta)*dlambda = - int sin(lambda)*cos(theta)* dlambda
+            dstVFluxExact[edgeId] = -(((lam0-lam1)*((lam0-lam1)*cos(lam0)*cos(the0)+(-lam0+lam1)*cos(lam1)*cos(the1)+(the0-the1)*(sin(lam0)*sin(the0)-sin(lam1)*sin(the1))))/((lam0-lam1+the0-the1)*(lam0-lam1-the0+the1)));
+
             error += std::fabs(dstData[edgeId] - dstDataExact);
             // std::cerr << icell << ' ' << ie << " data=" << dstData[edgeId] << " (" << dstDataExact << ")\n";
+
         }
     }
     error /= (dst_numCells * MNT_NUM_EDGES_PER_QUAD);
     std::cerr << "test2: error = " << error << '\n';
+    saveEdgeVectors(dst_grd, dstUFluxApprox, dstVFluxApprox, "test2_dst_approx_fluxes.vtk");
+    saveEdgeVectors(dst_grd, dstUFluxExact, dstVFluxExact, "test2_dst_exact_fluxes.vtk");
+
     assert(error < 0.00015);
 
     // cleanup
