@@ -443,7 +443,7 @@ void testCubedSphereFaceVectorsOnEdge() {
     mnt_grid_dump(&grd, "testCubedSphereFaceVectorsOnEdge_grid.vtk");
     saveEdgeVectors(grd, uedge, vedge, "testCubedSphereFaceVectorsOnEdge_vectors.vtk");
     saveEdgeVectors(grd, uedgeExact, vedgeExact, "testCubedSphereFaceVectorsOnEdge_vectorsExact.vtk");
-    assert(error < 0.14);
+    assert(error < 0.005);
 
 
     // destroy
@@ -513,9 +513,9 @@ void testSqueezed() {
     // check
     for (auto i = 0; i < 4; ++i) {
         std::cout << "testSqueezed: u=" << uEdges[i] << " exact=" << uCellByCellExact[i] << " diff: " << uCellByCellExact[i] - uEdges[i] << '\n';
-        //assert(std::fabs(uEdges[i] - uCellByCellExact[i]) < 0.01);
+        assert(std::fabs(uEdges[i] - uCellByCellExact[i]) < 0.012);
         std::cout << "testSqueezed: v=" << vEdges[i] << " exact=" << vCellByCellExact[i] << " diff: " << vCellByCellExact[i] - vEdges[i] << '\n';
-        //assert(std::fabs(vEdges[i] - vCellByCellExact[i]) < 0.01);
+        assert(std::fabs(vEdges[i] - vCellByCellExact[i]) < 0.012);
     }
 
 

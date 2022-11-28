@@ -998,13 +998,6 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
         }
     }
 
-    // // rescale, NEED TO CHECK THIS, needs to be consistent with the src_data
-    // if (src_grd->degrees && dst_grd->degrees) {
-    //     for (std::size_t i = 0; i < dst_data.size(); ++i) {
-    //         dst_data[i] *= (180./M_PI);
-    //     }
-    // }
-
     // note: the data are cell by cell but the vectors are dimensioned num edges
     // we don't need to find the points in this case
     if (fs == MNT_FUNC_SPACE_W2) {
