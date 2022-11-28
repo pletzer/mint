@@ -481,7 +481,7 @@ void testSqueezed() {
     ier = mnt_grid_getNumberOfCells(&grid, &numCells);
     assert(ier == 0);
     std::size_t numEdges;
-    ier = mnt_grid_getNumberOfCells(&grid, &numEdges);
+    ier = mnt_grid_getNumberOfEdges(&grid, &numEdges);
 
     Vec3 p0, p1, pMid;
 
@@ -506,7 +506,8 @@ void testSqueezed() {
     assert(ier == 0);
     std::vector<double> uEdges(numEdges);
     std::vector<double> vEdges(numEdges);
-    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &fluxes[0], MNT_CELL_BY_CELL_DATA, &uEdges[0], &vEdges[0]);
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdges[0], &vEdges[0]);
     assert(ier == 0);
 
     // check
