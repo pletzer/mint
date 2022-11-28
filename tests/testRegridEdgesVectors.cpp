@@ -8,7 +8,7 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 
-void test1() {
+void testVector2Vector() {
 
     // testting vector to vector regridding
 
@@ -121,22 +121,18 @@ void test1() {
             double dst_uExact = - sin(theMid) * cos(lamMid);
             double dst_vExact = sin(lamMid);
 
-            // // rescale
-            // dst_u[edgeId] *= rad2deg;
-            // dst_v[edgeId] *= rad2deg;
-
             error += std::fabs(dst_u[edgeId] - dst_uExact) + std::fabs(dst_v[edgeId] - dst_vExact);
             // std::cerr << icell << ' ' << ie << " u=" << dst_u[edgeId] << " (" << dst_uExact << ") v=" << dst_v[edgeId] << " (" << dst_vExact << ")\n";
         }
     }
     error /= (dst_numCells * MNT_NUM_EDGES_PER_QUAD);
-    std::cerr << "test1: error = " << error << '\n';
+    std::cerr << "testVector2Vector: error = " << error << '\n';
 
-    saveEdgeVectors(src_grd, src_u, src_v, "test1_src_vectors.vtk");
-    saveEdgeVectors(dst_grd, dst_u, dst_v, "test1_dst_vectors.vtk");
+    saveEdgeVectors(src_grd, src_u, src_v, "testVector2Vector_src_vectors.vtk");
+    saveEdgeVectors(dst_grd, dst_u, dst_v, "testVector2Vector_dst_vectors.vtk");
 
-    saveEdgeVectorsXYZ(src_grd, src_u, src_v, "test1_src_vectorsXYZ.vtk");
-    saveEdgeVectorsXYZ(dst_grd, dst_u, dst_v, "test1_dst_vectorsXYZ.vtk");
+    saveEdgeVectorsXYZ(src_grd, src_u, src_v, "testVector2Vector_src_vectorsXYZ.vtk");
+    saveEdgeVectorsXYZ(dst_grd, dst_u, dst_v, "testVector2Vector_dst_vectorsXYZ.vtk");
 
     assert(error < 0.025);
 
@@ -147,7 +143,7 @@ void test1() {
 }
 
 
-void test2() {
+void testExtensiveFieldRegriddingUniqueEdgeData() {
 
     // testing extensive field regridding using unique edge data
 
@@ -272,15 +268,15 @@ void test2() {
 
             // DEBUG
             if (icell == 1160) {
-                std::cout << "test2: cell " << icell << " edge " << ie << " edge sign=" << edgeSign << " ext field=" << dstData[edgeId] << " (exact: " << dstDataExact << ") edge p0=" << p0 << " -> " << p1 << '\n';
+                std::cout << "testExtensiveFieldRegriddingUniqueEdgeData: cell " << icell << " edge " << ie << " edge sign=" << edgeSign << " ext field=" << dstData[edgeId] << " (exact: " << dstDataExact << ") edge p0=" << p0 << " -> " << p1 << '\n';
             }
 
         }
     }
     error /= (dst_numCells * MNT_NUM_EDGES_PER_QUAD);
-    std::cerr << "test2: error = " << error << '\n';
-    saveEdgeVectors(dst_grd, dstUFluxApprox, dstVFluxApprox, "test2_dst_approx_fluxes.vtk");
-    saveEdgeVectors(dst_grd, dstUFluxExact, dstVFluxExact, "test2_dst_exact_fluxes.vtk");
+    std::cerr << "testExtensiveFieldRegriddingUniqueEdgeData: error = " << error << '\n';
+    saveEdgeVectors(dst_grd, dstUFluxApprox, dstVFluxApprox, "testExtensiveFieldRegriddingUniqueEdgeData_dst_approx_fluxes.vtk");
+    saveEdgeVectors(dst_grd, dstUFluxExact, dstVFluxExact, "testExtensiveFieldRegriddingUniqueEdgeData_dst_exact_fluxes.vtk");
 
     assert(error < 0.00015);
 
@@ -291,7 +287,7 @@ void test2() {
 }
 
 
-void test3() {
+void testExtensiveFieldCellByCellData() {
 
     // testing extensive field regridding using cell by cell data
 
@@ -394,13 +390,13 @@ void test3() {
 
             // DEBUG
             if (icell == 1160) {
-                std::cout << "test3 cell " << icell << " edge " << ie << " ext field=" << dstData[k] << " edge p0=" << p0 << " -> " << p1 << '\n';
+                std::cout << "testExtensiveFieldCellByCellData: cell " << icell << " edge " << ie << " ext field=" << dstData[k] << " edge p0=" << p0 << " -> " << p1 << '\n';
             }
 
         }
     }
     error /= (dst_numCells * MNT_NUM_EDGES_PER_QUAD);
-    std::cerr << "test3: error = " << error << '\n';
+    std::cerr << "testExtensiveFieldCellByCellData: error = " << error << '\n';
     assert(error < 0.05);
 
     // cleanup
@@ -411,9 +407,9 @@ void test3() {
 
 int main(int argc, char** argv) {
 
-    test3();
-    test2();
-    test1();
+    testExtensiveFieldCellByCellData();
+    testExtensiveFieldRegriddingUniqueEdgeData();
+    testVector2Vector();
 
     return 0;
 }

@@ -989,17 +989,8 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
     if (ier != 0) numFailures++;
 
-    // DEBUG!!!!
-    {
-        std::size_t icell = 1160;
-        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
-            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
-            std::cerr << ">>> mntRegridEdges::vectorApply icell=" << icell << " ie=" << ie << " dst_data=" << dst_data[k] << '\n';
-        }
-    }
-
     // note: the data are cell by cell but the vectors are dimensioned num edges
-    // we don't need to find the points in this case
+    // and we don't need to find the points in this case
     if (fs == MNT_FUNC_SPACE_W2) {
         ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
                                                      dst_u, dst_v);

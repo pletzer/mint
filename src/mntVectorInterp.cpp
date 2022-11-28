@@ -569,10 +569,16 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
         std::size_t k2 = cellId*MNT_NUM_EDGES_PER_QUAD + 2;
         std::size_t k3 = cellId*MNT_NUM_EDGES_PER_QUAD + 3;
 
-        Vec3 vec0 = (data[k0]*drdEta + 0.5*(data[k3] + data[k1])*drdXsi)/j01;
-        Vec3 vec1 = (data[k1]*drdXsi + 0.5*(data[k0] + data[k2])*drdEta)/j12;
-        Vec3 vec2 = (data[k2]*drdEta + 0.5*(data[k1] + data[k3])*drdXsi)/j23;
-        Vec3 vec3 = (data[k3]*drdXsi + 0.5*(data[k2] + data[k0])*drdEta)/j30;
+        // dx cross hat{z} points to the negative direction for edges 0 and 2
+        double data0 = - data[k0];
+        double data1 = + data[k1];
+        double data2 = - data[k2];
+        double data3 = + data[k3];
+
+        Vec3 vec0 = (data0*drdEta + 0.5*(data3 + data1)*drdXsi)/j01;
+        Vec3 vec1 = (data1*drdXsi + 0.5*(data0 + data2)*drdEta)/j12;
+        Vec3 vec2 = (data2*drdEta + 0.5*(data1 + data3)*drdXsi)/j23;
+        Vec3 vec3 = (data3*drdXsi + 0.5*(data2 + data0)*drdEta)/j30;
 
         double cosLam01 = cos(0.5*(v0[LON_INDEX] + v1[LON_INDEX]));
         double cosLam12 = cos(0.5*(v1[LON_INDEX] + v2[LON_INDEX]));
