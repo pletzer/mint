@@ -429,27 +429,21 @@ void testCubedSphereFaceVectorsOnEdge() {
         &faceData[0], MNT_UNIQUE_EDGE_DATA, &uedge[0], &vedge[0]);
     assert(ier == 0);
 
-    // rescale
-    for (auto i = 0; i < numEdges; ++i) {
-        uedge[i] *= 180./M_PI;
-        vedge[i] *= 180./M_PI;
-    }
-
     // check
     double error = 0;
     for (auto i = 0; i < numEdges; ++i) {
         error += fabs(uedgeExact[i] - uedge[i]) + fabs(vedgeExact[i] - vedge[i]);
-        std::cerr << "testCubedSphereFaceVectorsOnEdge: edge=" << i << " points " << p0s[edgeId] << ';' << p1s[edgeId]
-                  << " u=" << uedge[i] << " (exact " << uedgeExact[i] 
-                  << ") v=" << vedge[i] << " (exact " << vedgeExact[i] << ")\n";
+        // std::cerr << "testCubedSphereFaceVectorsOnEdge: edge=" << i << " points " << p0s[edgeId] << ';' << p1s[edgeId]
+        //           << " u=" << uedge[i] << " (exact " << uedgeExact[i] 
+        //           << ") v=" << vedge[i] << " (exact " << vedgeExact[i] << ")\n";
     }
     error /= numEdges;
     std::cerr << "testCubedSphereFaceVectorsOnEdge error: " << error << '\n';
-    assert(error < 0.14);
 
     mnt_grid_dump(&grd, "testCubedSphereFaceVectorsOnEdge_grid.vtk");
     saveEdgeVectors(grd, uedge, vedge, "testCubedSphereFaceVectorsOnEdge_vectors.vtk");
     saveEdgeVectors(grd, uedgeExact, vedgeExact, "testCubedSphereFaceVectorsOnEdge_vectorsExact.vtk");
+    assert(error < 0.14);
 
 
     // destroy
@@ -457,8 +451,84 @@ void testCubedSphereFaceVectorsOnEdge() {
     mnt_grid_del(&grd);
 }
 
+void testSqueezed() {
+    int ier;
+
+    // create grid
+    Grid_t* grid = NULL;
+    mnt_grid_new(&grid);
+    mnt_grid_setFlags(&grid, 0, 0, 1);
+    std::size_t ncells = 1, nedges = 4, npoints = 4;
+    const double xyz[] = {
+        135., 90., 0.,
+        90., 84.375, 0.,
+        135., 82.07041073676, 0.,
+        180., 84.375, 0. 
+    };
+    const std::size_t face2nodes[] = {
+        0, 1, 2, 3
+    };
+    const std::size_t edge2nodes[] = {
+        0, 1,
+        1, 2,
+        3, 2,
+        0, 3
+    };
+    ier = mnt_grid_loadFromUgrid2DData(&grid, ncells, nedges, npoints, 
+                                 xyz, face2nodes, edge2nodes);
+    assert(ier == 0);
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grid, &numCells);
+    assert(ier == 0);
+    std::size_t numEdges;
+    ier = mnt_grid_getNumberOfCells(&grid, &numEdges);
+
+    Vec3 p0, p1, pMid;
+
+    std::vector<double> uCellByCellExact(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> vCellByCellExact(numCells * MNT_NUM_EDGES_PER_QUAD);
+    for (auto icell = 0; icell < numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            ier = mnt_grid_getPoints(&grid, icell, ie, &p0[0], &p1[0]);
+            assert(ier == 0);
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            pMid = 0.5*(p0 + p1);
+            uCellByCellExact[k] = -sin(pMid[1] * M_PI/180.) * cos(pMid[0] * M_PI/180.);
+            vCellByCellExact[k] = sin(pMid[0] * M_PI/180.);
+        }
+    }
+
+    std::vector<double> fluxes({0., -0.09755, 0.000467, -0.098017});
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, grid);
+    assert(ier == 0);
+    std::vector<double> uEdges(numEdges);
+    std::vector<double> vEdges(numEdges);
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &fluxes[0], MNT_CELL_BY_CELL_DATA, &uEdges[0], &vEdges[0]);
+    assert(ier == 0);
+
+    // check
+    for (auto i = 0; i < 4; ++i) {
+        std::cout << "testSqueezed: u=" << uEdges[i] << " exact=" << uCellByCellExact[i] << " diff: " << uCellByCellExact[i] - uEdges[i] << '\n';
+        //assert(std::fabs(uEdges[i] - uCellByCellExact[i]) < 0.01);
+        std::cout << "testSqueezed: v=" << vEdges[i] << " exact=" << vCellByCellExact[i] << " diff: " << vCellByCellExact[i] - vEdges[i] << '\n';
+        //assert(std::fabs(vEdges[i] - vCellByCellExact[i]) < 0.01);
+    }
+
+
+    // clean up
+    ier = mnt_vectorinterp_del(&vp);
+    assert(ier == 0);
+    ier = mnt_grid_del(&grid);
+    assert(ier == 0);
+
+}
+
 int main(int argc, char** argv) {
 
+    testSqueezed();
     testCubedSphereFaceVectorsOnEdge();
     testSimple();
     testRotated();

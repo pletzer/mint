@@ -248,6 +248,22 @@ inline double crossDotZHat(const Vec3& a, const Vec3& b) {
     return a[0]*b[1] - a[1]*b[0];
 }
 
+inline double crossDot(const Vec3& a, const Vec3& b, const Vec3& c) {
+    return c[0]*(a[1]*b[2] - a[2]*b[1]) + 
+           c[1]*(a[2]*b[0] - a[0]*b[2]) + 
+           c[2]*(a[0]*b[1] - a[1]*b[0]);
+}
+
+inline Vec3 cartesianFromRadians(const Vec3& p) {
+    Vec3 res;
+    double lam = p[LON_INDEX];
+    double the = p[LAT_INDEX];
+    res[0] = cos(the) * cos(lam);
+    res[1] = cos(the) * sin(lam);
+    res[2] = sin(the);
+    return res;
+}
+
 inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
                                                 Vec3& drdXsi, Vec3& drdEta, double& jac) {
 

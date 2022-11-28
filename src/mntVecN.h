@@ -239,6 +239,14 @@ VecN<N, T> operator*(const VecN<N, T> &a, T f);
     @return vector whose elements are f / element of "a"
 */
 template<std::size_t N, class T>
+VecN<N, T> operator/(const VecN<N, T> &a, T f);
+
+/** Elementwise division. 
+    @param f a scalar
+    @param a a vector
+    @return vector whose elements are f / element of "a"
+*/
+template<std::size_t N, class T>
 VecN<N, T> operator/(T f, const VecN<N, T> &a);
 
 /** Scalar product. This is equivalent to sum(v*w). Not to be confused with the

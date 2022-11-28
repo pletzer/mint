@@ -478,143 +478,9 @@ int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
         return -2;
     }
 
-    Vec3 drdXsi, drdEta;
-    std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
-    int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
+    mntlog::error(__FILE__, __func__, __LINE__, "NOT YET IMPLEMENTED");
+    return -3;
 
-    std::size_t numCells;
-    ier =  mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
-    if (ier != 0) numFailures++;
-
-    std::size_t numEdges;
-    ier =  mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
-    if (ier != 0) numFailures++;
-
-    // count the number of cells that are adjacent to each edge
-    std::vector<int> numAjdacentCells(numEdges, 0);
-
-    // vertex positions
-    Vec3 v0, v1, v2, v3;
-
-    // initialize the vector field to zero
-    for (std::size_t i = 0; i < numEdges; ++i) {
-        u[i] = 0.0;
-        v[i] = 0.0;
-    }
-
-
-    Vec3 gradXsi, gradEta;
-    for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
-
-        // get the vertex coords
-        ier = mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
-        if (ier != 0) numFailures++;
-
-        ier = mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
-        if (ier != 0) numFailures++;
-
-        Vec3 a = v1 - v0;
-        Vec3 b = v2 - v1;
-        Vec3 c = v2 - v3;
-        Vec3 d = v3 - v0;
-
-        // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(a, d);
-        double a120 = crossDotZHat(a, b);
-        double a231 = crossDotZHat(c, b);
-        double a302 = crossDotZHat(c, d);
-
-        // Jacobian for this quad, should be a strictly positive quantity if nodes are
-        // ordered correctly
-        double jac = 0.25*(a013 + a120 + a231 + a302);
-        if (jac <= 0) {
-            std::stringstream msg;
-            msg << "bad cell " << cellId << " vertices: " <<
-                            v0 << ";" << v1 << ";" << v2  << ";" << v3;
-            mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
-            ier = 1;
-        }
-
-
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
-        if (ier != 0) numFailures++;
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
-        if (ier != 0) numFailures++;
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
-        if (ier != 0) numFailures++;
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
-        if (ier != 0) numFailures++;
-
-        // cotangent vectors obtained by finite differencing and linearly interpolating
-        drdXsi = 0.5*(a + c);
-        drdEta = 0.5*(d + b);
-
-        // contravariant bases
-        gradXsi[0] = + drdEta[1]/jac;
-        gradXsi[1] = - drdEta[0]/jac;
-        gradXsi[2] = 0.0;
-
-        gradEta[0] = - drdXsi[1]/jac;
-        gradEta[1] = + drdXsi[0]/jac;
-        gradEta[2] = 0.0;
-
-        double data0 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 0];
-        double data1 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 1];
-        double data2 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 2];
-        double data3 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 3];
-
-        // edge 0
-        double xsi = 0.5;
-        double eta = 0.0;
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
-        u[edgeId0] += (data0*ate + data2*eta)*gradXsi[0] +
-                      (data3*isx + data1*xsi)*gradEta[0];
-        v[edgeId0] += (data0*ate + data2*eta)*gradXsi[1] +
-                      (data3*isx + data1*xsi)*gradEta[1];
-        numAjdacentCells[edgeId0]++;
-
-        // edge 1
-        xsi = 1.0;
-        eta = 0.5;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId1] += (data0*ate + data2*eta)*gradXsi[0] +
-                      (data3*isx + data1*xsi)*gradEta[0];
-        v[edgeId1] += (data0*ate + data2*eta)*gradXsi[1] +
-                      (data3*isx + data1*xsi)*gradEta[1];
-        numAjdacentCells[edgeId1]++;
-
-        // edge 2
-        xsi = 0.5;
-        eta = 1.0;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId2] += (data0*ate + data2*eta)*gradXsi[0] +
-                      (data3*isx + data1*xsi)*gradEta[0];
-        v[edgeId2] += (data0*ate + data2*eta)*gradXsi[1] +
-                      (data3*isx + data1*xsi)*gradEta[1];
-        numAjdacentCells[edgeId2]++;
-
-        // edge 3
-        xsi = 0.0;
-        eta = 0.5;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId3] += (data0*ate + data2*eta)*gradXsi[0] +
-                      (data3*isx + data1*xsi)*gradEta[0];
-        v[edgeId3] += (data0*ate + data2*eta)*gradXsi[1] +
-                      (data3*isx + data1*xsi)*gradEta[1];
-        numAjdacentCells[edgeId3]++;
-
-    }
-
-    // all the edges that divide two cells have been double counted, now correcting
-    for (std::size_t i = 0; i < numEdges; ++i) {
-        int count = std::max(1, numAjdacentCells[i]);
-        u[i] /= count;
-        v[i] /= count;
-    }
 
     return numFailures;
 }
@@ -634,63 +500,136 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
         return -2;
     }
 
-    Vec3 drdXsi, drdEta;
-    std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
-    int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
+    const double deg2rad = M_PI/180.;
 
     std::size_t numCells;
-    ier =  mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
+    ier = mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
     if (ier != 0) numFailures++;
 
     std::size_t numEdges;
-    ier =  mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
+    ier = mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
     if (ier != 0) numFailures++;
 
-    // count the number of cells that are adjacent to each edge
-    std::vector<int> numAjdacentCells(numEdges, 0);
-
-    // vertex positions
-    Vec3 v0, v1, v2, v3;
-
-    // initialize the vector field to zero
-    for (std::size_t i = 0; i < numEdges; ++i) {
+    // initialize to zero
+    for (auto i = 0; i < numEdges; ++i) {
         u[i] = 0.0;
         v[i] = 0.0;
     }
 
+    // count the number of cells that are adjacent to each edge
+    std::vector<int> numAjdacentCells(numEdges, 0);
 
+    // vertices in radians
+    Vec3 v0, v1, v2, v3;
     for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
 
-        // get the vertex coords
+        // get the vertex coords from the two opposite edges
         ier = mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
         if (ier != 0) numFailures++;
-
         ier = mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
         if (ier != 0) numFailures++;
 
-        Vec3 a = v1 - v0;
-        Vec3 b = v2 - v1;
-        Vec3 c = v2 - v3;
-        Vec3 d = v3 - v0;
+        // convert to radians
+        v0 *= deg2rad;
+        v1 *= deg2rad;
+        v2 *= deg2rad;
+        v3 *= deg2rad;
 
-        // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(a, d);
-        double a120 = crossDotZHat(a, b);
-        double a231 = crossDotZHat(c, b);
-        double a302 = crossDotZHat(c, d);
+        // compute the Cartesian coordinates, assuming a radius of one
+        Vec3 xyz0 = cartesianFromRadians(v0);
+        Vec3 xyz1 = cartesianFromRadians(v1);
+        Vec3 xyz2 = cartesianFromRadians(v2);
+        Vec3 xyz3 = cartesianFromRadians(v3);
 
-        // Jacobian for this quad, should be a strictly positive quantity if nodes are
-        // ordered correctly
-        double jac = 0.25*(a013 + a120 + a231 + a302);
-        if (jac <= 0) {
-            std::stringstream msg;
-            msg << "bad cell " << cellId << " vertices: " <<
-                            v0 << ";" << v1 << ";" << v2  << ";" << v3; 
-            mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
-            ier = 1;
-        }
+        // unit normals on each vertex
+        Vec3 normal0 = xyz0 / sqrt(dot(xyz0, xyz0));
+        Vec3 normal1 = xyz1 / sqrt(dot(xyz1, xyz1));
+        Vec3 normal2 = xyz2 / sqrt(dot(xyz2, xyz2));
+        Vec3 normal3 = xyz3 / sqrt(dot(xyz3, xyz3));
 
+        // Jacobians on vertices
+        const double jac0 = crossDot(xyz1 - xyz0, xyz3 - xyz0, normal0);
+        const double jac1 = crossDot(xyz2 - xyz1, xyz0 - xyz1, normal1);
+        const double jac2 = crossDot(xyz3 - xyz2, xyz1 - xyz2, normal2);
+        const double jac3 = crossDot(xyz0 - xyz3, xyz2 - xyz3, normal3);
 
+        // Jacobians on edge centres are the average between two nodes
+        const double j01 = 0.5*(jac0 + jac1);
+        const double j12 = 0.5*(jac1 + jac2);
+        const double j23 = 0.5*(jac2 + jac3);
+        const double j30 = 0.5*(jac3 + jac0);
+
+        // covariant bases at cell centres
+        const Vec3 drdXsi = 0.5*(xyz1 - xyz0 + xyz2 - xyz3);
+        const Vec3 drdEta = 0.5*(xyz3 - xyz0 + xyz2 - xyz1);
+
+        // edge data index
+        std::size_t k0 = cellId*MNT_NUM_EDGES_PER_QUAD + 0;
+        std::size_t k1 = cellId*MNT_NUM_EDGES_PER_QUAD + 1;
+        std::size_t k2 = cellId*MNT_NUM_EDGES_PER_QUAD + 2;
+        std::size_t k3 = cellId*MNT_NUM_EDGES_PER_QUAD + 3;
+
+        Vec3 vec0 = (data[k0]*drdEta + 0.5*(data[k3] + data[k1])*drdXsi)/j01;
+        Vec3 vec1 = (data[k1]*drdXsi + 0.5*(data[k0] + data[k2])*drdEta)/j12;
+        Vec3 vec2 = (data[k2]*drdEta + 0.5*(data[k1] + data[k3])*drdXsi)/j23;
+        Vec3 vec3 = (data[k3]*drdXsi + 0.5*(data[k2] + data[k0])*drdEta)/j30;
+
+        double cosLam01 = cos(0.5*(v0[LON_INDEX] + v1[LON_INDEX]));
+        double cosLam12 = cos(0.5*(v1[LON_INDEX] + v2[LON_INDEX]));
+        double cosLam23 = cos(0.5*(v2[LON_INDEX] + v3[LON_INDEX]));
+        double cosLam30 = cos(0.5*(v3[LON_INDEX] + v0[LON_INDEX]));
+
+        double sinLam01 = sin(0.5*(v0[LON_INDEX] + v1[LON_INDEX]));
+        double sinLam12 = sin(0.5*(v1[LON_INDEX] + v2[LON_INDEX]));
+        double sinLam23 = sin(0.5*(v2[LON_INDEX] + v3[LON_INDEX]));
+        double sinLam30 = sin(0.5*(v3[LON_INDEX] + v0[LON_INDEX]));
+
+        double cosThe01 = cos(0.5*(v0[LAT_INDEX] + v1[LAT_INDEX]));
+        double cosThe12 = cos(0.5*(v1[LAT_INDEX] + v2[LAT_INDEX]));
+        double cosThe23 = cos(0.5*(v2[LAT_INDEX] + v3[LAT_INDEX]));
+        double cosThe30 = cos(0.5*(v3[LAT_INDEX] + v0[LAT_INDEX]));
+
+        double sinThe01 = sin(0.5*(v0[LAT_INDEX] + v1[LAT_INDEX]));
+        double sinThe12 = sin(0.5*(v1[LAT_INDEX] + v2[LAT_INDEX]));
+        double sinThe23 = sin(0.5*(v2[LAT_INDEX] + v3[LAT_INDEX]));
+        double sinThe30 = sin(0.5*(v3[LAT_INDEX] + v0[LAT_INDEX]));
+
+        Vec3 hatLam01;
+        hatLam01[0] = -sinLam01;
+        hatLam01[1] = +cosLam01;
+        hatLam01[2] = 0.;
+        Vec3 hatLam12;
+        hatLam12[0] = -sinLam12;
+        hatLam12[1] = +cosLam12;
+        hatLam12[2] = 0.;
+        Vec3 hatLam23;
+        hatLam23[0] = -sinLam23;
+        hatLam23[1] = +cosLam23;
+        hatLam23[2] = 0.;
+        Vec3 hatLam30;
+        hatLam30[0] = -sinLam30;
+        hatLam30[1] = +cosLam30;
+        hatLam30[2] = 0.;
+
+        Vec3 hatThe01;
+        hatThe01[0] = -sinThe01 * cosLam01;
+        hatThe01[1] = -sinThe01 * sinLam01;
+        hatThe01[2] = +cosThe01;
+        Vec3 hatThe12;
+        hatThe12[0] = -sinThe12 * cosLam12;
+        hatThe12[1] = -sinThe12 * sinLam12;
+        hatThe12[2] = +cosThe12;
+        Vec3 hatThe23;
+        hatThe23[0] = -sinThe23 * cosLam23;
+        hatThe23[1] = -sinThe23 * sinLam23;
+        hatThe23[2] = +cosThe23;
+        Vec3 hatThe30;
+        hatThe30[0] = -sinThe30 * cosLam30;
+        hatThe30[1] = -sinThe30 * sinLam30;
+        hatThe30[2] = +cosThe30;
+
+        std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
+        int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
         ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
         if (ier != 0) numFailures++;
         ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
@@ -700,70 +639,33 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
         ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
         if (ier != 0) numFailures++;
 
-        // cotangent vectors obtained by finite differencing and linearly interpolating
-        drdXsi = 0.5*(a + c);
-        drdEta = 0.5*(d + b);
-
-
-        // interpolate
-        double data0 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 0];
-        double data1 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 1];
-        double data2 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 2];
-        double data3 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 3];
-
-        // edge 0
-        double xsi = 0.5;
-        double eta = 0.0;
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
-        u[edgeId0] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId0] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        // the data are dimensioned num cells * 4 but the vectors are always dimensions num edges
+        u[edgeId0] += dot(vec0, hatLam01);
+        v[edgeId0] += dot(vec0, hatThe01);
         numAjdacentCells[edgeId0]++;
 
-        // edge 1
-        xsi = 1.0;
-        eta = 0.5;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId1] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId1] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        u[edgeId1] += dot(vec1, hatLam12);
+        v[edgeId1] += dot(vec1, hatThe12);
         numAjdacentCells[edgeId1]++;
 
-        // edge 2
-        xsi = 0.5;
-        eta = 1.0;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId2] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId2] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        u[edgeId2] += dot(vec2, hatLam23);
+        v[edgeId2] += dot(vec2, hatThe23);
         numAjdacentCells[edgeId2]++;
 
-        // edge 3
-        xsi = 0.0;
-        eta = 0.5;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId3] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId3] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        u[edgeId3] += dot(vec3, hatLam30);
+        v[edgeId3] += dot(vec3, hatThe30);
         numAjdacentCells[edgeId3]++;
-
-
     }
 
     // all the edges that divide two cells have been double counted, now correcting
     for (std::size_t i = 0; i < numEdges; ++i) {
+
         int count = std::max(1, numAjdacentCells[i]);
+
         u[i] /= count;
         v[i] /= count;
     }
+
 
     return numFailures;
 }
@@ -784,7 +686,7 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
     }
 
     Vec3 drdXsi, drdEta;
-    std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
+    std::size_t edgeId0, edgeId1, edgeId2, edgeId3, edgeId;
     int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
 
     std::size_t numCells;
@@ -798,8 +700,6 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
     // count the number of cells that are adjacent to each edge
     std::vector<int> numAjdacentCells(numEdges, 0);
 
-    // vertex positions
-    Vec3 v0, v1, v2, v3;
 
     // initialize the vector field to zero
     for (std::size_t i = 0; i < numEdges; ++i) {
@@ -807,7 +707,10 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
         v[i] = 0.0;
     }
 
+    const double deg2rad = M_PI/180.;
 
+    // vertex positions
+    Vec3 v0, v1, v2, v3;
     for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
 
         // get the vertex coords
@@ -817,28 +720,11 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
         ier = mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
         if (ier != 0) numFailures++;
 
-        Vec3 a = v1 - v0;
-        Vec3 b = v2 - v1;
-        Vec3 c = v2 - v3;
-        Vec3 d = v3 - v0;
-
-        // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(a, d);
-        double a120 = crossDotZHat(a, b);
-        double a231 = crossDotZHat(c, b);
-        double a302 = crossDotZHat(c, d);
-
-        // Jacobian for this quad, should be a strictly positive quantity if nodes are
-        // ordered correctly
-        double jac = 0.25*(a013 + a120 + a231 + a302);
-        if (jac <= 0) {
-            std::stringstream msg;
-            msg << "bad cell " << cellId << " vertices: " <<
-                            v0 << ";" << v1 << ";" << v2  << ";" << v3;
-            mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
-            ier = 1;
-        }
-
+        // convert to radians
+        v0 *= deg2rad;
+        v1 *= deg2rad;
+        v2 *= deg2rad;
+        v3 *= deg2rad;
 
         ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
         if (ier != 0) numFailures++;
@@ -849,67 +735,121 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** s
         ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
         if (ier != 0) numFailures++;
 
-        // cotangent vectors obtained by finite differencing and linearly interpolating
-        drdXsi = 0.5*(a + c);
-        drdEta = 0.5*(d + b);
+        double data0 = - data[edgeId0] * edgeSign0;
+        double data1 = + data[edgeId1] * edgeSign1;
+        double data2 = - data[edgeId2] * edgeSign2;
+        double data3 = + data[edgeId3] * edgeSign3;
 
+        // compute the Cartesian coordinates, assuming a radius of one
+        Vec3 xyz0 = cartesianFromRadians(v0);
+        Vec3 xyz1 = cartesianFromRadians(v1);
+        Vec3 xyz2 = cartesianFromRadians(v2);
+        Vec3 xyz3 = cartesianFromRadians(v3);
 
-        // interpolate
-        double data0 = data[edgeId0] * edgeSign0;
-        double data1 = data[edgeId1] * edgeSign1;
-        double data2 = data[edgeId2] * edgeSign2;
-        double data3 = data[edgeId3] * edgeSign3;
+        // unit normals on each vertex
+        Vec3 normal0 = xyz0 / sqrt(dot(xyz0, xyz0));
+        Vec3 normal1 = xyz1 / sqrt(dot(xyz1, xyz1));
+        Vec3 normal2 = xyz2 / sqrt(dot(xyz2, xyz2));
+        Vec3 normal3 = xyz3 / sqrt(dot(xyz3, xyz3));
 
-        // edge 0
-        double xsi = 0.5;
-        double eta = 0.0;
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
-        u[edgeId0] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId0] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        // Jacobians on vertices
+        const double jac0 = crossDot(xyz1 - xyz0, xyz3 - xyz0, normal0);
+        const double jac1 = crossDot(xyz2 - xyz1, xyz0 - xyz1, normal1);
+        const double jac2 = crossDot(xyz3 - xyz2, xyz1 - xyz2, normal2);
+        const double jac3 = crossDot(xyz0 - xyz3, xyz2 - xyz3, normal3);
+
+        // Jacobians on edge centres are the average between two nodes
+        const double j01 = 0.5*(jac0 + jac1);
+        const double j12 = 0.5*(jac1 + jac2);
+        const double j23 = 0.5*(jac2 + jac3);
+        const double j30 = 0.5*(jac3 + jac0);
+
+        // covariant bases at cell centres
+        const Vec3 drdXsi = 0.5*(xyz1 - xyz0 + xyz2 - xyz3);
+        const Vec3 drdEta = 0.5*(xyz3 - xyz0 + xyz2 - xyz1);
+
+        Vec3 vec0 = (data0*drdEta + 0.5*(data3 + data1)*drdXsi)/j01;
+        Vec3 vec1 = (data1*drdXsi + 0.5*(data0 + data2)*drdEta)/j12;
+        Vec3 vec2 = (data2*drdEta + 0.5*(data1 + data3)*drdXsi)/j23;
+        Vec3 vec3 = (data3*drdXsi + 0.5*(data2 + data0)*drdEta)/j30;
+
+        double cosLam01 = cos(0.5*(v0[LON_INDEX] + v1[LON_INDEX]));
+        double cosLam12 = cos(0.5*(v1[LON_INDEX] + v2[LON_INDEX]));
+        double cosLam23 = cos(0.5*(v2[LON_INDEX] + v3[LON_INDEX]));
+        double cosLam30 = cos(0.5*(v3[LON_INDEX] + v0[LON_INDEX]));
+
+        double sinLam01 = sin(0.5*(v0[LON_INDEX] + v1[LON_INDEX]));
+        double sinLam12 = sin(0.5*(v1[LON_INDEX] + v2[LON_INDEX]));
+        double sinLam23 = sin(0.5*(v2[LON_INDEX] + v3[LON_INDEX]));
+        double sinLam30 = sin(0.5*(v3[LON_INDEX] + v0[LON_INDEX]));
+
+        double cosThe01 = cos(0.5*(v0[LAT_INDEX] + v1[LAT_INDEX]));
+        double cosThe12 = cos(0.5*(v1[LAT_INDEX] + v2[LAT_INDEX]));
+        double cosThe23 = cos(0.5*(v2[LAT_INDEX] + v3[LAT_INDEX]));
+        double cosThe30 = cos(0.5*(v3[LAT_INDEX] + v0[LAT_INDEX]));
+
+        double sinThe01 = sin(0.5*(v0[LAT_INDEX] + v1[LAT_INDEX]));
+        double sinThe12 = sin(0.5*(v1[LAT_INDEX] + v2[LAT_INDEX]));
+        double sinThe23 = sin(0.5*(v2[LAT_INDEX] + v3[LAT_INDEX]));
+        double sinThe30 = sin(0.5*(v3[LAT_INDEX] + v0[LAT_INDEX]));
+
+        Vec3 hatLam01;
+        hatLam01[0] = -sinLam01;
+        hatLam01[1] = +cosLam01;
+        hatLam01[2] = 0.;
+        Vec3 hatLam12;
+        hatLam12[0] = -sinLam12;
+        hatLam12[1] = +cosLam12;
+        hatLam12[2] = 0.;
+        Vec3 hatLam23;
+        hatLam23[0] = -sinLam23;
+        hatLam23[1] = +cosLam23;
+        hatLam23[2] = 0.;
+        Vec3 hatLam30;
+        hatLam30[0] = -sinLam30;
+        hatLam30[1] = +cosLam30;
+        hatLam30[2] = 0.;
+
+        Vec3 hatThe01;
+        hatThe01[0] = -sinThe01 * cosLam01;
+        hatThe01[1] = -sinThe01 * sinLam01;
+        hatThe01[2] = +cosThe01;
+        Vec3 hatThe12;
+        hatThe12[0] = -sinThe12 * cosLam12;
+        hatThe12[1] = -sinThe12 * sinLam12;
+        hatThe12[2] = +cosThe12;
+        Vec3 hatThe23;
+        hatThe23[0] = -sinThe23 * cosLam23;
+        hatThe23[1] = -sinThe23 * sinLam23;
+        hatThe23[2] = +cosThe23;
+        Vec3 hatThe30;
+        hatThe30[0] = -sinThe30 * cosLam30;
+        hatThe30[1] = -sinThe30 * sinLam30;
+        hatThe30[2] = +cosThe30;
+
+        u[edgeId0] += dot(vec0, hatLam01);
+        v[edgeId0] += dot(vec0, hatThe01);
         numAjdacentCells[edgeId0]++;
 
-        // edge 1
-        xsi = 1.0;
-        eta = 0.5;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId1] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId1] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        u[edgeId1] += dot(vec1, hatLam12);
+        v[edgeId1] += dot(vec1, hatThe12);
         numAjdacentCells[edgeId1]++;
 
-        // edge 2
-        xsi = 0.5;
-        eta = 1.0;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId2] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId2] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        u[edgeId2] += dot(vec2, hatLam23);
+        v[edgeId2] += dot(vec2, hatThe23);
         numAjdacentCells[edgeId2]++;
 
-        // edge 3
-        xsi = 0.0;
-        eta = 0.5;
-        isx = 1.0 - xsi;
-        ate = 1.0 - eta;
-        u[edgeId3] += (data3*isx + data1*xsi)*drdXsi[0]/jac 
-                    - (data0*ate + data2*eta)*drdEta[0]/jac;
-        v[edgeId3] += (data3*isx + data1*xsi)*drdXsi[1]/jac 
-                    - (data0*ate + data2*eta)*drdEta[1]/jac;
+        u[edgeId3] += dot(vec3, hatLam30);
+        v[edgeId3] += dot(vec3, hatThe30);
         numAjdacentCells[edgeId3]++;
-
 
     }
 
     // all the edges that divide two cells have been double counted, now correcting
     for (std::size_t i = 0; i < numEdges; ++i) {
+
         int count = std::max(1, numAjdacentCells[i]);
+
         u[i] /= count;
         v[i] /= count;
     }

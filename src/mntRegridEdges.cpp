@@ -989,12 +989,21 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
     if (ier != 0) numFailures++;
 
-    // rescale, NEED TO CHECK THIS, needs to be consistent with the src_data
-    if (src_grd->degrees && dst_grd->degrees) {
-        for (std::size_t i = 0; i < dst_data.size(); ++i) {
-            dst_data[i] *= (180./M_PI);
+    // DEBUG!!!!
+    {
+        std::size_t icell = 1160;
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            std::cerr << ">>> mntRegridEdges::vectorApply icell=" << icell << " ie=" << ie << " dst_data=" << dst_data[k] << '\n';
         }
     }
+
+    // // rescale, NEED TO CHECK THIS, needs to be consistent with the src_data
+    // if (src_grd->degrees && dst_grd->degrees) {
+    //     for (std::size_t i = 0; i < dst_data.size(); ++i) {
+    //         dst_data[i] *= (180./M_PI);
+    //     }
+    // }
 
     // note: the data are cell by cell but the vectors are dimensioned num edges
     // we don't need to find the points in this case

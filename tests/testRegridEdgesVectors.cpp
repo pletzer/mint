@@ -52,10 +52,10 @@ void test1() {
         for (auto ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             ier = mnt_grid_getEdgeId(&src_grd, icell, ie, &edgeId, &edgeSign);
             ier = mnt_grid_getPoints(&src_grd, icell, ie, &p0[0], &p1[0]);
-            double lam0 = p0[0] * deg2rad;
-            double lam1 = p1[0] * deg2rad;
-            double the0 = p0[1] * deg2rad;
-            double the1 = p1[1] * deg2rad;
+            double lam0 = p0[LON_INDEX] * deg2rad;
+            double lam1 = p1[LON_INDEX] * deg2rad;
+            double the0 = p0[LAT_INDEX] * deg2rad;
+            double the1 = p1[LAT_INDEX] * deg2rad;
 
             // // stream function
             // double s0 = cos(the0) * cos(lam0);
@@ -149,7 +149,7 @@ void test1() {
 
 void test2() {
 
-    // testing extensive field regridding
+    // testing extensive field regridding using unique edge data
 
     int ier;
 
@@ -175,7 +175,7 @@ void test2() {
     ier = mnt_grid_dump(&dst_grd, "cs16_grid.vtk");
     assert(ier == 0);
 
-    // set the u,v field on the src grid
+    // set the data on the src grid
     std::size_t src_numEdges;
     ier = mnt_grid_getNumberOfEdges(&src_grd, &src_numEdges);
     std::size_t src_numCells;
@@ -270,6 +270,11 @@ void test2() {
             error += std::fabs(dstData[edgeId] - dstDataExact);
             // std::cerr << icell << ' ' << ie << " data=" << dstData[edgeId] << " (" << dstDataExact << ")\n";
 
+            // DEBUG
+            if (icell == 1160) {
+                std::cout << "test2: cell " << icell << " edge " << ie << " edge sign=" << edgeSign << " ext field=" << dstData[edgeId] << " (exact: " << dstDataExact << ") edge p0=" << p0 << " -> " << p1 << '\n';
+            }
+
         }
     }
     error /= (dst_numCells * MNT_NUM_EDGES_PER_QUAD);
@@ -285,8 +290,128 @@ void test2() {
     mnt_grid_del(&src_grd);
 }
 
+
+void test3() {
+
+    // testing extensive field regridding using cell by cell data
+
+    int ier;
+
+    // read the src/dst grids
+    Grid_t* src_grd = NULL;
+    ier = mnt_grid_new(&src_grd);
+    assert(ier == 0);
+    ier = mnt_grid_setFlags(&src_grd, 0, 0, 1); // lon-lat, degrees
+    assert(ier == 0);
+    ier = mnt_grid_loadFromUgrid2DFile(&src_grd, "${CMAKE_SOURCE_DIR}/data/latlon100x50.nc$latlon");
+    assert(ier == 0);
+
+    Grid_t* dst_grd = NULL;
+    ier = mnt_grid_new(&dst_grd);
+    assert(ier == 0);
+    ier = mnt_grid_setFlags(&dst_grd, 1, 1, 1); // cubed-sphere, degrees
+    assert(ier == 0);
+    ier = mnt_grid_loadFromUgrid2DFile(&dst_grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
+    assert(ier == 0);
+
+
+    std::size_t src_numCells;
+    ier = mnt_grid_getNumberOfCells(&src_grd, &src_numCells);
+    std::cout << "src num cells: " << src_numCells << '\n';
+
+    Vec3 p0, p1;
+    std::vector<double> srcData(src_numCells * MNT_NUM_EDGES_PER_QUAD);
+    const double deg2rad = M_PI/180.;
+    for (auto icell = 0; icell < src_numCells; ++icell) {
+        for (auto ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+
+            ier = mnt_grid_getPoints(&src_grd, icell, ie, &p0[0], &p1[0]);
+            double lam0 = p0[0] * deg2rad;
+            double lam1 = p1[0] * deg2rad;
+            double the0 = p0[1] * deg2rad;
+            double the1 = p1[1] * deg2rad;
+
+            // stream function
+            double s0 = cos(the0) * cos(lam0);
+            double s1 = cos(the1) * cos(lam1);
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            int sign = 1;
+            srcData[k] = sign * (s1 - s0);
+
+        }
+    }
+
+    // regridder
+    RegridEdges_t* rgd = NULL;
+    ier = mnt_regridedges_new(&rgd);
+    assert(ier == 0);
+    ier = mnt_regridedges_setSrcGrid(&rgd, src_grd);
+    assert(ier == 0);
+    ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
+    assert(ier == 0);
+    int numCellsPerBucket = 256;
+    double periodX = 360.;
+    int enableFolding = 0;
+    ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding);
+    assert(ier == 0);
+
+    int debug = 2;
+    ier = mnt_regridedges_computeWeights(&rgd, debug);
+    assert(ier == 0);
+
+    std::size_t dst_numCells;
+    ier = mnt_grid_getNumberOfCells(&dst_grd, &dst_numCells);
+    std::cout << "dst num cells: " << dst_numCells << '\n';
+
+    std::vector<double> dstData(dst_numCells * MNT_NUM_EDGES_PER_QUAD);
+    ier = mnt_regridedges_apply(&rgd, &srcData[0], &dstData[0], MNT_CELL_BY_CELL_DATA);
+    assert(ier == 0);
+
+    // check
+    double error = 0;
+    for (auto icell = 0; icell < dst_numCells; ++icell) {
+        for (auto ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+
+            ier = mnt_grid_getPoints(&dst_grd, icell, ie, &p0[0], &p1[0]);
+            double lam0 = p0[0] * deg2rad;
+            double lam1 = p1[0] * deg2rad;
+            double the0 = p0[1] * deg2rad;
+            double the1 = p1[1] * deg2rad;
+
+            double lamMid = 0.5*(lam0 + lam1);
+            double theMid = 0.5*(the0 + the1);
+
+            // stream function
+            double s0 = cos(the0) * cos(lam0);
+            double s1 = cos(the1) * cos(lam1);
+            int sign = 1;
+            if (ie == 0 || ie == 2) sign = -1;
+            double dstDataExact = sign * (s1 - s0);
+
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            error += std::fabs(dstData[k] - dstDataExact);
+            // std::cerr << icell << ' ' << ie << " data=" << dstData[edgeId] << " (" << dstDataExact << ")\n";
+
+            // DEBUG
+            if (icell == 1160) {
+                std::cout << "test3 cell " << icell << " edge " << ie << " ext field=" << dstData[k] << " edge p0=" << p0 << " -> " << p1 << '\n';
+            }
+
+        }
+    }
+    error /= (dst_numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::cerr << "test3: error = " << error << '\n';
+    assert(error < 0.05);
+
+    // cleanup
+    mnt_regridedges_del(&rgd);
+    mnt_grid_del(&dst_grd);
+    mnt_grid_del(&src_grd);
+}
+
 int main(int argc, char** argv) {
 
+    test3();
     test2();
     test1();
 
