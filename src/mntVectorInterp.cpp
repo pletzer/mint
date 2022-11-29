@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
+#include <cmath>
+
 #include <mntVectorInterp.h>
 #include <vtkGenericCell.h>
 
@@ -469,7 +472,6 @@ int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
                                                           double u[], double v[]) {
 
     std::string msg;
-    int ier;
     int numFailures = 0;
 
     if (!(*self)->grid) {
