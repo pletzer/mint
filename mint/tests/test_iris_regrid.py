@@ -15,7 +15,7 @@ DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 def _set_extensive_field_from_streamfct(cube):
     """
-    Set extensive field values from streamfunction sin(y) + cos(y)*cos(x)
+    Set extensive field values from streamfunction cos(y)*cos(x)
     :param cube: the cube for which we will fill in the values
     """
     x = cube.mesh.node_coords.node_x.points
@@ -261,7 +261,8 @@ def test_cubedsphere8_to_cubedsphere2():
     assert error < 0.29
 
 
-def test_cubedsphere8_to_cubedsphere8_w1():
+# turned test off as we have not yet implemented W1
+def xtest_cubedsphere8_to_cubedsphere8_w1():
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
     tgt_u, tgt_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
@@ -332,9 +333,7 @@ def test_lonlat_to_cubedsphere():
                  np.fabs(result_v.data - tgt_v.data).mean())
     print(f'test_lonlat_to_cubedsphere = {error}')
 
-
     assert error < 0.10
-
 
 
 def test_cube_mesh():
@@ -374,7 +373,7 @@ def test_streamfunction_extensive_field():
     rg = mint.IrisMintRegridder(src.mesh, tgt.mesh, \
                                 src_flags=(0, 0, 1), tgt_flags=(0, 0, 1))
 
-    # Regrid the extensive field from stream function sin(y) + cos(y)*cos(x).
+    # Regrid the extensive field from stream function.
     _set_extensive_field_from_streamfct(src)
     _set_extensive_field_from_streamfct(tgt)
     result = rg.regrid_extensive_cube(src)
@@ -387,7 +386,7 @@ def test_streamfunction_extensive_field():
 
 def test_streamfunction_vector_field():
 
-    # Regrid the vector field from stream function sin(y) + cos(y)*cos(x).
+    # Regrid the vector field from stream function.
     src_nx, src_ny = 18, 14
     src_nx1, src_ny1 = src_nx + 1, src_ny + 1
     src_num_edges = src_nx*src_ny1 + src_nx1*src_ny
@@ -402,14 +401,53 @@ def test_streamfunction_vector_field():
     tgt_u = _gridlike_mesh_cube(tgt_nx, tgt_ny)
     tgt_v = _gridlike_mesh_cube(tgt_nx, tgt_ny)
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
+    assert tgt_u.shape[-1] == tgt_v.shape[-1] == tgt_num_edges
 
     rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh, \
                                 src_flags=(0, 0, 1), tgt_flags=(0, 0, 1))
     result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
+    assert result_u.shape[-1] == result_v.shape[-1] == tgt_num_edges
+
+    print(f'exact u = {tgt_u.data}')
+    print(f'regridded u = {result_u.data}')
 
     # Check the result.
-    error = 0.5*np.mean(np.fabs(result_u.data - tgt_u.data))
-    error += 0.5*np.mean(np.fabs(result_v.data - tgt_v.data))
-    print(f'vector field regridding error = {error}')
+    tgt_x = result_u.mesh.node_coords.node_x.points
+    tgt_y = result_u.mesh.node_coords.node_y.points
+    tgt_num_cells = rg.tgt.get_grid().getNumberOfCells()
+    error = 0.0
+    eps = 1.e-8
+    for icell in range(tgt_num_cells):
+        for ie in range(mint.NUM_EDGES_PER_QUAD):
+            # get the edge points
+            point_id0, point_id1 = rg.tgt.get_grid().getNodeIds(icell, ie)
+            x0, y0 = tgt_x[point_id0], tgt_y[point_id0]
+            x1, y1 = tgt_x[point_id1], tgt_y[point_id1]
+            edge_id, edge_sign = rg.tgt.get_grid().getEdgeId(icell, ie)
+            if abs(abs(y0) - 90) < eps and abs(abs(y1) - 90) < eps:
+                # the 2 nodes are at the pole, u, v are ill-defined thre so skip
+                continue
+            uval, vval = result_u.data[edge_id], result_v.data[edge_id]
+            uxct, vxct = tgt_u.data[edge_id], tgt_v.data[edge_id]
+            error += abs(uval - uxct)
+            error += abs(vval - vxct)
+            print(f'cell {icell} edge {ie} points {x0, y0} -> {x1, y1} u,v = {uval, vval} (exact {uxct, vxct})')
+    error /= (2 * tgt_num_edges)
+    print(f'error = {error}')
     assert error < 0.04
+
+
+    # print(f'tgt_y = {tgt_y}')
+    # print(f'tgt_y.shape = {tgt_y.shape}')
+    # print(f'result_u.shape {result_u.shape}')
+    # error = 0.
+    # for i in range(tgt_num_edges):
+    #     if abs(abs(tgt_y[i]) - 90.0) < 1.e-10:
+    #         continue
+    #     error += 0.5*(abs(result_u.data[i] - tgt_u.data[i]) + abs(result_v.data[i] - tgt_v.data[i]))
+
+    # # error = 0.5*np.mean(np.fabs(result_u.data - tgt_u.data))
+    # # error += 0.5*np.mean(np.fabs(result_v.data - tgt_v.data))
+    # print(f'vector field regridding error = {error}')
+    # assert error < 0.04
 
