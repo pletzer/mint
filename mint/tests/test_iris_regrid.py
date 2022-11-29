@@ -436,18 +436,3 @@ def test_streamfunction_vector_field():
     print(f'error = {error}')
     assert error < 0.04
 
-
-    # print(f'tgt_y = {tgt_y}')
-    # print(f'tgt_y.shape = {tgt_y.shape}')
-    # print(f'result_u.shape {result_u.shape}')
-    # error = 0.
-    # for i in range(tgt_num_edges):
-    #     if abs(abs(tgt_y[i]) - 90.0) < 1.e-10:
-    #         continue
-    #     error += 0.5*(abs(result_u.data[i] - tgt_u.data[i]) + abs(result_v.data[i] - tgt_v.data[i]))
-
-    # # error = 0.5*np.mean(np.fabs(result_u.data - tgt_u.data))
-    # # error += 0.5*np.mean(np.fabs(result_v.data - tgt_v.data))
-    # print(f'vector field regridding error = {error}')
-    # assert error < 0.04
-
