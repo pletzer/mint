@@ -577,10 +577,16 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** s
         double data2 = - data[k2];
         double data3 = + data[k3];
 
-        Vec3 vec0 = (data0*drdEta + 0.5*(data3 + data1)*drdXsi)/j01;
-        Vec3 vec1 = (data1*drdXsi + 0.5*(data0 + data2)*drdEta)/j12;
-        Vec3 vec2 = (data2*drdEta + 0.5*(data1 + data3)*drdXsi)/j23;
-        Vec3 vec3 = (data3*drdXsi + 0.5*(data2 + data0)*drdEta)/j30;
+        // Vec3 vec0 = (data0*drdEta + 0.5*(data3 + data1)*drdXsi)/j01;
+        // Vec3 vec1 = (data1*drdXsi + 0.5*(data0 + data2)*drdEta)/j12;
+        // Vec3 vec2 = (data2*drdEta + 0.5*(data1 + data3)*drdXsi)/j23;
+        // Vec3 vec3 = (data3*drdXsi + 0.5*(data2 + data0)*drdEta)/j30;
+        
+        Vec3 vec0 = (data0*drdEta/j01 + 0.5*(data3/j30 + data1/j12)*drdXsi);
+        Vec3 vec1 = (data1*drdXsi/j12 + 0.5*(data0/j01 + data2/j23)*drdEta);
+        Vec3 vec2 = (data2*drdEta/j23 + 0.5*(data1/j12 + data3/j30)*drdXsi);
+        Vec3 vec3 = (data3*drdXsi/j30 + 0.5*(data2/j23 + data0/j01)*drdEta);
+
 
         double cosLam01 = cos(0.5*(v0[LON_INDEX] + v1[LON_INDEX]));
         double cosLam12 = cos(0.5*(v1[LON_INDEX] + v2[LON_INDEX]));
