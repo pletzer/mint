@@ -431,14 +431,9 @@ int mnt_vectorinterp_getEdgeVectorsOnEdges(VectorInterp_t** self,
                                             const double data[],
                                             int placement,
                                             double u[], double v[]) {
-    int ier;
-    if (placement == MNT_CELL_BY_CELL_DATA) {
-        ier = mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(self, data, u, v);
-    }
-    else {
-        ier = mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeDataOnEdges(self, data, u, v);
-    }
-    return ier;
+    std::string msg ="NOT YET IMPLEMENTED";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return -1;
 }
 
 LIBRARY_API
@@ -647,36 +642,6 @@ int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
 
     return numFailures;
 
-}
-
-LIBRARY_API
-int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
-                                                          const double data[],
-                                                          double u[], double v[]) {
-    std::string msg ="NOT YET IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return -1;
-
-}
-
-LIBRARY_API
-int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
-                                                          const double data[],
-                                                          double u[], double v[]) {
-
-    std::string msg;
-    int numFailures = 0;
-
-    if (!(*self)->grid) {
-        msg ="must set the grid before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -2;
-    }
-
-    mntlog::error(__FILE__, __func__, __LINE__, "NOT YET IMPLEMENTED");
-    return -3;
-
-    return numFailures;
 }
 
 
