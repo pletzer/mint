@@ -21,9 +21,12 @@ class _DummyMintRegridder:
 
 class IrisToMintMeshAdaptor:
 
-    def __init__(self, iris_mesh, **kwargs):
+    def __init__(self, iris_mesh, flags):
         """
         Create a MINT grid from an Iris mesh
+        :param iris_mesh: Iris mesh object
+        :param flags: flags to pass to the grid. Example (0, 0, 1) for a regular grid 
+                      and (1, 1, 1) for a cubed-sphere grid. 
         """
 
         # vertex points
@@ -46,13 +49,7 @@ class IrisToMintMeshAdaptor:
         self.edge2nodes -= iris_mesh.edge_node_connectivity.start_index
         
         self.grid = mint.Grid()
-        fixLonAcrossDateline = kwargs.get('fixLonAcrossDateline', 0)
-        averageLonAtPole = kwargs.get('averageLonAtPole', 0)
-        # degrees = False
-        # if iris_mesh.node_coords.node_x.points.units == 'degrees':
-        #     degrees = True
-        degrees = True
-        self.grid.setFlags(fixLonAcrossDateline, averageLonAtPole, degrees)
+        self.grid.setFlags(flags[0], flags[1], flags[2])
         self.grid.loadFromUgrid2DData(self.points, self.face2nodes, self.edge2nodes)
 
         self.num_faces = self.face2nodes.shape[0]
@@ -65,17 +62,21 @@ class IrisToMintMeshAdaptor:
 
 class IrisMintRegridder:
 
-    def __init__(self, src_mesh, tgt_mesh, **kwargs):
+    def __init__(self, src_mesh, tgt_mesh, src_flags, tgt_flags, **kwargs):
         """
         Constructor.
         :param src_mesh: source iris mesh with coordinates and connectivity
         :param tgt_mesh: target iris mesh with coordinates and connectivity
+        :param src_flags: flags to pass to the source grid. Example (0, 0, 1) for a regular grid 
+                      and (1, 1, 1) for a cubed-sphere grid. 
+        :param tgt_flags: flags to pass to the target grid. Example (0, 0, 1) for a regular grid 
+                      and (1, 1, 1) for a cubed-sphere grid. 
         """
 
         self.tgt_mesh = tgt_mesh
 
-        self.src = IrisToMintMeshAdaptor(src_mesh)
-        self.tgt = IrisToMintMeshAdaptor(tgt_mesh)
+        self.src = IrisToMintMeshAdaptor(src_mesh, flags=src_flags)
+        self.tgt = IrisToMintMeshAdaptor(tgt_mesh, flags=tgt_flags)
 
         self.src_num_edges = self.src.get_grid().getNumberOfEdges()
         self.tgt_num_edges = self.tgt.get_grid().getNumberOfEdges()
@@ -94,27 +95,18 @@ class IrisMintRegridder:
         self.regridder.computeWeights(debug)
 
 
-    def regrid_vector_cubes(self, u_cube, v_cube, **kwargs):
+    def regrid_vector_cubes(self, u_cube, v_cube, fs, **kwargs):
         """
         Regrid a vector field
         :param u_cube: zonal component of the vector fields defined on horizontal edges
         :param v_cube: meridional component of the vector fields defined on horizontal edges
+        :param fs: function space, either 1 (for W1/edge) or 2 (for W2/face)
         :returns (u, v) cubes
         """
-        src_ef = mint.ExtensiveFieldAdaptor()
-        src_ef.setGrid(self.src.get_grid())
-
-        tgt_ef = mint.ExtensiveFieldAdaptor()
-        tgt_ef.setGrid(self.tgt.get_grid())
-
         # Dimensions other than horizontal
         dims = u_cube.shape[:-1] # last dimension is assumed to be the number of edges
 
         # Allocate.
-        src_edge_data = np.empty((self.src_num_edges,), np.float64)
-        src_face_data = np.empty((self.src_num_edges,), np.float64)
-        tgt_edge_data = np.empty((self.tgt_num_edges,), np.float64)
-        tgt_face_data = np.empty((self.tgt_num_edges,), np.float64)
         tgt_u_data = np.empty(dims + (self.tgt_num_edges,), np.float64)
         tgt_v_data = np.empty(dims + (self.tgt_num_edges,), np.float64)
         
@@ -126,24 +118,11 @@ class IrisMintRegridder:
             inds = tuple(mai.getIndices())
 
             src_slab = inds + (slice(0, self.src_num_edges),)
-
-            # Get the (extensive) edge and face data.
-            src_ef.fromVectorField(u_cube.data, v_cube.data, src_edge_data,
-                                placement=mint.UNIQUE_EDGE_DATA,
-                                fs=mint.FUNC_SPACE_W1)            
-            src_ef.fromVectorField(u_cube.data, v_cube.data, src_face_data,
-                                placement=mint.UNIQUE_EDGE_DATA,
-                                fs=mint.FUNC_SPACE_W2)            
-
-            # Regrid the extensive fields.
-            self.regridder.apply(src_edge_data, tgt_edge_data, placement=mint.UNIQUE_EDGE_DATA)
-            self.regridder.apply(src_face_data, tgt_face_data, placement=mint.UNIQUE_EDGE_DATA)
-
-            # Build the vector components from the extensive fields.
             tgt_slab = inds + (slice(0, self.tgt_num_edges),)
-            tgt_ef.toVectorField(tgt_edge_data, tgt_face_data, \
-                             tgt_u_data[tgt_slab], tgt_v_data[tgt_slab], 
-                             placement=mint.UNIQUE_EDGE_DATA)
+
+            # Regrid the vector fields.
+            self.regridder.vectorApply(u_cube.data[src_slab], v_cube.data[src_slab], \
+                                       tgt_u_data[tgt_slab], tgt_v_data[tgt_slab], fs)
                         
             mai.next()
 
@@ -177,7 +156,6 @@ class IrisMintRegridder:
         out_cube.add_aux_coord(tgt_mesh_coord_y, 0)
 
         return out_cube
-
 
 
     def regrid_extensive_data(self, data, **kwargs):

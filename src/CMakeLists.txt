@@ -33,7 +33,6 @@ set(LIB_FILES
   mntPolylineIntegral.cpp
   mntWeights.cpp
   mntVectorInterp.cpp
-  mntExtensiveFieldConverter.cpp
   mntExtensiveFieldAdaptor.cpp
 )
 
@@ -82,7 +81,6 @@ set(HEADER_FILES
   mntVecN.h
   mntWeights.h
   mntVectorInterp.h
-  mntExtensiveFieldConverter.h
   mntExtensiveFieldAdaptor.h
 )
 

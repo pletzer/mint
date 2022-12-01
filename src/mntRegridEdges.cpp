@@ -1,8 +1,13 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
+#include <cmath>
+
 #include "mntLogger.h"
 #include <mntRegridEdges.h>
 #include <mntPolysegmentIter.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
+#include <mntExtensiveFieldAdaptor.h>
+#include <mntVectorInterp.h>
 #include <mntWeights.h>
 #include "mntFileMeshNameExtractor.h"
 
@@ -909,6 +914,98 @@ int mnt_regridedges_apply(RegridEdges_t** self,
         return mnt_regridedges_applyToUniqueEdgeData(self, src_data, dst_data);
     }
 }
+
+
+int mnt_regridedges_edgeVectorApplyToUniqueEdgeData(RegridEdges_t** self,
+                                  const double src_u[], const double src_v[],
+                                  double dst_u[], double dst_v[]) {
+
+    std::string msg = "NOT IMPLEMENTED";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return 1;
+}
+
+LIBRARY_API
+int mnt_regridedges_vectorApply(RegridEdges_t** self,
+                                const double src_u[], const double src_v[],
+                                double dst_u[], double dst_v[], int fs) {
+
+    int ier;
+    int numFailures = 0;
+
+    std::size_t src_numCells;
+    ier = mnt_regridedges_getNumSrcCells(self, &src_numCells);
+    if (ier != 0) numFailures++;
+
+    std::size_t dst_numCells;
+    ier = mnt_regridedges_getNumDstCells(self, &dst_numCells);
+    if (ier != 0) numFailures++;
+
+    std::size_t dst_numEdges;
+    ier = mnt_regridedges_getNumDstEdges(self, &dst_numEdges);
+    if (ier != 0) numFailures++;
+
+    // from vector to extensive field
+    ExtensiveFieldAdaptor_t* src_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&src_efa);
+    if (ier != 0) numFailures++;
+
+    ier = mnt_extensivefieldadaptor_setGrid(&src_efa, (*self)->srcGridObj);
+    if (ier != 0) numFailures++;
+
+    // build the vector field, cell by cell
+    Grid_t* src_grd = (*self)->srcGridObj;
+    std::size_t edgeId;
+    int edgeSign;
+    std::vector<double> src_uCellByCell(src_numCells*MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_vCellByCell(src_numCells*MNT_NUM_EDGES_PER_QUAD);
+    for (std::size_t icell = 0; icell < src_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            ier = mnt_grid_getEdgeId(&src_grd, icell, ie, &edgeId, &edgeSign);
+            if (ier != 0) numFailures++;
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            src_uCellByCell[k] = src_u[edgeId];
+            src_vCellByCell[k] = src_v[edgeId];
+        }
+    }
+
+    // compute the extensive field from the vector field
+    std::vector<double> src_data(src_numCells*MNT_NUM_EDGES_PER_QUAD);
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_uCellByCell[0], &src_vCellByCell[0],
+         &src_data[0], MNT_CELL_BY_CELL_DATA, fs);
+    if (ier != 0) numFailures++;
+
+    // regrid the extensive fields
+    std::vector<double> dst_data(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    ier = mnt_regridedges_apply(self, &src_data[0], &dst_data[0], MNT_CELL_BY_CELL_DATA);
+    if (ier != 0) numFailures++;
+
+    Grid_t* dst_grd = (*self)->dstGridObj;
+
+    // turn the regridded extensive field into a vector field
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    if (ier != 0) numFailures++;
+    ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
+    if (ier != 0) numFailures++;
+
+    // note: the data are cell by cell but the vectors are dimensioned num edges
+    // and we don't need to find the points in this case
+    if (fs == MNT_FUNC_SPACE_W2) {
+        ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
+                                                     dst_u, dst_v);
+    }
+    else {
+        ier = mnt_vectorinterp_getEdgeVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
+                                                     dst_u, dst_v);
+    }
+    if (ier != 0) numFailures++;
+    ier = mnt_vectorinterp_del(&vp);
+    if (ier != 0) numFailures++;
+
+    return numFailures;
+}
+
 
 LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 

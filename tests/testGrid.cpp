@@ -14,15 +14,20 @@ void testIrisGrid() {
 }
 
 void testDisplacedUgrid() {
+    int ier;
     Grid_t* grd;
     mnt_grid_new(&grd);
     int fixLonAcrossDateline = 1;
     int averageLonAtPole = 1;
     int degrees = 1;
-    mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
-    mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs8_wind.nc$cs");
+    ier = mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
+    assert(ier == 0);
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs8_wind.nc$cs");
+    assert(ier == 0);
+    ier = mnt_grid_dump(&grd, "cs8_wind_grid.vtk");
+    assert(ier == 0);
     std::size_t numBadCells;
-    int ier = mnt_grid_check(&grd, &numBadCells);
+    ier = mnt_grid_check(&grd, &numBadCells);
     mnt_printLogMessages();
     std::cerr << "number of bad cells: " << numBadCells << '\n';
     assert(numBadCells == 0);

@@ -152,8 +152,9 @@ class Grid(object):
         ier = MINTLIB.mnt_grid_getPointsPtr(self.obj, byref(pointsPtr))
         if ier:
             error_handler(FILE, 'getPointsPtr', ier)
-        # create a numpy array from a C pointer\
+            
         ncells = self.getNumberOfCells()
+        # create a numpy array from a C pointer
         return numpy.ctypeslib.as_array(pointsPtr, shape=(ncells, NUM_VERTS_PER_QUAD, 3))
 
     def getEdgeId(self, cellId, edgeIndex):

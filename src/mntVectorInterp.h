@@ -102,7 +102,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
@@ -117,7 +117,7 @@ int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
+int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 /**
@@ -131,7 +131,7 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
@@ -146,7 +146,7 @@ int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
@@ -186,10 +186,82 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     const double data[], int placement,
                                     double vectors[]);
 
+/**
+ * Get the edge vectors at the mid edge locations from the extensive field
+ * @param self instance of VectorInterp_t
+ * @param data edge integrated (extensive) data, size depends on placement (see below)
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
+ *                  If placement == MNT_CELL_BY_CELL_DATA then data size is 
+ *                  num cells * num edges per cell, if MNT_UNIQUE_EDGE_DATA then
+ *                  data size should be num edges.
+ * @param u x-component of the output vectors, size numEdges
+ * @param v y-component of the output vectors, size numEdges
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_vectorinterp_getEdgeVectorsOnEdges(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[]);
+
+/**
+ * Get the face vectors at the mid edge locations from the extensive field
+ * @param self instance of VectorInterp_t
+ * @param data edge integrated (extensive) data, size depends on placement (see below)
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
+ *                  If placement == MNT_CELL_BY_CELL_DATA then data size is 
+ *                  num cells * num edges per cell, if MNT_UNIQUE_EDGE_DATA then
+ *                  data size should be num edges.
+ * @param u x-component of the output vectors, size numEdges
+ * @param v y-component of the output vectors, size numEdges
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[]);
+
+
+
 /* private */
+
+LIBRARY_API
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+LIBRARY_API
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+LIBRARY_API
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+LIBRARY_API
+int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
+                                                          const double data[],
+                                                          double u[], double v[]);
+
 
 inline double crossDotZHat(const Vec3& a, const Vec3& b) {
     return a[0]*b[1] - a[1]*b[0];
+}
+
+inline double crossDot(const Vec3& a, const Vec3& b, const Vec3& c) {
+    return c[0]*(a[1]*b[2] - a[2]*b[1]) + 
+           c[1]*(a[2]*b[0] - a[0]*b[2]) + 
+           c[2]*(a[0]*b[1] - a[1]*b[0]);
+}
+
+inline Vec3 cartesianFromRadians(const Vec3& p) {
+    Vec3 res;
+    double lam = p[LON_INDEX];
+    double the = p[LAT_INDEX];
+    res[0] = cos(the) * cos(lam);
+    res[1] = cos(the) * sin(lam);
+    res[2] = sin(the);
+    return res;
 }
 
 inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,

@@ -3,6 +3,8 @@
 #include <mntGrid.h>
 #include <mntVectorInterp.h>
 #include <mntMatMxN.h>
+#include "saveEdgeVectors.h"
+
 #undef NDEBUG // turn on asserts
 #include <cassert>
 #include <cmath>
@@ -97,7 +99,7 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA,
                                                             &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
@@ -108,7 +110,7 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA,
                                                             &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
@@ -119,7 +121,7 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA,
                                                             &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
@@ -130,7 +132,7 @@ void testSimple() {
     target[2] = 0.;
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0],
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA,
                                                             &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
@@ -210,11 +212,11 @@ void testRotated() {
     target[2] = points[2];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
     // note negative sign because area is pointing down
@@ -225,11 +227,11 @@ void testRotated() {
     target[2] = points[5];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
     // negative because area is pointing down
@@ -240,7 +242,7 @@ void testRotated() {
     target[2] = points[8];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0) < 1.e-12 && fabs(resVec[1] - 0) < 1.e-12);
@@ -250,7 +252,7 @@ void testRotated() {
     target[2] = points[11];
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0) < 1.e-12 && fabs(resVec[1] - 0) < 1.e-12);
@@ -262,11 +264,11 @@ void testRotated() {
     target[2] = 0.5*(points[5] + points[8]);
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " east edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] + 0.5) < 1.e-12 && fabs(resVec[1] - 0.8660254037844) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " east face vector is " << resVec << '\n';
     assert(fabs(resVec[1] - 0.5) < 1.e-12 && fabs(resVec[0] - 0.8660254037844) < 1.e-12);
@@ -278,11 +280,11 @@ void testRotated() {
     target[2] = 0.5*(points[11] + points[2]);
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " west edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] + 0.5) < 1.e-12 && fabs(resVec[1] - 0.8660254037844) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " west face vector is " << resVec << '\n';
     assert(fabs(resVec[1] - 0.5) < 1.e-12 && fabs(resVec[0] - 0.8660254037844) < 1.e-12);
@@ -294,11 +296,11 @@ void testRotated() {
     target[2] = 0.5*(points[ 8] + points[11]);
     ier = mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
     assert(ier == 0);
-    ier = mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " north edge vector is " << resVec << '\n';
     assert(fabs(resVec[0] - 0.8660254037844) < 1.e-12 && fabs(resVec[1] - 0.5) < 1.e-12);
-    ier = mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    ier = mnt_vectorinterp_getFaceVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     assert(ier == 0);
     std::cout << "at point " << target << " north face vector is " << resVec << '\n';
     // note area is pointing down
@@ -353,9 +355,9 @@ void testUniformGrid(int nx, int ny) {
     mnt_vectorinterp_setLocator(&vp, cloc);
     double tol2 = 1.e-10;
     mnt_vectorinterp_findPoints(&vp, 1, &target[0], tol2);
-    mnt_vectorinterp_getEdgeVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    mnt_vectorinterp_getEdgeVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     std::cout << "at point " << target << " edge vector is " << resVec << '\n';
-    mnt_vectorinterp_getFaceVectorsFromCellByCellData(&vp, &data[0], &resVec[0]);
+    mnt_vectorinterp_getFaceVectors(&vp, &data[0], MNT_CELL_BY_CELL_DATA, &resVec[0]);
     std::cout << "at point " << target << " face vector is " << resVec << '\n';
 
     // destroy
@@ -364,8 +366,171 @@ void testUniformGrid(int nx, int ny) {
     mnt_grid_del(&mgrid);
 }
 
+void testCubedSphereFaceVectorsOnEdge() {
+
+    int ier;
+
+    // read the grid
+    Grid_t* grd = NULL;
+    mnt_grid_new(&grd);
+    mnt_grid_setFlags(&grd, 1, 1, 1); // cubed-sphere, degrees
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics");
+    assert(ier == 0);
+
+    std::size_t numEdges;
+    mnt_grid_getNumberOfEdges(&grd, &numEdges);
+    std::size_t numCells;
+    mnt_grid_getNumberOfCells(&grd, &numCells);
+    std::cout << "testCubedSphereFaceVectorsOnEdge: num cells: " << numCells << " num edges: " << numEdges << '\n';
+
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, grd);
+    assert(ier == 0);
+    // mnt_vectorinterp_buildLocator(&vp, 256, 360., 0);
+
+    std::vector<double> faceData(numEdges);
+    std::vector<double> uedge(numEdges);
+    std::vector<double> vedge(numEdges);
+    std::vector<double> uedgeExact(numEdges);
+    std::vector<double> vedgeExact(numEdges);
+    std::size_t edgeId;
+    int edgeSign;
+    Vec3 p0, p1;
+    std::vector<Vec3> p0s(numEdges);
+    std::vector<Vec3> p1s(numEdges);
+
+    for (std::size_t icell = 0; icell < numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &edgeSign);
+            assert(ier == 0);
+            ier = mnt_grid_getPoints(&grd, icell, ie, &p0[0], &p1[0]);
+            assert(ier == 0);
+            double lam0 = p0[0] * M_PI/180;
+            double lam1 = p1[0] * M_PI/180;
+            double the0 = p0[1] * M_PI/180;
+            double the1 = p1[1] * M_PI/180;
+            double s0 = cos(the0) * cos(lam0);
+            double s1 = cos(the1) * cos(lam1);
+            double lamMid = 0.5*(lam0 + lam1);
+            double theMid = 0.5*(the0 + the1);
+
+            faceData[edgeId] = edgeSign * (s1 - s0);
+            uedgeExact[edgeId] = - sin(theMid) * cos(lamMid);
+            vedgeExact[edgeId] = sin(lamMid);
+
+            p0s[edgeId] = p0;
+            p1s[edgeId] = p1;
+        }
+    }
+
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp,
+        &faceData[0], MNT_UNIQUE_EDGE_DATA, &uedge[0], &vedge[0]);
+    assert(ier == 0);
+
+    // check
+    double error = 0;
+    for (auto i = 0; i < numEdges; ++i) {
+        error += fabs(uedgeExact[i] - uedge[i]) + fabs(vedgeExact[i] - vedge[i]);
+        // std::cerr << "testCubedSphereFaceVectorsOnEdge: edge=" << i << " points " << p0s[edgeId] << ';' << p1s[edgeId]
+        //           << " u=" << uedge[i] << " (exact " << uedgeExact[i] 
+        //           << ") v=" << vedge[i] << " (exact " << vedgeExact[i] << ")\n";
+    }
+    error /= numEdges;
+    std::cerr << "testCubedSphereFaceVectorsOnEdge error: " << error << '\n';
+
+    mnt_grid_dump(&grd, "testCubedSphereFaceVectorsOnEdge_grid.vtk");
+    saveEdgeVectors(grd, uedge, vedge, "testCubedSphereFaceVectorsOnEdge_vectors.vtk");
+    saveEdgeVectors(grd, uedgeExact, vedgeExact, "testCubedSphereFaceVectorsOnEdge_vectorsExact.vtk");
+    assert(error < 0.005);
+
+
+    // destroy
+    mnt_vectorinterp_del(&vp);
+    mnt_grid_del(&grd);
+}
+
+void testSqueezed() {
+    int ier;
+
+    // create grid
+    Grid_t* grid = NULL;
+    mnt_grid_new(&grid);
+    mnt_grid_setFlags(&grid, 0, 0, 1);
+    std::size_t ncells = 1, nedges = 4, npoints = 4;
+    const double xyz[] = {
+        135., 90., 0.,
+        90., 84.375, 0.,
+        135., 82.07041073676, 0.,
+        180., 84.375, 0. 
+    };
+    const std::size_t face2nodes[] = {
+        0, 1, 2, 3
+    };
+    const std::size_t edge2nodes[] = {
+        0, 1,
+        1, 2,
+        3, 2,
+        0, 3
+    };
+    ier = mnt_grid_loadFromUgrid2DData(&grid, ncells, nedges, npoints, 
+                                 xyz, face2nodes, edge2nodes);
+    assert(ier == 0);
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grid, &numCells);
+    assert(ier == 0);
+    std::size_t numEdges;
+    ier = mnt_grid_getNumberOfEdges(&grid, &numEdges);
+
+    Vec3 p0, p1, pMid;
+
+    std::vector<double> uCellByCellExact(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> vCellByCellExact(numCells * MNT_NUM_EDGES_PER_QUAD);
+    for (auto icell = 0; icell < numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            ier = mnt_grid_getPoints(&grid, icell, ie, &p0[0], &p1[0]);
+            assert(ier == 0);
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            pMid = 0.5*(p0 + p1);
+            uCellByCellExact[k] = -sin(pMid[1] * M_PI/180.) * cos(pMid[0] * M_PI/180.);
+            vCellByCellExact[k] = sin(pMid[0] * M_PI/180.);
+        }
+    }
+
+    std::vector<double> fluxes({0., -0.09755, 0.000467, -0.098017});
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, grid);
+    assert(ier == 0);
+    std::vector<double> uEdges(numEdges);
+    std::vector<double> vEdges(numEdges);
+    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdges[0], &vEdges[0]);
+    assert(ier == 0);
+
+    // check
+    for (auto i = 0; i < 4; ++i) {
+        std::cout << "testSqueezed: u=" << uEdges[i] << " exact=" << uCellByCellExact[i] << " diff: " << uCellByCellExact[i] - uEdges[i] << '\n';
+        assert(std::fabs(uEdges[i] - uCellByCellExact[i]) < 0.012);
+        std::cout << "testSqueezed: v=" << vEdges[i] << " exact=" << vCellByCellExact[i] << " diff: " << vCellByCellExact[i] - vEdges[i] << '\n';
+        assert(std::fabs(vEdges[i] - vCellByCellExact[i]) < 0.012);
+    }
+
+
+    // clean up
+    ier = mnt_vectorinterp_del(&vp);
+    assert(ier == 0);
+    ier = mnt_grid_del(&grid);
+    assert(ier == 0);
+
+}
+
 int main(int argc, char** argv) {
 
+    testSqueezed();
+    testCubedSphereFaceVectorsOnEdge();
     testSimple();
     testRotated();
     testUniformGrid(8, 4);
