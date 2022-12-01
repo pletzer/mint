@@ -234,15 +234,6 @@ LIBRARY_API
 int mnt_vectorinterp__getEdgeVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
                                                           const double data[],
                                                           double u[], double v[]);
-LIBRARY_API
-int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeDataOnEdges(VectorInterp_t** self,
-                                                          const double data[],
-                                                          double u[], double v[]);
-LIBRARY_API
-int mnt_vectorinterp__getFaceVectorsFromCellByCellDataOnEdges(VectorInterp_t** self,
-                                                          const double data[],
-                                                          double u[], double v[]);
-
 
 inline double crossDotZHat(const Vec3& a, const Vec3& b) {
     return a[0]*b[1] - a[1]*b[0];
