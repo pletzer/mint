@@ -427,20 +427,11 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
 }
 
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsOnEdges(VectorInterp_t** self,
+int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
                                             const double data[],
                                             int placement,
-                                            double u[], double v[]) {
-    std::string msg ="NOT YET IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return -1;
-}
-
-LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
-                                            const double data[],
-                                            int placement,
-                                            double u[], double v[]) {
+                                            double u[], double v[],
+                                            int fs) {
 
     std::string msg;
     int ier;
@@ -545,16 +536,43 @@ int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
             k3 = edgeId3;
         }
 
-        // dx cross hat{z} points to the negative direction for edges 0 and 2
-        double data0 = - data[k0] * edgeSign0;
-        double data1 = + data[k1] * edgeSign1;
-        double data2 = - data[k2] * edgeSign2;
-        double data3 = + data[k3] * edgeSign3;
+        double data0 = data[k0] * edgeSign0;
+        double data1 = data[k1] * edgeSign1;
+        double data2 = data[k2] * edgeSign2;
+        double data3 = data[k3] * edgeSign3;
 
-        Vec3 vec0 = data0*drdEta/j01 + 0.5*(data3/j30 + data1/j12)*drdXsi;
-        Vec3 vec1 = data1*drdXsi/j12 + 0.5*(data0/j01 + data2/j23)*drdEta;
-        Vec3 vec2 = data2*drdEta/j23 + 0.5*(data1/j12 + data3/j30)*drdXsi;
-        Vec3 vec3 = data3*drdXsi/j30 + 0.5*(data2/j23 + data0/j01)*drdEta;
+        Vec3 vec0, vec1, vec2, vec3, adjVecXsi, adjVecEta;
+        if (fs == MNT_FUNC_SPACE_W2) {
+
+            // W2
+
+            adjVecXsi = 0.5*(data3/j30 + data1/j12)*drdXsi;
+            adjVecEta = 0.5*(data0/j01 + data2/j23)*drdEta;
+            // dx cross hat{z} points to the negative direction for edges 0 and 2, hence the 
+            // negative sign for edges 0 and 2
+            vec0 = - data0*drdEta/j01 + adjVecXsi;
+            vec1 = + data1*drdXsi/j12 - adjVecEta;
+            vec2 = - data2*drdEta/j23 + adjVecXsi;
+            vec3 = + data3*drdXsi/j30 - adjVecEta;
+        }
+        else {
+
+            // W1
+
+            // normals on mid edge location
+            Vec3 normal01 = 0.5*(normal0 + normal1);
+            Vec3 normal12 = 0.5*(normal1 + normal2);
+            Vec3 normal23 = 0.5*(normal2 + normal3);
+            Vec3 normal30 = 0.5*(normal3 + normal0);
+
+            // vectors from adjacent edges, evaluated at the mid edge location
+            adjVecXsi = 0.5*( data0*cross(drdEta, normal01)/j01 + data2*cross(drdEta, normal23)/j23 );
+            adjVecEta = 0.5*( data3*cross(normal30, drdXsi)/j30 + data1*cross(normal12, drdXsi)/j12 );
+            vec0 = data0*cross(drdEta, normal01)/j01 + adjVecEta;
+            vec1 = data1*cross(normal12, drdXsi)/j12 + adjVecXsi;
+            vec2 = data2*cross(drdEta, normal23)/j23 + adjVecEta;
+            vec3 = data3*cross(normal30, drdXsi)/j30 + adjVecXsi;
+        }
 
 
         double cosLam01 = cos(0.5*(v0[LON_INDEX] + v1[LON_INDEX]));
@@ -577,6 +595,7 @@ int mnt_vectorinterp_getFaceVectorsOnEdges(VectorInterp_t** self,
         double sinThe23 = sin(0.5*(v2[LAT_INDEX] + v3[LAT_INDEX]));
         double sinThe30 = sin(0.5*(v3[LAT_INDEX] + v0[LAT_INDEX]));
 
+        // unit vectors in the lon and lat directions, expressed in Cartesian coords
         Vec3 hatLam01;
         hatLam01[0] = -sinLam01;
         hatLam01[1] = +cosLam01;
