@@ -100,6 +100,8 @@ void testVector2VectorW1() {
     assert(ier == 0);
 
     // check
+    std::vector<double> dsterror_u(dst_numEdges);
+    std::vector<double> dsterror_v(dst_numEdges);
     const double rad2deg = 180./M_PI;
     double error = 0;
     for (auto icell = 0; icell < dst_numCells; ++icell) {
@@ -122,6 +124,8 @@ void testVector2VectorW1() {
             double dst_vExact = - sin(theMid) * cos(lamMid);
 
             error += std::fabs(dst_u[edgeId] - dst_uExact) + std::fabs(dst_v[edgeId] - dst_vExact);
+            dsterror_u[edgeId] = dst_u[edgeId] - dst_uExact;
+            dsterror_v[edgeId] = dst_v[edgeId] - dst_vExact;
             // std::cerr << icell << ' ' << ie << " u=" << dst_u[edgeId] << " (" << dst_uExact << ") v=" << dst_v[edgeId] << " (" << dst_vExact << ")\n";
         }
     }
@@ -130,6 +134,7 @@ void testVector2VectorW1() {
 
     saveEdgeVectors(src_grd, src_u, src_v, "testVector2VectorW1_src_vectors.vtk");
     saveEdgeVectors(dst_grd, dst_u, dst_v, "testVector2VectorW1_dst_vectors.vtk");
+    saveEdgeVectors(dst_grd, dsterror_u, dsterror_v, "testVector2VectorW1_dsterrors_vectors.vtk");
 
     saveEdgeVectorsXYZ(src_grd, src_u, src_v, "testVector2VectorW1_src_vectorsXYZ.vtk");
     saveEdgeVectorsXYZ(dst_grd, dst_u, dst_v, "testVector2VectorW1_dst_vectorsXYZ.vtk");
