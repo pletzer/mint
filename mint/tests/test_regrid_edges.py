@@ -1,4 +1,4 @@
-from mint import RegridEdges, Grid, UNIQUE_EDGE_DATA, FUNC_SPACE_W2, NUM_VERTS_PER_QUAD, NUM_EDGES_PER_QUAD
+from mint import RegridEdges, Grid, UNIQUE_EDGE_DATA, FUNC_SPACE_W2, FUNC_SPACE_W1, NUM_VERTS_PER_QUAD, NUM_EDGES_PER_QUAD
 import numpy
 from pathlib import Path
 
@@ -6,7 +6,7 @@ from pathlib import Path
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 
-def test_vectorRegrid():
+def test_vectorRegridW2():
 
     # src grid
     src_grid = Grid()
@@ -70,7 +70,74 @@ def test_vectorRegrid():
             error += abs(dst_u[edgeId] - dst_uExact) + abs(dst_v[edgeId] - dst_vExact)
     error /= (dst_numCells * NUM_EDGES_PER_QUAD)
 
-    assert(error < 0.023)
+    assert(error < 0.004)
+
+
+def test_vectorRegridW1():
+
+    # src grid
+    src_grid = Grid()
+    src_grid.setFlags(0, 0) # lon-lat
+    filename = str(DATA_DIR / Path('latlon100x50.nc'))
+    src_grid.loadFromUgrid2DFile(f'{filename}$latlon')
+
+    # dst grid
+    dst_grid = Grid()
+    dst_grid.setFlags(1, 1) # cubed-sphere
+    filename = str(DATA_DIR / Path('cs_16.nc'))
+    dst_grid.loadFromUgrid2DFile(f'{filename}$physics')
+
+    # create a regridder
+    rg = RegridEdges()
+    rg.setSrcGrid(src_grid)
+    rg.setDstGrid(dst_grid)
+    rg.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
+    rg.computeWeights()
+
+    # create a source vector field
+    src_numCells = src_grid.getNumberOfCells()
+    src_numEdges = src_grid.getNumberOfEdges()
+    dst_numCells = dst_grid.getNumberOfCells()
+    dst_numEdges = dst_grid.getNumberOfEdges()
+
+    src_u = numpy.zeros(src_numEdges, numpy.float64)
+    src_v = numpy.zeros(src_numEdges, numpy.float64)
+    dst_u = numpy.zeros(dst_numEdges, numpy.float64)
+    dst_v = numpy.zeros(dst_numEdges, numpy.float64)
+
+    src_pts = src_grid.getPoints()
+    for icell in range(src_numCells):
+        for ie in range(NUM_VERTS_PER_QUAD):
+            p0 = src_pts[icell, ie, :]
+            p1 = src_pts[icell, (ie + 1) % NUM_VERTS_PER_QUAD, :]
+            pMid = 0.5*(p0 + p1)
+            lamMid, theMid = pMid[:2] * numpy.pi/180. #  in radians
+
+            edgeId, edgeSign = src_grid.getEdgeId(icell, ie)
+            src_u[edgeId] = - numpy.sin(lamMid)
+            src_v[edgeId] = - numpy.sin(theMid) * numpy.cos(lamMid)
+
+    # regrid
+    rg.vectorApply(src_u, src_v, dst_u, dst_v, FUNC_SPACE_W1)
+
+    # check
+    error = 0.0
+    dst_pts = dst_grid.getPoints()
+    for icell in range(dst_numCells):
+        for ie in range(NUM_VERTS_PER_QUAD):
+            p0 = dst_pts[icell, ie, :]
+            p1 = dst_pts[icell, (ie + 1) % NUM_VERTS_PER_QUAD, :]
+            pMid = 0.5*(p0 + p1)
+            lamMid, theMid = pMid[:2] * numpy.pi/180. #  in radians
+
+            edgeId, edgeSign = dst_grid.getEdgeId(icell, ie)
+            dst_uExact = - numpy.sin(lamMid)
+            dst_vExact = - numpy.sin(theMid) * numpy.cos(lamMid)
+
+            error += abs(dst_u[edgeId] - dst_uExact) + abs(dst_v[edgeId] - dst_vExact)
+    error /= (dst_numCells * NUM_EDGES_PER_QUAD)
+
+    assert(error < 0.005)
 
 
 

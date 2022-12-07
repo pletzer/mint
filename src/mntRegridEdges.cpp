@@ -991,14 +991,8 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
 
     // note: the data are cell by cell but the vectors are dimensioned num edges
     // and we don't need to find the points in this case
-    if (fs == MNT_FUNC_SPACE_W2) {
-        ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
-                                                     dst_u, dst_v);
-    }
-    else {
-        ier = mnt_vectorinterp_getEdgeVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
-                                                     dst_u, dst_v);
-    }
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
+                                                     dst_u, dst_v, fs);
     if (ier != 0) numFailures++;
     ier = mnt_vectorinterp_del(&vp);
     if (ier != 0) numFailures++;

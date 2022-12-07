@@ -425,8 +425,8 @@ void testCubedSphereFaceVectorsOnEdge() {
         }
     }
 
-    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp,
-        &faceData[0], MNT_UNIQUE_EDGE_DATA, &uedge[0], &vedge[0]);
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp,
+        &faceData[0], MNT_UNIQUE_EDGE_DATA, &uedge[0], &vedge[0], MNT_FUNC_SPACE_W2);
     assert(ier == 0);
 
     // check
@@ -506,8 +506,8 @@ void testSqueezed() {
     assert(ier == 0);
     std::vector<double> uEdges(numEdges);
     std::vector<double> vEdges(numEdges);
-    ier = mnt_vectorinterp_getFaceVectorsOnEdges(&vp, &fluxes[0],
-                           MNT_CELL_BY_CELL_DATA, &uEdges[0], &vEdges[0]);
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdges[0], &vEdges[0], MNT_FUNC_SPACE_W2);
     assert(ier == 0);
 
     // check
