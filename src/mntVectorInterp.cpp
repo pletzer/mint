@@ -664,3 +664,165 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
 }
 
 
+LIBRARY_API
+int mnt_vectorinterp_getVectorsOnEdgesSpherical(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[],
+                                            int fs) {
+
+    std::string msg;
+    int ier;
+    int numFailures = 0;
+
+    if (!(*self)->grid) {
+        msg ="must set the grid before calling this";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -2;
+    }
+
+    const double deg2rad = M_PI/180.;
+
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&(*self)->grid, &numCells);
+    if (ier != 0) numFailures++;
+
+    std::size_t numEdges;
+    ier = mnt_grid_getNumberOfEdges(&(*self)->grid, &numEdges);
+    if (ier != 0) numFailures++;
+
+    // initialize to zero
+    for (auto i = 0; i < numEdges; ++i) {
+        u[i] = 0.0;
+        v[i] = 0.0;
+    }
+
+    // count the number of cells that are adjacent to each edge
+    std::vector<int> numAjdacentCells(numEdges, 0);
+
+    Vec3 normal(0.); normal[2] = 1.0;
+
+    // vertices in radians
+    Vec3 v0, v1, v2, v3;
+    for (std::size_t cellId = 0; cellId < numCells; ++cellId) {
+
+        // get the vertex coords from the two opposite edges
+        ier = mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
+        if (ier != 0) numFailures++;
+
+        // Jacobians on vertices
+        const double jac0 = crossDot(v1 - v0, v3 - v0, normal);
+        const double jac1 = crossDot(v2 - v1, v0 - v1, normal);
+        const double jac2 = crossDot(v3 - v2, v1 - v2, normal);
+        const double jac3 = crossDot(v0 - v3, v2 - v3, normal);
+
+        // Jacobians at edge centres, average between two nodes
+        const double j01 = 0.5*(jac0 + jac1);
+        const double j12 = 0.5*(jac1 + jac2);
+        const double j23 = 0.5*(jac2 + jac3);
+        const double j30 = 0.5*(jac3 + jac0);
+
+        double jac = 0.25*(jac0 + jac1 + jac2 + jac3);
+
+        // covariant bases at cell centres
+        const Vec3 drdXsi = 0.5*(v1 - v0 + v2 - v3);
+        const Vec3 drdEta = 0.5*(v3 - v0 + v2 - v1);
+
+        // edge data index
+        std::size_t k0, k1, k2, k3;
+        std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
+        int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
+        if (ier != 0) numFailures++;
+        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
+        if (ier != 0) numFailures++;
+
+        if (placement == MNT_CELL_BY_CELL_DATA) {
+            edgeSign0 = 1;
+            edgeSign1 = 1;
+            edgeSign2 = 1;
+            edgeSign3 = 1;
+            k0 = cellId*MNT_NUM_EDGES_PER_QUAD + 0;
+            k1 = cellId*MNT_NUM_EDGES_PER_QUAD + 1;
+            k2 = cellId*MNT_NUM_EDGES_PER_QUAD + 2;
+            k3 = cellId*MNT_NUM_EDGES_PER_QUAD + 3;
+        }
+        else {
+            // data are on unique edges
+            k0 = edgeId0;
+            k1 = edgeId1;
+            k2 = edgeId2;
+            k3 = edgeId3;
+        }
+
+        double data0 = data[k0] * edgeSign0;
+        double data1 = data[k1] * edgeSign1;
+        double data2 = data[k2] * edgeSign2;
+        double data3 = data[k3] * edgeSign3;
+
+        Vec3 vec0, vec1, vec2, vec3, adjVecXsi, adjVecEta;
+        if (fs == MNT_FUNC_SPACE_W2) {
+
+            // W2
+
+            adjVecXsi = 0.5*(data3 + data1)*drdXsi/jac;
+            adjVecEta = 0.5*(data0 + data2)*drdEta/jac;
+            // dx cross hat{z} points to the negative direction for edges 0 and 2, hence the 
+            // negative sign for edges 0 and 2
+            vec0 = - data0*drdEta/jac + adjVecXsi;
+            vec1 = + data1*drdXsi/jac - adjVecEta;
+            vec2 = - data2*drdEta/jac + adjVecXsi;
+            vec3 = + data3*drdXsi/jac - adjVecEta;
+        }
+        else {
+
+            // W1
+
+            // vectors from adjacent edges, evaluated at the mid edge location
+            adjVecXsi = 0.5*( data0*cross(drdEta, normal) + data2*cross(drdEta, normal) ) / jac;
+            adjVecEta = 0.5*( data3*cross(normal, drdXsi) + data1*cross(normal, drdXsi) ) / jac;
+            vec0 = data0*cross(drdEta, normal)/jac + adjVecEta;
+            vec1 = data1*cross(normal, drdXsi)/jac + adjVecXsi;
+            vec2 = data2*cross(drdEta, normal)/jac + adjVecEta;
+            vec3 = data3*cross(normal, drdXsi)/jac + adjVecXsi;
+        }
+
+        // the data are dimensioned num cells * 4 but the vectors are always dimensions num edges
+        u[edgeId0] += vec0[LON_INDEX];
+        v[edgeId0] += vec0[LAT_INDEX];
+        numAjdacentCells[edgeId0]++;
+
+        u[edgeId1] += vec1[LON_INDEX];
+        v[edgeId1] += vec1[LAT_INDEX];
+        numAjdacentCells[edgeId1]++;
+
+        u[edgeId2] += vec2[LON_INDEX];
+        v[edgeId2] += vec2[LAT_INDEX];
+        numAjdacentCells[edgeId2]++;
+
+        u[edgeId3] += vec3[LON_INDEX];
+        v[edgeId3] += vec3[LAT_INDEX];
+        numAjdacentCells[edgeId3]++;
+    }
+
+    // all the edges that divide two cells have been double counted, now correcting
+    for (std::size_t i = 0; i < numEdges; ++i) {
+
+        int count = std::max(1, numAjdacentCells[i]);
+
+        u[i] /= deg2rad * count;
+        v[i] /= deg2rad * count;
+    }
+
+
+    return numFailures;
+
+}
+
+
