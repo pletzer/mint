@@ -234,6 +234,7 @@ void testVector2VectorW2() {
     std::cout << "dst num cells: " << dst_numCells << " dst num edges: " << dst_numEdges << '\n';
 
     std::vector<double> dst_u(dst_numEdges), dst_v(dst_numEdges);
+    std::vector<double> dsterror_u(dst_numEdges), dsterror_v(dst_numEdges);
     ier = mnt_regridedges_vectorApply(&rgd, &src_u[0], &src_v[0],
                                             &dst_u[0], &dst_v[0],
                                             MNT_FUNC_SPACE_W2);
@@ -261,6 +262,9 @@ void testVector2VectorW2() {
             double dst_uExact = - sin(theMid) * cos(lamMid);
             double dst_vExact = sin(lamMid);
 
+            dsterror_u[edgeId] = dst_u[edgeId] - dst_uExact;
+            dsterror_v[edgeId] = dst_v[edgeId] - dst_vExact;
+
             error += std::fabs(dst_u[edgeId] - dst_uExact) + std::fabs(dst_v[edgeId] - dst_vExact);
             // std::cerr << icell << ' ' << ie << " u=" << dst_u[edgeId] << " (" << dst_uExact << ") v=" << dst_v[edgeId] << " (" << dst_vExact << ")\n";
         }
@@ -270,6 +274,8 @@ void testVector2VectorW2() {
 
     saveEdgeVectors(src_grd, src_u, src_v, "testVector2Vector_src_vectors.vtk");
     saveEdgeVectors(dst_grd, dst_u, dst_v, "testVector2Vector_dst_vectors.vtk");
+
+    saveEdgeVectors(dst_grd, dsterror_u, dsterror_v, "testVector2VectorW2_dsterrors_vectors.vtk");
 
     saveEdgeVectorsXYZ(src_grd, src_u, src_v, "testVector2Vector_src_vectorsXYZ.vtk");
     saveEdgeVectorsXYZ(dst_grd, dst_u, dst_v, "testVector2Vector_dst_vectorsXYZ.vtk");
@@ -547,10 +553,10 @@ void testExtensiveFieldCellByCellData() {
 
 int main(int argc, char** argv) {
 
+    testVector2VectorW1();
+    testVector2VectorW2();
     testExtensiveFieldCellByCellData();
     testExtensiveFieldRegriddingUniqueEdgeData();
-    testVector2VectorW2();
-    testVector2VectorW1();
 
     return 0;
 }

@@ -502,6 +502,8 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
         const double j23 = 0.5*(jac2 + jac3);
         const double j30 = 0.5*(jac3 + jac0);
 
+        double jac = 0.25*(jac0 + jac1 + jac2 + jac3);
+
         // covariant bases at cell centres
         const Vec3 drdXsi = 0.5*(xyz1 - xyz0 + xyz2 - xyz3);
         const Vec3 drdEta = 0.5*(xyz3 - xyz0 + xyz2 - xyz1);
@@ -546,8 +548,8 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
 
             // W2
 
-            adjVecXsi = 0.5*(data3/j30 + data1/j12)*drdXsi;
-            adjVecEta = 0.5*(data0/j01 + data2/j23)*drdEta;
+            adjVecXsi = 0.5*(data3 + data1)*drdXsi/jac;
+            adjVecEta = 0.5*(data0 + data2)*drdEta/jac;
             // dx cross hat{z} points to the negative direction for edges 0 and 2, hence the 
             // negative sign for edges 0 and 2
             vec0 = - data0*drdEta/j01 + adjVecXsi;
@@ -565,9 +567,11 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
             Vec3 normal23 = 0.5*(normal2 + normal3);
             Vec3 normal30 = 0.5*(normal3 + normal0);
 
+            Vec3 normal = 0.25*(normal0 + normal1 + normal2 + normal3);
+
             // vectors from adjacent edges, evaluated at the mid edge location
-            adjVecXsi = 0.5*( data0*cross(drdEta, normal01)/j01 + data2*cross(drdEta, normal23)/j23 );
-            adjVecEta = 0.5*( data3*cross(normal30, drdXsi)/j30 + data1*cross(normal12, drdXsi)/j12 );
+            adjVecXsi = 0.5*(data0 + data2)*cross(drdEta, normal)/jac;
+            adjVecEta = 0.5*(data3 + data1)*cross(normal, drdXsi)/jac;
             vec0 = data0*cross(drdEta, normal01)/j01 + adjVecEta;
             vec1 = data1*cross(normal12, drdXsi)/j12 + adjVecXsi;
             vec2 = data2*cross(drdEta, normal23)/j23 + adjVecEta;
