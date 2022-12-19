@@ -119,9 +119,8 @@ osx_task:
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
     populate_script:
-      - conda-lock --platform osx-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
-      - conda-lock install --name py${PY_VER} conda-lock.yml
-      - cp conda-lock.yml ${HOME}/mambaforge/envs/py${PY_VER}
+      - mamba create -n py${PY_VER} python=${PY_VER}
+      - mamba env update --name py${PY_VER} --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
   test_script:
     - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-lock.yml >&2
     - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
