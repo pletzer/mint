@@ -122,7 +122,11 @@ osx_task:
       - mamba create -n py${PY_VER} python=${PY_VER}
       - mamba env update --name py${PY_VER} --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
   test_script:
-    - conda init bash
+    - conda info | grep -i 'base environment'
+    - ls $(conda info | grep -i 'base environment' | awk '{print $4;}')
+    - ls $(conda info | grep -i 'base environment' | awk '{print $4;}')/etc
+    - ls $(conda info | grep -i 'base environment' | awk '{print $4;}')/etc/profile.d
+    - source $(conda info | grep -i 'base environment' | awk '{print $4;}')/etc/profile.d/conda.sh 
     - conda activate py${PY_VER}
     - python setup.py develop
     - pytest
