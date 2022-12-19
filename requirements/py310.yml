@@ -15,7 +15,6 @@ dependencies:
   - pip
 
 # Core dependencies.
-  - libnetcdf
   - scitools-iris
   - vtk
 
