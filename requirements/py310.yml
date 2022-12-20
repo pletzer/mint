@@ -16,7 +16,7 @@ dependencies:
 
 # Core dependencies.
   - scitools-iris
-  - vtk
+  - vtk=9.2.2
 
 # Test dependencies.
   - pytest
