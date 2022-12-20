@@ -454,7 +454,7 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
     if (ier != 0) numFailures++;
 
     // initialize to zero
-    for (auto i = 0; i < numEdges; ++i) {
+    for (std::size_t i = 0; i < numEdges; ++i) {
         u[i] = 0.0;
         v[i] = 0.0;
     }
@@ -696,7 +696,7 @@ int mnt_vectorinterp_getVectorsOnEdgesSpherical(VectorInterp_t** self,
     if (ier != 0) numFailures++;
 
     // initialize to zero
-    for (auto i = 0; i < numEdges; ++i) {
+    for (std::size_t i = 0; i < numEdges; ++i) {
         u[i] = 0.0;
         v[i] = 0.0;
     }
@@ -723,10 +723,10 @@ int mnt_vectorinterp_getVectorsOnEdgesSpherical(VectorInterp_t** self,
         const double jac3 = crossDot(v0 - v3, v2 - v3, normal);
 
         // Jacobians at edge centres, average between two nodes
-        const double j01 = 0.5*(jac0 + jac1);
-        const double j12 = 0.5*(jac1 + jac2);
-        const double j23 = 0.5*(jac2 + jac3);
-        const double j30 = 0.5*(jac3 + jac0);
+        // const double j01 = 0.5*(jac0 + jac1);
+        // const double j12 = 0.5*(jac1 + jac2);
+        // const double j23 = 0.5*(jac2 + jac3);
+        // const double j30 = 0.5*(jac3 + jac0);
 
         double jac = 0.25*(jac0 + jac1 + jac2 + jac3);
 
