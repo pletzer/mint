@@ -527,8 +527,393 @@ void testSqueezed() {
 
 }
 
+void testSlantedCartesian() {
+
+    /*
+
+         3       2
+         +-------+
+        /       /
+       /       /
+      /       /
+     /       /
+    +-------+
+    0       1  
+
+
+    */
+
+    // angle between y and edge
+    double alpha = M_PI/6.;
+    assert(alpha < M_PI/2.);
+
+    int ier;
+
+    // create grid
+    Grid_t* grid = NULL;
+    mnt_grid_new(&grid);
+    mnt_grid_setFlags(&grid, 0, 0, 1);
+    std::size_t ncells = 1, nedges = 4, npoints = 4;
+    const double points[] = {
+        0., 0., 0.,
+        1., 0., 0.,
+        1. + sin(alpha), cos(alpha), 0.,
+             sin(alpha), cos(alpha), 0.
+    };
+    const std::size_t face2nodes[] = {
+        0, 1, 2, 3
+    };
+    const std::size_t edge2nodes[] = {
+        0, 1,
+        1, 2,
+        3, 2,
+        0, 3
+    };
+    ier = mnt_grid_loadFromUgrid2DData(&grid, ncells, nedges, npoints, 
+                                 points, face2nodes, edge2nodes);
+    assert(ier == 0);
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grid, &numCells);
+    assert(ier == 0);
+    std::size_t numEdges;
+    ier = mnt_grid_getNumberOfEdges(&grid, &numEdges);
+
+    Vec3 p0, p1, pMid;
+
+    std::vector<double> uCellByCellExactW1(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> vCellByCellExactW1(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> uCellByCellExactW2(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> vCellByCellExactW2(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> uEdgesW1(numEdges);
+    std::vector<double> vEdgesW1(numEdges);
+    std::vector<double> uEdgesW2(numEdges);
+    std::vector<double> vEdgesW2(numEdges);
+
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, grid);
+    assert(ier == 0);
+
+    const double deg2rad = M_PI/180.;
+    double uExact, vExact;
+    std::vector<double> fluxes(4, 0.0);
+
+    // forcing on edge 0, obs on edge 0
+    fluxes[0] = 1.0; fluxes[1] = 0.0; fluxes[2] = 0.0; fluxes[3] = 0.0;
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+
+    std::size_t ie = 0;
+    uExact = 1.0; vExact = -tan(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-3);
+
+    uExact = -tan(alpha); vExact = -1.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-3);
+
+    // forcing on edge 2, obs on edge 2
+    fluxes[0] = 0.0; fluxes[1] = 0.0; fluxes[2] = 1.0; fluxes[3] = 0.0;
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+    ie = 2;
+    uExact = 1.0; vExact = -tan(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-3);
+
+    // - sign for W2
+    uExact = -tan(alpha); vExact = -1.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad <<
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-3);
+
+    // forcing on edge 1, obs on edge 1
+    fluxes[0] = 0.0; fluxes[1] = 1.0; fluxes[2] = 0.0; fluxes[3] = 0.0;
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+    ie = 1;
+    uExact = 0.0; vExact = 1.0/cos(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-3);
+
+    uExact = 1.0/cos(alpha); vExact = 0.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-3);
+
+    // forcing on edge 1, obs on edge 2
+    ie = 2;
+    uExact = 0.0; vExact = 0.5/cos(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-3);
+
+    uExact = 0.5/cos(alpha); vExact = 0.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact << 
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-3);
+
+    // forcing on edge 3, obs on edge 3
+    fluxes[0] = 0.0; fluxes[1] = 0.0; fluxes[2] = 0.0; fluxes[3] = 1.0;
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+    ie = 3;
+    uExact = 0.0; vExact = 1.0/cos(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-3);
+
+    uExact = 1.0/cos(alpha); vExact = 0.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact << 
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-3);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-3);
+
+
+    // clean up
+    ier = mnt_vectorinterp_del(&vp);
+    assert(ier == 0);
+    ier = mnt_grid_del(&grid);
+    assert(ier == 0);
+
+}
+
+
+void testSlantedSpherical() {
+
+    /*
+
+         3       2
+         +-------+
+        /       /
+       /       /
+      /       /
+     /       /
+    +-------+
+    0       1  
+
+
+    */
+
+    // angle between y and edge
+    double alpha = M_PI/6.;
+    assert(alpha < M_PI/2.);
+
+    int ier;
+
+    // create grid
+    Grid_t* grid = NULL;
+    mnt_grid_new(&grid);
+    mnt_grid_setFlags(&grid, 0, 0, 1);
+    std::size_t ncells = 1, nedges = 4, npoints = 4;
+    const double points[] = {
+        0., 0., 0.,
+        1., 0., 0.,
+        1. + sin(alpha), cos(alpha), 0.,
+             sin(alpha), cos(alpha), 0.
+    };
+    const std::size_t face2nodes[] = {
+        0, 1, 2, 3
+    };
+    const std::size_t edge2nodes[] = {
+        0, 1,
+        1, 2,
+        3, 2,
+        0, 3
+    };
+    ier = mnt_grid_loadFromUgrid2DData(&grid, ncells, nedges, npoints, 
+                                 points, face2nodes, edge2nodes);
+    assert(ier == 0);
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&grid, &numCells);
+    assert(ier == 0);
+    std::size_t numEdges;
+    ier = mnt_grid_getNumberOfEdges(&grid, &numEdges);
+
+    Vec3 p0, p1, pMid;
+
+    std::vector<double> uCellByCellExactW1(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> vCellByCellExactW1(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> uCellByCellExactW2(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> vCellByCellExactW2(numCells * MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> uEdgesW1(numEdges);
+    std::vector<double> vEdgesW1(numEdges);
+    std::vector<double> uEdgesW2(numEdges);
+    std::vector<double> vEdgesW2(numEdges);
+
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_setGrid(&vp, grid);
+    assert(ier == 0);
+
+    const double deg2rad = M_PI/180.;
+    double uExact, vExact;
+    std::vector<double> fluxes(4, 0.0);
+
+    // forcing on edge 0, obs on edge 0
+    fluxes[0] = 1.0; fluxes[1] = 0.0; fluxes[2] = 0.0; fluxes[3] = 0.0;
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+
+    std::size_t ie = 0;
+    uExact = 1.0; vExact = -tan(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-10);
+
+    uExact = -tan(alpha); vExact = -1.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-10);
+
+    // forcing on edge 2, obs on edge 2
+    fluxes[0] = 0.0; fluxes[1] = 0.0; fluxes[2] = 1.0; fluxes[3] = 0.0;
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+    ie = 2;
+    uExact = 1.0; vExact = -tan(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-10);
+
+    // - sign for W2
+    uExact = -tan(alpha); vExact = -1.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad <<
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-10);
+
+    // forcing on edge 1, obs on edge 1
+    fluxes[0] = 0.0; fluxes[1] = 1.0; fluxes[2] = 0.0; fluxes[3] = 0.0;
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+    ie = 1;
+    uExact = 0.0; vExact = 1.0/cos(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-10);
+
+    uExact = 1.0/cos(alpha); vExact = 0.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-10);
+
+    // forcing on edge 1, obs on edge 2
+    ie = 2;
+    uExact = 0.0; vExact = 0.5/cos(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-10);
+
+    uExact = 0.5/cos(alpha); vExact = 0.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact << 
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-10);
+
+    // forcing on edge 3, obs on edge 3
+    fluxes[0] = 0.0; fluxes[1] = 0.0; fluxes[2] = 0.0; fluxes[3] = 1.0;
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW1[0], &vEdgesW1[0], MNT_FUNC_SPACE_W1);
+    assert(ier == 0);
+    ier = mnt_vectorinterp_getVectorsOnEdgesSpherical(&vp, &fluxes[0],
+                           MNT_CELL_BY_CELL_DATA, &uEdgesW2[0], &vEdgesW2[0], MNT_FUNC_SPACE_W2);
+    assert(ier == 0);
+    ie = 3;
+    uExact = 0.0; vExact = 1.0/cos(alpha);
+    std::cout << "W1: edge " << ie << ": u,v = " << uEdgesW1[ie]*deg2rad << ',' << vEdgesW1[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact <<
+                 " error: " << uEdgesW1[ie]*deg2rad - uExact << ',' << vEdgesW1[ie]*deg2rad - vExact << '\n';;
+    assert(std::fabs(uEdgesW1[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW1[ie]*deg2rad - vExact) < 1.e-10);
+
+    uExact = 1.0/cos(alpha); vExact = 0.0;
+    std::cout << "W2: edge " << ie << ": u,v = " << uEdgesW2[ie]*deg2rad << ',' << vEdgesW2[ie]*deg2rad << 
+                 " exact: " << uExact << ',' << vExact << 
+                 " error: " << uEdgesW2[ie]*deg2rad - uExact << ',' << vEdgesW2[ie]*deg2rad - vExact << '\n';
+    assert(std::fabs(uEdgesW2[ie]*deg2rad - uExact) < 1.e-10);
+    assert(std::fabs(vEdgesW2[ie]*deg2rad - vExact) < 1.e-10);
+
+
+    // clean up
+    ier = mnt_vectorinterp_del(&vp);
+    assert(ier == 0);
+    ier = mnt_grid_del(&grid);
+    assert(ier == 0);
+
+}
+
 int main(int argc, char** argv) {
 
+    testSlantedSpherical();
+    testSlantedCartesian();
     testSqueezed();
     testCubedSphereFaceVectorsOnEdge();
     testSimple();

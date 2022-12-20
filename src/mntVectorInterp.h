@@ -187,7 +187,7 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
                                     double vectors[]);
 
 /**
- * Get the face vectors at the mid edge locations from the extensive field
+ * Get the vectors at the mid edge locations from the extensive field in Cartesian coordinates
  * @param self instance of VectorInterp_t
  * @param data edge integrated (extensive) data, size depends on placement (see below)
  * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
@@ -207,6 +207,25 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
                                         int fs);
 
 
+/**
+ * Get the vectors at the mid edge locations from the extensive field in spherical coordinates
+ * @param self instance of VectorInterp_t
+ * @param data edge integrated (extensive) data, size depends on placement (see below)
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
+ *                  If placement == MNT_CELL_BY_CELL_DATA then data size is 
+ *                  num cells * num edges per cell, if MNT_UNIQUE_EDGE_DATA then
+ *                  data size should be num edges.
+ * @param u x-component of the output vectors, size numEdges
+ * @param v y-component of the output vectors, size numEdges
+ * @param fs function space, either MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_vectorinterp_getVectorsOnEdgesSpherical(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[],
+                                            int fs);
 
 /* private */
 
