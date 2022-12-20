@@ -89,7 +89,7 @@ osx_task:
   matrix:
     env:
       PY_VER: "3.10"
-      VTK_VER: "9.1"
+      VTK_VER: "9.2"
   name: "OSX: py${PY_VER}"
   osx_instance:
     image: big-sur-xcode
