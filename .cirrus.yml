@@ -89,7 +89,7 @@ osx_task:
       PY_VER: "3.10"
       VTK_VER: "9.2"
   name: "OSX: py${PY_VER}"
-  osx_instance:
+  macos_instance:
     image: big-sur-xcode
   env:
     ENV_DIR: ${HOME}/mambaforge/envs/py${PY_VER}
