@@ -43,5 +43,5 @@ from .vector_interp import VectorInterp
 from .multi_array_iter import MultiArrayIter
 from .extensive_field_adaptor import ExtensiveFieldAdaptor
 from .iris_regrid import IrisMintRegridder
-from .utils import getIntegralsInLonLat, getIntegralsInXYZ
+from .utils import getIntegralsInLonLat, getIntegralsInXYZ, saveVectorFieldVTK, saveMeshVTK
 

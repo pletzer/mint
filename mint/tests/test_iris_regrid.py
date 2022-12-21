@@ -197,6 +197,9 @@ def _gridlike_mesh(n_lons, n_lats):
         edge_y=edge_lat_coord,
     )
     mesh.long_name = "example mesh"
+
+    mint.saveMeshVTK(mesh, 'example_mesh.vtk')
+
     return mesh
 
 
@@ -262,7 +265,7 @@ def test_cubedsphere8_to_cubedsphere2():
 
 
 # turned test off as we have not yet implemented W1
-def xtest_cubedsphere8_to_cubedsphere8_w1():
+def test_cubedsphere8_to_cubedsphere8_w1():
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
     tgt_u, tgt_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
@@ -301,6 +304,8 @@ def test_cubedsphere8_to_cubedsphere8_w2():
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
 
     result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
+
+    mint.saveVectorFieldVTK(result_u, result_v, 'result_vectors.vtk')
 
     # Check.
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \

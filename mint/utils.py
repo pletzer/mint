@@ -1,4 +1,94 @@
 import numpy
+import iris
+
+
+def saveMeshVTK(mesh, filename):
+    """
+    Save the mesh to a VTK file
+    :param mesh: unstructurede mesh
+    :param filename: file name
+    """
+    with open(filename, 'w') as f:
+        x = mesh.node_coords.node_x.points
+        y = mesh.node_coords.node_y.points
+        npts = x.shape[0]
+        face2node = mesh.face_node_connectivity.indices_by_location()
+        ncells = face2node.shape[0]
+        # write header
+        f.write("# vtk DataFile Version 4.2\n")
+        f.write("vtk output\n")
+        f.write("ASCII\n")
+        f.write("DATASET UNSTRUCTURED_GRID\n")
+        f.write(f"POINTS {npts} double\n")
+
+        # write vertices
+        xyz = numpy.zeros((npts, 3), numpy.float64)
+        xyz[:, 0] = x
+        xyz[:, 1] = y
+        numpy.savetxt(f, xyz, fmt="%.10e")
+
+        # write connectivity. Each cell is a quad made of 4 points
+        cell_npts = 4
+        cell_npts1 = cell_npts + 1
+        f.write(f"\nCELLS {ncells} {cell_npts1*ncells}\n")
+        cells = numpy.zeros((ncells, cell_npts1), numpy.int64)
+        cells[:, 0] = cell_npts
+        for i in range(cell_npts):
+            cells[:, 1 + i] = face2node[:, i]
+        numpy.savetxt(f, cells, fmt="%d")
+
+        # write cell type
+        f.write(f"\nCELL_TYPES {ncells}\n")
+        # https://vtk.org/doc/release/4.2/html/vtkCellType_8h.html
+        vtk_quad = 9
+        cell_types = vtk_quad * numpy.ones((ncells,), numpy.int32)
+        numpy.savetxt(f, cell_types, fmt="%d")
+
+
+
+def saveVectorFieldVTK(u_cube, v_cube, filename):
+    """
+    Save the vectors to a VTK file
+    :param u_cube: x-component
+    :param v_cube: y-component
+    :param filename: file name
+    """
+    with open(filename, 'w') as f:
+        mesh = u_cube.mesh
+        x = mesh.node_coords.node_x.points
+        y = mesh.node_coords.node_y.points
+        npts = x.shape[0]
+
+        # write header
+        f.write("# vtk DataFile Version 4.2\n")
+        f.write("vtk output\n")
+        f.write("ASCII\n")
+        f.write("DATASET UNSTRUCTURED_GRID\n")
+        f.write(f"POINTS {npts} double\n")
+
+        # write vertices
+        xyz = numpy.zeros((npts, 3), numpy.float64)
+        xyz[:, 0] = x
+        xyz[:, 1] = y
+        numpy.savetxt(f, xyz, fmt="%.10e")
+
+        # write connectivity. Here, the cells are actually points
+        cell_npts = 1
+        cell_npts1 = cell_npts + 1
+        f.write(f"\nCELLS {npts} {cell_npts1*npts}")
+        cells = numpy.ones((npts, cell_npts1))
+        cells[:, 0] = 1 # number of points defining the cell
+        cells[:, 1] = range(npts)
+        numpy.savetxt(f, cells, fmt="%d")
+
+        # write cell type
+        f.write(f"\nCELL_TYPES {npts}\n")
+        # https://vtk.org/doc/release/4.2/html/vtkCellType_8h.html
+        vtk_vertex = 1 # cell type
+        cell_types = vtk_vertex * numpy.ones((npts,), numpy.int32)
+        numpy.savetxt(f, cell_types, fmt="%d")
+
+
 
 def getIntegralsInLonLat(lon, lat, edge_node_connect, u1, u2, w1=True, earth_radius=6371e3):
     """
