@@ -73,8 +73,19 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         xv = mesh.node_coords.node_x.points
         yv = mesh.node_coords.node_y.points
 
+        # start/end of each edge
+        x0 = xv[edge2node[:, 0]]
+        x1 = xv[edge2node[:, 1]]
+
+        # add/substract a periodicity length to make the edge as compact as possible.
+        # Assuming the lon are in degrees
+        dx0 = numpy.fabs(x1 - x0)
+        x1 = numpy.where( numpy.fabs(x1 - 360. - x0) < dx0, x1 - 360., x1)
+        x1 = numpy.where( numpy.fabs(x1 + 360. - x0) < dx0, x1 + 360., x1)
+
+
         # compute the mid edge coords
-        xe = 0.5*(xv[edge2node[:, 0]] + xv[edge2node[:, 1]])
+        xe = 0.5*(x0 + x1)
         ye = 0.5*(yv[edge2node[:, 0]] + yv[edge2node[:, 1]])
 
         nedges = xe.shape[0]
