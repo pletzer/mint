@@ -2,11 +2,12 @@ import numpy
 import iris
 
 
-def saveMeshVTK(mesh, filename):
+def saveMeshVTK(mesh, filename, radius=0.99):
     """
-    Save the mesh to a VTK file
+    Save the mesh in Cartesian coordinates to a VTK file
     :param mesh: unstructurede mesh
     :param filename: file name
+    :param radius: radius of the sphere
     """
     with open(filename, 'w') as f:
         x = mesh.node_coords.node_x.points
@@ -23,10 +24,11 @@ def saveMeshVTK(mesh, filename):
         f.write("DATASET UNSTRUCTURED_GRID\n")
         f.write(f"POINTS {npts} double\n")
 
-        # write vertices
+        # write vertices in Cartesian coordinates
         xyz = numpy.zeros((npts, 3), numpy.float64)
-        xyz[:, 0] = x
-        xyz[:, 1] = y
+        xyz[:, 0] = radius * numpy.cos(y*numpy.pi/180.) * numpy.cos(x*numpy.pi/180.)
+        xyz[:, 1] = radius * numpy.cos(y*numpy.pi/180.) * numpy.sin(x*numpy.pi/180.)
+        xyz[:, 2] = radius * numpy.sin(y*numpy.pi/180.)
         numpy.savetxt(f, xyz, fmt="%.10e")
 
         # write connectivity. Each cell is a quad made of 4 points
@@ -50,12 +52,13 @@ def saveMeshVTK(mesh, filename):
 
 
 
-def saveVectorFieldVTK(u_cube, v_cube, filename):
+def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
     """
     Save the vectors to a VTK file
     :param u_cube: x-component
     :param v_cube: y-component
     :param filename: file name
+    :param radius: radius of the sphere
     """
     with open(filename, 'w') as f:
         mesh = u_cube.mesh
@@ -70,14 +73,15 @@ def saveVectorFieldVTK(u_cube, v_cube, filename):
         f.write("DATASET UNSTRUCTURED_GRID\n")
         f.write(f"POINTS {npts} double\n")
 
-        # write vertices
+        # write vertices in Cartesian coordinates
         xyz = numpy.zeros((npts, 3), numpy.float64)
-        xyz[:, 0] = x
-        xyz[:, 1] = y
+        xyz[:, 0] = radius * numpy.cos(y*numpy.pi/180.) * numpy.cos(x*numpy.pi/180.)
+        xyz[:, 1] = radius * numpy.cos(y*numpy.pi/180.) * numpy.sin(x*numpy.pi/180.)
+        xyz[:, 2] = radius * numpy.sin(y*numpy.pi/180.)
         numpy.savetxt(f, xyz, fmt="%.10e")
 
-        # write connectivity. Here, the cells are actually points
-        f.write(f"\nCELLS {npts} {2*npts}")
+        # write the connectivity. Here, the cells are actually points
+        f.write(f"\nCELLS {npts} {2*npts}\n")
         cells = numpy.ones((npts, 2))
         cells[:, 0] = 1 # number of points defining the cell
         cells[:, 1] = range(npts)
@@ -89,7 +93,22 @@ def saveVectorFieldVTK(u_cube, v_cube, filename):
         vtk_vertex = 1 # cell type
         cell_types = vtk_vertex * numpy.ones((npts,), numpy.int32)
         numpy.savetxt(f, cell_types, fmt="%d")
+
+        # write the vectors
+        # vxyz = numpy.zeros((npts, 3), numpy.float64)
+        # u = u_cube.data
+        # v = v_cube.data
+        # cosLon = numpy.cos(lon)
+        # sinLon = numpy.sin(lon)
+        # rho = numpy.cos(lat)
+        # z = numpy.sin(lat)
+        # vxyz[:, 0] = - u*sinLon - v*z*cosLon
+        # vxyz[:, 1] = + u*cosLon - v*z*sinLon
+        # vxyz[:, 2] = v*rho
+        # numpy.savetxt(vxyz, f, fmt="%.10e")
+
         f.write("\n")
+
 
 
 def getIntegralsInLonLat(lon, lat, edge_node_connect, u1, u2, w1=True, earth_radius=6371e3):
