@@ -13,6 +13,8 @@ def saveMeshVTK(mesh, filename):
         y = mesh.node_coords.node_y.points
         npts = x.shape[0]
         face2node = mesh.face_node_connectivity.indices_by_location()
+        # VTK uses zero based indexing
+        face2node -= mesh.face_node_connectivity.start_index
         ncells = face2node.shape[0]
         # write header
         f.write("# vtk DataFile Version 4.2\n")
@@ -30,7 +32,8 @@ def saveMeshVTK(mesh, filename):
         # write connectivity. Each cell is a quad made of 4 points
         cell_npts = 4
         cell_npts1 = cell_npts + 1
-        f.write(f"\nCELLS {ncells} {cell_npts1*ncells}\n")
+        n = cell_npts1*ncells
+        f.write(f"\nCELLS {ncells} {n}\n")
         cells = numpy.zeros((ncells, cell_npts1), numpy.int64)
         cells[:, 0] = cell_npts
         for i in range(cell_npts):
@@ -43,6 +46,7 @@ def saveMeshVTK(mesh, filename):
         vtk_quad = 9
         cell_types = vtk_quad * numpy.ones((ncells,), numpy.int32)
         numpy.savetxt(f, cell_types, fmt="%d")
+        f.write("\n")
 
 
 
@@ -73,10 +77,8 @@ def saveVectorFieldVTK(u_cube, v_cube, filename):
         numpy.savetxt(f, xyz, fmt="%.10e")
 
         # write connectivity. Here, the cells are actually points
-        cell_npts = 1
-        cell_npts1 = cell_npts + 1
-        f.write(f"\nCELLS {npts} {cell_npts1*npts}")
-        cells = numpy.ones((npts, cell_npts1))
+        f.write(f"\nCELLS {npts} {2*npts}")
+        cells = numpy.ones((npts, 2))
         cells[:, 0] = 1 # number of points defining the cell
         cells[:, 1] = range(npts)
         numpy.savetxt(f, cells, fmt="%d")
@@ -87,7 +89,7 @@ def saveVectorFieldVTK(u_cube, v_cube, filename):
         vtk_vertex = 1 # cell type
         cell_types = vtk_vertex * numpy.ones((npts,), numpy.int32)
         numpy.savetxt(f, cell_types, fmt="%d")
-
+        f.write("\n")
 
 
 def getIntegralsInLonLat(lon, lat, edge_node_connect, u1, u2, w1=True, earth_radius=6371e3):

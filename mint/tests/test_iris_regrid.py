@@ -305,6 +305,7 @@ def test_cubedsphere8_to_cubedsphere8_w2():
 
     result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
+    mint.saveMeshVTK(result_u.mesh, 'result_mesh.vtk')
     mint.saveVectorFieldVTK(result_u, result_v, 'result_vectors.vtk')
 
     # Check.
