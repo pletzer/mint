@@ -61,51 +61,67 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
     :param radius: radius of the sphere
     """
     with open(filename, 'w') as f:
+
+        # extract the mesh from the cube
         mesh = u_cube.mesh
-        x = mesh.node_coords.node_x.points
-        y = mesh.node_coords.node_y.points
-        npts = x.shape[0]
+
+        # get the connectivity, 0-based
+        edge2node = mesh.edge_node_connectivity.indices_by_location()
+        edge2node -= mesh.edge_node_connectivity.start_index
+
+        # get the vertex coords
+        xv = mesh.node_coords.node_x.points
+        yv = mesh.node_coords.node_y.points
+
+        # compute the mid edge coords
+        xe = 0.5*(xv[edge2node[:, 0]] + xv[edge2node[:, 1]])
+        ye = 0.5*(yv[edge2node[:, 0]] + yv[edge2node[:, 1]])
+
+        nedges = xe.shape[0]
 
         # write header
         f.write("# vtk DataFile Version 4.2\n")
         f.write("vtk output\n")
         f.write("ASCII\n")
         f.write("DATASET UNSTRUCTURED_GRID\n")
-        f.write(f"POINTS {npts} double\n")
+        f.write(f"POINTS {nedges} double\n")
 
-        # write vertices in Cartesian coordinates
-        xyz = numpy.zeros((npts, 3), numpy.float64)
-        xyz[:, 0] = radius * numpy.cos(y*numpy.pi/180.) * numpy.cos(x*numpy.pi/180.)
-        xyz[:, 1] = radius * numpy.cos(y*numpy.pi/180.) * numpy.sin(x*numpy.pi/180.)
-        xyz[:, 2] = radius * numpy.sin(y*numpy.pi/180.)
+        # convert to Cartesian coordinates
+        xyz = numpy.zeros((nedges, 3), numpy.float64)
+        cosLat = numpy.cos(ye*numpy.pi/180.)
+        sinLat = numpy.sin(ye*numpy.pi/180.)
+        cosLon = numpy.cos(xe*numpy.pi/180.)
+        sinLon = numpy.sin(xe*numpy.pi/180.)
+        xyz[:, 0] = radius * cosLat * cosLon
+        xyz[:, 1] = radius * cosLat * sinLon
+        xyz[:, 2] = radius * sinLat
         numpy.savetxt(f, xyz, fmt="%.10e")
 
         # write the connectivity. Here, the cells are actually points
-        f.write(f"\nCELLS {npts} {2*npts}\n")
-        cells = numpy.ones((npts, 2))
+        f.write(f"\nCELLS {nedges} {2*nedges}\n")
+        cells = numpy.ones((nedges, 2))
         cells[:, 0] = 1 # number of points defining the cell
-        cells[:, 1] = range(npts)
+        cells[:, 1] = range(nedges)
         numpy.savetxt(f, cells, fmt="%d")
 
         # write cell type
-        f.write(f"\nCELL_TYPES {npts}\n")
+        f.write(f"\nCELL_TYPES {nedges}\n")
         # https://vtk.org/doc/release/4.2/html/vtkCellType_8h.html
         vtk_vertex = 1 # cell type
-        cell_types = vtk_vertex * numpy.ones((npts,), numpy.int32)
+        cell_types = vtk_vertex * numpy.ones((nedges,), numpy.int32)
         numpy.savetxt(f, cell_types, fmt="%d")
 
         # write the vectors
-        # vxyz = numpy.zeros((npts, 3), numpy.float64)
-        # u = u_cube.data
-        # v = v_cube.data
-        # cosLon = numpy.cos(lon)
-        # sinLon = numpy.sin(lon)
-        # rho = numpy.cos(lat)
-        # z = numpy.sin(lat)
-        # vxyz[:, 0] = - u*sinLon - v*z*cosLon
-        # vxyz[:, 1] = + u*cosLon - v*z*sinLon
-        # vxyz[:, 2] = v*rho
-        # numpy.savetxt(vxyz, f, fmt="%.10e")
+        f.write(f"\nPOINT_DATA {nedges}\n")
+        f.write(f"FIELD FieldData 1\n")
+        f.write(f"vectors 3 {nedges} double")
+        vxyz = numpy.zeros((nedges, 3), numpy.float64)
+        u = u_cube.data
+        v = v_cube.data
+        vxyz[:, 0] = - u*sinLon - v*sinLat*cosLon
+        vxyz[:, 1] = + u*cosLon - v*sinLat*sinLon
+        vxyz[:, 2] = v*cosLat
+        numpy.savetxt(f, vxyz, fmt="%.10e")
 
         f.write("\n")
 
