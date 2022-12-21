@@ -114,7 +114,7 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         # write the vectors
         f.write(f"\nPOINT_DATA {nedges}\n")
         f.write(f"FIELD FieldData 1\n")
-        f.write(f"vectors 3 {nedges} double")
+        f.write(f"vectors 3 {nedges} double\n")
         vxyz = numpy.zeros((nedges, 3), numpy.float64)
         u = u_cube.data
         v = v_cube.data
