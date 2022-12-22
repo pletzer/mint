@@ -46,7 +46,7 @@ def _set_vector_field_from_potentialfct(u_cube, v_cube):
     y = u_cube.mesh.node_coords.node_y.points
 
     e2n = u_cube.mesh.edge_node_connectivity.indices_by_location()
-    # make sure the edge to node connectivity is zero based
+    # make the edge to node connectivity zero based
     e2n -= u_cube.mesh.edge_node_connectivity.start_index
 
     num_edges = e2n.shape[0]

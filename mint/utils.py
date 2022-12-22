@@ -1,6 +1,60 @@
 import numpy
 import iris
 
+DEG2RAD = numpy.pi/180.0
+
+def computeEdgeXYZ(mesh):
+    """
+    Compute the mid edge positions in Cartesian coordinates
+    :param mesh: unstructured Iris mesh
+    :returns set of longitudes, latitudes in degrees
+    """
+    # mesh vertices
+    lonv = mesh.node_coords.node_x.points
+    latv = mesh.node_coords.node_y.points
+
+    # convert to radians
+    lonv *= DEG2RAD
+    latv *= DEG2RAD
+
+    # convert to Cartesian coords
+    cosLonv = numpy.cos(lonv)
+    xv = cosLatv * numpy.cos(lonv)
+    yv = cosLatv * numpy.sin(lonv)
+    zv = numpy.sin(latv)
+
+    edge2node = mesh.edge_node_connectivity.indices_by_location()
+    edge2node -= mesh.edge_node_connectivity.start_index
+
+    # mid edge locations
+    i0 = edge2node[:, 0]
+    x0, y0, z0 = xv[i0], yv[i0], zv[i0]
+    i1 = edge2node[:, 1]
+    x1, y1, z1 = xv[i1], yv[i1], zv[i1]
+    xe = 0.5*(x0 + x1)
+    ye = 0.5*(y0 + y1)
+    ze = 0.5*(z0 + z1)
+
+    return xe, ye, ze
+
+
+
+def computeEdgeLonLat(xe, ye, ze):
+    """
+    Compute the mid edge positions in lon-lat coordinates
+    :param xe: mid edge x-coordinates
+    :param ye: mid edge y-coordinates
+    :param ze: mid edge z-coordinates
+    :returns set of longitudes, latitudes in degrees
+    :note: the computation is performed in Cartesian coordinates to avoid
+           issues with the dateline
+    """
+    rhoe = numpy.sqrt(xe*xe + ye*ye)
+    lone = numpy.arctan2(ye, xe) / DEG2RAD
+    late = numpy.arctan2(ze, rhoe) / DEG2RAD
+    return lone, late
+
+
 
 def saveMeshVTK(mesh, filename, radius=0.99):
     """
