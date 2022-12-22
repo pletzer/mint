@@ -143,40 +143,16 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         lonv = mesh.node_coords.node_x.points
         latv = mesh.node_coords.node_y.points
 
-        # convert to radians
-        deg2rad = numpy.pi/180.
-        lonv *= deg2rad
-        latv *= deg2rad
-
-        cosLonv = numpy.cos(lonv)
-        sinLonv = numpy.sin(lonv)
-        cosLatv = numpy.cos(latv)
-        sinLatv = numpy.sin(latv)
-
         # Cartesian coordinates
-        xv = radius * cosLatv * cosLonv
-        yv = radius * cosLatv * sinLonv
-        zv = radius * sinLatv
-
-        # start Cartesian coords of each edge
-        i0 = edge2node[:, 0]
-        x0 = xv[i0]
-        y0 = yv[i0]
-        z0 = zv[i0]
-
-        # end Cartesian coords of each edge
-        i1 = edge2node[:, 1]
-        x1 = xv[i1]
-        y1 = yv[i1]
-        z1 = zv[i1]
+        xyzv = computeCartesianCoords(lonv, latv, radius=radius)
 
         # compute the mid edge coords
-        xe = 0.5*(x0 + x1)
-        ye = 0.5*(y0 + y1)
-        ze = 0.5*(z0 + z1)
+        i0 = edge2node[:, 0]
+        i1 = edge2node[:, 1]
+        xyze = 0.5*(xyzv[i0, :] + xyzv[i1, :])
 
         # number of edges
-        ne = xe.shape[0]
+        ne = xyze.shape[0]
 
         # write header
         f.write("# vtk DataFile Version 4.2\n")
@@ -185,13 +161,9 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         f.write("DATASET UNSTRUCTURED_GRID\n")
         f.write(f"POINTS {ne} double\n")
 
-        xyz = numpy.empty((ne, 3), numpy.float64)
-        xyz[:, 0] = xe
-        xyz[:, 1] = ye
-        xyz[:, 2] = ze
-        numpy.savetxt(f, xyz, fmt="%.10e")
+        numpy.savetxt(f, xyze, fmt="%.10e")
 
-        # write the connectivity. Here, the cells are actually points
+        # write the connectivity, the cells are points
         f.write(f"\nCELLS {ne} {2*ne}\n")
         cells = numpy.empty((ne, 2))
         cells[:, 0] = 1 # number of points defining the cell
@@ -212,6 +184,7 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         vxyz = numpy.zeros((ne, 3), numpy.float64)
         u = u_cube.data
         v = v_cube.data
+        xe, ye, ze = xyze[:, 0], xyze[:, 1], xyze[:, 2]
         rhoe = numpy.sqrt(xe*xe + ye*ye)
         late = numpy.arctan2(ze, rhoe)
         lone = numpy.arctan2(ye, xe)
