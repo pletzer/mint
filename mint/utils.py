@@ -3,10 +3,29 @@ import iris
 
 DEG2RAD = numpy.pi/180.0
 
-def computeEdgeXYZ(mesh):
+
+def computeCartesianCoords(lon, lat, radius):
+    """
+    Compute Cartesian coordinates from lon-lat
+    :param lon: longitudes in degrees
+    :param lat: latitudes in degrees
+    :param radius: radius of the sphere
+    :returns xyz array of size (num points, 3)
+    """
+    npts = lon.shape[0]
+    xyz = numpy.empty((npts, 3), numpy.float64)
+    cosLat = numpy.cos(lat*DEG2RAD)
+    xyz[:, 0] = radius * cosLat * numpy.cos(lon*DEG2RAD)
+    xyz[:, 1] = radius * cosLat * numpy.sin(lon*DEG2RAD)
+    xyz[:, 2] = radius * numpy.sin(lat*DEG2RAD)
+    return xyz
+
+
+def computeEdgeXYZ(mesh, radius=1.0):
     """
     Compute the mid edge positions in Cartesian coordinates
     :param mesh: unstructured Iris mesh
+    :param radius: sphere radius
     :returns set of longitudes, latitudes in degrees
     """
     # mesh vertices
@@ -19,9 +38,9 @@ def computeEdgeXYZ(mesh):
 
     # convert to Cartesian coords
     cosLonv = numpy.cos(lonv)
-    xv = cosLatv * numpy.cos(lonv)
-    yv = cosLatv * numpy.sin(lonv)
-    zv = numpy.sin(latv)
+    xv = radius * cosLatv * numpy.cos(lonv)
+    yv = radius * cosLatv * numpy.sin(lonv)
+    zv = radius * numpy.sin(latv)
 
     edge2node = mesh.edge_node_connectivity.indices_by_location()
     edge2node -= mesh.edge_node_connectivity.start_index
@@ -64,9 +83,9 @@ def saveMeshVTK(mesh, filename, radius=0.99):
     :param radius: radius of the sphere
     """
     with open(filename, 'w') as f:
-        x = mesh.node_coords.node_x.points
-        y = mesh.node_coords.node_y.points
-        npts = x.shape[0]
+        lon = mesh.node_coords.node_x.points
+        lat = mesh.node_coords.node_y.points
+        npts = lon.shape[0]
         face2node = mesh.face_node_connectivity.indices_by_location()
         # VTK uses zero based indexing
         face2node -= mesh.face_node_connectivity.start_index
@@ -79,10 +98,7 @@ def saveMeshVTK(mesh, filename, radius=0.99):
         f.write(f"POINTS {npts} double\n")
 
         # write vertices in Cartesian coordinates
-        xyz = numpy.zeros((npts, 3), numpy.float64)
-        xyz[:, 0] = radius * numpy.cos(y*numpy.pi/180.) * numpy.cos(x*numpy.pi/180.)
-        xyz[:, 1] = radius * numpy.cos(y*numpy.pi/180.) * numpy.sin(x*numpy.pi/180.)
-        xyz[:, 2] = radius * numpy.sin(y*numpy.pi/180.)
+        xyz = computeCartesianCoords(lon, lat, radius=radius)
         numpy.savetxt(f, xyz, fmt="%.10e")
 
         # write connectivity. Each cell is a quad made of 4 points
@@ -90,13 +106,13 @@ def saveMeshVTK(mesh, filename, radius=0.99):
         cell_npts1 = cell_npts + 1
         n = cell_npts1*ncells
         f.write(f"\nCELLS {ncells} {n}\n")
-        cells = numpy.zeros((ncells, cell_npts1), numpy.int64)
+        cells = numpy.empty((ncells, cell_npts1), numpy.int64)
         cells[:, 0] = cell_npts
         for i in range(cell_npts):
             cells[:, 1 + i] = face2node[:, i]
         numpy.savetxt(f, cells, fmt="%d")
 
-        # write cell type
+        # write the cell types
         f.write(f"\nCELL_TYPES {ncells}\n")
         # https://vtk.org/doc/release/4.2/html/vtkCellType_8h.html
         vtk_quad = 9
