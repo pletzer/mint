@@ -69,68 +69,91 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         edge2node = mesh.edge_node_connectivity.indices_by_location()
         edge2node -= mesh.edge_node_connectivity.start_index
 
-        # get the vertex coords
-        xv = mesh.node_coords.node_x.points
-        yv = mesh.node_coords.node_y.points
+        # get the vertex coords in lon-lat coordinates
+        lonv = mesh.node_coords.node_x.points
+        latv = mesh.node_coords.node_y.points
 
-        # start/end of each edge
-        x0 = xv[edge2node[:, 0]]
-        x1 = xv[edge2node[:, 1]]
+        # convert to radians
+        deg2rad = numpy.pi/180.
+        lonv *= deg2rad
+        latv *= deg2rad
 
-        # add/substract a periodicity length to make the edge as compact as possible.
-        # Assuming the lon are in degrees
-        dx0 = numpy.fabs(x1 - x0)
-        x1 = numpy.where( numpy.fabs(x1 - 360. - x0) < dx0, x1 - 360., x1)
-        x1 = numpy.where( numpy.fabs(x1 + 360. - x0) < dx0, x1 + 360., x1)
+        cosLonv = numpy.cos(lonv)
+        sinLonv = numpy.sin(lonv)
+        cosLatv = numpy.cos(latv)
+        sinLatv = numpy.sin(latv)
 
+        # Cartesian coordinates
+        xv = radius * cosLatv * cosLonv
+        yv = radius * cosLatv * sinLonv
+        zv = radius * sinLatv
+
+        # start Cartesian coords of each edge
+        i0 = edge2node[:, 0]
+        x0 = xv[i0]
+        y0 = yv[i0]
+        z0 = zv[i0]
+
+        # end Cartesian coords of each edge
+        i1 = edge2node[:, 1]
+        x1 = xv[i1]
+        y1 = yv[i1]
+        z1 = zv[i1]
 
         # compute the mid edge coords
         xe = 0.5*(x0 + x1)
-        ye = 0.5*(yv[edge2node[:, 0]] + yv[edge2node[:, 1]])
+        ye = 0.5*(y0 + y1)
+        ze = 0.5*(z0 + z1)
 
-        nedges = xe.shape[0]
+        # number of edges
+        ne = xe.shape[0]
 
         # write header
         f.write("# vtk DataFile Version 4.2\n")
         f.write("vtk output\n")
         f.write("ASCII\n")
         f.write("DATASET UNSTRUCTURED_GRID\n")
-        f.write(f"POINTS {nedges} double\n")
+        f.write(f"POINTS {ne} double\n")
 
-        # convert to Cartesian coordinates
-        xyz = numpy.zeros((nedges, 3), numpy.float64)
-        cosLat = numpy.cos(ye*numpy.pi/180.)
-        sinLat = numpy.sin(ye*numpy.pi/180.)
-        cosLon = numpy.cos(xe*numpy.pi/180.)
-        sinLon = numpy.sin(xe*numpy.pi/180.)
-        xyz[:, 0] = radius * cosLat * cosLon
-        xyz[:, 1] = radius * cosLat * sinLon
-        xyz[:, 2] = radius * sinLat
+        xyz = numpy.empty((ne, 3), numpy.float64)
+        xyz[:, 0] = xe
+        xyz[:, 1] = ye
+        xyz[:, 2] = ze
         numpy.savetxt(f, xyz, fmt="%.10e")
 
         # write the connectivity. Here, the cells are actually points
-        f.write(f"\nCELLS {nedges} {2*nedges}\n")
-        cells = numpy.ones((nedges, 2))
+        f.write(f"\nCELLS {ne} {2*ne}\n")
+        cells = numpy.empty((ne, 2))
         cells[:, 0] = 1 # number of points defining the cell
-        cells[:, 1] = range(nedges)
+        cells[:, 1] = range(ne) # list the ne points
         numpy.savetxt(f, cells, fmt="%d")
 
-        # write cell type
-        f.write(f"\nCELL_TYPES {nedges}\n")
+        # write the cell types
+        f.write(f"\nCELL_TYPES {ne}\n")
         # https://vtk.org/doc/release/4.2/html/vtkCellType_8h.html
         vtk_vertex = 1 # cell type
-        cell_types = vtk_vertex * numpy.ones((nedges,), numpy.int32)
+        cell_types = vtk_vertex * numpy.ones((ne,), numpy.int32)
         numpy.savetxt(f, cell_types, fmt="%d")
 
         # write the vectors
-        f.write(f"\nPOINT_DATA {nedges}\n")
+        f.write(f"\nPOINT_DATA {ne}\n")
         f.write(f"FIELD FieldData 1\n")
-        f.write(f"vectors 3 {nedges} double\n")
-        vxyz = numpy.zeros((nedges, 3), numpy.float64)
+        f.write(f"vectors 3 {ne} double\n")
+        vxyz = numpy.zeros((ne, 3), numpy.float64)
         u = u_cube.data
         v = v_cube.data
+        rhoe = numpy.sqrt(xe*xe + ye*ye)
+        late = numpy.arctan2(ze, rhoe)
+        lone = numpy.arctan2(ye, xe)
+        cosLon = numpy.cos(lone)
+        sinLon = numpy.sin(lone)
+        cosLat = numpy.cos(late)
+        sinLat = numpy.sin(late)
+        # vx
         vxyz[:, 0] = - u*sinLon - v*sinLat*cosLon
+        # vy
         vxyz[:, 1] = + u*cosLon - v*sinLat*sinLon
+        # vz
         vxyz[:, 2] = v*cosLat
         numpy.savetxt(f, vxyz, fmt="%.10e")
 
