@@ -4,6 +4,31 @@ import iris
 DEG2RAD = numpy.pi/180.0
 
 
+def computeCartesianVectors(lon, lat, u, v):
+    """
+    Compute the Cartesian vectors from the eastward and westward components
+    :param lon: longitudes in degrees
+    :param lat: latitudes in degrees 
+    :param u: eastward component
+    :param v: northward component
+    """
+    n = lon.shape[0]
+    vxyz = numpy.empty((n, 3), numpy.float64)
+    cosLon = numpy.cos(lon * DEG2RAD)
+    sinLon = numpy.sin(lon * DEG2RAD)
+    cosLat = numpy.cos(lat * DEG2RAD)
+    sinLat = numpy.sin(lat * DEG2RAD)
+    # vx
+    vxyz[:, 0] = - u*sinLon - v*sinLat*cosLon
+    # vy
+    vxyz[:, 1] = + u*cosLon - v*sinLat*sinLon
+    # vz
+    vxyz[:, 2] = v*cosLat
+
+    return vxyz
+
+
+
 def computeCartesianCoords(lon, lat, radius):
     """
     Compute Cartesian coordinates from lon-lat
@@ -181,23 +206,13 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         f.write(f"\nPOINT_DATA {ne}\n")
         f.write(f"FIELD FieldData 1\n")
         f.write(f"vectors 3 {ne} double\n")
-        vxyz = numpy.zeros((ne, 3), numpy.float64)
         u = u_cube.data
         v = v_cube.data
         xe, ye, ze = xyze[:, 0], xyze[:, 1], xyze[:, 2]
+        lone = numpy.arctan2(ye, xe) / DEG2RAD
         rhoe = numpy.sqrt(xe*xe + ye*ye)
-        late = numpy.arctan2(ze, rhoe)
-        lone = numpy.arctan2(ye, xe)
-        cosLon = numpy.cos(lone)
-        sinLon = numpy.sin(lone)
-        cosLat = numpy.cos(late)
-        sinLat = numpy.sin(late)
-        # vx
-        vxyz[:, 0] = - u*sinLon - v*sinLat*cosLon
-        # vy
-        vxyz[:, 1] = + u*cosLon - v*sinLat*sinLon
-        # vz
-        vxyz[:, 2] = v*cosLat
+        late = numpy.arctan2(ze, rhoe) / DEG2RAD
+        vxyz = computeCartesianVectors(lone, late, u_cube.data, v_cube.data)
         numpy.savetxt(f, vxyz, fmt="%.10e")
 
         f.write("\n")
