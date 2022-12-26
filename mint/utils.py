@@ -50,22 +50,18 @@ def computeEdgeXYZ(mesh, radius=1.0):
     """
     Compute the mid edge positions in Cartesian coordinates
     :param mesh: unstructured Iris mesh
-    :param radius: sphere radius
-    :returns set of longitudes, latitudes in degrees
+    :param radius: radius of the sphere
+    :returns set of x, y, z Cartesian coordinates
     """
-    # mesh vertices
-    lonv = mesh.node_coords.node_x.points
-    latv = mesh.node_coords.node_y.points
-
-    # convert to radians
-    lonv *= DEG2RAD
-    latv *= DEG2RAD
+    # mesh vertices in radians
+    lonv_rad = mesh.node_coords.node_x.points * DEG2RAD
+    latv_rad = mesh.node_coords.node_y.points * DEG2RAD
 
     # convert to Cartesian coords
-    cosLonv = numpy.cos(lonv)
-    xv = radius * cosLatv * numpy.cos(lonv)
-    yv = radius * cosLatv * numpy.sin(lonv)
-    zv = radius * numpy.sin(latv)
+    cosLatv = numpy.cos(latv_rad)
+    xv = radius * cosLatv * numpy.cos(lonv_rad)
+    yv = radius * cosLatv * numpy.sin(lonv_rad)
+    zv = radius * numpy.sin(latv_rad)
 
     edge2node = mesh.edge_node_connectivity.indices_by_location()
     edge2node -= mesh.edge_node_connectivity.start_index
@@ -83,15 +79,13 @@ def computeEdgeXYZ(mesh, radius=1.0):
 
 
 
-def computeEdgeLonLat(xe, ye, ze):
+def computeLonLatFromXYZ(xe, ye, ze):
     """
-    Compute the mid edge positions in lon-lat coordinates
-    :param xe: mid edge x-coordinates
-    :param ye: mid edge y-coordinates
-    :param ze: mid edge z-coordinates
-    :returns set of longitudes, latitudes in degrees
-    :note: the computation is performed in Cartesian coordinates to avoid
-           issues with the dateline
+    Compute the lon-lat coordinates from the Cartesian coordinates
+    :param x: x-coordinates
+    :param y: y-coordinates
+    :param z: z-coordinates
+    :returns set of longitudes and latitudes in degrees
     """
     rhoe = numpy.sqrt(xe*xe + ye*ye)
     lone = numpy.arctan2(ye, xe) / DEG2RAD

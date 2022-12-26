@@ -42,24 +42,11 @@ def _set_vector_field_from_potentialfct(u_cube, v_cube):
     :param u_cube: the x-component cube for which we will fill in the values
     :param v_cube: the y-component cube for which we will fill in the values
     """
-    x = u_cube.mesh.node_coords.node_x.points
-    y = u_cube.mesh.node_coords.node_y.points
+    xe, ye, ze = mint.computeEdgeXYZ(u_cube.mesh, radius=1.0)
+    lone, late = mint.computeLonLatFromXYZ(xe, ye, ze)
+    u_cube.data[:] = - np.sin(lone*DEG2RAD)
+    v_cube.data[:] = - np.sin(late*DEG2RAD) * np.sin(lone*DEG2RAD)
 
-    e2n = u_cube.mesh.edge_node_connectivity.indices_by_location()
-    # make the edge to node connectivity zero based
-    e2n -= u_cube.mesh.edge_node_connectivity.start_index
-
-    num_edges = e2n.shape[0]
-    for edge in range(num_edges):
-        n0, n1 = e2n[edge, :]
-        # the end points of the edge
-        x0, x1 = x[n0], x[n1]
-        y0, y1 = y[n0], y[n1]
-        # mid point on the edge
-        xm = 0.5*(x0 + x1)
-        ym = 0.5*(y0 + y1)
-        u_cube.data[edge] = - np.sin(xm*DEG2RAD)
-        v_cube.data[edge] = - np.sin(ym*DEG2RAD) * np.sin(xm*DEG2RAD)
 
 def _set_vector_field_from_streamfct(u_cube, v_cube):
     """
@@ -67,24 +54,11 @@ def _set_vector_field_from_streamfct(u_cube, v_cube):
     :param u_cube: the x-component cube for which we will fill in the values
     :param v_cube: the y-component cube for which we will fill in the values
     """
-    x = u_cube.mesh.node_coords.node_x.points
-    y = u_cube.mesh.node_coords.node_y.points
+    xe, ye, ze = mint.computeEdgeXYZ(u_cube.mesh, radius=1.0)
+    lone, late = mint.computeLonLatFromXYZ(xe, ye, ze)
+    u_cube.data[:] = - np.sin(late*DEG2RAD) * np.cos(lone*DEG2RAD)
+    v_cube.data[:] = np.sin(lone*DEG2RAD)
 
-    e2n = u_cube.mesh.edge_node_connectivity.indices_by_location()
-    # make sure the edge to node connectivity is zero based
-    e2n -= u_cube.mesh.edge_node_connectivity.start_index
-
-    num_edges = e2n.shape[0]
-    for edge in range(num_edges):
-        n0, n1 = e2n[edge, :]
-        # the end points of the edge
-        x0, x1 = x[n0], x[n1]
-        y0, y1 = y[n0], y[n1]
-        # mid point on the edge
-        xm = 0.5*(x0 + x1)
-        ym = 0.5*(y0 + y1)
-        u_cube.data[edge] = - np.sin(ym*DEG2RAD) * np.cos(xm*DEG2RAD)
-        v_cube.data[edge] = np.sin(xm*DEG2RAD)
 
 
 def _u_v_cubes_from_ugrid_file(filename, 
