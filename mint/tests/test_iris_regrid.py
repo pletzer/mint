@@ -208,12 +208,18 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None)
     return cube
 
 
-def test_read_ugrid_file():
+def test_read_ugrid_file_w2():
     u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
     _set_vector_field_from_streamfct(u_cube, v_cube)
-    mint.saveMeshVTK(u_cube.mesh, 'cs8_mesh.vtk')
-    mint.saveVectorFieldVTK(u_cube, v_cube, 'cs8_vectors.vtk')
+    mint.saveMeshVTK(u_cube.mesh, 'cs8_w2_mesh.vtk')
+    mint.saveVectorFieldVTK(u_cube, v_cube, 'cs8_w2_vectors.vtk')
 
+
+def test_read_ugrid_file_w1():
+    u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
+    _set_vector_field_from_potentialfct(u_cube, v_cube)
+    mint.saveMeshVTK(u_cube.mesh, 'cs8_w1_mesh.vtk')
+    mint.saveVectorFieldVTK(u_cube, v_cube, 'cs8_w1_vectors.vtk')
 
 
 def test_cubedsphere8_to_cubedsphere2():

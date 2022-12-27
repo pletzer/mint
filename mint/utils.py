@@ -94,7 +94,7 @@ def computeLonLatFromXYZ(xe, ye, ze):
 
 
 
-def saveMeshVTK(mesh, filename, radius=0.99):
+def saveMeshVTK(mesh, filename, radius=0.98):
     """
     Save the mesh in Cartesian coordinates to a VTK file
     :param mesh: unstructurede mesh
@@ -154,9 +154,8 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         # extract the mesh from the cube
         mesh = u_cube.mesh
 
-        # get the connectivity, 0-based
+        # get the connectivity, already 0-based
         edge2node = mesh.edge_node_connectivity.indices_by_location()
-        edge2node -= mesh.edge_node_connectivity.start_index
 
         # get the vertex coords in lon-lat coordinates
         lonv = mesh.node_coords.node_x.points
