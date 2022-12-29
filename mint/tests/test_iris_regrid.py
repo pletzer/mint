@@ -22,9 +22,9 @@ def _set_extensive_field_from_streamfct(cube):
     x = cube.mesh.node_coords.node_x.points
     y = cube.mesh.node_coords.node_y.points
 
-    e2n = cube.mesh.edge_node_connectivity.indices_by_location()
-    # make sure the edge to node connectivity is zero based
-    e2n -= cube.mesh.edge_node_connectivity.start_index
+    # make indexing is zero-based
+    e2n = cube.mesh.edge_node_connectivity.indices_by_location() - \
+          cube.mesh.edge_node_connectivity.start_index
 
     num_edges = e2n.shape[0]
     for edge in range(num_edges):

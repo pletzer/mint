@@ -39,14 +39,11 @@ class IrisToMintMeshAdaptor:
         self.points[:, 0] = x
         self.points[:, 1] = y
 
-        self.face2nodes = np.array(iris_mesh.face_node_connectivity.indices_by_location(), 
-            np.uint64)
-        self.edge2nodes = np.array(iris_mesh.edge_node_connectivity.indices_by_location(), 
-            np.uint64)
-
-        # connectivity is zero based in Mint
-        self.face2nodes -= iris_mesh.face_node_connectivity.start_index
-        self.edge2nodes -= iris_mesh.edge_node_connectivity.start_index
+        # zero-based connecticvity
+        self.face2nodes = np.array(iris_mesh.face_node_connectivity.indices_by_location() - \
+                                   iris_mesh.face_node_connectivity.start_index, np.uint64)
+        self.edge2nodes = np.array(iris_mesh.edge_node_connectivity.indices_by_location() - \
+                                   iris_mesh.edge_node_connectivity.start_index, np.uint64)
         
         self.grid = mint.Grid()
         self.grid.setFlags(flags[0], flags[1], flags[2])
