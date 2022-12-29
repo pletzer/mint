@@ -12,6 +12,7 @@ import mint
 
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
+DEG2RAD = np.pi / 180.
 
 def _set_extensive_field_from_streamfct(cube):
     """
@@ -21,19 +22,18 @@ def _set_extensive_field_from_streamfct(cube):
     x = cube.mesh.node_coords.node_x.points
     y = cube.mesh.node_coords.node_y.points
 
-    e2n = cube.mesh.edge_node_connectivity.indices_by_location()
-    # make sure the edge to node connectivity is zero based
-    e2n -= cube.mesh.edge_node_connectivity.start_index
+    # make indexing is zero-based
+    e2n = cube.mesh.edge_node_connectivity.indices_by_location() - \
+          cube.mesh.edge_node_connectivity.start_index
 
     num_edges = e2n.shape[0]
-    deg2rad = np.pi/180.
     for edge in range(num_edges):
         n0, n1 = e2n[edge, :]
         # the end points of the edge
         x0, x1 = x[n0], x[n1]
         y0, y1 = y[n0], y[n1]
-        s0 = np.cos(y0*deg2rad)*np.cos(x0*deg2rad)
-        s1 = np.cos(y1*deg2rad)*np.cos(x1*deg2rad)
+        s0 = np.cos(y0*DEG2RAD)*np.cos(x0*DEG2RAD)
+        s1 = np.cos(y1*DEG2RAD)*np.cos(x1*DEG2RAD)
         cube.data[edge] = s1 - s0
 
 def _set_vector_field_from_potentialfct(u_cube, v_cube):
@@ -42,25 +42,11 @@ def _set_vector_field_from_potentialfct(u_cube, v_cube):
     :param u_cube: the x-component cube for which we will fill in the values
     :param v_cube: the y-component cube for which we will fill in the values
     """
-    x = u_cube.mesh.node_coords.node_x.points
-    y = u_cube.mesh.node_coords.node_y.points
+    xe, ye, ze = mint.computeEdgeXYZ(u_cube.mesh, radius=1.0)
+    lone, late = mint.computeLonLatFromXYZ(xe, ye, ze)
+    u_cube.data[:] = - np.sin(lone*DEG2RAD)
+    v_cube.data[:] = - np.sin(late*DEG2RAD) * np.sin(lone*DEG2RAD)
 
-    e2n = u_cube.mesh.edge_node_connectivity.indices_by_location()
-    # make sure the edge to node connectivity is zero based
-    e2n -= u_cube.mesh.edge_node_connectivity.start_index
-
-    num_edges = e2n.shape[0]
-    deg2rad = np.pi/180.
-    for edge in range(num_edges):
-        n0, n1 = e2n[edge, :]
-        # the end points of the edge
-        x0, x1 = x[n0], x[n1]
-        y0, y1 = y[n0], y[n1]
-        # mid point on the edge
-        xm = 0.5*(x0 + x1)
-        ym = 0.5*(y0 + y1)
-        u_cube.data[edge] = - np.sin(xm*deg2rad)
-        v_cube.data[edge] = - np.sin(ym*deg2rad) * np.sin(xm*deg2rad)
 
 def _set_vector_field_from_streamfct(u_cube, v_cube):
     """
@@ -68,25 +54,11 @@ def _set_vector_field_from_streamfct(u_cube, v_cube):
     :param u_cube: the x-component cube for which we will fill in the values
     :param v_cube: the y-component cube for which we will fill in the values
     """
-    x = u_cube.mesh.node_coords.node_x.points
-    y = u_cube.mesh.node_coords.node_y.points
+    xe, ye, ze = mint.computeEdgeXYZ(u_cube.mesh, radius=1.0)
+    lone, late = mint.computeLonLatFromXYZ(xe, ye, ze)
+    u_cube.data[:] = - np.sin(late*DEG2RAD) * np.cos(lone*DEG2RAD)
+    v_cube.data[:] = np.sin(lone*DEG2RAD)
 
-    e2n = u_cube.mesh.edge_node_connectivity.indices_by_location()
-    # make sure the edge to node connectivity is zero based
-    e2n -= u_cube.mesh.edge_node_connectivity.start_index
-
-    num_edges = e2n.shape[0]
-    deg2rad = np.pi/180.
-    for edge in range(num_edges):
-        n0, n1 = e2n[edge, :]
-        # the end points of the edge
-        x0, x1 = x[n0], x[n1]
-        y0, y1 = y[n0], y[n1]
-        # mid point on the edge
-        xm = 0.5*(x0 + x1)
-        ym = 0.5*(y0 + y1)
-        u_cube.data[edge] = - np.sin(ym*deg2rad) * np.cos(xm*deg2rad)
-        v_cube.data[edge] = np.sin(xm*deg2rad)
 
 
 def _u_v_cubes_from_ugrid_file(filename, 
@@ -197,6 +169,9 @@ def _gridlike_mesh(n_lons, n_lats):
         edge_y=edge_lat_coord,
     )
     mesh.long_name = "example mesh"
+
+    mint.saveMeshVTK(mesh, 'example_mesh.vtk')
+
     return mesh
 
 
@@ -233,8 +208,18 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None)
     return cube
 
 
-def test_read_ugrid_file():
+def test_read_ugrid_file_w2():
     u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
+    _set_vector_field_from_streamfct(u_cube, v_cube)
+    mint.saveMeshVTK(u_cube.mesh, 'cs8_w2_mesh.vtk')
+    mint.saveVectorFieldVTK(u_cube, v_cube, 'cs8_w2_vectors.vtk')
+
+
+def test_read_ugrid_file_w1():
+    u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
+    _set_vector_field_from_potentialfct(u_cube, v_cube)
+    mint.saveMeshVTK(u_cube.mesh, 'cs8_w1_mesh.vtk')
+    mint.saveVectorFieldVTK(u_cube, v_cube, 'cs8_w1_vectors.vtk')
 
 
 def test_cubedsphere8_to_cubedsphere2():
@@ -262,7 +247,7 @@ def test_cubedsphere8_to_cubedsphere2():
 
 
 # turned test off as we have not yet implemented W1
-def xtest_cubedsphere8_to_cubedsphere8_w1():
+def test_cubedsphere8_to_cubedsphere8_w1():
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
     tgt_u, tgt_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
