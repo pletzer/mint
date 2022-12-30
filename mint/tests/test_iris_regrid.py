@@ -243,7 +243,7 @@ def test_cubedsphere8_to_cubedsphere2():
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
                  np.fabs(result_v.data - tgt_v.data).mean())
     print(f'test_cubedsphere8_to_cubedsphere2 = {error}')
-    assert error < 0.29
+    assert error < 0.06
 
 
 # turned test off as we have not yet implemented W1
@@ -268,7 +268,7 @@ def test_cubedsphere8_to_cubedsphere8_w1():
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
                  np.fabs(result_v.data - tgt_v.data).mean())
     print(f'test_cubedsphere8_to_cubedsphere8_w1 = {error}')
-    assert error < 0.06
+    assert error < 0.02
 
 def test_cubedsphere8_to_cubedsphere8_w2():
 
@@ -291,7 +291,7 @@ def test_cubedsphere8_to_cubedsphere8_w2():
     error = 0.5*(np.fabs(result_u.data - tgt_u.data).mean() + \
                  np.fabs(result_v.data - tgt_v.data).mean())
     print(f'test_cubedsphere8_to_cubedsphere8_w2 = {error}')
-    assert error < 0.06
+    assert error < 0.01
 
 
 def test_lonlat_to_cubedsphere():
@@ -318,7 +318,7 @@ def test_lonlat_to_cubedsphere():
                  np.fabs(result_v.data - tgt_v.data).mean())
     print(f'test_lonlat_to_cubedsphere = {error}')
 
-    assert error < 0.10
+    assert error < 0.07
 
 
 def test_cube_mesh():
@@ -366,7 +366,7 @@ def test_streamfunction_extensive_field():
     # Check the result.
     error = np.mean(np.fabs(result.data - tgt.data))
     print(f'extensive field regridding error = {error}')
-    assert error < 0.007
+    assert error < 0.005
 
 
 def test_streamfunction_vector_field():
