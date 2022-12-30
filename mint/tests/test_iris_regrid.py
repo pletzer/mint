@@ -410,7 +410,7 @@ def test_streamfunction_vector_field():
             x1, y1 = tgt_x[point_id1], tgt_y[point_id1]
             edge_id, edge_sign = rg.tgt.get_grid().getEdgeId(icell, ie)
             if abs(abs(y0) - 90) < eps and abs(abs(y1) - 90) < eps:
-                # the 2 nodes are at the pole, u, v are ill-defined thre so skip
+                # the 2 nodes are at the pole, u, v are ill-defined there so skip
                 continue
             uval, vval = result_u.data[edge_id], result_v.data[edge_id]
             uxct, vxct = tgt_u.data[edge_id], tgt_v.data[edge_id]
