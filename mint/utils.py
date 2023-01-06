@@ -144,8 +144,8 @@ def saveMeshVTK(mesh, filename, radius=0.98):
 def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
     """
     Save the vectors to a VTK file
-    :param u_cube: x-component
-    :param v_cube: y-component
+    :param u_cube: eastward component
+    :param v_cube: northward component
     :param filename: file name
     :param radius: radius of the sphere
     """
