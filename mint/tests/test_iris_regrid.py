@@ -213,19 +213,20 @@ def test_cs2lonlat():
     tgt_u = _gridlike_mesh_cube(100, 50)
     tgt_v = _gridlike_mesh_cube(100, 50)
 
-    src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
+    src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind.nc')
 
     # w2
     _set_vector_field_from_streamfct(src_u, src_v)
-    mint.saveMeshVTK(src_u.mesh, 'cs8_w2_mesh.vtk')
-    mint.saveVectorFieldVTK(src_u, src_v, 'cs8_w2_vectors.vtk')
+    mint.saveMeshVTK(src_u.mesh, 'cs128_w2_mesh.vtk')
+    mint.saveVectorFieldVTK(src_u, src_v, 'cs128_w2_vectors.vtk')
 
     # grid options for a cubed-sphere grid
     src_flags = (1, 1, 1)
     # grid options for a lon-lat grid
     tgt_flags = (0, 0, 1)
     rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh, \
-                                src_flags=src_flags, tgt_flags=tgt_flags)
+                                src_flags=src_flags, tgt_flags=tgt_flags,
+                                debug=3)
 
     _set_vector_field_from_streamfct(src_u, src_v)
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
@@ -237,7 +238,7 @@ def test_cs2lonlat():
 
     # check
     error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
-    assert error < 0.10 # 0.000001
+    assert error < 0.01
 
 
 def test_read_ugrid_file_w1():

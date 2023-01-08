@@ -265,7 +265,7 @@ int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldA
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
             data[k] = u[k]*cosTheDx + v[k]*dy;
 
-            // ADD CARTESIAN COMPUTATIOON AND SELECT (TO DO)
+            // ADD CARTESIAN COMPUTATION AND SELECT (TO DO)
         }
     }
 
@@ -348,6 +348,7 @@ int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldA
                 // use estimate from spherical coordinates
                 data[k] = dataSph;
             }
+
         }
     }
 
