@@ -208,11 +208,36 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None)
     return cube
 
 
-def test_read_ugrid_file_w2():
-    u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
-    _set_vector_field_from_streamfct(u_cube, v_cube)
-    mint.saveMeshVTK(u_cube.mesh, 'cs8_w2_mesh.vtk')
-    mint.saveVectorFieldVTK(u_cube, v_cube, 'cs8_w2_vectors.vtk')
+def test_cs2lonlat():
+
+    tgt_u = _gridlike_mesh_cube(100, 50)
+    tgt_v = _gridlike_mesh_cube(100, 50)
+
+    src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
+
+    # w2
+    _set_vector_field_from_streamfct(src_u, src_v)
+    mint.saveMeshVTK(src_u.mesh, 'cs8_w2_mesh.vtk')
+    mint.saveVectorFieldVTK(src_u, src_v, 'cs8_w2_vectors.vtk')
+
+    # grid options for a cubed-sphere grid
+    src_flags = (1, 1, 1)
+    # grid options for a lon-lat grid
+    tgt_flags = (0, 0, 1)
+    rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh, \
+                                src_flags=src_flags, tgt_flags=tgt_flags)
+
+    _set_vector_field_from_streamfct(src_u, src_v)
+    _set_vector_field_from_streamfct(tgt_u, tgt_v)
+
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
+
+    mint.saveMeshVTK(result_u.mesh, 'lonlat_mesh.vtk')
+    mint.saveVectorFieldVTK(result_u, result_v, 'lonlat_w2_vectors.vtk')
+
+    # check
+    error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
+    assert error < 0.10 # 0.000001
 
 
 def test_read_ugrid_file_w1():

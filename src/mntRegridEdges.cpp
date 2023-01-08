@@ -916,15 +916,6 @@ int mnt_regridedges_apply(RegridEdges_t** self,
 }
 
 
-int mnt_regridedges_edgeVectorApplyToUniqueEdgeData(RegridEdges_t** self,
-                                  const double src_u[], const double src_v[],
-                                  double dst_u[], double dst_v[]) {
-
-    std::string msg = "NOT IMPLEMENTED";
-    mntlog::error(__FILE__, __func__, __LINE__, msg);
-    return 1;
-}
-
 LIBRARY_API
 int mnt_regridedges_vectorApply(RegridEdges_t** self,
                                 const double src_u[], const double src_v[],
