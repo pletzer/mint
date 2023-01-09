@@ -228,13 +228,44 @@ def test_cs2lonlat():
                                 src_flags=src_flags, tgt_flags=tgt_flags,
                                 debug=3)
 
-    _set_vector_field_from_streamfct(src_u, src_v)
     _set_vector_field_from_streamfct(tgt_u, tgt_v)
 
     result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
     mint.saveMeshVTK(result_u.mesh, 'lonlat_mesh.vtk')
     mint.saveVectorFieldVTK(result_u, result_v, 'lonlat_w2_vectors.vtk')
+
+    # check
+    error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
+    assert error < 0.01
+
+
+def test_lonlat2cs():
+
+    src_u = _gridlike_mesh_cube(100, 50)
+    src_v = _gridlike_mesh_cube(100, 50)
+
+    tgt_u, tgt_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
+
+    # w2
+    _set_vector_field_from_streamfct(src_u, src_v)
+    mint.saveMeshVTK(src_u.mesh, 'lonlat2cs_src_mesh.vtk')
+    mint.saveVectorFieldVTK(src_u, src_v, 'lonlat2cs_src_w2_vectors.vtk')
+
+    # grid options for a lonlat grid
+    src_flags = (0, 0, 1)
+    # grid options for a subed-sphere grid
+    tgt_flags = (1, 1, 1)
+    rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh, \
+                                src_flags=src_flags, tgt_flags=tgt_flags,
+                                debug=3)
+
+    _set_vector_field_from_streamfct(tgt_u, tgt_v)
+
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
+
+    mint.saveMeshVTK(result_u.mesh, 'lonlat2cs_tgt_mesh.vtk')
+    mint.saveVectorFieldVTK(result_u, result_v, 'lonlat2cs_tgt_w2_vectors.vtk')
 
     # check
     error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
