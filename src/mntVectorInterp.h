@@ -50,7 +50,6 @@ int mnt_vectorinterp_del(VectorInterp_t** self);
  * Set the grid
  * @param self instance of VectorInterp_t
  * @param grid grid (borrowed reference)
- * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
  */
 LIBRARY_API
