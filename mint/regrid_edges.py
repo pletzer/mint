@@ -231,7 +231,7 @@ class RegridEdges(object):
         :param dstdata: contiguous array of destination field data (output), see below for expected size
         :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell
                           (size of array is numCells * mint.NUM_EDGES_PER_QUAD),
-                          assume unique edge Id data otherwise (size is numEdges)
+                          assume unique edge Id data otherwise (size of array is numEdges)
         """
 
         MINTLIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p),

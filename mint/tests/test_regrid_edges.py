@@ -243,6 +243,7 @@ def test_compute_weights():
     rg.dumpWeights('test_regrid_edges_py.nc')
 
 
+# test currently throw a seg fault on macos X M1 (?)
 def test_apply_weights():
 
     # create a regridder
