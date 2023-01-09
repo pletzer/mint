@@ -126,7 +126,7 @@ osx_task:
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
     - make
-    - ctest
+    - ctest -V
     - cd ..
     - python setup.py develop
     - pytest
