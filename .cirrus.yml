@@ -122,13 +122,14 @@ osx_task:
   test_script:
     - source $(conda info | grep -i 'base environment' | awk '{print $4;}')/etc/profile.d/conda.sh 
     - conda activate py${PY_VER}
-    - python setup.py develop
-    - pytest
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
     - make
     - ctest
+    - cd ..
+    - python setup.py develop
+    - pytest
 
 #
 # Testing (Windows)
