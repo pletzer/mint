@@ -247,7 +247,7 @@ def test_compute_weights():
 def test_apply_weights():
 
     # seg fault on Darwin M1 (to debug)
-    if os.placement == 'darwin':
+    if sys.placement == 'darwin':
         return 
 
     # create a regridder
