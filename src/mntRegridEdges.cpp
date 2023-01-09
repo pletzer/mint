@@ -663,7 +663,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
 
                 if (debug == 3) {
                     char buffer[1024];
-                    sprintf(buffer, "%12zu %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
+                    snprintf(buffer, 512, "%12zu %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
                         dstCellId, dstEdgeIndex, 
                         dstEdgePt0[0], dstEdgePt0[1], 
                         dstEdgePt1[0], dstEdgePt1[1], 
@@ -710,7 +710,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
                 double totalT = polySegIter.getIntegratedParamCoord();
                 if (std::abs(totalT - 1.0) > 1.e-10) {
                     char buffer[1024];
-                    sprintf(buffer, "[%d] total t of segment: %lf != 1 (diff=%lg) dst cell %zu points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)",
+                    snprintf(buffer, 512, "[%d] total t of segment: %lf != 1 (diff=%lg) dst cell %zu points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)",
                        numBadSegments, totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
                     mntlog::warn(__FILE__, __func__, __LINE__, buffer);
                     numBadSegments++;

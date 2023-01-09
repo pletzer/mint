@@ -611,7 +611,7 @@ int mnt_grid_print(Grid_t** self) {
         }
     }
 
-    for (auto i = 0; i < (*self)->faceNodeConnectivity.size(); 
+    for (std::size_t i = 0; i < (*self)->faceNodeConnectivity.size(); 
             i += MNT_NUM_VERTS_PER_QUAD) {
         auto icell = i / MNT_NUM_VERTS_PER_QUAD;
         std::cout << "\t face " << icell << ": nodes";
@@ -620,7 +620,7 @@ int mnt_grid_print(Grid_t** self) {
         }
         std::cout << std::endl;
     }
-    for (auto i = 0; i < (*self)->edgeNodeConnectivity.size();
+    for (std::size_t i = 0; i < (*self)->edgeNodeConnectivity.size();
              i += MNT_NUM_VERTS_PER_EDGE) {
         auto iedge = i / MNT_NUM_VERTS_PER_EDGE;
         std::cout << "\t edge " << iedge << ": nodes";

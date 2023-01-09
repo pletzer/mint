@@ -279,10 +279,6 @@ int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldA
     int numFailures = 0;
     int ier;
 
-    double coef = 0;
-    if ((*self)->grid->degrees) {
-        coef = 1.0;
-    }
     double deg2rad = M_PI / 180.;
 
     double point0[3];
