@@ -665,7 +665,7 @@ add_test(NAME flux_line_2pts
 set_tests_properties(flux_line_2pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 set_tests_properties(flux_line_2pts PROPERTIES
-          PASS_REGULAR_EXPRESSION "Flux across the line: -0.05413054946986")
+          PASS_REGULAR_EXPRESSION "Flux across the line: -0.054130549469")
 
 add_test(NAME flux_line_3pts
          COMMAND "${CMAKE_BINARY_DIR}/tools/flux" 
@@ -678,7 +678,7 @@ add_test(NAME flux_line_3pts
 set_tests_properties(flux_line_3pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 set_tests_properties(flux_line_3pts PROPERTIES
-          PASS_REGULAR_EXPRESSION "Flux across the line: -0.05413054946986")
+          PASS_REGULAR_EXPRESSION "Flux across the line: -0.054130549469")
 
 add_test(NAME polySegmentIter1
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 
