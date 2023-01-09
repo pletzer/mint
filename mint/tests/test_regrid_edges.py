@@ -244,7 +244,7 @@ def test_compute_weights():
 
 
 # test currently throw a seg fault on macos X M1 (?)
-def xtest_apply_weights():
+def test_apply_weights():
 
     # create a regridder
     rg = RegridEdges()

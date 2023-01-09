@@ -11,9 +11,9 @@ void mntlog::logging(const std::string& severity,
                      const std::string& msg) {
 
     std::time_t now = std::time(nullptr);
-    struct tm buf;
 
 #ifdef __STDC_LIB_EXT1__
+    struct tm buf;
     std::strftime(STRTIME, sizeof(STRTIME), "[%c ", localtime_r(&now, &buf));
 #else
     // unsafe version
