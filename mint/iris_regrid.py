@@ -1,4 +1,3 @@
-from cgitb import enable
 import copy
 
 from iris.cube import Cube

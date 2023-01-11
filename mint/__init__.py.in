@@ -42,6 +42,6 @@ from .polyline_integral import PolylineIntegral
 from .vector_interp import VectorInterp
 from .multi_array_iter import MultiArrayIter
 from .extensive_field_adaptor import ExtensiveFieldAdaptor
-from .iris_regrid import IrisMintRegridder
+from .iris_regrid import IrisMintRegridder, IrisToMintMeshAdaptor
 from .utils import getIntegralsInLonLat, getIntegralsInXYZ, saveVectorFieldVTK, saveMeshVTK, computeEdgeXYZ, computeLonLatFromXYZ
 

@@ -93,10 +93,9 @@ def computeLonLatFromXYZ(xe, ye, ze):
     return lone, late
 
 
-
 def saveMeshVTK(mesh, filename, radius=0.98):
     """
-    Save the mesh in Cartesian coordinates to a VTK file
+    Save the Iris mesh in Cartesian coordinates to a VTK file
     :param mesh: unstructurede mesh
     :param filename: file name
     :param radius: radius of the sphere
