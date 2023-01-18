@@ -1,6 +1,5 @@
 #include "mntLogger.h"
 #include <mntUgrid2D.h>
-#include <mntLineLineIntersector.h>
 #include <netcdf.h>
 #include <iostream>
 #include <set>
