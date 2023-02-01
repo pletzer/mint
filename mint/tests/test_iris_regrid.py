@@ -266,8 +266,11 @@ def test_cs2lonlat_zt():
 
     result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
-    # mint.saveMeshVTK(result_u.mesh, 'lonlat_mesh.vtk')
-    # mint.saveVectorFieldVTK(result_u, result_v, 'lonlat_w2_vectors.vtk')
+    mint.saveMeshVTK(result_u.mesh, 'lonlat_mesh.vtk')
+    time_idx = 1
+    height_idx = 0
+    mint.saveVectorFieldVTK(result_u, result_v, f'lonlat_w2_vectors_t{time_idx}_z{height_idx}.vtk',
+        extra_inds=(time_idx, height_idx))
 
     # check
     error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )

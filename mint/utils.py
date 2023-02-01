@@ -139,13 +139,14 @@ def saveMeshVTK(mesh, filename, radius=0.98):
 
 
 
-def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
+def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0, extra_inds=[]):
     """
     Save the vectors to a VTK file
     :param u_cube: eastward component
     :param v_cube: northward component
     :param filename: file name
     :param radius: radius of the sphere
+    :param extra_inds: extra dimension indices (e.g. time, elevation...)
     """
     with open(filename, 'w') as f:
 
@@ -198,13 +199,14 @@ def saveVectorFieldVTK(u_cube, v_cube, filename, radius=1.0):
         f.write(f"\nPOINT_DATA {ne}\n")
         f.write(f"FIELD FieldData 1\n")
         f.write(f"vectors 3 {ne} double\n")
-        u = u_cube.data
-        v = v_cube.data
+        slab = tuple(extra_inds) + (slice(0, None),)
+        u = u_cube.data[slab]
+        v = v_cube.data[slab]
         xe, ye, ze = xyze[:, 0], xyze[:, 1], xyze[:, 2]
         lone = numpy.arctan2(ye, xe) / DEG2RAD
         rhoe = numpy.sqrt(xe*xe + ye*ye)
         late = numpy.arctan2(ze, rhoe) / DEG2RAD
-        vxyz = computeCartesianVectors(lone, late, u_cube.data, v_cube.data)
+        vxyz = computeCartesianVectors(lone, late, u, v)
         numpy.savetxt(f, vxyz, fmt="%.10e")
 
         f.write("\n")
