@@ -61,7 +61,6 @@ def _set_vector_field_from_streamfct(u_cube, v_cube):
     :param u_cube: the x-component cube for which we will fill in the values
     :param v_cube: the y-component cube for which we will fill in the values
     """
-    print(f'*** u_cube = {u_cube}')
     xe, ye, ze = mint.computeEdgeXYZ(u_cube.mesh, radius=1.0)
     lone, late = mint.computeLonLatFromXYZ(xe, ye, ze)
     num_edges = len(lone)
@@ -247,7 +246,6 @@ def test_cs2lonlat_zt():
 
     tgt_u = _gridlike_mesh_cube(100, 50, height=2, time=2)
     tgt_v = _gridlike_mesh_cube(100, 50, height=2, time=2)
-    print(f'--- tgt_u = {tgt_u}')
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')
 

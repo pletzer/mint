@@ -131,11 +131,11 @@ class IrisMintRegridder:
         n = len(u_cube.shape)
         nm1 = n - 1
 
-        dim = 0
+        i = 0
         for coord in u_cube.coords(dim_coords=True):
-            out_u_cube.add_dim_coord(coord, dim)
-            out_v_cube.add_dim_coord(coord, dim)
-            dim += 1
+            out_u_cube.add_dim_coord(coord, i)
+            out_v_cube.add_dim_coord(coord, i)
+            i += 1
 
         out_u_cube.add_aux_coord(tgt_mesh_coord_x, nm1)
         out_u_cube.add_aux_coord(tgt_mesh_coord_y, nm1)
