@@ -1,7 +1,6 @@
 #include "mntLIBRARY_API.h"
 #include <limits> // required by vtkUnstructuredGrid
 #include <mntVecN.h>
-#include <mntLineLineIntersector.h>
 #include <vtkUnstructuredGrid.h>
 #include <vmtCellLocator.h>
 #include <map>

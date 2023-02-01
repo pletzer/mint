@@ -44,8 +44,15 @@ def _set_vector_field_from_potentialfct(u_cube, v_cube):
     """
     xe, ye, ze = mint.computeEdgeXYZ(u_cube.mesh, radius=1.0)
     lone, late = mint.computeLonLatFromXYZ(xe, ye, ze)
-    u_cube.data[:] = - np.sin(lone*DEG2RAD)
-    v_cube.data[:] = - np.sin(late*DEG2RAD) * np.sin(lone*DEG2RAD)
+    num_edges = len(lone)
+    other_dims = u_cube.shape[:-1]
+    mai = mint.MultiArrayIter(other_dims)
+    mai.begin()
+    for _ in range(mai.getNumIters()):
+        inds = tuple(mai.getIndices())
+        slab = inds + (slice(0, num_edges),)
+        u_cube.data[:] = - np.sin(lone*DEG2RAD)
+        v_cube.data[:] = - np.sin(late*DEG2RAD) * np.sin(lone*DEG2RAD)
 
 
 def _set_vector_field_from_streamfct(u_cube, v_cube):
@@ -56,8 +63,16 @@ def _set_vector_field_from_streamfct(u_cube, v_cube):
     """
     xe, ye, ze = mint.computeEdgeXYZ(u_cube.mesh, radius=1.0)
     lone, late = mint.computeLonLatFromXYZ(xe, ye, ze)
-    u_cube.data[:] = - np.sin(late*DEG2RAD) * np.cos(lone*DEG2RAD)
-    v_cube.data[:] = np.sin(lone*DEG2RAD)
+    num_edges = len(lone)
+    other_dims = u_cube.shape[:-1]
+    mai = mint.MultiArrayIter(other_dims)
+    mai.begin()
+    for _ in range(mai.getNumIters()):
+        inds = tuple(mai.getIndices())
+        slab = inds + (slice(0, num_edges),)
+        u_cube.data[slab] = - np.sin(late*DEG2RAD) * np.cos(lone*DEG2RAD)
+        v_cube.data[slab] = np.sin(lone*DEG2RAD)
+        mai.next()
 
 
 
@@ -186,26 +201,81 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None)
     """
     mesh = _gridlike_mesh(n_lons, n_lats)
     mesh_coord_x, mesh_coord_y = mesh.to_MeshCoords(location)
-    shape = mesh_coord_x.points.shape
+
+
+    shape = tuple([])
     extra_coords = []
     if time is not None:
         shape += (time,)
         time_coord = DimCoord(np.arange(time), standard_name="time", units="days since 1970-01-01")
         time_coord.guess_bounds()
-        extra_coords.append((time_coord, len(extra_coords) + 1))
+        extra_coords.append((time_coord, len(extra_coords)))
     if height is not None:
         shape += (height,)
         height_coord = DimCoord(np.arange(height), standard_name="height", units="meters")
         height_coord.guess_bounds()
-        extra_coords.append((height_coord, len(extra_coords) + 1))
+        extra_coords.append((height_coord, len(extra_coords)))
+
+    shape += mesh_coord_x.points.shape
+
     data = np.zeros(shape)
     cube = Cube(data)
-    cube.add_aux_coord(mesh_coord_x, 0)
-    cube.add_aux_coord(mesh_coord_y, 0)
     for coord, dim in extra_coords:
         cube.add_dim_coord(coord, dim)
+    cube.add_aux_coord(mesh_coord_x, len(extra_coords))
+    cube.add_aux_coord(mesh_coord_y, len(extra_coords))
     # cube has a mesh (cube.mesh)
     return cube
+
+
+def test_extfield():
+    u, v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
+    efa = mint.ExtensiveFieldAdaptor()
+    _set_vector_field_from_streamfct(u, v)
+    flags = (1, 1, 1) # cubed-sphere
+    adaptor = mint.IrisToMintMeshAdaptor(u.mesh, flags=flags)
+    grid = adaptor.get_grid()
+    num_cells = grid.getNumberOfCells()
+    num_edges = grid.getNumberOfEdges()
+    efa.setGrid(grid)
+    ef = np.empty((num_edges,), np.float64)
+    efa.fromVectorField(u.data, v.data, data=ef, placement=mint.UNIQUE_EDGE_DATA, fs=mint.FUNC_SPACE_W2)
+
+
+def test_cs2lonlat_zt():
+
+    tgt_u = _gridlike_mesh_cube(100, 50, height=2, time=2)
+    tgt_v = _gridlike_mesh_cube(100, 50, height=2, time=2)
+
+    src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')
+
+    # w2
+    _set_vector_field_from_streamfct(src_u, src_v)
+    # mint.saveMeshVTK(src_u.mesh, 'cs128_w2_mesh.vtk')
+    # mint.saveVectorFieldVTK(src_u, src_v, 'cs128_w2_vectors.vtk')
+
+    # grid options for a cubed-sphere grid
+    src_flags = (1, 1, 1)
+    # grid options for a lon-lat grid
+    tgt_flags = (0, 0, 1)
+    rg = mint.IrisMintRegridder(src_u.mesh, tgt_u.mesh, \
+                                src_flags=src_flags, tgt_flags=tgt_flags,
+                                debug=3)
+
+    _set_vector_field_from_streamfct(tgt_u, tgt_v)
+
+    result_u, result_v = rg.regrid_vector_cubes(src_u, src_v, fs=mint.FUNC_SPACE_W2)
+
+    mint.saveMeshVTK(result_u.mesh, 'lonlat_mesh.vtk')
+    time_idx = 1
+    height_idx = 0
+    mint.saveVectorFieldVTK(result_u, result_v, f'lonlat_w2_vectors_t{time_idx}_z{height_idx}.vtk',
+        extra_inds=(time_idx, height_idx))
+
+    # check
+    error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
+    assert error < 0.01
+
 
 
 def test_cs2lonlat():
@@ -303,7 +373,6 @@ def test_cubedsphere8_to_cubedsphere2():
     assert error < 0.06
 
 
-# turned test off as we have not yet implemented W1
 def test_cubedsphere8_to_cubedsphere8_w1():
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / Path('cs8_wind.nc'))
