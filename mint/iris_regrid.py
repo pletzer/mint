@@ -1,7 +1,7 @@
 import copy
 
 from iris.cube import Cube
-from iris.coords import DimCoord
+from iris.coords import DimCoord, AuxCoord
 import numpy as np
 
 import mint
@@ -99,6 +99,16 @@ class IrisMintRegridder:
         :param fs: function space, either 1 (for W1/edge) or 2 (for W2/face)
         :returns (u, v) cubes
         """
+
+        if not isinstance(u_cube.coords()[-1], AuxCoord) or not isinstance(v_cube.coords()[-1], AuxCoord):
+            msg = f'Last coordinate must be of type AuxCoord'
+            raise ValueError(msg)
+
+        if np.any(u_cube.shape != v_cube.shape):
+            msg = f'Source u,v cubes must have the same dimensions'
+            raise ValueError(msg)
+
+
         # Dimensions other than horizontal
         dims = u_cube.shape[:-1] # last dimension is assumed to be the number of edges
 
@@ -128,15 +138,14 @@ class IrisMintRegridder:
         out_u_cube = Cube(tgt_u_data)
         out_v_cube = Cube(tgt_v_data)
 
-        n = len(u_cube.shape)
-        nm1 = n - 1
-
         i = 0
         for coord in u_cube.coords(dim_coords=True):
             out_u_cube.add_dim_coord(coord, i)
             out_v_cube.add_dim_coord(coord, i)
             i += 1
 
+        n = len(u_cube.shape)
+        nm1 = n - 1
         out_u_cube.add_aux_coord(tgt_mesh_coord_x, nm1)
         out_u_cube.add_aux_coord(tgt_mesh_coord_y, nm1)
 
