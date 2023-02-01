@@ -28,7 +28,7 @@ env:
 linux_task:
   auto_cancellation: true
   matrix:
-      PY_VER: "3.11"
+      PY_VER: "3.10"
       VTK_VER: "9.2"
     env:
       PY_VER: "3.9"
