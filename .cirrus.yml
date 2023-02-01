@@ -86,7 +86,7 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.10"
+      PY_VER: "3.11"
       VTK_VER: "9.2"
   name: "OSX: py${PY_VER}"
   macos_instance:
