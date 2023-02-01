@@ -10,7 +10,7 @@
 # Global defaults.
 #
 container:
-  image: python:3.10
+  image: python:3.11
 
 env:
   # Maximum cache period (in weeks) before forcing a new cache upload.
@@ -28,11 +28,10 @@ env:
 linux_task:
   auto_cancellation: true
   matrix:
-    env:
-      PY_VER: "3.9"
+      PY_VER: "3.10"
       VTK_VER: "9.2"
     env:
-      PY_VER: "3.10"
+      PY_VER: "3.11"
       VTK_VER: "9.2"
   name: "Linux: py${PY_VER}"
   container:
@@ -86,7 +85,7 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.10"
+      PY_VER: "3.11"
       VTK_VER: "9.2"
   name: "OSX: py${PY_VER}"
   macos_instance:
@@ -138,7 +137,7 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.10"
+      PY_VER: "3.11"
       VTK_VER: "9.2"
   name: "Windows: py$PY_VER"
   windows_container:
