@@ -1,0 +1,23 @@
+name: mint-dev
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+
+# Setup dependencies.
+  - cmake
+  - cython
+  - setuptools
+  - tbb-devel
+  - numpy
+  - pip
+
+# Core dependencies.
+  - scitools-iris
+  - vtk
+
+# Test dependencies.
+  - pytest
+  - netcdf4
