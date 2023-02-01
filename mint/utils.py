@@ -12,18 +12,17 @@ def computeCartesianVectors(lon, lat, u, v):
     :param u: eastward component
     :param v: northward component
     """
-    n = lon.shape[0]
-    vxyz = numpy.empty((n, 3), numpy.float64)
+    vxyz = numpy.empty(list(u.shape) + [3,], numpy.float64)
     cosLon = numpy.cos(lon * DEG2RAD)
     sinLon = numpy.sin(lon * DEG2RAD)
     cosLat = numpy.cos(lat * DEG2RAD)
     sinLat = numpy.sin(lat * DEG2RAD)
     # vx
-    vxyz[:, 0] = - u*sinLon - v*sinLat*cosLon
+    vxyz[..., 0] = - u*sinLon - v*sinLat*cosLon
     # vy
-    vxyz[:, 1] = + u*cosLon - v*sinLat*sinLon
+    vxyz[..., 1] = + u*cosLon - v*sinLat*sinLon
     # vz
-    vxyz[:, 2] = v*cosLat
+    vxyz[..., 2] = v*cosLat
 
     return vxyz
 
