@@ -133,6 +133,9 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->pointData = NULL;
     (*self)->points = NULL;
     (*self)->grid = NULL;
+    (*self)->pointDataCart = NULL;
+    (*self)->pointsCart = NULL;
+    (*self)->gridCart = NULL;
     (*self)->reader = NULL;
     (*self)->doubleArrays.resize(0);
     (*self)->numEdges = 0;
@@ -162,6 +165,10 @@ int mnt_grid_del(Grid_t** self) {
         if ((*self)->points) (*self)->points->Delete();
         if ((*self)->grid) (*self)->grid->Delete();
     }
+    if ((*self)->pointDataCart) (*self)->pointDataCart->Delete();
+    if ((*self)->pointsCart) (*self)->pointsCart->Delete();
+    if ((*self)->gridCart) (*self)->gridCart->Delete();
+
 
     if ((*self)->ownsVerts) {
         delete[] (*self)->verts;

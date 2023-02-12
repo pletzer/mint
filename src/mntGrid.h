@@ -26,6 +26,10 @@ struct Grid_t {
     vtkPoints* points;
     vtkUnstructuredGrid* grid;
 
+    vtkDoubleArray* pointDataCart;
+    vtkPoints* pointsCart;    
+    vtkUnstructuredGrid* gridCart;
+
     vtkUnstructuredGridReader* reader;
 
     // stores the fields (MNT_NUM_EDGES_PER_QUAD * numFaces)
