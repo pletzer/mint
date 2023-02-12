@@ -179,6 +179,98 @@ int mnt_grid_del(Grid_t** self) {
     return 0;
 }
 
+
+LIBRARY_API
+int mnt_grid_buildCartesian(Grid_t** self, vtkIdType ncells) {
+
+    std::string msg;
+
+    (*self)->pointDataCart = vtkDoubleArray::New();
+    (*self)->pointsCart = vtkPoints::New();
+    (*self)->gridCart = vtkUnstructuredGrid::New();
+
+   if (!(*self)->verts) {
+        msg = "must call setPointsPtr before invoking build";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 2;
+    }
+
+    double deg2rad = 1.0;
+    if ((*self)->degrees) {
+        deg2rad = M_PI / 180.0;
+    }
+
+    int save = 1;
+    int nVertsPerCell = 8; // hex 
+    int npoints = nVertsPerCell * ncells;
+    (*self)->pointDataCart->SetNumberOfTuples(2*npoints); // hex
+    (*self)->pointDataCart->SetNumberOfComponents(3);
+
+    const double smallRadius = 0.1;
+    const double bigRadius = 2.0;
+    Vec3 xyz;
+    std::size_t k = 0;
+    for (auto i = 0; i < ncells; ++i) {
+
+        // lower level
+        for (int j = 0; j < MNT_NUM_VERTS_PER_QUAD; ++j) {
+            
+            double lam = (*self)->verts[k] * deg2rad;
+            double the = (*self)->verts[k] * deg2rad;
+
+            xyz[0] = smallRadius * cos(the)*cos(lam);
+            xyz[1] = smallRadius * cos(the)*sin(lam);
+            xyz[2] = smallRadius * sin(the);
+
+            (*self)->pointDataCart->SetTuple(k, &xyz[0]);
+
+            k++;
+        }
+
+        // higher level
+        for (int j = 0; j < MNT_NUM_VERTS_PER_QUAD; ++j) {
+
+            double lam = (*self)->verts[k] * deg2rad;
+            double the = (*self)->verts[k] * deg2rad;
+
+            xyz[0] = bigRadius * cos(the)*cos(lam);
+            xyz[1] = bigRadius * cos(the)*sin(lam);
+            xyz[2] = bigRadius * sin(the);
+
+            (*self)->pointDataCart->SetTuple(k, &xyz[0]);
+
+            k++;
+        }
+
+    }
+
+    (*self)->pointsCart->SetData((*self)->pointDataCart);
+
+    (*self)->grid->Initialize();
+    (*self)->grid->AllocateExact(ncells, 2*MNT_NUM_VERTS_PER_QUAD); // hex
+
+    int cellType = VTK_HEXAHEDRON;
+
+    // connect
+    vtkIdList* ptIds = vtkIdList::New();
+
+    ptIds->SetNumberOfIds(nVertsPerCell);
+    for (int i = 0; i < ncells; ++i) {
+        for (int j = 0; j < nVertsPerCell; ++j) {
+            ptIds->SetId(j, nVertsPerCell*i + j);
+        }
+        (*self)->grid->InsertNextCell(cellType, ptIds);
+    }
+    (*self)->grid->SetPoints((*self)->points);
+
+    (*self)->grid->Squeeze();
+
+    // clean
+    ptIds->Delete();
+
+    return 0;
+}
+
 LIBRARY_API
 int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtPole, int degrees) {
 

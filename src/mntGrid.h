@@ -125,6 +125,14 @@ int mnt_grid_setPointsPtr(Grid_t** self, double points[]);
 LIBRARY_API
 int mnt_grid_getPointsPtr(Grid_t** self, double** points);
 
+/**
+ * Build the Cartesian grid and connectivity
+ * @param self instance of Grid_t
+ * @param ncells number of cells
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_grid_buildCartesian(Grid_t** self, vtkIdType ncells);
 
 /**
  * Build the grid and connectivity
