@@ -45,36 +45,10 @@ class IrisToMintMeshAdaptor:
         return self.grid
 
 
-
-def _get_dims(cube):
-    # This function may be made more sophisticated to accomodate
-    # data not located on a mesh.
-    dims = [cube.mesh_dim()]
-    return dims
-
-
-def _get_coords(cube):
-    coords = (cube.coord(axis="X"), cube.coord(axis="Y"))
-    return coords
-
-
-# def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
-#     return _DummyMintRegridder(src_coords, tgt_coords, **kwargs)
-def _make_mint_regridder(src_mesh, tgt_mesh, **kwargs):
-    return _MintRegridder(src_mesh, tgt_mesh, **kwargs)
-
-
-def _regrid(data, dims, mint_regridder):
-
-    # TODO: replace dummy operation with actual regridding.
-    #  Actual operation should make use of mint_regridder.
-    new_data = mint_regridder.regrid(data, dims)
-
-    return new_data
-
-
-def _create_cube(data, src_cube, src_dims, tgt_coords, num_tgt_dims):
-    # This function is copied from iris-esmf-regrid.
+def createIrisCube(data, src_cube, src_dims, tgt_coords, num_tgt_dims):
+    """
+    Create an Iris cube.
+    """
 
     new_cube = Cube(data)
 
@@ -117,41 +91,3 @@ def _create_cube(data, src_cube, src_dims, tgt_coords, num_tgt_dims):
     return new_cube
 
 
-def _prepare(src, tgt, **kwargs):
-    src_coords = _get_coords(src)
-    tgt_coords = _get_coords(tgt)
-    mint_regridder = _make_mint_regridder(src_coords, tgt_coords, **kwargs)
-    regrid_info = [tgt_coords, mint_regridder]
-    return regrid_info
-
-
-def _perform(cube, regrid_info):
-    tgt_coords, mint_regridder = regrid_info
-    dims = _get_dims(cube)
-    data = _regrid(cube.data, dims, mint_regridder)
-    # TODO: properly handle the dimensionality of the target
-    num_tgt_dims = 1
-    return _create_cube(data, cube, dims, tgt_coords, num_tgt_dims)
-
-
-class _MINTRegridder:
-    def __init__(self, src, tgt, **kwargs):
-        """
-        src and tgt are cubes
-        """
-        self.regrid_info = _prepare(src, tgt, **kwargs)
-
-    def __call__(self, src):
-        """
-        src is a cube
-        returns a cube
-        """
-        return _perform(src, self.regrid_info)
-
-
-class MINTScheme:
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-
-    def regridder(self, src, tgt):
-        return _MINTRegridder(src, tgt, **self.kwargs)
