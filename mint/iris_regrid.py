@@ -6,55 +6,6 @@ import numpy as np
 
 import mint
 
-class _DummyMintRegridder:
-
-    def __init__(self, src_coords, tgt_coords, **kwargs):
-        self.shape = tgt_coords[0].shape
-
-    def regrid(self, data, dims, **kwargs):
-        new_shape = list(data.shape)
-        for dim, size in zip(dims, self.shape):
-            new_shape[dim] = size
-        return np.zeros(self.shape)
-
-
-class IrisToMintMeshAdaptor:
-
-    def __init__(self, iris_mesh, flags):
-        """
-        Create a MINT grid from an Iris mesh
-        :param iris_mesh: Iris mesh object
-        :param flags: flags to pass to the grid. Example (0, 0, 1) for a regular grid 
-                      and (1, 1, 1) for a cubed-sphere grid. 
-        """
-
-        # vertex points
-        x = iris_mesh.node_coords.node_x.points
-        y = iris_mesh.node_coords.node_y.points
-        num_points = x.shape[0]
-
-        # needs to be 3d
-        self.points = np.zeros((num_points, 3), np.float64)
-        self.points[:, 0] = x
-        self.points[:, 1] = y
-
-        # zero-based connecticvity
-        self.face2nodes = np.array(iris_mesh.face_node_connectivity.indices_by_location() - \
-                                   iris_mesh.face_node_connectivity.start_index, np.uint64)
-        self.edge2nodes = np.array(iris_mesh.edge_node_connectivity.indices_by_location() - \
-                                   iris_mesh.edge_node_connectivity.start_index, np.uint64)
-        
-        self.grid = mint.Grid()
-        self.grid.setFlags(flags[0], flags[1], flags[2])
-        self.grid.loadFromUgrid2DData(self.points, self.face2nodes, self.edge2nodes)
-
-        self.num_faces = self.face2nodes.shape[0]
-        self.num_edges = self.edge2nodes.shape[0]
-        self.num_points = num_points
-
-    def get_grid(self):
-        return self.grid
-
 
 class IrisMintRegridder:
 
@@ -71,8 +22,8 @@ class IrisMintRegridder:
 
         self.tgt_mesh = tgt_mesh
 
-        self.src = IrisToMintMeshAdaptor(src_mesh, flags=src_flags)
-        self.tgt = IrisToMintMeshAdaptor(tgt_mesh, flags=tgt_flags)
+        self.src = mint.IrisToMintMeshAdaptor(src_mesh, flags=src_flags)
+        self.tgt = mint.IrisToMintMeshAdaptor(tgt_mesh, flags=tgt_flags)
 
         self.src_num_edges = self.src.get_grid().getNumberOfEdges()
         self.tgt_num_edges = self.tgt.get_grid().getNumberOfEdges()
@@ -214,8 +165,6 @@ def _get_coords(cube):
     return coords
 
 
-# def _make_mint_regridder(src_coords, tgt_coords, **kwargs):
-#     return _DummyMintRegridder(src_coords, tgt_coords, **kwargs)
 def _make_mint_regridder(src_mesh, tgt_mesh, **kwargs):
     return _MintRegridder(src_mesh, tgt_mesh, **kwargs)
 
