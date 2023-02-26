@@ -1,23 +1,14 @@
-import iris
-from iris.coords import AuxCoord, DimCoord
-from iris.cube import Cube
-from iris.experimental.ugrid import Connectivity, Mesh, PARSE_UGRID_ON_LOAD
 import numpy as np
-from numpy import ma
 from pathlib import Path
-from mint.iris_regrid import MINTScheme
 import mint
 from iris_utils import _u_v_cubes_from_ugrid_file, \
                        _set_vector_field_from_streamfct, \
                        _set_vector_field_from_potentialfct, \
                        _set_extensive_field_from_streamfct, \
-                       _gridlike_mesh, _gridlike_mesh_cube
-
-
+                       _gridlike_mesh_cube
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 DEG2RAD = np.pi / 180.
-
 
 def test_extfield():
     u, v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
@@ -31,7 +22,6 @@ def test_extfield():
     efa.setGrid(grid)
     ef = np.empty((num_edges,), np.float64)
     efa.fromVectorField(u.data, v.data, data=ef, placement=mint.UNIQUE_EDGE_DATA, fs=mint.FUNC_SPACE_W2)
-
 
 def test_cs2lonlat_zt():
 
@@ -67,8 +57,6 @@ def test_cs2lonlat_zt():
     error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
     assert error < 0.01
 
-
-
 def test_cs2lonlat():
 
     tgt_u = _gridlike_mesh_cube(100, 50)
@@ -99,7 +87,6 @@ def test_cs2lonlat():
     # check
     error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
     assert error < 0.01
-
 
 def test_lonlat2cs():
 
@@ -132,13 +119,11 @@ def test_lonlat2cs():
     error = 0.5*( np.mean( np.fabs(tgt_u.data - result_u.data) ) + np.mean( np.fabs(tgt_v.data - result_v.data) ) )
     assert error < 0.01
 
-
 def test_read_ugrid_file_w1():
     u_cube, v_cube = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
     _set_vector_field_from_potentialfct(u_cube, v_cube)
     mint.saveMeshVTK(u_cube.mesh, 'cs8_w1_mesh.vtk')
     mint.saveVectorFieldVTK(u_cube, v_cube, 'cs8_w1_vectors.vtk')
-
 
 def test_cubedsphere8_to_cubedsphere2():
 
@@ -162,7 +147,6 @@ def test_cubedsphere8_to_cubedsphere2():
                  np.fabs(result_v.data - tgt_v.data).mean())
     print(f'test_cubedsphere8_to_cubedsphere2 = {error}')
     assert error < 0.06
-
 
 def test_cubedsphere8_to_cubedsphere8_w1():
 
@@ -210,7 +194,6 @@ def test_cubedsphere8_to_cubedsphere8_w2():
     print(f'test_cubedsphere8_to_cubedsphere8_w2 = {error}')
     assert error < 0.01
 
-
 def test_lonlat_to_cubedsphere():
 
     src_u = _gridlike_mesh_cube(9, 5)
@@ -237,14 +220,12 @@ def test_lonlat_to_cubedsphere():
 
     assert error < 0.07
 
-
 def test_cube_mesh():
 
     cube = _gridlike_mesh_cube(4, 5)
     assert hasattr(cube, 'shape')
     assert hasattr(cube, 'data')
     assert hasattr(cube, 'mesh')
-
 
 def test_mesh_to_mesh_basic():
 
@@ -259,7 +240,6 @@ def test_mesh_to_mesh_basic():
 
     # extensive field regridding
     out_cube = rg.regrid_extensive_cube(src)
-
 
 def test_streamfunction_extensive_field():
 
@@ -284,7 +264,6 @@ def test_streamfunction_extensive_field():
     error = np.mean(np.fabs(result.data - tgt.data))
     print(f'extensive field regridding error = {error}')
     assert error < 0.005
-
 
 def test_streamfunction_vector_field():
 
@@ -337,4 +316,3 @@ def test_streamfunction_vector_field():
     error /= (2 * tgt_num_edges)
     print(f'error = {error}')
     assert error < 0.04
-

@@ -1,4 +1,3 @@
-from pathlib import Path
 import numpy as np
 import iris
 from iris.coords import AuxCoord, DimCoord
@@ -48,7 +47,6 @@ def _set_vector_field_from_potentialfct(u_cube, v_cube):
         u_cube.data[:] = - np.sin(lone*DEG2RAD)
         v_cube.data[:] = - np.sin(late*DEG2RAD) * np.sin(lone*DEG2RAD)
 
-
 def _set_vector_field_from_streamfct(u_cube, v_cube):
     """
     Set vector field values from streamfunction cos(y)*cos(x)
@@ -67,7 +65,6 @@ def _set_vector_field_from_streamfct(u_cube, v_cube):
         u_cube.data[slab] = - np.sin(late*DEG2RAD) * np.cos(lone*DEG2RAD)
         v_cube.data[slab] = np.sin(lone*DEG2RAD)
         mai.next()
-
 
 
 def _u_v_cubes_from_ugrid_file(filename, 
@@ -182,7 +179,6 @@ def _gridlike_mesh(n_lons, n_lats):
     mint.saveMeshVTK(mesh, 'example_mesh.vtk')
 
     return mesh
-
 
 def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None):
     """

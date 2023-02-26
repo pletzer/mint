@@ -1,15 +1,7 @@
-import iris
-from iris.coords import AuxCoord, DimCoord
-from iris.cube import Cube
-from iris.experimental.ugrid import Connectivity, Mesh, PARSE_UGRID_ON_LOAD
 import numpy as np
-from numpy import ma
 from pathlib import Path
-
-from mint.iris_regrid import MINTScheme
 import mint
 from iris_utils import _u_v_cubes_from_ugrid_file, _set_vector_field_from_streamfct
-
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 

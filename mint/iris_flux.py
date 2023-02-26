@@ -1,5 +1,4 @@
-from iris.cube import Cube
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import AuxCoord
 import numpy as np
 import mint
 
@@ -122,4 +121,3 @@ class IrisMintFlux:
             mai.next()
 
         return res
-
