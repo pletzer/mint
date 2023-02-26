@@ -988,6 +988,9 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     ier = mnt_vectorinterp_del(&vp);
     if (ier != 0) numFailures++;
 
+    ier = mnt_extensivefieldadaptor_del(&src_efa);
+    if (ier != 0) numFailures++;
+
     return numFailures;
 }
 

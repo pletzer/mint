@@ -31,7 +31,7 @@ FUNC_SPACE_W2 = 2
 
 __all__ = ('regrid_edges', 'grid', 'polyline_integral',
            'vector_interp', 'multi_array_iter', 'message_handler', 'utils',
-           'iris_regrid', 'iris_utils',
+           'iris_regrid', 'iris_utils', 'iris_flux',
            MINTLIB, CELL_BY_CELL_DATA, UNIQUE_EDGE_DATA,
            FUNC_SPACE_W1, FUNC_SPACE_W2,
            NUM_EDGES_PER_QUAD, NUM_VERTS_PER_QUAD, NUM_VERTS_PER_EDGE)
@@ -45,5 +45,6 @@ from .multi_array_iter import MultiArrayIter
 from .extensive_field_adaptor import ExtensiveFieldAdaptor
 from .iris_utils import IrisToMintMeshAdaptor, createIrisCube
 from .iris_regrid import IrisMintRegridder
+from .iris_flux import IrisMintFlux
 from .utils import getIntegralsInLonLat, getIntegralsInXYZ, saveVectorFieldVTK, saveMeshVTK, computeEdgeXYZ, computeLonLatFromXYZ
 
