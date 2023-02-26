@@ -228,20 +228,6 @@ def _gridlike_mesh_cube(n_lons, n_lats, location="edge", time=None, height=None)
     return cube
 
 
-def test_extfield():
-    u, v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs8_wind.nc')
-    efa = mint.ExtensiveFieldAdaptor()
-    _set_vector_field_from_streamfct(u, v)
-    flags = (1, 1, 1) # cubed-sphere
-    adaptor = mint.IrisToMintMeshAdaptor(u.mesh, flags=flags)
-    grid = adaptor.get_grid()
-    num_cells = grid.getNumberOfCells()
-    num_edges = grid.getNumberOfEdges()
-    efa.setGrid(grid)
-    ef = np.empty((num_edges,), np.float64)
-    efa.fromVectorField(u.data, v.data, data=ef, placement=mint.UNIQUE_EDGE_DATA, fs=mint.FUNC_SPACE_W2)
-
-
 def test_cs_zt():    
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')

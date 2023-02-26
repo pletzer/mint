@@ -13,6 +13,7 @@ class IrisMintFlux:
         :param src_mesh: source iris mesh with coordinates and connectivity
         :param src_flags: flags to pass to the source grid. Example (0, 0, 1) for a regular grid 
                       and (1, 1, 1) for a cubed-sphere grid.
+        :param kwargs: additional arguments, eg numCellsPerBucket, periodX, enableFolding...
         :param tgt_line: array of points [(x0,y0), (x1, y1), ...] where x0, y0 ... are longitude-latitude pairs
         """
 
@@ -30,7 +31,11 @@ class IrisMintFlux:
         self.flux_calc.buildLocator(numCellsPerBucket, periodX, enableFolding)
 
         # compute the interpolation weights
-        self.flux_calc.computeWeights(tgt_line)
+        if hasattr(tgt_line, 'shape') and len(tgt_line.shape) == 2 and tgt_line.shape[1] == 3:
+            xyz = tgt_line
+        else:
+            xyz = np.array([(xy[0], xy[1], 0.) for xy in tgt_line])
+        self.flux_calc.computeWeights(xyz)
 
 
     def evaluate_from_vector(u_cube, v_cube, fs):
