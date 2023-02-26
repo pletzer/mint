@@ -240,13 +240,10 @@ def test_cs_zt():
 
     xy = [(0., 0.), (360., 0.), (160., 70.), (0., 0.)]
     flx_calc = mint.IrisMintFlux(src_u.mesh, src_flags=src_flags, tgt_line=xy)
-    print(src_u)
-    print(src_u.coords())
-    print(src_v.coords())
     flux = flx_calc.evaluate_from_vector(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
     # check
-    assert np.all(np.fabs(flux - 0.0) < 0.01)
+    assert np.all(np.fabs(flux - 0.0) < 1.e-10)
 
 
 
