@@ -38,7 +38,7 @@ class IrisMintFlux:
         self.flux_calc.computeWeights(xyz)
 
 
-    def evaluate_from_vector(u_cube, v_cube, fs):
+    def evaluate_from_vector(self, u_cube, v_cube, fs):
 
         """
         Evaluate the flux integral from vector components.
@@ -82,7 +82,7 @@ class IrisMintFlux:
             src_slab = inds + (slice(0, self.src_num_edges),)
 
             # Evaluate the flux.
-            res[ind] = self.flux_calc.vectorGetIntegral(u_cube.data[src_slab], v_cube.data[src_slab], \
+            res[inds] = self.flux_calc.vectorGetIntegral(u_cube.data[src_slab], v_cube.data[src_slab], \
                                                         fs=fs)
                         
             mai.next()
@@ -117,7 +117,7 @@ class IrisMintFlux:
             src_slab = inds + (slice(0, self.src_num_edges),)
 
             # Evaluate the flux.
-            res[ind] = self.flux_calc.getIntegral(cube.data[src_slab],\
+            res[inds] = self.flux_calc.getIntegral(cube.data[src_slab],\
                                                   placement=mint.UNIQUE_EDGE_DATA)
                         
             mai.next()
