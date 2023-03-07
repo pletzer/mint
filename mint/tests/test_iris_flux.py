@@ -7,7 +7,10 @@ DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 def test_cs_zt():
 
-    # close contour check  
+    #
+    # close contour check
+    #
+    
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')
 
     # w2
@@ -26,7 +29,9 @@ def test_cs_zt():
 
 def test_cs_zt2():
 
-    # open contour check    
+    #
+    # open contour check
+    #
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')
 
@@ -51,7 +56,9 @@ def test_cs_zt2():
 
 def test_cs_zt3():
 
-    # same as above but using more points, should give the same flux  
+    #
+    # same as above but using more points, should give the same flux
+    #
 
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')
 
