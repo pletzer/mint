@@ -104,6 +104,8 @@ class IrisMintFlux:
             msg = f'Last coordinate must be of type AuxCoord'
             raise ValueError(msg)
 
+        assert fs in _FS_TYPES, f'"{fs}" is not a valid function space'
+
         # Dimensions other than horizontal.
         dims = cube.shape[:-1] # last dimension is assumed to be the number of edges
 
