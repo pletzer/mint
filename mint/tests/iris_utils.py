@@ -77,8 +77,6 @@ def _u_v_cubes_from_ugrid_file(filename,
     :param v_std_name: standard name for the meridional component of the vector field
     :returns (u_cube, v_cube)
     """
-    u_std_name = "eastward_wind_at_cell_faces"
-    v_std_name = "eastward_wind_at_cell_faces"
     with PARSE_UGRID_ON_LOAD.context():
         u_cube = iris.load_cube(filename, u_std_name)
         v_cube = iris.load_cube(filename, v_std_name)
