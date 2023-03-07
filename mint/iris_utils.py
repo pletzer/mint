@@ -10,7 +10,7 @@ import mint
 
 class IrisToMintMeshAdaptor:
 
-    def __init__(self, iris_mesh: Maesh, flags: tuple):
+    def __init__(self, iris_mesh: Mesh, flags: tuple):
         """
         Create a MINT grid from an Iris mesh
         :param iris_mesh: Iris mesh object
