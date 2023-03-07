@@ -46,7 +46,7 @@ class IrisToMintMeshAdaptor:
         return self.grid
 
 
-def createIrisCube(data: np.ndarray, src_cube: src_cube, src_dims: tuple, tgt_coords, num_tgt_dims):
+def createIrisCube(data: np.ndarray, src_cube: Cube, src_dims: tuple, tgt_coords, num_tgt_dims):
     """
     Create an Iris cube.
     """
