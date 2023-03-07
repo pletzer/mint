@@ -1,13 +1,16 @@
 from iris.cube import Cube
 from iris.coords import AuxCoord
+from iris.experimental.ugrid.mesh import Mesh
 import numpy as np
-
 import mint
+
+_FS_TYPES = (mint.FUNC_SPACE_W1, mint.FUNC_SPACE_W2)
 
 
 class IrisMintRegridder:
 
-    def __init__(self, src_mesh, tgt_mesh, src_flags, tgt_flags, **kwargs):
+    def __init__(self, src_mesh: Mesh, tgt_mesh: Mesh,
+                 src_flags: tuple, tgt_flags: tuple, **kwargs):
         """
         Constructor.
         :param src_mesh: source iris mesh with coordinates and connectivity
@@ -40,7 +43,7 @@ class IrisMintRegridder:
         self.regridder.computeWeights(debug)
 
 
-    def regrid_vector_cubes(self, u_cube, v_cube, fs, **kwargs):
+    def regrid_vector_cubes(self, u_cube: Cube, v_cube: Cube, fs, **kwargs):
         """
         Regrid a vector field
         :param u_cube: eastward component of the vector fields defined on horizontal edges
@@ -57,6 +60,7 @@ class IrisMintRegridder:
             msg = f'Source u,v cubes must have the same dimensions'
             raise ValueError(msg)
 
+        assert fs in _FS_TYPES, f'"{fs}" is not a valid function space'
 
         # Dimensions other than horizontal
         dims = u_cube.shape[:-1] # last dimension is assumed to be the number of edges
@@ -101,7 +105,7 @@ class IrisMintRegridder:
         return (out_u_cube, out_v_cube)
 
 
-    def regrid_extensive_cube(self, cube, **kwargs):
+    def regrid_extensive_cube(self, cube: Cube, **kwargs):
         """
         Regrid the extensive cube data
         :param cube: source cube on Mesh, of size of data is ..., num edges
@@ -119,7 +123,7 @@ class IrisMintRegridder:
         return out_cube
 
 
-    def regrid_extensive_data(self, data, **kwargs):
+    def regrid_extensive_data(self, data: np.ndarray, **kwargs):
         """
         Regrid the extensive data
         :param data: source data of size ..., num edges

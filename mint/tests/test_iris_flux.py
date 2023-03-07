@@ -13,6 +13,9 @@ def test_cs_zt():
     
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')
 
+    # checking that src_u has time and elev, in addition to num_edge dimension
+    assert len(src_u.shape) == 3
+
     # w2
     _set_vector_field_from_streamfct(src_u, src_v)
 

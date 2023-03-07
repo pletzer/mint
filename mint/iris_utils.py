@@ -2,6 +2,7 @@ import copy
 
 from iris.cube import Cube
 from iris.coords import DimCoord, AuxCoord
+from iris.experimental.ugrid.mesh import Mesh
 import numpy as np
 
 import mint
@@ -9,7 +10,7 @@ import mint
 
 class IrisToMintMeshAdaptor:
 
-    def __init__(self, iris_mesh, flags):
+    def __init__(self, iris_mesh: Mesh, flags: tuple):
         """
         Create a MINT grid from an Iris mesh
         :param iris_mesh: Iris mesh object
@@ -45,7 +46,7 @@ class IrisToMintMeshAdaptor:
         return self.grid
 
 
-def createIrisCube(data, src_cube, src_dims, tgt_coords, num_tgt_dims):
+def createIrisCube(data: np.ndarray, src_cube: Cube, src_dims: tuple, tgt_coords, num_tgt_dims):
     """
     Create an Iris cube.
     """
