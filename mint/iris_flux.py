@@ -1,11 +1,15 @@
 from iris.coords import AuxCoord
+from iris.cube import Cube
+from iris.experimental.ugrid.mesh import Mesh
 import numpy as np
 import mint
+
+_FS_TYPES = (mint.FUNC_SPACE_W1, mint.FUNC_SPACE_W2)
 
 
 class IrisMintFlux:
 
-    def __init__(self, src_mesh, src_flags, tgt_line, **kwargs):
+    def __init__(self, src_mesh: Mesh, src_flags: tuple, tgt_line: list, **kwargs):
         """
         Constructor.
         :param src_mesh: source iris mesh with coordinates and connectivity
@@ -36,7 +40,7 @@ class IrisMintFlux:
         self.flux_calc.computeWeights(xyz)
 
 
-    def evaluate_from_vector(self, u_cube, v_cube, fs):
+    def evaluate_from_vector(self, u_cube: Cube, v_cube: Cube, fs) -> np.ndarray:
 
         """
         Evaluate the flux integral from vector components.
@@ -63,6 +67,7 @@ class IrisMintFlux:
             msg = f'Source u,v cubes must have the same dimensions'
             raise ValueError(msg)
 
+        assert fs in _FS_TYPES, f'"{fs}" is not a valid function space'
 
         # Dimensions other than horizontal
         dims = u_cube.shape[:-1] # last dimension is assumed to be the number of edges
@@ -88,10 +93,10 @@ class IrisMintFlux:
         return res
 
 
-    def evaluate_from_extensive_cube(self, cube, **kwargs):
+    def evaluate_from_extensive_cube(self, cube: Cube, **kwargs) -> np.ndarray:
         """
         Evaluate flux from extensive cube data.
-        :param cube: source cube on Mesh, of size of data is ..., num edges
+        :param cube: source cube on Mesh, size of data is ..., num edges
         :returns flux array
         """
 
