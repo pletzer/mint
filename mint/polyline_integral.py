@@ -121,3 +121,23 @@ class PolylineIntegral(object):
         if ier:
             error_handler(FILE, 'getIntegral', ier)
         return res.value
+
+
+    def vectorGetIntegral(self, u, v, fs):
+        """
+        Get the flux integral over the polyline, given an edge centred vector field.
+
+        :param u: eastward component of the vector field, size num edges
+        :param v: northward component of the vector field, size num edges
+        :param fs: function space, either FUNC_SPACE_W1 or FUNC_SPACE_W2
+
+        :returns the line/flux integral
+        """
+        MINTLIB.mnt_polylineintegral_vectorGetIntegral.argtypes = [POINTER(c_void_p),
+                                                                   DOUBLE_ARRAY_PTR, DOUBLE_ARRAY_PTR, c_int,
+                                                                   POINTER(c_double)]
+        res = c_double()
+        ier = MINTLIB.mnt_polylineintegral_vectorGetIntegral(self.obj, u, v, fs, byref(res))
+        if ier:
+            error_handler(FILE, 'vectorGetIntegral', ier)
+        return res.value

@@ -103,5 +103,17 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self,
                                      const double data[], int placement,
                                      double* result);
 
+/** 
+ * Get the integral of the field along the line from a vector field
+ * @param self instance of the polyline integral object
+ * @param u eastward velocity on edges, size is num edges
+ * @param v northward velocity on edges, size is num edges
+ * @param fs function space (MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2)
+ * @param result line integral of the field over the polyline
+ * @return error code (0 is OK)
+ */
+LIBRARY_API
+int mnt_polylineintegral_vectorGetIntegral(PolylineIntegral_t** self,
+                                           const double u[], const double v[], int fs, double* result);
 
 #endif // MNT_POLY_LINE_INTEGRAL
