@@ -7,8 +7,7 @@ DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 def test_cs_zt():
 
-    # close controur check  
-
+    # close contour check  
     src_u, src_v = _u_v_cubes_from_ugrid_file(DATA_DIR / 'cs128_wind_zt.nc')
 
     # w2
