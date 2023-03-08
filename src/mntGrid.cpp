@@ -523,7 +523,7 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
 LIBRARY_API
 int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
 
-    // extract the filename and the mesh name from "filename:meshname"
+    // extract the filename and the mesh name from "filename$meshname"
     auto fm = fileMeshNameExtractor(fileAndMeshName);
 
     std::string filename = fm.first;
