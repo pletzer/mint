@@ -11,6 +11,9 @@ DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 SIZET_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp)
 MAX_DIM_NAME = 1024
 
+MINTLIB.nc_open.argtypes = [c_char_p, c_int, POINTER(c_int)]
+MINTLIB.nc_close.argtypes = [c_int]
+
 
 class NcFieldRead(object):
     """
@@ -30,18 +33,19 @@ class NcFieldRead(object):
 
         # open the netcdf file and hang on to the handle
         self.ncid = c_int(-1)
-        self.varid = c_int(-1)
-        ier = MINTLIB.mnt_openNc(fileName, varName,
-                                 byref(self.ncid), byref(self.varid))
-        if ier == 1:
+        ier = MINTLIB.nc_open(str(fileName).encode('utf-8'), 0, byref(self.ncid))
+        if ier != 0:
             # file does not exist?
             logging.error(f'file {fileName} could not be opened')
             return
-        elif ier == 2:
+
+        # get the variable Id
+        self.varid = c_int(-1)
+        ier = MINTLIB.nc_inq_varid(self.ncid.value, varName.encode('utf-8'), byref(self.varid))
+        if ier != 0:
             # variable does not exist?
-            logging.error(
-               f'variable {varName} in file {fileName} was not found')
-            MINTLIB.mnt_closeNc(self.ncid)
+            logging.error(f'could not get the var Id of {varName} in file {fileName}')
+            ier = MINTLIB.nc_close(self.ncid.value)
             return
 
         MINTLIB.mnt_ncfieldread_new.argtypes = [POINTER(c_void_p),
@@ -54,14 +58,15 @@ class NcFieldRead(object):
         """
         Destructor.
         """
-        # close the file
-        if self.ncid.value >= 0:
-            MINTLIB.mnt_closeNc(self.ncid)
-
         MINTLIB.mnt_ncfieldread_del.argtypes = [POINTER(c_void_p)]
         ier = MINTLIB.mnt_ncfieldread_del(self.obj)
         if ier:
             error_handler(FILE, '__del__', ier)
+
+        # close the file
+        if self.ncid.value >= 0:
+            MINTLIB.nc_close(self.ncid.value)
+
 
     def getNumDims(self):
         """
