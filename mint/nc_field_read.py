@@ -1,5 +1,5 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
-                    c_size_t)
+                    c_size_t, create_string_buffer)
 from . import MINTLIB
 from . import error_handler
 import numpy
@@ -91,14 +91,16 @@ class NcFieldRead(object):
         """
         MINTLIB.mnt_ncfieldread_getDimName.argtypes = [POINTER(c_void_p),
                                                        c_int, c_char_p,
-                                                       POINTER(c_size_t)]
+                                                       c_int]
         dimName = b" "*MAX_DIM_NAME
-        dimNameSize = c_size_t()
-        ier = MINTLIB.mnt_ncfieldread_getDimName(self.obj, iAxis,
-                                                 dimName, byref(dimNameSize))
+        dimNameSize = len(dimName)
+        ier = MINTLIB.mnt_ncfieldread_getDimName(self.obj,
+                                                 iAxis,
+                                                 dimName,
+                                                 dimNameSize)
         if ier:
             error_handler(FILE, 'getDimName', ier)
-        return dimName[:dimNameSize.value]
+        return dimName.rstrip(b'\x00')
 
     def getDim(self, iAxis):
         """
@@ -125,7 +127,7 @@ class NcFieldRead(object):
         MINTLIB.mnt_ncfieldread_data.argtypes = [POINTER(c_void_p),
                                                  DOUBLE_ARRAY_PTR]
         if data is None:
-            dims = [self.getDim[iAxis] for iAxis in range(self.getNumDims())]
+            dims = [self.getDim(iAxis) for iAxis in range(self.getNumDims())]
             data = numpy.empty(dims, numpy.float64)
         ier = MINTLIB.mnt_ncfieldread_data(self.obj, data)
         if ier:
