@@ -1,9 +1,27 @@
 import numpy as np
 from pathlib import Path
 import mint
+import iris
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris_utils import _u_v_cubes_from_ugrid_file, _set_vector_field_from_streamfct
 
 DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
+
+
+def xtest_wind():
+
+    #
+    # LFRic field, not yet working
+    #
+
+    filename = DATA_DIR / 'lfric_diag_wind.nc'
+    with PARSE_UGRID_ON_LOAD.context():
+        u = iris.load_cube(filename, 'eastward_wind')
+        v = iris.load_cube(filename, 'northward_wind')
+    flx_calc = mint.IrisMintFlux(src_mesh=u.mesh, src_flags=(1,1,1),
+        tgt_line=[(0., -90.), (0., 90.)])
+    flux = flx_calc.evaluate_from_vector(u, v, fs=mint.FUNC_SPACE_W2)
+
 
 def test_cs_zt():
 

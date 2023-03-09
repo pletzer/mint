@@ -1,5 +1,5 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
-                    c_size_t)
+                    c_size_t, create_string_buffer)
 from . import MINTLIB
 from . import error_handler
 import numpy
@@ -10,6 +10,9 @@ FILE = 'nc_field_read.py'
 DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 SIZET_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp)
 MAX_DIM_NAME = 1024
+
+MINTLIB.nc_open.argtypes = [c_char_p, c_int, POINTER(c_int)]
+MINTLIB.nc_close.argtypes = [c_int]
 
 
 class NcFieldRead(object):
@@ -30,18 +33,19 @@ class NcFieldRead(object):
 
         # open the netcdf file and hang on to the handle
         self.ncid = c_int(-1)
-        self.varid = c_int(-1)
-        ier = MINTLIB.mnt_openNc(fileName, varName,
-                                 byref(self.ncid), byref(self.varid))
-        if ier == 1:
+        ier = MINTLIB.nc_open(str(fileName).encode('utf-8'), 0, byref(self.ncid))
+        if ier != 0:
             # file does not exist?
             logging.error(f'file {fileName} could not be opened')
             return
-        elif ier == 2:
+
+        # get the variable Id
+        self.varid = c_int(-1)
+        ier = MINTLIB.nc_inq_varid(self.ncid.value, varName.encode('utf-8'), byref(self.varid))
+        if ier != 0:
             # variable does not exist?
-            logging.error(
-               f'variable {varName} in file {fileName} was not found')
-            MINTLIB.mnt_closeNc(self.ncid)
+            logging.error(f'could not get the var Id of {varName} in file {fileName}')
+            ier = MINTLIB.nc_close(self.ncid.value)
             return
 
         MINTLIB.mnt_ncfieldread_new.argtypes = [POINTER(c_void_p),
@@ -54,14 +58,15 @@ class NcFieldRead(object):
         """
         Destructor.
         """
-        # close the file
-        if self.ncid.value >= 0:
-            MINTLIB.mnt_closeNc(self.ncid)
-
         MINTLIB.mnt_ncfieldread_del.argtypes = [POINTER(c_void_p)]
         ier = MINTLIB.mnt_ncfieldread_del(self.obj)
         if ier:
             error_handler(FILE, '__del__', ier)
+
+        # close the file
+        if self.ncid.value >= 0:
+            MINTLIB.nc_close(self.ncid.value)
+
 
     def getNumDims(self):
         """
@@ -86,14 +91,16 @@ class NcFieldRead(object):
         """
         MINTLIB.mnt_ncfieldread_getDimName.argtypes = [POINTER(c_void_p),
                                                        c_int, c_char_p,
-                                                       POINTER(c_size_t)]
+                                                       c_int]
         dimName = b" "*MAX_DIM_NAME
-        dimNameSize = c_size_t()
-        ier = MINTLIB.mnt_ncfieldread_getDimName(self.obj, iAxis,
-                                                 dimName, byref(dimNameSize))
+        dimNameSize = len(dimName)
+        ier = MINTLIB.mnt_ncfieldread_getDimName(self.obj,
+                                                 iAxis,
+                                                 dimName,
+                                                 dimNameSize)
         if ier:
             error_handler(FILE, 'getDimName', ier)
-        return dimName[:dimNameSize.value]
+        return dimName.rstrip(b'\x00')
 
     def getDim(self, iAxis):
         """
@@ -120,7 +127,7 @@ class NcFieldRead(object):
         MINTLIB.mnt_ncfieldread_data.argtypes = [POINTER(c_void_p),
                                                  DOUBLE_ARRAY_PTR]
         if data is None:
-            dims = [self.getDim[iAxis] for iAxis in range(self.getNumDims())]
+            dims = [self.getDim(iAxis) for iAxis in range(self.getNumDims())]
             data = numpy.empty(dims, numpy.float64)
         ier = MINTLIB.mnt_ncfieldread_data(self.obj, data)
         if ier:
