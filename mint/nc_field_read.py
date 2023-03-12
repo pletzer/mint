@@ -12,9 +12,6 @@ DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
 SIZET_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp)
 MAX_DIM_NAME = 1024
 
-MINTLIB.nc_open.argtypes = [c_char_p, c_int, POINTER(c_int)]
-MINTLIB.nc_close.argtypes = [c_int]
-
 
 class NcFieldRead(object):
     """
