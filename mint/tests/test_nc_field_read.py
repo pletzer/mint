@@ -10,7 +10,7 @@ def test_1():
     nedges = nf.getDim(iAxis=0)
 
     dimName = nf.getDimName(iAxis=0)
-    assert nf.getDimName(iAxis=0) == b'ncs_edge'
+    assert nf.getDimName(iAxis=0) == 'ncs_edge'
 
     data = nf.data()
     assert abs(data.sum() - 603.5819343269815 < 1.e-10)
