@@ -108,7 +108,7 @@ void testSimple() {
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
-            printf("%4lu     %4lu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
+            printf("%4zu     %4zu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
                     iInterval, i, cellId, ta, tb, xia[0], xia[1], xib[0], xib[1]);
             psi.next();
         }
@@ -166,7 +166,7 @@ void testFold() {
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
-            printf("%4lu     %4lu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
+            printf("%4zu     %4zu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
                     iInterval, i, cellId, ta, tb, xia[0], xia[1], xib[0], xib[1]);
             psi.next();
         }
@@ -227,7 +227,7 @@ void testFold2() {
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
-            printf("%4lu     %4lu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
+            printf("%4zu     %4zu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
                     iInterval, i, cellId, ta, tb, xia[0], xia[1], xib[0], xib[1]);
             psi.next();
         }
@@ -285,7 +285,7 @@ void testFold3() {
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
-            printf("%4lu     %4lu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
+            printf("%4zu     %4zu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
                     iInterval, i, cellId, ta, tb, xia[0], xia[1], xib[0], xib[1]);
             psi.next();
         }
@@ -343,7 +343,7 @@ void testFold4() {
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
-            printf("%4lu     %4lu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
+            printf("%4zu     %4zu     %6lld   %.5f   %.5f  %.5f,%.5f  %.5f,%.5f\n", \
                     iInterval, i, cellId, ta, tb, xia[0], xia[1], xib[0], xib[1]);
             psi.next();
         }

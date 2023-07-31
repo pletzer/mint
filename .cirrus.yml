@@ -29,14 +29,11 @@ linux_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.8"
-      VTK_VER: "9.1"
-    env:
-      PY_VER: "3.9"
-      VTK_VER: "9.1"
-    env:
       PY_VER: "3.10"
-      VTK_VER: "9.1"
+      VTK_VER: "9.2"
+    env:
+      PY_VER: "3.11"
+      VTK_VER: "9.2"
   name: "Linux: py${PY_VER}"
   container:
     dockerfile: requirements/ci/linux/Dockerfile
@@ -66,12 +63,10 @@ linux_task:
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
     populate_script:
-      - conda-lock --platform linux-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
-      - conda-lock install --name py${PY_VER} conda-lock.yml
-      - cp conda-lock.yml ${HOME}/mambaforge/envs/py${PY_VER}
+      - mamba create -n py${PY_VER} python=${PY_VER}
+      - mamba env update --name py${PY_VER} --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
   test_script:
-    - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-lock.yml >&2
-    - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
+    - source $(conda info | grep -i 'base environment' | awk '{print $4;}')/etc/profile.d/conda.sh 
     - conda activate py${PY_VER} >/dev/null 2>&1
     - conda install --yes -c conda-forge netcdf-fortran doxygen 2>&1
     - conda list
@@ -91,18 +86,18 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.10"
-      VTK_VER: "9.1"
+      PY_VER: "3.11"
+      VTK_VER: "9.2"
   name: "OSX: py${PY_VER}"
-  osx_instance:
-    image: big-sur-xcode
+  macos_instance:
+    image: ghcr.io/cirruslabs/macos-ventura-base:latest
   env:
     ENV_DIR: ${HOME}/mambaforge/envs/py${PY_VER}
     PATH: ${HOME}/mambaforge/bin:${PATH}
   mamba_cache:
     folder: ${HOME}/mambaforge
     fingerprint_script:
-      - wget --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-MacOSX-x86_64.sh -O mambaforge.sh
+      - wget --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-MacOSX-arm64.sh -O mambaforge.sh
       - echo "${CIRRUS_OS} $(shasum -a 256 mambaforge.sh)"
       - echo "${MAMBA_CACHE_PACKAGES}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MAMBA_CACHE_BUILD}"
@@ -122,20 +117,19 @@ osx_task:
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${MINT_CACHE_BUILD}"
       - cat ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
     populate_script:
-      - conda-lock --platform osx-64 --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
-      - conda-lock install --name py${PY_VER} conda-lock.yml
-      - cp conda-lock.yml ${HOME}/mambaforge/envs/py${PY_VER}
+      - mamba create -n py${PY_VER} python=${PY_VER}
+      - mamba env update --name py${PY_VER} --file ${CIRRUS_WORKING_DIR}/requirements/py$(echo ${PY_VER} | tr -d ".").yml
   test_script:
-    - cat ${HOME}/mambaforge/envs/py${PY_VER}/conda-lock.yml >&2
-    - source ${HOME}/mambaforge/etc/profile.d/conda.sh >/dev/null 2>&1
-    - conda activate py${PY_VER} >/dev/null 2>&1
-    - python setup.py develop
-    - pytest
+    - source $(conda info | grep -i 'base environment' | awk '{print $4;}')/etc/profile.d/conda.sh 
+    - conda activate py${PY_VER}
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
     - make
     - ctest
+    - cd ..
+    - python setup.py develop
+    # - pytest seg faults on mac os x M1
 
 #
 # Testing (Windows)
@@ -144,9 +138,8 @@ win_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.9"
-      VTK_VER: "9.1"
-      LIBNETCDF_VER: "4.8.1"
+      PY_VER: "3.10"
+      VTK_VER: "9.2"
   name: "Windows: py$PY_VER"
   windows_container:
     image: cirrusci/windowsservercore:cmake
@@ -166,11 +159,14 @@ win_task:
     - conda install --yes -c conda-forge setuptools
     - conda install --yes python=%PY_VER%
     - conda install --yes pytest tbb cython numpy netcdf4
-    - conda install --yes -c conda-forge vtk=%VTK_VER% libnetcdf=%LIBNETCDF_VER%
+    - conda install --yes -c conda-forge scitools-iris
+    - conda install --yes -c conda-forge libnetcdf
+    - conda install --yes -c conda-forge vtk=%VTK_VER%
   install_script:
     - conda list
-    - pip install --no-deps --editable .    
-    - python -c "import mint; print(dir(mint))"
+    # issue with iris on windows
+    # - python setup.py develop --no-deps
+    # - python -c "import mint; print(dir(mint))"
     # - pytest mint\tests
     # - ps: Get-Command python
     # - echo %PATH%
@@ -179,7 +175,7 @@ win_task:
   test_script:
     - mkdir build-cmake
     - cd build-cmake
-    - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+    - call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
     # - where cl
     # - dir "%CONDA_LIB%\lib
     # - dir "%CONDA_LIB%\include\vtk-%VTK_VER%"

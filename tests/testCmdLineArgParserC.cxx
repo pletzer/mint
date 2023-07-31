@@ -29,7 +29,12 @@ int main(int argc, char** argv) {
     const std::size_t string_len = 32; // max argument length
     char* args = new char[argc * string_len];
     for (size_t i = 0; i < (size_t) argc; ++i) {
+#ifdef __STDC_LIB_EXT1__
+        strncpy_s(&args[i * string_len], string_len, argv[i], string_len);
+#else
+        // unsafe
         strncpy(&args[i * string_len], argv[i], string_len);
+#endif
     }
 
     // parse 

@@ -1,8 +1,13 @@
+#define _USE_MATH_DEFINES // M_PI for Visual Studio
+#include <cmath>
+
 #include "mntLogger.h"
 #include <mntRegridEdges.h>
 #include <mntPolysegmentIter.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
+#include <mntExtensiveFieldAdaptor.h>
+#include <mntVectorInterp.h>
 #include <mntWeights.h>
 #include "mntFileMeshNameExtractor.h"
 
@@ -658,7 +663,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
 
                 if (debug == 3) {
                     char buffer[1024];
-                    sprintf(buffer, "%12zu %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
+                    snprintf(buffer, 512, "%12zu %12d    %5.3lf,%5.3lf    %5.3lf,%5.3lf  %12lld    %5.3lf,%5.3lf  %5.3lf,%5.3lf   %5.4lf, %5.4lf   %10.7lf\n", 
                         dstCellId, dstEdgeIndex, 
                         dstEdgePt0[0], dstEdgePt0[1], 
                         dstEdgePt1[0], dstEdgePt1[1], 
@@ -705,7 +710,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
                 double totalT = polySegIter.getIntegratedParamCoord();
                 if (std::abs(totalT - 1.0) > 1.e-10) {
                     char buffer[1024];
-                    sprintf(buffer, "[%d] total t of segment: %lf != 1 (diff=%lg) dst cell %zu points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)",
+                    snprintf(buffer, 512, "[%d] total t of segment: %lf != 1 (diff=%lg) dst cell %zu points (%18.16lf, %18.16lf), (%18.16lf, %18.16lf)",
                        numBadSegments, totalT, totalT - 1.0, dstCellId, dstEdgePt0[0], dstEdgePt0[1], dstEdgePt1[0], dstEdgePt1[1]);
                     mntlog::warn(__FILE__, __func__, __LINE__, buffer);
                     numBadSegments++;
@@ -909,6 +914,86 @@ int mnt_regridedges_apply(RegridEdges_t** self,
         return mnt_regridedges_applyToUniqueEdgeData(self, src_data, dst_data);
     }
 }
+
+
+LIBRARY_API
+int mnt_regridedges_vectorApply(RegridEdges_t** self,
+                                const double src_u[], const double src_v[],
+                                double dst_u[], double dst_v[], int fs) {
+
+    int ier;
+    int numFailures = 0;
+
+    std::size_t src_numCells;
+    ier = mnt_regridedges_getNumSrcCells(self, &src_numCells);
+    if (ier != 0) numFailures++;
+
+    std::size_t dst_numCells;
+    ier = mnt_regridedges_getNumDstCells(self, &dst_numCells);
+    if (ier != 0) numFailures++;
+
+    std::size_t dst_numEdges;
+    ier = mnt_regridedges_getNumDstEdges(self, &dst_numEdges);
+    if (ier != 0) numFailures++;
+
+    // from vector to extensive field
+    ExtensiveFieldAdaptor_t* src_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&src_efa);
+    if (ier != 0) numFailures++;
+
+    ier = mnt_extensivefieldadaptor_setGrid(&src_efa, (*self)->srcGridObj);
+    if (ier != 0) numFailures++;
+
+    // build the vector field, cell by cell
+    Grid_t* src_grd = (*self)->srcGridObj;
+    std::size_t edgeId;
+    int edgeSign;
+    std::vector<double> src_uCellByCell(src_numCells*MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_vCellByCell(src_numCells*MNT_NUM_EDGES_PER_QUAD);
+    for (std::size_t icell = 0; icell < src_numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            ier = mnt_grid_getEdgeId(&src_grd, icell, ie, &edgeId, &edgeSign);
+            if (ier != 0) numFailures++;
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            src_uCellByCell[k] = src_u[edgeId];
+            src_vCellByCell[k] = src_v[edgeId];
+        }
+    }
+
+    // compute the extensive field from the vector field
+    std::vector<double> src_data(src_numCells*MNT_NUM_EDGES_PER_QUAD);
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_uCellByCell[0], &src_vCellByCell[0],
+         &src_data[0], MNT_CELL_BY_CELL_DATA, fs);
+    if (ier != 0) numFailures++;
+
+    // regrid the extensive fields
+    std::vector<double> dst_data(dst_numCells*MNT_NUM_EDGES_PER_QUAD);
+    ier = mnt_regridedges_apply(self, &src_data[0], &dst_data[0], MNT_CELL_BY_CELL_DATA);
+    if (ier != 0) numFailures++;
+
+    Grid_t* dst_grd = (*self)->dstGridObj;
+
+    // turn the regridded extensive field into a vector field
+    VectorInterp_t* vp = NULL;
+    ier = mnt_vectorinterp_new(&vp);
+    if (ier != 0) numFailures++;
+    ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
+    if (ier != 0) numFailures++;
+
+    // note: the data are cell by cell but the vectors are dimensioned num edges
+    // and we don't need to find the points in this case
+    ier = mnt_vectorinterp_getVectorsOnEdges(&vp, &dst_data[0], MNT_CELL_BY_CELL_DATA,
+                                                     dst_u, dst_v, fs);
+    if (ier != 0) numFailures++;
+    ier = mnt_vectorinterp_del(&vp);
+    if (ier != 0) numFailures++;
+
+    ier = mnt_extensivefieldadaptor_del(&src_efa);
+    if (ier != 0) numFailures++;
+
+    return numFailures;
+}
+
 
 LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 

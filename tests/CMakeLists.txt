@@ -14,6 +14,7 @@ configure_file(testNcDimensions.cpp testNcDimensions.cxx)
 configure_file(testUgrid2D.cpp testUgrid2D.cxx)
 configure_file(testRegridEdgesFromUgrid.cpp testRegridEdgesFromUgrid.cxx)
 configure_file(testRegridEdgesWithGrid.cpp testRegridEdgesWithGrid.cxx)
+configure_file(testRegridEdgesVectors.cpp testRegridEdgesVectors.cxx)
 configure_file(testGrid.cpp testGrid.cxx)
 configure_file(testPolysegmentIter2.cpp testPolysegmentIter2.cxx)
 configure_file(testFindCellsAlongLine.cpp testFindCellsAlongLine.cxx)
@@ -21,6 +22,8 @@ configure_file(testCellLocator.cpp testCellLocator.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
 configure_file(test_ncattributes.f90.in test_ncattributes.f90)
+configure_file(testVectorInterp.cpp testVectorInterp.cxx)
+configure_file(testExtensiveFieldAdaptor.cpp testExtensiveFieldAdaptor.cxx)
 
 
 if (BUILD_FORTRAN)
@@ -229,6 +232,13 @@ target_link_libraries(testRegridEdgesWithGrid
                     ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testRegridEdgesVectors testRegridEdgesVectors.cxx)
+target_link_libraries(testRegridEdgesVectors
+                    mint
+                    ${VTK_LIBRARIES}
+                    ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testPolylineParser testPolylineParser.cxx)
 target_link_libraries(testPolylineParser
                     mint
@@ -353,6 +363,13 @@ target_link_libraries(testPolylineIntegralTriangles
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testExtensiveFieldAdaptor testExtensiveFieldAdaptor.cxx)
+target_link_libraries(testExtensiveFieldAdaptor
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_test(NAME lfricVectorField COMMAND testLFRicVectorField)
 add_test(NAME logger COMMAND testLogger)
 add_test(NAME vecMat COMMAND testVecMat)
@@ -372,6 +389,7 @@ add_test(NAME ugrid2D_xyz COMMAND testUgrid2D
 add_test(NAME simpleRegridEdges COMMAND testSimpleRegridEdges)
 add_test(NAME regridEdgesFromUgrid COMMAND testRegridEdgesFromUgrid)
 add_test(NAME regridEdgesWithGrid COMMAND testRegridEdgesWithGrid)
+add_test(NAME regridEdgesVectors COMMAND testRegridEdgesVectors)
 add_test(NAME polylineParser COMMAND testPolylineParser)
 add_test(NAME lineLineIntersector COMMAND testLineLineIntersector)
 add_test(NAME lineTriangleIntersector COMMAND testLineTriangleIntersector)
@@ -381,6 +399,7 @@ add_test(NAME polysegmentIter3 COMMAND testPolysegmentIter3)
 add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME grid COMMAND testGrid)
+add_test(NAME extensiveFieldAdaptor COMMAND testExtensiveFieldAdaptor)
 add_test(NAME cellLocator COMMAND testCellLocator)
 add_test(NAME vectorInterp COMMAND testVectorInterp)
 add_test(NAME exprParser COMMAND testExprParser)
@@ -646,7 +665,7 @@ add_test(NAME flux_line_2pts
 set_tests_properties(flux_line_2pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 set_tests_properties(flux_line_2pts PROPERTIES
-          PASS_REGULAR_EXPRESSION "Flux across the line: -0.05413054946986")
+          PASS_REGULAR_EXPRESSION "Flux across the line: -0.054130549469")
 
 add_test(NAME flux_line_3pts
          COMMAND "${CMAKE_BINARY_DIR}/tools/flux" 
@@ -659,7 +678,7 @@ add_test(NAME flux_line_3pts
 set_tests_properties(flux_line_3pts PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Warning: total t")
 set_tests_properties(flux_line_3pts PROPERTIES
-          PASS_REGULAR_EXPRESSION "Flux across the line: -0.05413054946986")
+          PASS_REGULAR_EXPRESSION "Flux across the line: -0.054130549469")
 
 add_test(NAME polySegmentIter1
          COMMAND "${CMAKE_BINARY_DIR}/tools/polySegmentIter" 

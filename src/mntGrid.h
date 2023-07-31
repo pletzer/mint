@@ -65,6 +65,9 @@ struct Grid_t {
     // whether the longitudes should be adjusted at the poles to
     // minimize the cell sizes in lon-lat coordinates
     bool averageLonAtPole;
+
+    // whether or not the grid uses degrees coordinates
+    bool degrees;
 };
 
 /**
@@ -281,6 +284,7 @@ int mnt_grid_getNumberOfCells(Grid_t** self, std::size_t* numCells);
  */
 LIBRARY_API
 int mnt_grid_getNumberOfEdges(Grid_t** self, std::size_t* numEdges);
+
 
 /**
  * Check

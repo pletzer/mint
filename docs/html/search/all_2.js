@@ -1,8 +1,11 @@
 var searchData=
 [
-  ['edge_5flength_5fname_0',['EDGE_LENGTH_NAME',['../struct_grid__t.html#ac22cb61172434ef1d844e565e8b5ae57',1,'Grid_t']]],
-  ['edgearclengths_1',['edgeArcLengths',['../struct_grid__t.html#a617badd1ed24be04a0d6d230d71801a8',1,'Grid_t']]],
-  ['edgeconnectivity_2',['edgeConnectivity',['../struct_regrid_edges__t.html#a79f0c713ad5b1252c8fe4325c14adf0a',1,'RegridEdges_t']]],
-  ['edgenodeconnectivity_3',['edgeNodeConnectivity',['../struct_grid__t.html#aec653d957005b005b04eaf7475cab643',1,'Grid_t']]],
-  ['elv_5findex_4',['ELV_INDEX',['../mnt_grid_8h.html#af44e69c312f1a36a2de0cb52f1067df1',1,'mntGrid.h']]]
+  ['degrees_0',['degrees',['../struct_grid__t.html#a3265b60948e20aa8332efa372de4796c',1,'Grid_t']]],
+  ['dimnames_1',['dimNames',['../struct_regrid_edges__t.html#a6c269d51205e50ccfb7c9ebf969076d0',1,'RegridEdges_t']]],
+  ['doublearrays_2',['doubleArrays',['../struct_grid__t.html#a56008566085fbdd037fd145db3486e5e',1,'Grid_t']]],
+  ['dstcounts_3',['dstCounts',['../struct_regrid_edges__t.html#ab11eff48e400bfcca975590d5ddaa458',1,'RegridEdges_t']]],
+  ['dstdims_4',['dstDims',['../struct_regrid_edges__t.html#a4faf1c7d26a627aa373235e7259010bd',1,'RegridEdges_t']]],
+  ['dstgridisowned_5',['dstGridIsOwned',['../struct_regrid_edges__t.html#a931475f08172d9b4cc33d8d422fe360b',1,'RegridEdges_t']]],
+  ['dstgridobj_6',['dstGridObj',['../struct_regrid_edges__t.html#ad403456e7e5bed6f1b069497640fbfa8',1,'RegridEdges_t']]],
+  ['dstwriter_7',['dstWriter',['../struct_regrid_edges__t.html#af00507a6c29563e756598b9471e1cb7d',1,'RegridEdges_t']]]
 ];

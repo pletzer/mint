@@ -8,6 +8,7 @@ int mnt_multiarrayiter_new(MultiArrayIter_t** self, int ndims, const std::size_t
     (*self)->dims.resize(ndims);
     (*self)->prodDims.resize(ndims);
     (*self)->ntot = 1;
+
     for (int i = 0; i < ndims; ++i) {
         (*self)->dims[i] = dims[i];
         (*self)->ntot *= dims[i];

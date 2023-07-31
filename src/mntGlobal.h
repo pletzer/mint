@@ -6,5 +6,7 @@
 #define MNT_NUM_EDGES_PER_QUAD 4
 #define MNT_NUM_VERTS_PER_QUAD 4
 #define MNT_NUM_VERTS_PER_EDGE 2
+#define MNT_FUNC_SPACE_W1 1
+#define MNT_FUNC_SPACE_W2 2
 
 #endif // MNT_GLOBAL

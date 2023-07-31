@@ -223,15 +223,15 @@ class RegridEdges(object):
         if ier:
             error_handler(FILE, 'loadWeights', ier)
 
-    def apply(self, srcdata, dstdata, placement=UNIQUE_EDGE_DATA):
+    def apply(self, srcdata, dstdata, placement):
         """
         Apply the regridding weights to an edge field
 
-        :param srcdata: contiguous arrays of source field data (input), see below for expected size
-        :param dstdata: contiguous arrays of destination field data (output), see below for expected size
+        :param srcdata: contiguous array of source field data (input), see below for expected size
+        :param dstdata: contiguous array of destination field data (output), see below for expected size
         :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell
-                          (size num cells * mint.NUM_EDGES_PER_QUAD),
-                          assume unique edge Id data otherwise (size num edges)
+                          (size of array is numCells * mint.NUM_EDGES_PER_QUAD),
+                          assume unique edge Id data otherwise (size of array is numEdges)
         """
 
         MINTLIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p),
@@ -240,3 +240,25 @@ class RegridEdges(object):
         ier = MINTLIB.mnt_regridedges_apply(self.obj, srcdata, dstdata, placement)
         if ier:
             error_handler(FILE, 'apply', ier)
+
+    def vectorApply(self, src_u, src_v, dst_u, dst_v, fs):
+        """
+        Regrid a vector field
+
+        :param src_u: x-component of the vector field on the source grid (input), size is num edges on source grid
+        :param src_v: y-component of the vector field on the source grid (input), size is num edges on source grid
+        :param dst_u: x-component of the vector field on the source grid (output), size is num edges on destination grid
+        :param dst_v: y-component of the vector field on the source grid (output), size is num edges on destination grid
+        :param fs: function space, either FUNC_SPACE_W1 or FUNC_SPACE_W2
+        """
+
+        MINTLIB.mnt_regridedges_vectorApply.argtypes = [POINTER(c_void_p),
+                                                  DOUBLE_ARRAY_PTR,
+                                                  DOUBLE_ARRAY_PTR,
+                                                  DOUBLE_ARRAY_PTR,
+                                                  DOUBLE_ARRAY_PTR,
+                                                  c_int]
+        ier = MINTLIB.mnt_regridedges_vectorApply(self.obj, src_u, src_v, dst_u, dst_v, fs)
+        if ier:
+            error_handler(FILE, 'vectorApply', ier)
+

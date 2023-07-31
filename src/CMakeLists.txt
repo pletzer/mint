@@ -33,6 +33,7 @@ set(LIB_FILES
   mntPolylineIntegral.cpp
   mntWeights.cpp
   mntVectorInterp.cpp
+  mntExtensiveFieldAdaptor.cpp
 )
 
 if (BUILD_FORTRAN)
@@ -80,6 +81,7 @@ set(HEADER_FILES
   mntVecN.h
   mntWeights.h
   mntVectorInterp.h
+  mntExtensiveFieldAdaptor.h
 )
 
 if (VTK_VERSION VERSION_LESS "8.90.0")

@@ -142,6 +142,7 @@ int mnt_grid_new(Grid_t** self) {
     (*self)->periodX = 360.0; // if in radians, only used if the above switches are set
     (*self)->verts = NULL;
     (*self)->ownsVerts = false;
+    (*self)->degrees = false;
 
     return 0;
 }
@@ -188,6 +189,11 @@ int mnt_grid_setFlags(Grid_t** self, int fixLonAcrossDateline, int averageLonAtP
     if (degrees == 0) {
       // lon-lat are in radians
       (*self)->periodX = 2 * M_PI;
+    }
+
+    (*self)->degrees = false;
+    if (degrees != 0) {
+        (*self)->degrees = true;
     }
 
     return 0;
@@ -435,6 +441,7 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
         // allocate the vertices and set the values
         (*self)->verts = new double[ncells * MNT_NUM_VERTS_PER_QUAD * 3];
         (*self)->ownsVerts = true;
+        double lonBase;
 
         for (std::size_t icell = 0; icell < ncells; ++icell) {
 
@@ -442,7 +449,8 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
 
             // fix longitude when crossing the dateline
             // use the first longitude as the base
-            double lonBase = nodes[0][LON_INDEX];
+            lonBase = nodes[0][LON_INDEX];
+            // lonBase = 0;
 
             double avgLon = 0;
             long long poleNodeIdx = -1;
@@ -452,11 +460,16 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
                 double lon = nodes[nodeIdx][LON_INDEX];
                 double lat = nodes[nodeIdx][LAT_INDEX];
 
+                // lonBase *= double(nodeIdx);
+                // lonBase += lon;
+                // lonBase /= double(nodeIdx + 1);
+
                 if ((*self)->fixLonAcrossDateline) {
                     lon = fixLongitude((*self)->periodX, lonBase, lon);
                 }
 
-                if (std::abs(lat) == 0.25*(*self)->periodX) {
+                const double eps = 100 * std::numeric_limits<double>::epsilon();
+                if (std::fabs(std::abs(lat) - 0.25*(*self)->periodX) < eps) {
                     // at the pole
                     poleNodeIdx  = nodeIdx;
                 }
@@ -472,12 +485,30 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
             }
             avgLon /= count;
 
-            // check if there if one of the cell nodes is at the north/south pole. In
-            // this case the longitude is ill-defined. Set the longitude there to the
+            // check if one of the nodes is at the north/south pole. In
+            // this case the longitude is ill-defined. Set the longitude there to be the
             // average of the 3 other longitudes.
 
             if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
+                std::stringstream msg;
+                msg << "setting longitude = " << (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] 
+                    << " in cell " << icell << " to " << avgLon << ", other lons = ";
+                    for (auto j = 0; j < MNT_NUM_VERTS_PER_QUAD; ++j) {
+                        msg << (*self)->verts[LON_INDEX + j*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] << ", ";
+                    }
+                    msg << '\n';
+                mntlog::info(__FILE__, __func__, __LINE__, msg.str());
                 (*self)->verts[LON_INDEX + poleNodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = avgLon;
+            }
+
+            // run through another date line correction
+            if ((*self)->fixLonAcrossDateline) {
+                lonBase = (*self)->verts[LON_INDEX + 0*3 + icell*MNT_NUM_VERTS_PER_QUAD*3];
+                for (auto nodeIdx = 1; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
+                    double lon = (*self)->verts[LON_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3];
+                    lon = fixLongitude((*self)->periodX, lonBase, lon);
+                    (*self)->verts[LON_INDEX + nodeIdx*3 + icell*MNT_NUM_VERTS_PER_QUAD*3] = lon;
+                }
             }
         }
     }
@@ -492,7 +523,7 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
 LIBRARY_API
 int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
 
-    // extract the filename and the mesh name from "filename:meshname"
+    // extract the filename and the mesh name from "filename$meshname"
     auto fm = fileMeshNameExtractor(fileAndMeshName);
 
     std::string filename = fm.first;
@@ -576,8 +607,27 @@ int mnt_grid_print(Grid_t** self) {
         for (int j = 0; j < cell->GetNumberOfPoints(); ++j) {
             vtkIdType k = cell->GetPointId(j);
             (*self)->points->GetPoint(k, &pt[0]);
-            std::cout << "\tpoint " << pt[0] << ',' << pt[1] << ',' << pt[2] << '\n';
+            std::cout << "\t point " << pt[0] << ',' << pt[1] << ',' << pt[2] << std::endl;
         }
+    }
+
+    for (std::size_t i = 0; i < (*self)->faceNodeConnectivity.size(); 
+            i += MNT_NUM_VERTS_PER_QUAD) {
+        auto icell = i / MNT_NUM_VERTS_PER_QUAD;
+        std::cout << "\t face " << icell << ": nodes";
+        for (auto k = 0; k < MNT_NUM_VERTS_PER_QUAD; ++k) {
+            std::cout << " " << (*self)->faceNodeConnectivity[icell*MNT_NUM_VERTS_PER_QUAD + k];
+        }
+        std::cout << std::endl;
+    }
+    for (std::size_t i = 0; i < (*self)->edgeNodeConnectivity.size();
+             i += MNT_NUM_VERTS_PER_EDGE) {
+        auto iedge = i / MNT_NUM_VERTS_PER_EDGE;
+        std::cout << "\t edge " << iedge << ": nodes";
+        for (auto k = 0; k < MNT_NUM_VERTS_PER_EDGE; ++k) {
+            std::cout << " " << (*self)->edgeNodeConnectivity[iedge*MNT_NUM_VERTS_PER_EDGE + k];
+        }
+        std::cout << std::endl;
     }
 
     return 0;

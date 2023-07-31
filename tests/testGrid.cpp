@@ -13,6 +13,28 @@ void testIrisGrid() {
     mnt_grid_del(&grd);
 }
 
+void testDisplacedUgrid() {
+    int ier;
+    Grid_t* grd;
+    mnt_grid_new(&grd);
+    int fixLonAcrossDateline = 1;
+    int averageLonAtPole = 1;
+    int degrees = 1;
+    ier = mnt_grid_setFlags(&grd, fixLonAcrossDateline, averageLonAtPole, degrees);
+    assert(ier == 0);
+    ier = mnt_grid_loadFromUgrid2DFile(&grd, "${CMAKE_SOURCE_DIR}/data/cs8_wind.nc$cs");
+    assert(ier == 0);
+    ier = mnt_grid_dump(&grd, "cs8_wind_grid.vtk");
+    assert(ier == 0);
+    std::size_t numBadCells;
+    ier = mnt_grid_check(&grd, &numBadCells);
+    mnt_printLogMessages();
+    std::cerr << "number of bad cells: " << numBadCells << '\n';
+    assert(numBadCells == 0);
+    mnt_grid_del(&grd);
+   
+}
+
 void testVTK() {
     Grid_t* grd;
     mnt_grid_new(&grd);
@@ -23,7 +45,7 @@ void testVTK() {
 void testUgridData() {
 
     int ier;
-    Grid_t* grd;
+    Grid_t* grd = NULL;
     ier = mnt_grid_new(&grd);
     assert(ier == 0);
 
@@ -67,6 +89,9 @@ void testUgridData() {
     ier = mnt_grid_getNodeIds(&grd, 0, 3, &edgeNodeIds[0]);
     assert(edgeNodeIds[0] == 0);
     assert(edgeNodeIds[1] == 3);
+
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
 }
 
 
@@ -178,6 +203,8 @@ void testUgrid() {
 int main(int argc, char** argv) {
 
     //testIrisGrid();
+    testDisplacedUgrid();
+    testUgridData();
     testLFRic();
     testUgrid();
     testVTK();

@@ -50,7 +50,6 @@ int mnt_vectorinterp_del(VectorInterp_t** self);
  * Set the grid
  * @param self instance of VectorInterp_t
  * @param grid grid (borrowed reference)
- * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
  */
 LIBRARY_API
@@ -102,7 +101,7 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
@@ -117,7 +116,7 @@ int mnt_vectorinterp_getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
+int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 /**
@@ -131,7 +130,7 @@ int mnt_vectorinterp_getFaceVectorsFromCellByCellData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
@@ -146,50 +145,115 @@ int mnt_vectorinterp_getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
-int mnt_vectorinterp_getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]);
 
 /**
  * Get the edge vectors at given target points
  * @param self instance of VectorInterp_t
- * @param data edge data
+ * @param data edge integrated (extensive) data
+ * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell 
+ *                  (size of array is numCells * MNT_NUM_EDGES_PER_QUAD),
+ *                  otherwise data are assumed to be on unique edges 
+ *                  (size is numEdges)
  * @param vectors array of output vectors, size numPoints*3
- * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell (size num cells * MNT_NUM_EDGES_PER_QUAD),
- *                  data are assumed to be on unique edges 
- *                  otherwise (size num edges)
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
 int mnt_vectorinterp_getEdgeVectors(VectorInterp_t** self,
-                                    const double data[],
-                                    double vectors[], 
-                                    int placement);
+                                    const double data[], int placement,
+                                    double vectors[]);
 
 /**
  * Get the Face vectors at given target points
  * @param self instance of VectorInterp_t
- * @param data edge data
+ * @param data edge integrated (extensive) data
+ * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell
+ *                  (size numCells * MNT_NUM_EDGES_PER_QUAD),
+ *                  otherwise data are assumed to be on unique edges 
+ *                  (size is numEdges)
  * @param vectors array of output vectors, size numPoints*3
- * @param placement MNT_CELL_BY_CELL_DATA if data are cell by cell (size num cells * MNT_NUM_EDGES_PER_QUAD),
- *                  data are assumed to be on unique edges 
- *                  otherwise (size num edges)
  * @return error code (0 = OK)
  * @note call this after mnt_vectorinterp_findPoints. The returned vectors
  *       will not be touched if the point falls out of the domain.
  */
 LIBRARY_API
 int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
-                                    const double data[],
-                                    double vectors[], 
-                                    int placement);
+                                    const double data[], int placement,
+                                    double vectors[]);
+
+/**
+ * Get the vectors at the mid edge locations from the extensive field in Cartesian coordinates
+ * @param self instance of VectorInterp_t
+ * @param data edge integrated (extensive) data, size depends on placement (see below)
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
+ *                  If placement == MNT_CELL_BY_CELL_DATA then data size is 
+ *                  num cells * num edges per cell, if MNT_UNIQUE_EDGE_DATA then
+ *                  data size should be num edges.
+ * @param u x-component of the output vectors, size numEdges
+ * @param v y-component of the output vectors, size numEdges
+ * @param fs function space, either MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
+                                        const double data[],
+                                        int placement,
+                                        double u[], double v[],
+                                        int fs);
+
+
+/**
+ * Get the vectors at the mid edge locations from the extensive field in spherical coordinates
+ * @param self instance of VectorInterp_t
+ * @param data edge integrated (extensive) data, size depends on placement (see below)
+ * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. 
+ *                  If placement == MNT_CELL_BY_CELL_DATA then data size is 
+ *                  num cells * num edges per cell, if MNT_UNIQUE_EDGE_DATA then
+ *                  data size should be num edges.
+ * @param u x-component of the output vectors, size numEdges
+ * @param v y-component of the output vectors, size numEdges
+ * @param fs function space, either MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_vectorinterp_getVectorsOnEdgesSpherical(VectorInterp_t** self,
+                                            const double data[],
+                                            int placement,
+                                            double u[], double v[],
+                                            int fs);
 
 /* private */
 
+inline Vec3 cross(const Vec3& a, const Vec3& b) {
+    Vec3 res;
+    res[0] = a[1]*b[2] - a[2]*b[1];
+    res[1] = a[2]*b[0] - a[0]*b[2];
+    res[2] = a[0]*b[1] - a[1]*b[0];
+    return res;
+}
+
 inline double crossDotZHat(const Vec3& a, const Vec3& b) {
     return a[0]*b[1] - a[1]*b[0];
+}
+
+inline double crossDot(const Vec3& a, const Vec3& b, const Vec3& c) {
+    return c[0]*(a[1]*b[2] - a[2]*b[1]) + 
+           c[1]*(a[2]*b[0] - a[0]*b[2]) + 
+           c[2]*(a[0]*b[1] - a[1]*b[0]);
+}
+
+inline Vec3 cartesianFromRadians(const Vec3& p) {
+    Vec3 res;
+    double lam = p[LON_INDEX];
+    double the = p[LAT_INDEX];
+    res[0] = cos(the) * cos(lam);
+    res[1] = cos(the) * sin(lam);
+    res[2] = sin(the);
+    return res;
 }
 
 inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
@@ -224,8 +288,8 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         // ordered correctly
         jac = 0.25*(a013 + a120 + a231 + a302);
         if (jac <= 0) {
-          std::stringstream msg;
-         msg << "bad cell " << cellId << " vertices: " <<
+            std::stringstream msg;
+            msg << "bad cell " << cellId << " vertices: " <<
                             v0 << ";" << v1 << ";" << v2  << ";" << v3; 
             mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
             ier = 1;

@@ -3,6 +3,7 @@
 #include <mntPolylineIntegral.h>
 #include <mntPolysegmentIter.h>
 #include <mntWeights.h>
+#include <mntExtensiveFieldAdaptor.h>
 #include <iostream>
 
 //#define DEBUG
@@ -204,14 +205,14 @@ int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, 
                                                      double* result) {
 
     *result = 0;
-    int ier;
+    int ier = 0;
 
     // make sure (*self)->srcGridObj.faceNodeConnectivity and the rest have been allocated
     if (!(*self)->gridObj ||
         (*self)->gridObj->faceNodeConnectivity.size() == 0 || 
         (*self)->gridObj->faceEdgeConnectivity.size() == 0 ||
         (*self)->gridObj->edgeNodeConnectivity.size() == 0) {
-        std::string msg = "grid connectivity not set (?) Read the grid from a netcdf Ufile";
+        std::string msg = "grid connectivity not set (?) May need to read the grid from a netcdf Ufile";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
@@ -245,7 +246,7 @@ int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, 
     mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
 
-    return 0;
+    return ier;
 }
 
 LIBRARY_API
@@ -258,4 +259,54 @@ int mnt_polylineintegral_getIntegral(PolylineIntegral_t** self, const double dat
     else {
         return mnt_polylineintegral_getIntegralOfUniqueEdgeData(self, data, result);
     }
+}
+
+LIBRARY_API
+int mnt_polylineintegral_vectorGetIntegral(PolylineIntegral_t** self, const double u[], const double v[], int fs, double* result) {
+
+    int ier;
+    int numFailures = 0;
+
+    std::size_t numCells;
+    ier = mnt_grid_getNumberOfCells(&(*self)->gridObj, &numCells);
+    if (ier != 0) numFailures++;
+
+    // from vector to extensive field
+    ExtensiveFieldAdaptor_t* src_efa = NULL;
+    ier = mnt_extensivefieldadaptor_new(&src_efa);
+    if (ier != 0) numFailures++;
+
+    ier = mnt_extensivefieldadaptor_setGrid(&src_efa, (*self)->gridObj);
+    if (ier != 0) numFailures++;
+
+    // build the vector field, cell by cell
+    Grid_t* grd = (*self)->gridObj;
+    std::size_t edgeId;
+    int edgeSign;
+    std::vector<double> src_uCellByCell(numCells*MNT_NUM_EDGES_PER_QUAD);
+    std::vector<double> src_vCellByCell(numCells*MNT_NUM_EDGES_PER_QUAD);
+    for (std::size_t icell = 0; icell < numCells; ++icell) {
+        for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
+            ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &edgeSign);
+            if (ier != 0) numFailures++;
+            std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
+            src_uCellByCell[k] = u[edgeId];
+            src_vCellByCell[k] = v[edgeId];
+        }
+    }
+
+    // compute the extensive field from the vector field
+    std::vector<double> data(numCells*MNT_NUM_EDGES_PER_QUAD);
+    ier = mnt_extensivefieldadaptor_fromVectorField(&src_efa, &src_uCellByCell[0], &src_vCellByCell[0],
+         &data[0], MNT_CELL_BY_CELL_DATA, fs);
+    if (ier != 0) numFailures++;
+
+    // compute the integral
+    ier = mnt_polylineintegral_getIntegral(self, &data[0], MNT_CELL_BY_CELL_DATA, result);
+    if (ier != 0) numFailures++;
+
+    ier = mnt_extensivefieldadaptor_del(&src_efa);
+    if (ier != 0) numFailures++;    
+
+    return numFailures;
 }

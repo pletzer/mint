@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['grid_0',['grid',['../struct_grid__t.html#af452706a6733733dad795a72c56ad176',1,'Grid_t']]],
-  ['grid_5ft_1',['Grid_t',['../struct_grid__t.html',1,'']]],
-  ['gridobj_2',['gridObj',['../struct_polyline_integral__t.html#ab26e59fbceec290e3967641a9bb32bac',1,'PolylineIntegral_t']]]
+  ['faceedgeconnectivity_0',['faceEdgeConnectivity',['../struct_grid__t.html#ad5f92ea4629fac0ce9317600429b3e95',1,'Grid_t']]],
+  ['facenodeconnectivity_1',['faceNodeConnectivity',['../struct_grid__t.html#a0b17413cd9d24b0de429b53b57f1793d',1,'Grid_t']]],
+  ['fixlonacrossdateline_2',['fixLonAcrossDateline',['../struct_grid__t.html#aeb59ebe43895a220aa26444eadb6cdec',1,'Grid_t']]]
 ];
