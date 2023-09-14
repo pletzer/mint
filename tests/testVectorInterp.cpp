@@ -597,9 +597,9 @@ void testSqueezedW1() {
     // check
     for (auto i = 0; i < 4; ++i) {
         std::cout << "testSqueezedW1: u=" << uEdges[i] << " exact=" << uCellByCellExact[i] << " diff: " << uCellByCellExact[i] - uEdges[i] << '\n';
-        assert(std::fabs(uEdges[i] - uCellByCellExact[i]) < 0.012);
+        assert(std::fabs(uEdges[i] - uCellByCellExact[i]) < 0.006);
         std::cout << "testSqueezedW1: v=" << vEdges[i] << " exact=" << vCellByCellExact[i] << " diff: " << vCellByCellExact[i] - vEdges[i] << '\n';
-        assert(std::fabs(vEdges[i] - vCellByCellExact[i]) < 0.012);
+        assert(std::fabs(vEdges[i] - vCellByCellExact[i]) < 0.006);
     }
 
 
