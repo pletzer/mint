@@ -201,6 +201,7 @@ def test_rectilinear2():
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
 
+# noinspection SpellCheckingInspection
 def test_slanted():
 
     nx, ny, nxTarget, nyTarget = 1, 1, 4, 5
@@ -253,6 +254,7 @@ def test_slanted():
                 data[cellId, edgeIndex] = 0.0
 
 
+# noinspection SpellCheckingInspection
 def test_degenerate():
 
     nx, ny, nxTarget, nyTarget = 1, 1, 12, 11
@@ -305,10 +307,12 @@ def test_degenerate():
                 data[cellId, edgeIndex] = 0.0
 
 
+# noinspection SpellCheckingInspection
 def test_accuracy():
 
-    import numpy as np
-
+    #
+    # internal functions
+    #
     def potentialFun(lam, the):
       """
       Potential
@@ -316,7 +320,7 @@ def test_accuracy():
       :param the: lat in rad
       :returns potential at lon, lat
       """
-      return np.cos(the)*np.cos(lam)
+      return numpy.cos(the)*numpy.cos(lam)
 
     def interpPosition(vertices, xi, eta):
 
@@ -332,15 +336,15 @@ def test_accuracy():
       dx_deta = (vertices[3] - vertices[0])*(1-xi) + \
                (vertices[2] - vertices[1])*xi
 
-      area = np.cross(dx_dxi, dx_deta)
-      normal = area / np.sqrt(area.dot(area))
+      area = numpy.cross(dx_dxi, dx_deta)
+      normal = area / numpy.sqrt(area.dot(area))
 
       jac = area.dot(normal)
 
       #print(f'dx_dxi = {dx_dxi} dx_deta = {dx_deta} jac = {jac}')
 
-      grad_xi = np.cross(dx_deta, normal) / jac
-      grad_eta = np.cross(normal, dx_dxi) / jac
+      grad_xi = numpy.cross(dx_deta, normal) / jac
+      grad_eta = numpy.cross(normal, dx_dxi) / jac
 
       # could be in any coordinate system provided
       # edge_values are consistent with the vertices coordinates
@@ -358,27 +362,79 @@ def test_accuracy():
       :param vz: z component
       :returns u, v
       """
-      u = vy*np.cos(lam) - vx*np.sin(lam)
-      v = -vx*np.sin(the)*np.cos(lam) - vy*np.sin(the)*np.sin(lam) + vz*np.cos(the)
+      u = vy*numpy.cos(lam) - vx*numpy.sin(lam)
+      v = -vx*numpy.sin(the)*numpy.cos(lam) - vy*numpy.sin(the)*numpy.sin(lam) + vz*numpy.cos(the)
       return u, v
 
     def lamThe2XYZ(lam, the, A=1):
-      x = A*np.cos(the)*np.cos(lam)
-      y = A*np.cos(the)*np.sin(lam)
-      z = A*np.sin(the)
-      return np.array([x, y, z])
+      x = A*numpy.cos(the)*numpy.cos(lam)
+      y = A*numpy.cos(the)*numpy.sin(lam)
+      z = A*numpy.sin(the)
+      return numpy.array([x, y, z])
 
+
+    grid = Grid()
+
+    # grid resolution
     nx, ny = 50, 20
 
+    nx1, ny1 = nx + 1, ny + 1
     dx, dy = 360/nx, 180/ny
 
-    lams = np.linspace(0., 360 - dx, nx + 1)*np.pi/180
-    thes = np.linspace(-90, 90 - dy, ny + 1)*np.pi/180
-    #lams = (np.pi/180)*np.linspace(140, 150, nx + 1) # (0., 360, nx + 1)
-    #thes = (np.pi/180)*np.linspace(25, 35, ny + 1) # (-80, 80, ny + 1)
+    lams = numpy.linspace(0., 360, nx1)*numpy.pi/180
+    thes = numpy.linspace(-90, 90, ny1)*numpy.pi/180
 
-    errorLonLat = np.empty((ny, nx))
-    errorCart = np.empty((ny, nx))
+    numPoints = nx1 * ny1
+    numCells = nx * ny
+    numEdges = nx*ny1 + nx1*ny
+
+    points = numpy.empty((numPoints, 3), numpy.float64)
+    face2nodes = numpy.empty((numCells, 4), numpy.uint64)
+    edge2nodes = numpy.empty((numEdges, 2), numpy.uint64)
+
+    # build the point array
+    for j in range(ny1):
+        for i in range(nx1):
+            points[i + j*nx1, :] = lams[i]*180/numpy.pi, thes[j]*180/numpy.pi, 0.0
+    # build the connectivity arrays
+    k = 0
+    for j0 in range(ny):
+        j1 = j0 + 1
+        for i0 in range(nx):
+            i1 = i0 + 1
+            k0 = i0 + j0*nx1
+            k1 = i1 + j0*nx1
+            k2 = i1 + j1*nx1
+            k3 = i0 + j1*nx1
+            face2nodes[k, :] = k0, k1, k2, k3
+            k += 1
+    k = 0
+    for j in range(ny1):
+        for i0 in range(nx):
+            i1 = i0 + 1
+            k0 = i0 + j*nx1
+            k1 = i1 + j*nx1
+            edge2nodes[k, :] = k0, k1
+            k += 1
+    for j0 in range(ny):
+        j1 = j0 + 1
+        for i in range(nx1):
+            k0 = i + j0*nx1
+            k1 = i + j1*nx1
+            edge2nodes[k, :] = k0, k1
+            k += 1
+    grid.loadFromUgrid2DData(points, face2nodes, edge2nodes)
+    vi = VectorInterp()
+    vi.setGrid(grid)
+    vi.buildLocator(numCellsPerBucket=10, periodX=0., enableFolding=False)
+
+    targetPoints = numpy.empty((numCells, 3), numpy.float64)
+    edgeIntegrals = numpy.empty((numCells, 4), numpy.float64)
+
+    errorLonLat = numpy.empty((ny, nx))
+    errorCart = numpy.empty((ny, nx))
+
+
 
     # inside cell location
     xi, eta = 0.5, 0.5
@@ -391,10 +447,10 @@ def test_accuracy():
 
         i1 = i0 + 1
 
-        verts = [np.array([lams[i0], thes[j0], 0.]),
-                 np.array([lams[i1], thes[j0], 0.]),
-                 np.array([lams[i1], thes[j1], 0.]),
-                 np.array([lams[i0], thes[j1], 0.])]
+        verts = [numpy.array([lams[i0], thes[j0], 0.]),
+                 numpy.array([lams[i1], thes[j0], 0.]),
+                 numpy.array([lams[i1], thes[j1], 0.]),
+                 numpy.array([lams[i0], thes[j1], 0.])]
 
         edge_values = [
           potentialFun(lams[i1], thes[j0]) - potentialFun(lams[i0], thes[j0]), # edge 0
@@ -409,8 +465,11 @@ def test_accuracy():
         lamT = lams[i0]*(1-xi)*(1-eta) + lams[i1]*xi*(1-eta) + lams[i1]*xi*eta + lams[i0]*(1-xi)*eta
         theT = thes[j0]*(1-xi)*(1-eta) + thes[j0]*xi*(1-eta) + thes[j1]*xi*eta + thes[j1]*(1-xi)*eta
 
+        targetPoints[i0 + j0*nx, :] = numpy.array([lamT, theT, 0.]) * 180/numpy.pi
+        edgeIntegrals[i0 + j0*nx, :] = edge_values
+
         # correct for the deg
-        uLonLat /= np.cos(theT)
+        uLonLat /= numpy.cos(theT)
 
         # using Cartesian coords
         vertsXYZ = [lamThe2XYZ(verts[i][0], verts[i][1]) for i in range(4)]
@@ -419,20 +478,41 @@ def test_accuracy():
         uCart, vCart = VxVyVz2UV(vx, vy, vz, lamT, theT)
 
 
-        uExact = - np.cos(theT) * np.sin(lamT) / np.cos(theT) # A = 1
-        vExact = - np.sin(theT) * np.cos(lamT) # A = 1
+        uExact = - numpy.cos(theT) * numpy.sin(lamT) / numpy.cos(theT) # A = 1
+        vExact = - numpy.sin(theT) * numpy.cos(lamT) # A = 1
 
         # print(f'lam, the = {lamT:.5f}, {theT:.5f} u, v = {uLonLat:.4f}, {vLonLat:.4f} exact u, v = {uExact:.4f}, {vExact:.4f}')
         # print(f'lam, the = {lamT:.5f}, {theT:.5f} u, v = {uCart:.4f}, {vCart:.4f} exact u, v = {uExact:.4f}, {vExact:.4f}\n\n')
 
-        errorLonLat[j0, i0] = np.sqrt((uLonLat - uExact)**2 + (vLonLat - vExact)**2)
-        errorCart[j0, i0] = np.sqrt((uCart - uExact)**2 + (vCart - vExact)**2)
+        errorLonLat[j0, i0] = numpy.sqrt((uLonLat - uExact)**2 + (vLonLat - vExact)**2)
+        errorCart[j0, i0] = numpy.sqrt((uCart - uExact)**2 + (vCart - vExact)**2)
+
+    # MINT
+    numBad = vi.findPoints(targetPoints, tol2=1.e-10)
+    assert(numBad == 0)
+
+    lamTarget = targetPoints[:, 0] * numpy.pi/180
+    theTarget = targetPoints[:, 1] * numpy.pi/180
+    uvExact = numpy.zeros((numCells, 3), numpy.float64)
+    uvExact[:, 0] = - numpy.sin(lamTarget)
+    uvExact[:, 1] = - numpy.sin(theTarget) * numpy.cos(lamTarget) # A = 1
+
+    uvMint = vi.getEdgeVectors(edgeIntegrals, CELL_BY_CELL_DATA)
+    # adjust the units
+    uvMint *= 180/numpy.pi
+    uvMint[:, 0] /= numpy.cos(theTarget)
+    errorMint = numpy.sqrt((uvMint[:,0] - uvExact[:,0])**2 + (uvMint[:,1] - uvExact[:,1])**2)
+
+    print(f'uvMint = {uvMint[numCells//3, :]}')
+    print(f'uvExact = {uvExact[numCells//3, :]}')
 
     print(f'accuracy avg/max')
     print(f'                 lon-lat: {errorLonLat.mean():.5f}/{errorLonLat.max():.5f}')
     print(f'               cartesian: {errorCart.mean():.5f}/{errorCart.max():.5f}')
+    print(f'                    mint: {errorMint.mean():.5f}/{errorMint.max():.5f}')
     assert(errorLonLat.max() < 0.004)
     assert(errorCart.max() < 0.0008)
+    assert(errorMint.max() < 0.4)
 
 
 
