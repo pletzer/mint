@@ -305,8 +305,140 @@ def test_degenerate():
                 data[cellId, edgeIndex] = 0.0
 
 
+def test_accuracy():
+
+    import numpy as np
+
+    def potentialFun(lam, the):
+      """
+      Potential
+      :param lam: lon in rad
+      :param the: lat in rad
+      :returns potential at lon, lat
+      """
+      return np.cos(the)*np.cos(lam)
+
+    def interpPosition(vertices, xi, eta):
+
+      return vertices[0,:]*(1-xi)*(1-eta) + \
+             vertices[1,:]*xi*(1-eta) + \
+             vertices[2,:]*xi*eta + \
+             vertices[3,:]*(1-xi)*eta
+
+    def computeVectorW1(vertices, edge_values, xi, eta, a=1):
+
+      dx_dxi = (vertices[1] - vertices[0])*(1-eta) + \
+               (vertices[2] - vertices[3])*eta
+      dx_deta = (vertices[3] - vertices[0])*(1-xi) + \
+               (vertices[2] - vertices[1])*xi
+
+      area = np.cross(dx_dxi, dx_deta)
+      normal = area / np.sqrt(area.dot(area))
+
+      jac = area.dot(normal)
+
+      #print(f'dx_dxi = {dx_dxi} dx_deta = {dx_deta} jac = {jac}')
+
+      grad_xi = np.cross(dx_deta, normal) / jac
+      grad_eta = np.cross(normal, dx_dxi) / jac
+
+      # could be in any coordinate system provided
+      # edge_values are consistent with the vertices coordinates
+      vec = (edge_values[0]*(1-eta) + \
+              edge_values[2]*eta)*grad_xi + \
+             (edge_values[3]*(1-xi) + \
+              edge_values[1]*xi)*grad_eta
+      return vec
+
+    def VxVyVz2UV(vx, vy, vz, lam, the):
+      """
+      Convert from Cartesian components to zonal-meridional
+      :param vx: x component
+      :param vy: y component
+      :param vz: z component
+      :returns u, v
+      """
+      u = vy*np.cos(lam) - vx*np.sin(lam)
+      v = -vx*np.sin(the)*np.cos(lam) - vy*np.sin(the)*np.sin(lam) + vz*np.cos(the)
+      return u, v
+
+    def lamThe2XYZ(lam, the, A=1):
+      x = A*np.cos(the)*np.cos(lam)
+      y = A*np.cos(the)*np.sin(lam)
+      z = A*np.sin(the)
+      return np.array([x, y, z])
+
+    nx, ny = 50, 20
+
+    dx, dy = 360/nx, 180/ny
+
+    lams = np.linspace(0., 360 - dx, nx + 1)*np.pi/180
+    thes = np.linspace(-90, 90 - dy, ny + 1)*np.pi/180
+    #lams = (np.pi/180)*np.linspace(140, 150, nx + 1) # (0., 360, nx + 1)
+    #thes = (np.pi/180)*np.linspace(25, 35, ny + 1) # (-80, 80, ny + 1)
+
+    errorLonLat = np.empty((ny, nx))
+    errorCart = np.empty((ny, nx))
+
+    # inside cell location
+    xi, eta = 0.5, 0.5
+
+    for j0 in range(ny):
+
+      j1 = j0 + 1
+
+      for i0 in range(nx):
+
+        i1 = i0 + 1
+
+        verts = [np.array([lams[i0], thes[j0], 0.]),
+                 np.array([lams[i1], thes[j0], 0.]),
+                 np.array([lams[i1], thes[j1], 0.]),
+                 np.array([lams[i0], thes[j1], 0.])]
+
+        edge_values = [
+          potentialFun(lams[i1], thes[j0]) - potentialFun(lams[i0], thes[j0]), # edge 0
+          potentialFun(lams[i1], thes[j1]) - potentialFun(lams[i1], thes[j0]), # edge 1
+          potentialFun(lams[i1], thes[j1]) - potentialFun(lams[i0], thes[j1]), # edge 2
+          potentialFun(lams[i0], thes[j1]) - potentialFun(lams[i0], thes[j0]), # edge 3
+        ]
+
+        uLonLat, vLonLat = computeVectorW1(verts, edge_values, xi=xi, eta=eta)[:2]
+
+        # target
+        lamT = lams[i0]*(1-xi)*(1-eta) + lams[i1]*xi*(1-eta) + lams[i1]*xi*eta + lams[i0]*(1-xi)*eta
+        theT = thes[j0]*(1-xi)*(1-eta) + thes[j0]*xi*(1-eta) + thes[j1]*xi*eta + thes[j1]*(1-xi)*eta
+
+        # correct for the deg
+        uLonLat /= np.cos(theT)
+
+        # using Cartesian coords
+        vertsXYZ = [lamThe2XYZ(verts[i][0], verts[i][1]) for i in range(4)]
+        #print(vertsXYZ)
+        vx, vy, vz = computeVectorW1(vertsXYZ, edge_values, xi, eta)
+        uCart, vCart = VxVyVz2UV(vx, vy, vz, lamT, theT)
+
+
+        uExact = - np.cos(theT) * np.sin(lamT) / np.cos(theT) # A = 1
+        vExact = - np.sin(theT) * np.cos(lamT) # A = 1
+
+        # print(f'lam, the = {lamT:.5f}, {theT:.5f} u, v = {uLonLat:.4f}, {vLonLat:.4f} exact u, v = {uExact:.4f}, {vExact:.4f}')
+        # print(f'lam, the = {lamT:.5f}, {theT:.5f} u, v = {uCart:.4f}, {vCart:.4f} exact u, v = {uExact:.4f}, {vExact:.4f}\n\n')
+
+        errorLonLat[j0, i0] = np.sqrt((uLonLat - uExact)**2 + (vLonLat - vExact)**2)
+        errorCart[j0, i0] = np.sqrt((uCart - uExact)**2 + (vCart - vExact)**2)
+
+    print(f'accuracy avg/max')
+    print(f'                 lon-lat: {errorLonLat.mean():.5f}/{errorLonLat.max():.5f}')
+    print(f'               cartesian: {errorCart.mean():.5f}/{errorCart.max():.5f}')
+    assert(errorLonLat.max() < 0.004)
+    assert(errorCart.max() < 0.0008)
+
+
+
 if __name__ == '__main__':
     test_rectilinear()
     test_rectilinear2()
     test_slanted()
     test_degenerate()
+    test_accuracy()
