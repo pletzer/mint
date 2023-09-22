@@ -8,6 +8,89 @@ from os import sep
 
 
 # noinspection SpellCheckingInspection
+def potentialFun(lam, the):
+  """
+  Potential
+  :param lam: lon in rad
+  :param the: lat in rad
+  :returns potential at lon, lat
+  """
+  return numpy.cos(the)*numpy.cos(lam)
+
+
+# noinspection SpellCheckingInspection
+def interpPosition(vertices, xi, eta):
+
+  return vertices[0,:]*(1-xi)*(1-eta) + \
+         vertices[1,:]*xi*(1-eta) + \
+         vertices[2,:]*xi*eta + \
+         vertices[3,:]*(1-xi)*eta
+
+
+# noinspection SpellCheckingInspection
+def computeVectorW1(vertices, edge_values, xi, eta, a=1):
+  """
+  Compute W1 vector from vertices and edge values at any point inside the cell
+
+  :param vertices: 4 vertices of the quad
+  :param edge_values: edge integrated values
+  :param xi: 1st parametric coordinate (0 <= xi <= 1)
+  :param eta: 2nd parametric coordinate (0 <= eta <= 1)
+  :returns a vector
+  """
+
+  dx_dxi = (vertices[1] - vertices[0])*(1-eta) + \
+           (vertices[2] - vertices[3])*eta
+  dx_deta = (vertices[3] - vertices[0])*(1-xi) + \
+           (vertices[2] - vertices[1])*xi
+
+  area = numpy.cross(dx_dxi, dx_deta)
+  normal = area / numpy.sqrt(area.dot(area))
+
+  jac = area.dot(normal)
+
+  grad_xi = numpy.cross(dx_deta, normal) / jac
+  grad_eta = numpy.cross(normal, dx_dxi) / jac
+
+  # could be in any coordinate system provided
+  # edge_values are consistent with the vertices coordinates
+  vec = (edge_values[0]*(1-eta) + \
+          edge_values[2]*eta)*grad_xi + \
+         (edge_values[3]*(1-xi) + \
+          edge_values[1]*xi)*grad_eta
+  return vec
+
+
+# noinspection SpellCheckingInspection
+def VxVyVz2UV(vx, vy, vz, lam, the):
+  """
+  Convert from Cartesian components to zonal-meridional
+  :param vx: x component
+  :param vy: y component
+  :param vz: z component
+  :returns u, v
+  """
+  u = vy*numpy.cos(lam) - vx*numpy.sin(lam)
+  v = -vx*numpy.sin(the)*numpy.cos(lam) - vy*numpy.sin(the)*numpy.sin(lam) + vz*numpy.cos(the)
+  return u, v
+
+
+# noinspection SpellCheckingInspection
+def lamThe2XYZ(lam, the, A=1):
+  """
+  Convert from lon-lat to Cartesian
+
+  :param lam: longitude in radian
+  :param the: latitude in radian
+  :returns (x, y, z) point
+  """
+  x = A*numpy.cos(the)*numpy.cos(lam)
+  y = A*numpy.cos(the)*numpy.sin(lam)
+  z = A*numpy.sin(the)
+  return numpy.array([x, y, z])
+
+
+# noinspection SpellCheckingInspection
 def generateStructuredGridPoints(nx, ny, v0, v1, v2, v3):
     """
     Generate structured grid points
@@ -310,69 +393,6 @@ def test_degenerate():
 # noinspection SpellCheckingInspection
 def test_accuracy():
 
-    #
-    # internal functions
-    #
-    def potentialFun(lam, the):
-      """
-      Potential
-      :param lam: lon in rad
-      :param the: lat in rad
-      :returns potential at lon, lat
-      """
-      return numpy.cos(the)*numpy.cos(lam)
-
-    def interpPosition(vertices, xi, eta):
-
-      return vertices[0,:]*(1-xi)*(1-eta) + \
-             vertices[1,:]*xi*(1-eta) + \
-             vertices[2,:]*xi*eta + \
-             vertices[3,:]*(1-xi)*eta
-
-    def computeVectorW1(vertices, edge_values, xi, eta, a=1):
-
-      dx_dxi = (vertices[1] - vertices[0])*(1-eta) + \
-               (vertices[2] - vertices[3])*eta
-      dx_deta = (vertices[3] - vertices[0])*(1-xi) + \
-               (vertices[2] - vertices[1])*xi
-
-      area = numpy.cross(dx_dxi, dx_deta)
-      normal = area / numpy.sqrt(area.dot(area))
-
-      jac = area.dot(normal)
-
-      #print(f'dx_dxi = {dx_dxi} dx_deta = {dx_deta} jac = {jac}')
-
-      grad_xi = numpy.cross(dx_deta, normal) / jac
-      grad_eta = numpy.cross(normal, dx_dxi) / jac
-
-      # could be in any coordinate system provided
-      # edge_values are consistent with the vertices coordinates
-      vec = (edge_values[0]*(1-eta) + \
-              edge_values[2]*eta)*grad_xi + \
-             (edge_values[3]*(1-xi) + \
-              edge_values[1]*xi)*grad_eta
-      return vec
-
-    def VxVyVz2UV(vx, vy, vz, lam, the):
-      """
-      Convert from Cartesian components to zonal-meridional
-      :param vx: x component
-      :param vy: y component
-      :param vz: z component
-      :returns u, v
-      """
-      u = vy*numpy.cos(lam) - vx*numpy.sin(lam)
-      v = -vx*numpy.sin(the)*numpy.cos(lam) - vy*numpy.sin(the)*numpy.sin(lam) + vz*numpy.cos(the)
-      return u, v
-
-    def lamThe2XYZ(lam, the, A=1):
-      x = A*numpy.cos(the)*numpy.cos(lam)
-      y = A*numpy.cos(the)*numpy.sin(lam)
-      z = A*numpy.sin(the)
-      return numpy.array([x, y, z])
-
-
     grid = Grid()
 
     # grid resolution
@@ -435,7 +455,6 @@ def test_accuracy():
     errorCart = numpy.empty((ny, nx))
 
 
-
     # inside cell location
     xi, eta = 0.5, 0.5
 
@@ -468,7 +487,7 @@ def test_accuracy():
         targetPoints[i0 + j0*nx, :] = numpy.array([lamT, theT, 0.]) * 180/numpy.pi
         edgeIntegrals[i0 + j0*nx, :] = edge_values
 
-        # correct for the deg
+        # correct for deg
         uLonLat /= numpy.cos(theT)
 
         # using Cartesian coords
