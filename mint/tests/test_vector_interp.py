@@ -124,7 +124,7 @@ def test_rectilinear():
                                                 v2, v3).reshape((-1, 3))
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
-    assert(numBad == 0)
+    assert numBad == 0
 
     # generate edge data
     data = numpy.zeros((numCells, 4), numpy.float64)
@@ -137,15 +137,15 @@ def test_rectilinear():
 
             # get the edge interpolated vectors
             vectorData = vi.getEdgeVectors(data, placement=CELL_BY_CELL_DATA)
-            assert(abs(vectorData.max() - 1.) < 1.e-12)
-            assert(abs(vectorData.min() - 0.) < 1.e-12)
+            assert abs(vectorData.max() - 1.) < 1.e-12
+            assert abs(vectorData.min() - 0.) < 1.e-12
 
             # get the lateral flux interpolated vectors
             vectorData = vi.getFaceVectors(data, placement=CELL_BY_CELL_DATA)
             # face vectors take the sign of the area vector,
             # negative if pointing down
-            assert(abs(numpy.fabs(vectorData).max() - 1.) < 1.e-12)
-            assert(abs(numpy.fabs(vectorData).min() - 0.) < 1.e-12)
+            assert abs(numpy.fabs(vectorData).max() - 1.) < 1.e-12
+            assert abs(numpy.fabs(vectorData).min() - 0.) < 1.e-12
 
             # reset this edge's value back to its original
             data[cellId, edgeIndex] = 0.0
@@ -181,7 +181,7 @@ def test_rectilinear2():
                                                 v2 - dx - dy, v3 + dx - dy).reshape((-1, 3))
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
-    assert(numBad == 0)
+    assert numBad == 0
 
     # generate edge data
     data = numpy.zeros((numCells, 4), numpy.float64)
@@ -228,7 +228,7 @@ def test_slanted():
                                                 v0, v1, v2, v3).reshape((-1, 3))
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
-    assert(numBad == 0)
+    assert numBad == 0
 
     with TemporaryDirectory() as d:
         # generate edge data
@@ -281,7 +281,7 @@ def test_degenerate():
                                                 v0, v1, v2, v3).reshape((-1, 3))
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
     # all points fall within the source grid so numBad == 0
-    assert(numBad == 0)
+    assert numBad == 0
 
     with TemporaryDirectory() as d:
         # generate edge data
@@ -489,7 +489,7 @@ def test_accuracy():
 
     # MINT
     numBad = vi.findPoints(targetPoints, tol2=1.e-10)
-    assert(numBad == 0)
+    assert numBad == 0
 
     lamTarget = targetPoints[:, 0] * numpy.pi/180
     theTarget = targetPoints[:, 1] * numpy.pi/180
@@ -510,9 +510,9 @@ def test_accuracy():
     print(f'                 lon-lat: {errorLonLat.mean():.5f}/{errorLonLat.max():.5f}')
     print(f'               cartesian: {errorCart.mean():.5f}/{errorCart.max():.5f}')
     print(f'                    mint: {errorMint.mean():.5f}/{errorMint.max():.5f}')
-    assert(errorLonLat.max() < 0.004)
-    assert(errorCart.max() < 0.0008)
-    assert(errorMint.max() < 0.4)
+    assert errorLonLat.max() < 0.004
+    assert errorCart.max() < 0.0008
+    assert errorMint.max() < 0.4
 
 
 
