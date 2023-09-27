@@ -15,6 +15,10 @@ void testVec2() {
     v2[0] = 1;
     v2[1] = 2;
 
+    // test norm
+    assert(std::fabs(v1.norm() - std::sqrt(10*10 + 20*20)) < 1.e-12);
+    assert(std::fabs(v2.norm() - std::sqrt(1*1 + 2*2)) < 1.e-12);
+
     // test vector operations
     Vec2 w1 = v1 + v2;
     Vec2 w2 = v1 - v2;

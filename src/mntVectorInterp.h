@@ -278,6 +278,11 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         Vec3 c = v2 - v3;
         Vec3 d = v3 - v0;
 
+        // cotangent vectors obtained by finite differencing and linearly interpolating
+        // in the other direction
+        drdXsi = ate*a + eta*c;
+        drdEta = isx*d + xsi*b;
+
         // Jacobians attached to each vertex (can be zero if points are degenerate)
         double a013 = crossDotZHat(a, d);
         double a120 = crossDotZHat(a, b);
@@ -295,10 +300,6 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
             ier = 1;
         }
 
-        // cotangent vectors obtained by finite differencing and linearly interpolating
-        // in the other direction
-        drdXsi = ate*a + eta*c;
-        drdEta = isx*d + xsi*b;
 
         return ier;
 }

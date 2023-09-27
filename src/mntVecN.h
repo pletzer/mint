@@ -50,6 +50,10 @@ public:
    @return vector instance */
   VecN<N, T> &operator=(T f);
 
+  /** Norm of vector.
+   @return floating point number */
+  double norm();
+
   /** Add the value "f" to every element of the vector. 
    @param f scalar 
    @return vector */

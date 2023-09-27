@@ -30,6 +30,12 @@ VecN<N, T>::VecN(const VecN<N, T> &w)
   (*this) = w;
 }
 
+template<std::size_t N, class T>
+double VecN<N, T>::norm()
+{
+  return std::sqrt( std::inner_product(this->begin(), this->end(), this->begin(), 0) );
+}
+
 template<std::size_t N, class T> 
 void VecN<N, T>::random(void) 
 {

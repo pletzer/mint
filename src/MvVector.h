@@ -75,6 +75,10 @@ public:
    @return vector instance */
   Vector<T> &operator=(T f);
 
+  /** Compute the norm of the vector.
+   * @return floating point number */
+  double norm();
+
   /** Add the value "f" to every element of the vector. 
    @param f scalar 
    @return vector */
