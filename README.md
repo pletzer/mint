@@ -77,9 +77,9 @@ conda activate mint-dev
 
 If you find the above commands to fail on Windows, try (in the Anaconda prompt terminal):
 ```
-conda create -n mint-dev python=3.9
+conda create -n mint-dev python=3.x
 conda activate mint-dev
-conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk numpy pytest netcdf4
+conda install -c conda-forge cmake cython setuptools tbb-devel pip libnetcdf vtk numpy pytest netcdf4 iris
 ```
 
 Then type:

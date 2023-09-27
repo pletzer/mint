@@ -541,6 +541,12 @@ void testSqueezedW1() {
         45., 81.86989765, 0.,
         90., 84.26082952, 0. 
     };
+    // const double xyz[] = {
+    //     0., 0., 0.,
+    //     10., 0., 0.,
+    //     10, 10., 0.,
+    //     0., 10., 0. 
+    // };
     const std::size_t face2nodes[] = {
         0, 1, 2, 3
     };
@@ -596,10 +602,12 @@ void testSqueezedW1() {
 
     // check
     for (auto i = 0; i < 4; ++i) {
+        std::cout << '\n';
         std::cout << "testSqueezedW1: u=" << uEdges[i] << " exact=" << uCellByCellExact[i] << " diff: " << uCellByCellExact[i] - uEdges[i] << '\n';
         assert(std::fabs(uEdges[i] - uCellByCellExact[i]) < 0.006);
         std::cout << "testSqueezedW1: v=" << vEdges[i] << " exact=" << vCellByCellExact[i] << " diff: " << vCellByCellExact[i] - vEdges[i] << '\n';
         assert(std::fabs(vEdges[i] - vCellByCellExact[i]) < 0.006);
+        std::cout << '\n';
     }
 
 
