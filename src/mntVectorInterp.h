@@ -283,22 +283,26 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         drdXsi = ate*a + eta*c;
         drdEta = isx*d + xsi*b;
 
-        // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(a, d);
-        double a120 = crossDotZHat(a, b);
-        double a231 = crossDotZHat(c, b);
-        double a302 = crossDotZHat(c, d);
+        //jac = cross(drdXsi, drdEta).norm();
+        Vec3 area = cross(drdXsi, drdEta);
+        jac = sqrt(dot(area, area));
 
-        // Jacobian for this quad, should be a strictly positive quantity if nodes are
-        // ordered correctly
-        jac = 0.25*(a013 + a120 + a231 + a302);
-        if (jac <= 0) {
-            std::stringstream msg;
-            msg << "bad cell " << cellId << " vertices: " <<
-                            v0 << ";" << v1 << ";" << v2  << ";" << v3; 
-            mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
-            ier = 1;
-        }
+        // // Jacobians attached to each vertex (can be zero if points are degenerate)
+        // double a013 = crossDotZHat(a, d);
+        // double a120 = crossDotZHat(a, b);
+        // double a231 = crossDotZHat(c, b);
+        // double a302 = crossDotZHat(c, d);
+
+        // // Jacobian for this quad, should be a strictly positive quantity if nodes are
+        // // ordered correctly
+        // jac = 0.25*(a013 + a120 + a231 + a302);
+        // if (jac <= 0) {
+        //     std::stringstream msg;
+        //     msg << "bad cell " << cellId << " vertices: " <<
+        //                     v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+        //     mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
+        //     ier = 1;
+        // }
 
 
         return ier;
