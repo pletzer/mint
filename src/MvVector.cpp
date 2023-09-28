@@ -97,7 +97,7 @@ Vector<T> &Vector<T>::alloc(std::size_t n)
 template<class T>
 Vector<T> &Vector<T>::operator=(T f) 
 {
-  std::transform(this->begin(), this->end(), this->begin(), Setval<T>(f));
+  std::fill(this->begin(), this->end(), f);
   return (*this);
 }
 
@@ -456,9 +456,10 @@ Vec realabs(const Vec_cmplx &v)
 template<class T>
 Vector<T> pow(const Vector<T> &v, T exp) 
 { 
-  Vector<T> b(v.size()); 
-  std::transform(v.begin(), v.end(), b.begin(), 
-  	             bind(Power<T>(), std::placeholders::_1, exp));  
+  Vector<T> b(v.size());
+  for (auto i = 0; i < v.size(); ++i) {
+    b[i] = std::pow(v[i], exp);
+  }
   return b;  
 }  
 
@@ -508,8 +509,9 @@ template<class T>
 Vector<T> max(const Vector<T> &v, T f) 
 {
   Vector<T> res(v.size());
-  std::transform(v.begin(), v.end(), res.begin(), 
-  	             bind(Max<T>(), std::placeholders::_1, f));
+  for (auto i = 0; i < v.size(); ++i) {
+    res[i] = std::max(v[i], f);
+  }
   return res;
 }
 
@@ -537,8 +539,9 @@ Vector<T>  min(const Vector<T> &v, const Vector<T> &w)
 template<class T> Vector<T>  min(const Vector<T> &v, T f) 
 {
   Vector<T> res(v.size());
-  std::transform(v.begin(), v.end(), res.begin(), 
-  	             bind(Min<T>(), std::placeholders::_1, f));
+  for (auto i = 0; i < v.size(); ++i) {
+    res[i] = std::min(v[i], f);
+  }
   return res;
 }
 

@@ -46,7 +46,7 @@ void VecN<N, T>::random(void)
 template<std::size_t N, class T>
 VecN<N, T> &VecN<N, T>::operator=(T f) 
 {
-  std::transform(this->begin(), this->end(), this->begin(), Setval<T>(f));
+  this->fill(f);
   return (*this);
 }
 
@@ -329,9 +329,10 @@ VecN<N, T> abs(const VecN<N, T> &v)
 template<std::size_t N, class T>
 VecN<N, T> pow(const VecN<N, T> &v, T exp) 
 { 
-  VecN<N, T> b; 
-  std::transform(v.begin(), v.end(), b.begin(), 
-                 bind(Power<T>(), std::placeholders::_1, exp));  
+  VecN<N, T> b;
+  for (auto i = 0; i < v.size(); ++i) {
+    b[i] = std::pow(v[i], exp);
+  }
   return b;  
 }  
 
@@ -357,8 +358,9 @@ template<std::size_t N, class T>
 VecN<N, T> max(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> res;
-  std::transform(v.begin(), v.end(), res.begin(), 
-                 bind(Max<T>(), std::placeholders::_1, f));
+  for (auto i = 0; i < v.size(); ++i) {
+    res[i] = std::max(v[i], f);
+  }
   return res;
 }
 
@@ -382,8 +384,9 @@ VecN<N, T>  min(const VecN<N, T> &v, const VecN<N, T> &w)
 template<std::size_t N, class T> VecN<N, T>  min(const VecN<N, T> &v, T f) 
 {
   VecN<N, T> res;
-  std::transform(v.begin(), v.end(), res.begin(), 
-                 bind(Min<T>(), std::placeholders::_1, f));
+  for (auto i = 0; i < v.size(); ++i) {
+    res[i] = std::min(v[i], f);
+  }
   return res;
 }
 

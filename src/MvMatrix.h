@@ -503,7 +503,7 @@ ColMat<T>::ColMat(std::size_t m, size_t n, const T &elem)
 template <class T>
 ColMat<T> &ColMat<T>::operator=(const T &f)
 {
-  transform(v_.begin(), v_.end(), v_.begin(), Setval<T>(f));
+  std::fill(this->begin(), this->end(), f);
   return *this;
 }
 
@@ -1002,8 +1002,10 @@ template<class T> ColMat<T> abs(const ColMat<T> &a)
 
 template<class T> ColMat<T> pow(const ColMat<T> &a, const T exp)  
 { 
-  ColMat<T> b(a.size(0), a.size(1));  
-  transform(a.v_.begin(), a.v_.end(), b.v_.begin(), bind2nd(Power<T>(), exp));  
+  ColMat<T> b(a.size(0), a.size(1));
+  for (auto i = 0; i < a.size(); ++i) {
+    b[i] = std::pow(a[i], exp);
+  }
   return b;  
 }  
 
@@ -1226,7 +1228,9 @@ template<class T>
 ColMat<T> min(const ColMat<T> &a, const T b)
 {
   ColMat<T> c(a.size(0), a.size(1));
-  transform(a.v_.begin(), a.v_.end(), c.v_.begin(), bind2nd(Min<T>(), b));
+  for (auto i = 0; i < a.size(0); ++i) {
+    c[i] = std::min(a[i], b);
+  }
   return c;
 }
 
@@ -1234,7 +1238,9 @@ template<class T>
 ColMat<T> max(const ColMat<T> &a, const T b)
 {
   ColMat<T> c(a.size(0), a.size(1));
-  transform(a.v_.begin(), a.v_.end(), c.v_.begin(), bind2nd(Max<T>(), b));
+  for (auto i = 0; i < a.size(); ++i) {
+    c[i] = std::max(a[i], b);
+  }
   return c;
 }
 
@@ -1242,7 +1248,9 @@ template<class T>
 ColMat<T> min(const ColMat<T> &a, const ColMat<T> &b)
 {
   ColMat<T> c(a.size(0), a.size(1));
-  transform(a.v_.begin(), a.v_.end(), b.v_.begin(), c.v_.begin(), Min<T>());
+  for (auto i = 0; i < a.size(); ++i) {
+    c[i] = std::min(a[i], b[i]);
+  }
   return c;
 }
 
@@ -1250,7 +1258,9 @@ template<class T>
 ColMat<T> max(const ColMat<T> &a, const ColMat<T> &b)
 {
   ColMat<T> c(a.size(0), a.size(1));
-  transform(a.v_.begin(), a.v_.end(), b.v_.begin(), c.v_.begin(), Max<T>());
+  for (auto i = 0; i < a.size(); ++i) {
+    c[i] = std::max(a[i], b[i]);
+  }
   return c;
 }
 

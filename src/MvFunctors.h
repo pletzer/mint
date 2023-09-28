@@ -25,22 +25,7 @@ template<class T> struct Setval : public std::unary_function<T, T>
   T operator() (T x) {return f;}
   T f;
 };
-
-template<class T> struct Power : public std::binary_function<T, T, T> 
-{
-  T operator() (T x, T y) const { return std::pow(x, y); }
-};
-
-template<class T> struct Max : public std::binary_function<T, T, T> 
-{
-  T operator() (T x, T y) const { return std::max<T>(x, y); }
-};
-
-template<class T> struct Min : public std::binary_function<T, T, T> 
-{
-  T operator() (T x, T y) const { return std::min<T>(x, y); }
-};
-
+ 
 template<class T> struct Print : public std::unary_function<T, void>
 {
   std::ostream& os;
