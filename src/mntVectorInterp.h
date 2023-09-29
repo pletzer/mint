@@ -320,14 +320,14 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
  * @param vector output vector at the xsi, eta location within the v0, v1, v2, v3 cell
  * @return 0 if no error
  */
-inline int mnt_vectorinterp__getEdgeVector(VectorInterp_t** self, const Vec3& v0, 
-                                                                  const Vec3& v1,
-                                                                  const Vec3& v2,
-                                                                  const Vec3& v3,
-                                                                  double xsi,
-                                                                  double eta,
-                                                                  const double edgeValues[], 
-                                                                  Vec3& vector) {
+inline int mnt_vectorinterp__getEdgeVector(const Vec3& v0, 
+                                           const Vec3& v1,
+                                           const Vec3& v2,
+                                           const Vec3& v3,
+                                           double xsi,
+                                           double eta,
+                                           const double edgeValues[], 
+                                           double vector[]) {
 
     double isx = 1.0 - xsi;
     double ate = 1.0 - eta;
@@ -355,9 +355,10 @@ inline int mnt_vectorinterp__getEdgeVector(VectorInterp_t** self, const Vec3& v0
     Vec3 gradXsi = cross(drdEta, normal) / jac;
     Vec3 gradEta = cross(normal, drdXsi) / jac;
 
-
-    vector =  (ate*edgeValues[0] + eta*edgeValues[2]) * gradXsi;
-    vector += (isx*edgeValues[3] + xsi*edgeValues[1]) * gradEta;
+    for (auto i = 0; i < 3; ++i) {
+        vector[i] = (ate*edgeValues[0] + eta*edgeValues[2]) * gradXsi[i] + 
+                    (isx*edgeValues[3] + xsi*edgeValues[1]) * gradEta[i];
+    }
 
     return 0;
 }
@@ -375,14 +376,14 @@ inline int mnt_vectorinterp__getEdgeVector(VectorInterp_t** self, const Vec3& v0
  * @param vector output vector at the xsi, eta location within the v0, v1, v2, v3 cell
  * @return 0 if no error
  */
-inline int mnt_vectorinterp__getFaceVector(VectorInterp_t** self, const Vec3& v0, 
-                                                                  const Vec3& v1,
-                                                                  const Vec3& v2,
-                                                                  const Vec3& v3,
-                                                                  double xsi,
-                                                                  double eta,
-                                                                  const double edgeValues[], 
-                                                                  Vec3& vector) {
+inline int mnt_vectorinterp__getFaceVector(const Vec3& v0, 
+                                           const Vec3& v1,
+                                           const Vec3& v2,
+                                           const Vec3& v3,
+                                           double xsi,
+                                           double eta,
+                                           const double edgeValues[], 
+                                           double vector[]) {
 
     double isx = 1.0 - xsi;
     double ate = 1.0 - eta;
@@ -409,10 +410,13 @@ inline int mnt_vectorinterp__getFaceVector(VectorInterp_t** self, const Vec3& v0
     }
     Vec3 gradXsi = cross(drdEta, normal) / jac;
     Vec3 gradEta = cross(normal, drdXsi) / jac;
+    Vec3 nXGradXsi = cross(normal, gradXsi);
+    Vec3 gradEtaXn = cross(gradEta, normal);
 
-
-    vector =  (ate*edgeValues[0] + eta*edgeValues[2]) * cross(normal, gradXsi);
-    vector += (isx*edgeValues[3] + xsi*edgeValues[1]) * cross(gradEta, normal);
+    for (auto i = 0; i < 3; ++i) {
+        vector[i] = (ate*edgeValues[0] + eta*edgeValues[2]) * nXGradXsi[i] + 
+                    (isx*edgeValues[3] + xsi*edgeValues[1]) * gradEtaXn[i];
+    }
 
     return 0;
 }
