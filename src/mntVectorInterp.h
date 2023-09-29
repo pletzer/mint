@@ -259,52 +259,163 @@ inline Vec3 cartesianFromRadians(const Vec3& p) {
 inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
                                                 Vec3& drdXsi, Vec3& drdEta, double& jac) {
 
-        Vec3 v0, v1, v2, v3;
-        vtkIdType cellId = (*self)->cellIds[iTargetId];
-        int ier = 0;
+    Vec3 v0, v1, v2, v3;
+    vtkIdType cellId = (*self)->cellIds[iTargetId];
+    int ier = 0;
 
-        // parametric coordinates of the target point 
-        double xsi = (*self)->pcoords[iTargetId][0];
-        double eta = (*self)->pcoords[iTargetId][1];
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
+    // parametric coordinates of the target point 
+    double xsi = (*self)->pcoords[iTargetId][0];
+    double eta = (*self)->pcoords[iTargetId][1];
+    double isx = 1.0 - xsi;
+    double ate = 1.0 - eta;
 
-        // get the cell vertices, this should never fail 
-        mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
-        mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
+    // get the cell vertices, this should never fail 
+    mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
+    mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
 
-        Vec3 a = v1 - v0;
-        Vec3 b = v2 - v1;
-        Vec3 c = v2 - v3;
-        Vec3 d = v3 - v0;
+    Vec3 a = v1 - v0;
+    Vec3 b = v2 - v1;
+    Vec3 c = v2 - v3;
+    Vec3 d = v3 - v0;
 
-        // cotangent vectors obtained by finite differencing and linearly interpolating
-        // in the other direction
-        drdXsi = ate*a + eta*c;
-        drdEta = isx*d + xsi*b;
+    // cotangent vectors obtained by finite differencing and linearly interpolating
+    // in the other direction
+    drdXsi = ate*a + eta*c;
+    drdEta = isx*d + xsi*b;
 
-        //jac = cross(drdXsi, drdEta).norm();
-        Vec3 area = cross(drdXsi, drdEta);
-        jac = sqrt(dot(area, area));
+    //jac = cross(drdXsi, drdEta).norm();
+    Vec3 area = cross(drdXsi, drdEta);
+    jac = sqrt(dot(area, area));
 
-        // // Jacobians attached to each vertex (can be zero if points are degenerate)
-        // double a013 = crossDotZHat(a, d);
-        // double a120 = crossDotZHat(a, b);
-        // double a231 = crossDotZHat(c, b);
-        // double a302 = crossDotZHat(c, d);
+    // // Jacobians attached to each vertex (can be zero if points are degenerate)
+    // double a013 = crossDotZHat(a, d);
+    // double a120 = crossDotZHat(a, b);
+    // double a231 = crossDotZHat(c, b);
+    // double a302 = crossDotZHat(c, d);
 
-        // // Jacobian for this quad, should be a strictly positive quantity if nodes are
-        // // ordered correctly
-        // jac = 0.25*(a013 + a120 + a231 + a302);
-        // if (jac <= 0) {
-        //     std::stringstream msg;
-        //     msg << "bad cell " << cellId << " vertices: " <<
-        //                     v0 << ";" << v1 << ";" << v2  << ";" << v3; 
-        //     mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
-        //     ier = 1;
-        // }
+    // // Jacobian for this quad, should be a strictly positive quantity if nodes are
+    // // ordered correctly
+    // jac = 0.25*(a013 + a120 + a231 + a302);
+    // if (jac <= 0) {
+    //     std::stringstream msg;
+    //     msg << "bad cell " << cellId << " vertices: " <<
+    //                     v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+    //     mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
+    //     ier = 1;
+    // }
 
 
-        return ier;
+    return ier;
 }
+
+/*
+ * Get the edge vector at some cell target location
+ * @param v0 1st vertex coordinates of the quad
+ * @param v1 2nd vertex coordinates of the quad
+ * @param v2 3rd vertex coordinates of the quad
+ * @param v3 4th vertex coordinates of the quad
+ * @param xsi 1st parametric cooridnate of the target
+ * @param eta 2nd parametric cooridnate of the target
+ * @param edgeValues edge integrated values, assumes the edges to point in the positive xsi, eta directions
+ * @param vector output vector at the xsi, eta location within the v0, v1, v2, v3 cell
+ * @return 0 if no error
+ */
+inline int mnt_vectorinterp__getEdgeVector(VectorInterp_t** self, const Vec3& v0, 
+                                                                  const Vec3& v1,
+                                                                  const Vec3& v2,
+                                                                  const Vec3& v3,
+                                                                  double xsi,
+                                                                  double eta,
+                                                                  const double edgeValues[], 
+                                                                  Vec3& vector) {
+
+    double isx = 1.0 - xsi;
+    double ate = 1.0 - eta;
+
+    Vec3 a = v1 - v0;
+    Vec3 b = v2 - v1;
+    Vec3 c = v2 - v3;
+    Vec3 d = v3 - v0;
+
+    // cotangent vectors obtained by finite differencing and linearly interpolating
+    // in the other direction
+    Vec3 drdXsi = ate*a + eta*c;
+    Vec3 drdEta = isx*d + xsi*b;
+
+    Vec3 area = cross(drdXsi, drdEta);
+    Vec3 normal = area / sqrt(dot(area, area));
+    double jac = dot(area, normal);
+    if (jac <= 0) {
+        std::stringstream msg;
+        msg << "bad cell: vertices: " <<
+                         v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+        mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
+        return 1;
+    }
+    Vec3 gradXsi = cross(drdEta, normal) / jac;
+    Vec3 gradEta = cross(normal, drdXsi) / jac;
+
+
+    vector =  (ate*edgeValues[0] + eta*edgeValues[2]) * gradXsi;
+    vector += (isx*edgeValues[3] + xsi*edgeValues[1]) * gradEta;
+
+    return 0;
+}
+
+
+/*
+ * Get the face vector at some cell target location
+ * @param v0 1st vertex coordinates of the quad
+ * @param v1 2nd vertex coordinates of the quad
+ * @param v2 3rd vertex coordinates of the quad
+ * @param v3 4th vertex coordinates of the quad
+ * @param xsi 1st parametric cooridnate of the target
+ * @param eta 2nd parametric cooridnate of the target
+ * @param edgeValues edge integrated values, assumes the edges to point in the positive xsi, eta directions
+ * @param vector output vector at the xsi, eta location within the v0, v1, v2, v3 cell
+ * @return 0 if no error
+ */
+inline int mnt_vectorinterp__getFaceVector(VectorInterp_t** self, const Vec3& v0, 
+                                                                  const Vec3& v1,
+                                                                  const Vec3& v2,
+                                                                  const Vec3& v3,
+                                                                  double xsi,
+                                                                  double eta,
+                                                                  const double edgeValues[], 
+                                                                  Vec3& vector) {
+
+    double isx = 1.0 - xsi;
+    double ate = 1.0 - eta;
+
+    Vec3 a = v1 - v0;
+    Vec3 b = v2 - v1;
+    Vec3 c = v2 - v3;
+    Vec3 d = v3 - v0;
+
+    // cotangent vectors obtained by finite differencing and linearly interpolating
+    // in the other direction
+    Vec3 drdXsi = ate*a + eta*c;
+    Vec3 drdEta = isx*d + xsi*b;
+
+    Vec3 area = cross(drdXsi, drdEta);
+    Vec3 normal = area / sqrt(dot(area, area));
+    double jac = dot(area, normal);
+    if (jac <= 0) {
+        std::stringstream msg;
+        msg << "bad cell: vertices: " <<
+                         v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+        mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
+        return 1;
+    }
+    Vec3 gradXsi = cross(drdEta, normal) / jac;
+    Vec3 gradEta = cross(normal, drdXsi) / jac;
+
+
+    vector =  (ate*edgeValues[0] + eta*edgeValues[2]) * cross(normal, gradXsi);
+    vector += (isx*edgeValues[3] + xsi*edgeValues[1]) * cross(gradEta, normal);
+
+    return 0;
+}
+
+
 #endif // MNT_VECTOR_INTERP

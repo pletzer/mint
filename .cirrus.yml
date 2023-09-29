@@ -144,6 +144,8 @@ win_task:
   windows_container:
     image: cirrusci/windowsservercore:cmake
     os_version: 2019
+    cpu: 8
+    memory: 8G
   env:
     # use $VAR not %VAR%
     CONDA_DIR: $USERPROFILE\miniconda3
