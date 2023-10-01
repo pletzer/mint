@@ -256,57 +256,6 @@ inline Vec3 cartesianFromRadians(const Vec3& p) {
     return res;
 }
 
-inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
-                                                Vec3& drdXsi, Vec3& drdEta, double& jac) {
-
-    Vec3 v0, v1, v2, v3;
-    vtkIdType cellId = (*self)->cellIds[iTargetId];
-    int ier = 0;
-
-    // parametric coordinates of the target point 
-    double xsi = (*self)->pcoords[iTargetId][0];
-    double eta = (*self)->pcoords[iTargetId][1];
-    double isx = 1.0 - xsi;
-    double ate = 1.0 - eta;
-
-    // get the cell vertices, this should never fail 
-    mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
-    mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
-
-    Vec3 a = v1 - v0;
-    Vec3 b = v2 - v1;
-    Vec3 c = v2 - v3;
-    Vec3 d = v3 - v0;
-
-    // cotangent vectors obtained by finite differencing and linearly interpolating
-    // in the other direction
-    drdXsi = ate*a + eta*c;
-    drdEta = isx*d + xsi*b;
-
-    //jac = cross(drdXsi, drdEta).norm();
-    Vec3 area = cross(drdXsi, drdEta);
-    jac = sqrt(dot(area, area));
-
-    // // Jacobians attached to each vertex (can be zero if points are degenerate)
-    // double a013 = crossDotZHat(a, d);
-    // double a120 = crossDotZHat(a, b);
-    // double a231 = crossDotZHat(c, b);
-    // double a302 = crossDotZHat(c, d);
-
-    // // Jacobian for this quad, should be a strictly positive quantity if nodes are
-    // // ordered correctly
-    // jac = 0.25*(a013 + a120 + a231 + a302);
-    // if (jac <= 0) {
-    //     std::stringstream msg;
-    //     msg << "bad cell " << cellId << " vertices: " <<
-    //                     v0 << ";" << v1 << ";" << v2  << ";" << v3; 
-    //     mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
-    //     ier = 1;
-    // }
-
-
-    return ier;
-}
 
 /*
  * Get the edge vector at some cell target location

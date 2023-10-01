@@ -75,7 +75,7 @@ linux_task:
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=ON -DNETCDF_INCLUDE_DIRS="${ENV_DIR}/include" -DNETCDF_LIBRARIES="-L${ENV_DIR}/lib -lnetcdf" -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
-    - make VERBOSE=1
+    - cmake --build --verbose .
     - ctest
 
 
@@ -125,7 +125,7 @@ osx_task:
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
-    - make
+    - cmake --build .
     - ctest
     - cd ..
     - pip install -e .
@@ -182,6 +182,6 @@ win_task:
     # - dir "%CONDA_LIB%\lib
     # - dir "%CONDA_LIB%\include\vtk-%VTK_VER%"
     - cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%CONDA_LIB%\include\vtk-%VTK_VER%" -DVTK_LIBRARY_DIR="%CONDA_LIB%\lib" -DNETCDF_INCLUDE_DIRS="%CONDA_LIB%\include" -DNETCDF_LIBRARIES="%CONDA_LIB%\lib\netcdf.lib" ..
-    - nmake
+    - cmake --build .
     - ctest
     - cd ../
