@@ -310,6 +310,7 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
                                                       double vectors[]) {
 
     std::string msg;
+    int ier;
     std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
     int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
 
@@ -331,8 +332,6 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
     }
 
     int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta;
-    double jac;
 
     for (std::size_t iTargetId = 0;
                      iTargetId < (*self)->cellIds.size(); 
@@ -346,31 +345,30 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
             continue;
         }
 
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, jac);
-
         // parametric coordinates of the target point 
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
 
         mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
         mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
         mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
         mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
 
-        // interpolate
-        double data0 = data[edgeId0] * edgeSign0;
+        // interpolate. Note the negative sign for edges 0 and 2, due to the fluxes pointing 
+        // into the negative xi, eta directions for these edges
+        double data0 = - data[edgeId0] * edgeSign0;
         double data1 = data[edgeId1] * edgeSign1;
-        double data2 = data[edgeId2] * edgeSign2;
+        double data2 = - data[edgeId2] * edgeSign2;
         double data3 = data[edgeId3] * edgeSign3;
-        for (std::size_t j = 0; j < 3; ++j) {
-            // fill in the vector
-            // the negative sign is because d r/ d eta points in the opposite
-            // direction to the surface
-            vectors[iTargetId*3 + j] = (data3*isx + data1*xsi)*drdXsi[j]/jac 
-                                     - (data0*ate + data2*eta)*drdEta[j]/jac;
-        }
+        const double edgeValues[] = {data0, data1, data2, data3};
+
+        // get the cell vertices, this should never fail
+        Vec3 v0, v1, v2, v3;
+        mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
+        mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
+
+        ier = mnt_vectorinterp__getFaceVector(v0, v1, v2, v3, xsi, eta, edgeValues, &vectors[iTargetId*3]);
+
     }
 
     return numFailures;
