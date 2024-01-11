@@ -12,36 +12,36 @@
 
 // List of functors for Vector and Matrix classes
 
-template<class T> struct Random : public std::unary_function<T, T> 
+template<class T> struct Random 
 {
   Random() : max(static_cast<T>(RAND_MAX)) {}
   T operator() (T x) {return static_cast<T>(rand())/max;}
   T max;
 };
 
-template<class T> struct Setval : public std::unary_function<T, T>
+template<class T> struct Setval
 {
   Setval(T fin) : f(fin) {};
   T operator() (T x) {return f;}
   T f;
 };
 
-template<class T> struct Power : public std::binary_function<T, T, T> 
+template<class T> struct Power 
 {
   T operator() (T x, T y) const { return std::pow(x, y); }
 };
 
-template<class T> struct Max : public std::binary_function<T, T, T> 
+template<class T> struct Max 
 {
   T operator() (T x, T y) const { return std::max<T>(x, y); }
 };
 
-template<class T> struct Min : public std::binary_function<T, T, T> 
+template<class T> struct Min 
 {
   T operator() (T x, T y) const { return std::min<T>(x, y); }
 };
 
-template<class T> struct Print : public std::unary_function<T, void>
+template<class T> struct Print
 {
   std::ostream& os;
   Print(std::ostream& out) : os(out) {
