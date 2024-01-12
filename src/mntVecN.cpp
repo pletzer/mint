@@ -325,7 +325,7 @@ VecN<N, T> pow(const VecN<N, T> &v, T exp)
 { 
   VecN<N, T> b; 
   std::transform(v.begin(), v.end(), b.begin(), 
-                 bind(Power<T>(), std::placeholders::_1, exp));  
+      std::bind(Power<T>(), std::placeholders::_1, exp));  
   return b;  
 }  
 
@@ -352,7 +352,7 @@ VecN<N, T> max(const VecN<N, T> &v, T f)
 {
   VecN<N, T> res;
   std::transform(v.begin(), v.end(), res.begin(), 
-                 bind(Max<T>(), std::placeholders::_1, f));
+      std::bind(Max<T>(), std::placeholders::_1, f));
   return res;
 }
 
@@ -425,7 +425,7 @@ std::size_t index_max(VecN<N, T> &v)
 template <std::size_t N, class T>
 std::ostream& operator<<(std::ostream& s, const VecN<N, T>& v)
 {
-  for_each(v.begin(), v.end(), Print<T>(s));
+  std::for_each(v.begin(), v.end(), Print<T>(s));
   return s;
 }
 
