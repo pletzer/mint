@@ -2,6 +2,7 @@
 #include <limits>
 #include <cstring>
 #include <string>
+#include <iostream>
 
 LIBRARY_API
 int mnt_celllocator_new(CellLocator_t** self) {

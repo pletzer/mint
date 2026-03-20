@@ -123,7 +123,7 @@ elif cpp_flags is not None:
     extra_compile_args = cpp_flags.split()
 
 if os.name != 'nt':
-    extra_compile_args.append("-std=c++11")
+    extra_compile_args.append("-std=c++17")
 
 print(f'VTK_VERSION          = {vtklib["VTK_VERSION"]}')
 print(f'VTK_INCLUDE_DIR      = {vtklib["VTK_INCLUDE_DIR"]}')
