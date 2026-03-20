@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.15)
+
 ###################################################
 #
 # CMakeLists.txt for MINT
@@ -6,9 +8,6 @@
 
 # Project information
 project(mint)
-
-# Required version
-cmake_minimum_required(VERSION 3.1)
 
 # get the MINT version
 file(READ "${CMAKE_SOURCE_DIR}/version.txt" VERSION)
