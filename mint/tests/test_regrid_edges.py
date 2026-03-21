@@ -257,6 +257,9 @@ def test_apply_weights():
     rg.setDstGridFlags(1, 1)
     rg.loadDstGrid(f'{DATA_DIR}/cs_4.nc$physics')
 
+    assert rg.getNumSrcEdges() > 0, "Source grid not loaded"
+    assert rg.getNumDstEdges() > 0, "Destination grid not loaded"
+
     # load the weights
     rg.loadWeights('test_regrid_edges_py.nc')
 
