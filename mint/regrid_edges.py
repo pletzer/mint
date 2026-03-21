@@ -115,6 +115,8 @@ class RegridEdges(object):
                                                     c_char_p, c_int]
         fn = filename.encode('utf-8')
         ier = MINTLIB.mnt_regridedges_loadSrcGrid(self.obj, fn, len(fn))
+        if ier:
+            error_handler(FILE, 'loadSrcGrid', ier)
 
     def loadDstGrid(self, filename):
         """
