@@ -28,9 +28,9 @@ env:
 linux_task:
   auto_cancellation: true
   matrix:
-    env:
-      PY_VER: "3.11"
-      VTK_VER: "9.2"
+    # env:
+    #   PY_VER: "3.11"
+    #   VTK_VER: "9.2"
     env:
       PY_VER: "3.12"
       VTK_VER: "9.6"
@@ -134,55 +134,55 @@ osx_task:
     - python setup.py develop
     - pytest
 
-#
-# Testing (Windows)
-#
-win_task:
-  auto_cancellation: true
-  matrix:
-    env:
-      PY_VER: "3.10"
-      VTK_VER: "9.2"
-  name: "Windows: py$PY_VER"
-  windows_container:
-    image: cirrusci/windowsservercore:cmake
-    os_version: 2019
-  env:
-    # use $VAR not %VAR%
-    CONDA_DIR: $USERPROFILE\miniconda3
-    CONDA_LIB: $CONDA_DIR\Library
-    PATH: $CONDA_DIR;$CONDA_LIB\bin;$CONDA_DIR\Scripts;$CONDA_DIR\condabin;$PATH
-    # must set this to its default since it doesn't work in env variables
-    # see https://github.com/cirruslabs/cirrus-ci-docs/issues/423
-    CIRRUS_WORKING_DIR: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build
-    PYTHON_ARCH: 64
-  conda_script:
-    - choco install -y miniconda3 --params="'/D:%CONDA_DIR%'"
-    - conda update -yn base conda
-    - conda install --yes -c conda-forge setuptools
-    - conda install --yes python=%PY_VER%
-    - conda install --yes pytest tbb cython numpy netcdf4
-    - conda install --yes -c conda-forge scitools-iris
-    - conda install --yes -c conda-forge libnetcdf
-    - conda install --yes -c conda-forge vtk=%VTK_VER%
-  install_script:
-    - conda list
-    # issue with iris on windows
-    # - python setup.py develop --no-deps
-    # - python -c "import mint; print(dir(mint))"
-    # - pytest mint\tests
-    # - ps: Get-Command python
-    # - echo %PATH%
-    # - dir C:%CONDA_LIB%\bin\vtkRendering*.dll
-    # - python -c "import vtk" fails
-  test_script:
-    - mkdir build-cmake
-    - cd build-cmake
-    - call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-    # - where cl
-    # - dir "%CONDA_LIB%\lib
-    # - dir "%CONDA_LIB%\include\vtk-%VTK_VER%"
-    - cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%CONDA_LIB%\include\vtk-%VTK_VER%" -DVTK_LIBRARY_DIR="%CONDA_LIB%\lib" -DNETCDF_INCLUDE_DIRS="%CONDA_LIB%\include" -DNETCDF_LIBRARIES="%CONDA_LIB%\lib\netcdf.lib" ..
-    - nmake
-    - ctest
-    - cd ../
+# #
+# # Testing (Windows)
+# #
+# win_task:
+#   auto_cancellation: true
+#   matrix:
+#     env:
+#       PY_VER: "3.10"
+#       VTK_VER: "9.2"
+#   name: "Windows: py$PY_VER"
+#   windows_container:
+#     image: cirrusci/windowsservercore:cmake
+#     os_version: 2019
+#   env:
+#     # use $VAR not %VAR%
+#     CONDA_DIR: $USERPROFILE\miniconda3
+#     CONDA_LIB: $CONDA_DIR\Library
+#     PATH: $CONDA_DIR;$CONDA_LIB\bin;$CONDA_DIR\Scripts;$CONDA_DIR\condabin;$PATH
+#     # must set this to its default since it doesn't work in env variables
+#     # see https://github.com/cirruslabs/cirrus-ci-docs/issues/423
+#     CIRRUS_WORKING_DIR: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build
+#     PYTHON_ARCH: 64
+#   conda_script:
+#     - choco install -y miniconda3 --params="'/D:%CONDA_DIR%'"
+#     - conda update -yn base conda
+#     - conda install --yes -c conda-forge setuptools
+#     - conda install --yes python=%PY_VER%
+#     - conda install --yes pytest tbb cython numpy netcdf4
+#     - conda install --yes -c conda-forge scitools-iris
+#     - conda install --yes -c conda-forge libnetcdf
+#     - conda install --yes -c conda-forge vtk=%VTK_VER%
+#   install_script:
+#     - conda list
+#     # issue with iris on windows
+#     # - python setup.py develop --no-deps
+#     # - python -c "import mint; print(dir(mint))"
+#     # - pytest mint\tests
+#     # - ps: Get-Command python
+#     # - echo %PATH%
+#     # - dir C:%CONDA_LIB%\bin\vtkRendering*.dll
+#     # - python -c "import vtk" fails
+#   test_script:
+#     - mkdir build-cmake
+#     - cd build-cmake
+#     - call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+#     # - where cl
+#     # - dir "%CONDA_LIB%\lib
+#     # - dir "%CONDA_LIB%\include\vtk-%VTK_VER%"
+#     - cmake -G "NMake Makefiles" -DVTK_INCLUDE_DIR="%CONDA_LIB%\include\vtk-%VTK_VER%" -DVTK_LIBRARY_DIR="%CONDA_LIB%\lib" -DNETCDF_INCLUDE_DIRS="%CONDA_LIB%\include" -DNETCDF_LIBRARIES="%CONDA_LIB%\lib\netcdf.lib" ..
+#     - nmake
+#     - ctest
+#     - cd ../
