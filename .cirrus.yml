@@ -32,8 +32,8 @@ linux_task:
       PY_VER: "3.11"
       VTK_VER: "9.2"
     env:
-      PY_VER: "3.10"
-      VTK_VER: "9.2"
+      PY_VER: "3.12"
+      VTK_VER: "9.6"
   name: "Linux: py${PY_VER}"
   container:
     dockerfile: requirements/ci/linux/Dockerfile
@@ -132,7 +132,7 @@ osx_task:
     - ctest
     - cd ..
     - python setup.py develop
-    # - pytest seg faults on mac os x M1
+    - pytest
 
 #
 # Testing (Windows)
