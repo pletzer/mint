@@ -139,7 +139,7 @@ class RegridEdges(object):
 
         :returns number
         """
-        MINTLIB.mnt_regridedges_getNumSrcEdges.argtypes = [POINTER(c_void_p)]
+        MINTLIB.mnt_regridedges_getNumSrcEdges.argtypes = [POINTER(c_void_p), POINTER(c_size_t)]
         MINTLIB.mnt_regridedges_getNumSrcEdges.restype = c_size_t
         n = c_size_t()
         ier = MINTLIB.mnt_regridedges_getNumSrcEdges(self.obj, byref(n))
@@ -153,7 +153,7 @@ class RegridEdges(object):
 
         :returns number
         """
-        MINTLIB.mnt_regridedges_getNumDstEdges.argtypes = [POINTER(c_void_p)]
+        MINTLIB.mnt_regridedges_getNumDstEdges.argtypes = [POINTER(c_void_p), POINTER(c_size_t)]
         MINTLIB.mnt_regridedges_getNumDstEdges.restype = c_size_t
         n = c_size_t()
         ier = MINTLIB.mnt_regridedges_getNumDstEdges(self.obj, byref(n))
