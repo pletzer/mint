@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #undef NDEBUG // turn on asserts
 
 void testLinear() {

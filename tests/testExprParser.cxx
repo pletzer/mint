@@ -1,5 +1,6 @@
 #include <GrExprParser.h>
 #include <GrExprAdaptor.h>
+#include <iostream>
 
 void testZero() {
     
