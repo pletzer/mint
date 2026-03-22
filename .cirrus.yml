@@ -86,8 +86,8 @@ osx_task:
   auto_cancellation: true
   matrix:
     env:
-      PY_VER: "3.11"
-      VTK_VER: "9.2"
+      PY_VER: "3.12"
+      VTK_VER: "9.6"
   name: "OSX: py${PY_VER}"
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
@@ -125,6 +125,8 @@ osx_task:
     - mkdir build-cmake
     - cd build-cmake
     - cmake -DBUILD_FORTRAN=OFF -DVTK_INCLUDE_DIR=${ENV_DIR}/include/vtk-${VTK_VER} -DVTK_LIBRARY_DIR=${ENV_DIR}/lib ..
+    - ls ${ENV_DIR}/
+    - ls ${ENV_DIR}/include
     - ls ${ENV_DIR}/include/vtk-${VTK_VER}
     - make VERBOSE=1
     - ctest
