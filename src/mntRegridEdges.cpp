@@ -786,6 +786,7 @@ int mnt_regridedges_getNumEdgesPerCell(RegridEdges_t** self, int* n) {
 
 LIBRARY_API
 int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* nPtr) {
+
     if (!(*self)->srcGridObj) {
         std::string msg = "source grid was not loaded";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
@@ -797,6 +798,7 @@ int mnt_regridedges_getNumSrcEdges(RegridEdges_t** self, std::size_t* nPtr) {
 
 LIBRARY_API
 int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* nPtr) {
+
     if (!(*self)->dstGridObj) {
         std::string msg = "destination grid was not loaded";
         mntlog::error(__FILE__, __func__, __LINE__, msg);

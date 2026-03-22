@@ -246,23 +246,27 @@ def test_compute_weights():
 # test currently throw a seg fault on macos X M1 (?)
 def test_apply_weights():
 
+    print(f'DATA_DIR = {DATA_DIR}')
+
     # create a regridder
     rg = RegridEdges()
 
     # src is lon-lat grid
     rg.setSrcGridFlags(0, 0)
     rg.loadSrcGrid(f'{DATA_DIR}/latlon4x2.nc$latlon')
+    num_src_edges = rg.getNumSrcEdges()
+    assert num_src_edges > 0, "Source grid not loaded"
 
     # dst is cubed-sphere
     rg.setDstGridFlags(1, 1)
     rg.loadDstGrid(f'{DATA_DIR}/cs_4.nc$physics')
 
-    # load the weights
-    rg.loadWeights('test_regrid_edges_py.nc')
-
-    num_src_edges = rg.getNumSrcEdges()
     num_dst_edges = rg.getNumDstEdges()
     print(f'number of edges (src/dst): {num_src_edges}/{num_dst_edges}')
+    assert num_dst_edges > 0, "Destination grid not loaded"
+
+    # load the weights
+    rg.loadWeights('test_regrid_edges_py.nc')
 
     # create some mock field
     src_data = numpy.array(range(0, num_src_edges), numpy.float64)

@@ -3,6 +3,7 @@
 #undef NDEBUG // turn on asserts
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 void test1() {
     // standard

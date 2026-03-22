@@ -1,6 +1,6 @@
 from iris.coords import AuxCoord
 from iris.cube import Cube
-from iris.experimental.ugrid.mesh import Mesh
+from iris.mesh import MeshXY as Mesh
 import numpy as np
 import mint
 
