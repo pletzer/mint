@@ -20,7 +20,7 @@ if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif()
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
 option(BUILD_FORTRAN "Whether or not to build Fortran code" OFF)
