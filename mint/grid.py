@@ -39,7 +39,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, '__del__', ier)
 
-    def setFlags(self, fixLonAcrossDateline, averageLonAtPole, degrees=True):
+    def setFlags(self, fixLonAcrossDateline, averageLonAtPole, degrees=True) :
         """
         Set the grid flags.
 
@@ -63,7 +63,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'setFlags', ier)
 
-    def loadFromUgrid2DData(self, xyz, face2nodes, edge2nodes):
+    def loadFromUgrid2DData(self, xyz: numpy.ndarray, face2nodes: numpy.ndarray, edge2nodes: numpy.ndarray) -> None:
         """
         Load a grid from 2D UGRID data structures.
 
@@ -71,6 +71,9 @@ class Grid(object):
         :param face2nodes: array of face/cell connectivity to vertex Ids
         :param edge2nodes: array of edge connectivity to vertex Ids
         """
+        if not xyz.flags.c_contiguous or not face2nodes.flags.c_contiguous or not edge2nodes.flags.c_contiguous:
+            error_handler(FILE, 'loadFromUgrid2DData', 'input arrays must be C contiguous!')
+
         MINTLIB.mnt_grid_loadFromUgrid2DData.argtypes = [POINTER(c_void_p),
                                                          c_size_t, c_size_t, c_size_t,
                                                          DOUBLE_ARRAY_PTR,
@@ -83,7 +86,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'loadFromUgrid2DData', ier)
 
-    def loadFromUgrid2DFile(self, fileAndMeshName):
+    def loadFromUgrid2DFile(self, fileAndMeshName: str) -> None:
         """
         Load a grid from a 2D UGRID file.
 
@@ -95,7 +98,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'loadFromUgrid2DFile', ier)
 
-    def load(self, filename):
+    def load(self, filename: str):
         """
         Load the grid from a VTK file.
 
@@ -107,7 +110,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'load', ier)
 
-    def dump(self, filename):
+    def dump(self, filename: str) -> None:
         """
         Dump the grid to a VTK file.
 
@@ -119,13 +122,16 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'dump', ier)
 
-    def setPoints(self, points):
+    def setPoints(self, points: numpy.ndarray) -> None:
         """
         Set the points (vertices), cell by cell. The points should ordered in counterclockwise way.
 
         :param points: numpy contiguous array of shape (ncells,
                        num_verts_per_cell, 3) using C ordering
         """
+        if not points.flags.c_contiguous:
+            error_handler(FILE, 'setPoints', 'points array must be C contiguous!')
+
         ncells, num_verts_per_cell, ndim = points.shape
         if ndim != 3:
             error_handler(FILE, f'setPoints: points.shape[2] != 3, got {ndim}!')
@@ -139,7 +145,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'build', ier)
 
-    def getPoints(self):
+    def getPoints(self) -> numpy.ndarray:
         """
         Get a view of the point (vertex) array of the cell-by-cell mesh.
 
@@ -157,7 +163,7 @@ class Grid(object):
         # create a numpy array from a C pointer
         return numpy.ctypeslib.as_array(pointsPtr, shape=(ncells, NUM_VERTS_PER_QUAD, 3))
 
-    def getEdgeId(self, cellId, edgeIndex):
+    def getEdgeId(self, cellId: int, edgeIndex: int) -> tuple[int, int]:
         """
         Get the edge Id and direction of a cellId, edgeIndex pair.
 
@@ -177,7 +183,7 @@ class Grid(object):
             error_handler(FILE, 'getEdgeId', ier)
         return edgeId.value, edgeSign.value
 
-    def getNodeIds(self, cellId, edgeIndex):
+    def getNodeIds(self, cellId: int, edgeIndex: int) -> tuple[int, int]:
         """
         Get the node Ids of a cellId, edgeIndex pair.
 
@@ -194,7 +200,7 @@ class Grid(object):
             error_handler(FILE, 'getNodeIds', ier)
         return nodeIds[0], nodeIds[1]
 
-    def computeEdgeArcLengths(self):
+    def computeEdgeArcLengths(self) -> None:
         """
         Compute and store edge arc lengths.
         :note assumes the sphere radius to be one
@@ -204,7 +210,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'computeEdgeArcLengths', ier)
 
-    def getEdgeArcLength(self, cellId, edgeIndex):
+    def getEdgeArcLength(self, cellId: int, edgeIndex: int) -> float:
         """
         Get the arc length for given cell and edge.
         :param cellId: cell Id
@@ -221,7 +227,7 @@ class Grid(object):
             error_handler(FILE, 'getEdgeArcLength', ier)
         return res.value
 
-    def attach(self, varname, data, copy=True):
+    def attach(self, varname: str, data: numpy.ndarray, copy: bool=True):
         """
         Attach data to the grid.
 
@@ -246,7 +252,7 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'attach', ier)
 
-    def getNumberOfCells(self):
+    def getNumberOfCells(self) -> int:
         """
         Get the number of cells.
 
@@ -260,7 +266,7 @@ class Grid(object):
             error_handler(FILE, 'getNumberOfCells', ier)
         return n.value
 
-    def getNumberOfEdges(self):
+    def getNumberOfEdges(self) -> int:
         """
         Get the number of unique edges of the grid.
 
@@ -274,7 +280,7 @@ class Grid(object):
             error_handler(FILE, 'getNumberOfEdges', ier)
         return n.value
 
-    def check(self):
+    def check(self) -> int:
         """
         Check that the cells have positive area.
 
