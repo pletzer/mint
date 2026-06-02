@@ -7,74 +7,24 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        c_compiler: [gcc, clang]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-
-          - os: ubuntu-latest
-            c_compiler: gcc
+          - c_compiler: gcc
             cpp_compiler: g++
-
-          - os: ubuntu-latest
-            c_compiler: clang
+          - c_compiler: clang
             cpp_compiler: clang++
-
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
 
     steps:
     - uses: actions/checkout@v4
 
-    #
-    # Ubuntu dependencies
-    #
-    - name: Install dependencies (Ubuntu)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libnetcdf-dev \
-          libvtk9-dev
-
-    #
-    # Windows dependencies via vcpkg
-    #
-    - name: Setup vcpkg
-      if: runner.os == 'Windows'
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgGitHubToken: 'f3e10653cc27d62a37a3763cd84b38bca07c6075' # recent commit at 
-        vcpkgDirectory: C:/vcpkg
-
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        vcpkg install netcdf-c:x64-windows
-        vcpkg install vtk:x64-windows
-
-    - name: Set reusable strings
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-    - name: Install dependencies (Ubuntu)
-      if: runner.os == 'Linux'
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -88,6 +38,12 @@ jobs:
           qttools5-dev \
           libqt5x11extras5-dev
 
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
     - name: Configure CMake
       run: >
         cmake
@@ -96,9 +52,6 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        ${{ runner.os == 'Windows' &&
-            '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake'
-            || '' }}
 
     - name: Build
       run: >
