@@ -58,7 +58,7 @@ jobs:
       if: runner.os == 'Windows'
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitHubToken: ${{ secrets.VCPKG_GITHUB_TOKEN }}
+        vcpkgGitHubToken: 'f3e10653cc27d62a37a3763cd84b38bca07c6075' # recent commit at 
         vcpkgDirectory: C:/vcpkg
 
     - name: Install dependencies (Windows)
@@ -83,7 +83,10 @@ jobs:
           libnetcdf-dev \
           libvtk9-dev \
           libgl1-mesa-dev \
-          libxt-dev
+          libxt-dev \
+          qtbase5-dev \
+          qttools5-dev \
+          libqt5x11extras5-dev
 
     - name: Configure CMake
       run: >
@@ -93,7 +96,6 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DVTK_GROUP_ENABLE_Qt=NO
         ${{ runner.os == 'Windows' &&
             '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake'
             || '' }}
