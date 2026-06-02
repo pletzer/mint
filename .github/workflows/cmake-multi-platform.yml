@@ -1,0 +1,67 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        build_type: [Release]
+        c_compiler: [gcc, clang]
+        include:
+          - c_compiler: gcc
+            cpp_compiler: g++
+          - c_compiler: clang
+            cpp_compiler: clang++
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          libnetcdf-dev \
+          libvtk9-dev \
+          libgl1-mesa-dev \
+          libxt-dev \
+          qtbase5-dev \
+          qttools5-dev \
+          libqt5x11extras5-dev
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake
+        -B ${{ steps.strings.outputs.build-output-dir }}
+        -S ${{ github.workspace }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+    - name: Build
+      run: >
+        cmake --build
+        ${{ steps.strings.outputs.build-output-dir }}
+        --config ${{ matrix.build_type }}
+
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: >
+        ctest
+        --build-config ${{ matrix.build_type }}
+        --output-on-failure
