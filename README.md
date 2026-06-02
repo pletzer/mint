@@ -8,9 +8,9 @@
 
 
 <p align="left">
-<a href="https://cirrus-ci.com/github/pletzer/mint">
-<img src="https://api.cirrus-ci.com/github/pletzer/mint.svg?branch=master"
-     alt="Cirrus-CI" /></a>
+   
+[![CI](https://github.com/pletzer/mint/actions/workflows/install_and_test.yml/badge.svg)](https://github.com/<YOUR_USERNAME>/<YOUR_REPO>/actions/workflows/install_and_test.yml)
+
 <a href="https://github.com/pletzer/mint/graphs/contributors">
 <img src="https://img.shields.io/github/contributors/pletzer/mint.svg"
      alt="# contributors" /></a>
