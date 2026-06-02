@@ -9,7 +9,7 @@
 
 <p align="left">
    
-[![CI](https://github.com/pletzer/mint/actions/workflows/install_and_test.yml/badge.svg)](https://github.com/pletzer/mint/actions/workflows/install_and_test.yml)
+[![CI](https://github.com/pletzer/mint/actions/workflows/install_and_test.yml/badge.svg)](https://github.com/pletzer/mint/actions/workflows/cmake-multi-platform.yml)
 
 <a href="https://github.com/pletzer/mint/graphs/contributors">
 <img src="https://img.shields.io/github/contributors/pletzer/mint.svg"
