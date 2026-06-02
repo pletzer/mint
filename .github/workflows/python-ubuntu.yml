@@ -2,10 +2,8 @@ name: Install and Test Python Bindings
 
 on:
   push:
-    branches:
   pull_request:
-    branches:
-      - main
+    branches: [ "master" ]
 
 jobs:
   build-and-test:
@@ -25,6 +23,8 @@ jobs:
           miniforge-version: latest
           activate-environment: mint-env
           auto-activate-base: false
+          channels: conda-forge,defaults
+          channel-priority: strict
 
       - name: Install dependencies
         run: |
