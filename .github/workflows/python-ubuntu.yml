@@ -1,0 +1,48 @@
+name: Install and Test Python Bindings
+
+on:
+  push:
+    branches:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: mint-env
+          auto-activate-base: false
+
+      - name: Install dependencies
+        run: |
+          conda install -y \
+            cmake \
+            cython \
+            setuptools \
+            tbb-devel \
+            pip \
+            libnetcdf \
+            vtk \
+            numpy \
+            pytest \
+            netcdf4 \
+            iris
+
+      - name: Install mint Python bindings
+        run: pip install .
+
+      - name: Run tests
+        run: pytest
