@@ -10,6 +10,8 @@
 <p align="left">
    
 [![CI](https://github.com/pletzer/mint/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/pletzer/mint/actions/workflows/cmake-multi-platform.yml)
+[![CI](https://github.com/pletzer/mint/actions/workflows/python-ubuntu.yml/badge.svg)](https://github.com/pletzer/mint/actions/workflows/python-ubuntu.yml)
+
 
 <a href="https://github.com/pletzer/mint/graphs/contributors">
 <img src="https://img.shields.io/github/contributors/pletzer/mint.svg"
