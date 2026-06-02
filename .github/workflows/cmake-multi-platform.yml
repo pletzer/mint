@@ -70,6 +70,18 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+    - name: Install dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          libnetcdf-dev \
+          libvtk9-dev \
+          libgl1-mesa-dev \
+          libxt-dev
+
     - name: Configure CMake
       run: >
         cmake
@@ -78,6 +90,7 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DVTK_GROUP_ENABLE_Qt=NO
         ${{ runner.os == 'Windows' &&
             '-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake'
             || '' }}
