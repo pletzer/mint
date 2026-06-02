@@ -57,6 +57,9 @@ jobs:
     - name: Setup vcpkg
       if: runner.os == 'Windows'
       uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitHubToken: ${{ secrets.VCPKG_GITHUB_TOKEN }}
+        vcpkgDirectory: C:/vcpkg
 
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
