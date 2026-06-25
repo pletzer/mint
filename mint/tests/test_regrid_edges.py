@@ -372,7 +372,43 @@ def test_identity2():
     assert error < 1.e-6
 
 
+def test_fv3_to_latlon_weights():
+    """
+    Compute regridding weights from an FV3/SCRIP C24 cubed-sphere source grid
+    to a regular lat-lon destination grid and verify basic sanity.
+    """
+    # src: FV3 C24 cubed-sphere loaded directly from the SCRIP NetCDF file
+    src_grid = Grid()
+    src_grid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
+    src_grid.loadFromFV32DFile(str(DATA_DIR / 'C24_SCRIP_desc.181018.nc'))
+    assert src_grid.getNumberOfCells() == 3456
+
+    # dst: regular 100x50 lat-lon grid
+    dst_grid = Grid()
+    dst_grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True)
+    dst_grid.loadFromUgrid2DFile(str(DATA_DIR / 'latlon100x50.nc') + '$latlon')
+    assert dst_grid.getNumberOfCells() == 5000
+
+    rg = RegridEdges()
+    rg.setSrcGrid(src_grid)
+    rg.setDstGrid(dst_grid)
+    rg.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
+    rg.computeWeights()
+
+    # save weights for inspection / reuse
+    weights_file = 'test_fv3_c24_to_latlon100x50_weights.nc'
+    rg.dumpWeights(weights_file)
+
+    # basic sanity: every destination edge should have at least some coverage
+    num_dst_edges = rg.getNumDstEdges()
+    assert num_dst_edges > 0
+
+    print(f'test_fv3_to_latlon_weights: weights written to {weights_file}, '
+          f'dst edges = {num_dst_edges}')
+
+
 if __name__ == '__main__':
 
     test_compute_weights()
     test_apply_weights()
+    test_fv3_to_latlon_weights()
