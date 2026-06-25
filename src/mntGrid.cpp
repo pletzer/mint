@@ -598,6 +598,74 @@ int mnt_grid_loadFromFV32DData(Grid_t** self, std::size_t numCells,
 
 
 LIBRARY_API
+int mnt_grid_loadFromFV32DFile(Grid_t** self, const char* filename) {
+
+    int ncid, ier;
+
+    // open file
+    ier = nc_open(filename, NC_NOWRITE, &ncid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "cannot open \"" + std::string(filename) + "\": " + nc_strerror(ier));
+        return 1;
+    }
+
+    // read grid_size dimension
+    int dimid;
+    ier = nc_inq_dimid(ncid, "grid_size", &dimid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "\"grid_size\" dimension not found in \"" + std::string(filename) + "\"");
+        nc_close(ncid);
+        return 2;
+    }
+    std::size_t numCells;
+    nc_inq_dimlen(ncid, dimid, &numCells);
+
+    // allocate flat arrays: numCells * 4 corners
+    std::vector<double> lon_corners(numCells * 4);
+    std::vector<double> lat_corners(numCells * 4);
+
+    // read grid_corner_lon
+    int varid;
+    ier = nc_inq_varid(ncid, "grid_corner_lon", &varid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "variable \"grid_corner_lon\" not found in \"" + std::string(filename) + "\"");
+        nc_close(ncid);
+        return 3;
+    }
+    ier = nc_get_var_double(ncid, varid, lon_corners.data());
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "failed to read \"grid_corner_lon\": " + std::string(nc_strerror(ier)));
+        nc_close(ncid);
+        return 4;
+    }
+
+    // read grid_corner_lat
+    ier = nc_inq_varid(ncid, "grid_corner_lat", &varid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "variable \"grid_corner_lat\" not found in \"" + std::string(filename) + "\"");
+        nc_close(ncid);
+        return 5;
+    }
+    ier = nc_get_var_double(ncid, varid, lat_corners.data());
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "failed to read \"grid_corner_lat\": " + std::string(nc_strerror(ier)));
+        nc_close(ncid);
+        return 6;
+    }
+
+    nc_close(ncid);
+
+    return mnt_grid_loadFromFV32DData(self, numCells, lon_corners.data(), lat_corners.data());
+}
+
+
+LIBRARY_API
 int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename$meshname"

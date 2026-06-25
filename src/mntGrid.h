@@ -207,6 +207,18 @@ int mnt_grid_loadFromFV32DData(Grid_t** self, std::size_t numCells,
                                const double lon_corners[], const double lat_corners[]);
 
 /**
+ * Load a grid from a FV3/SCRIP NetCDF file
+ * @param self instance of Grid_t
+ * @param filename path to a SCRIP-format NetCDF file containing grid_corner_lon and
+ *                 grid_corner_lat variables of dimensions (grid_size, grid_corners=4)
+ * @return error code (0 = OK)
+ * @note calls mnt_grid_loadFromFV32DData internally; see that function for further notes
+ * @note call mnt_grid_setFlags before this call to control dateline and pole handling
+ */
+LIBRARY_API
+int mnt_grid_loadFromFV32DFile(Grid_t** self, const char* filename);
+
+/**
  * Load a grid from a 2D Ugrid file
  * @param self instance of Grid_t
  * @param fileAndMeshName column separated file and mesh name (e.g. cs_4.nc$physics)
