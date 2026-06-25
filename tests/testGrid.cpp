@@ -200,6 +200,57 @@ void testUgrid() {
 }
 
 
+void testFV32DFile() {
+    int ier;
+    Grid_t* grd = NULL;
+
+    ier = mnt_grid_new(&grd);
+    assert(ier == 0);
+
+    // input is in degrees; fix dateline and pole longitude
+    ier = mnt_grid_setFlags(&grd, /*fixLonAcrossDateline=*/1,
+                                  /*averageLonAtPole=*/1,
+                                  /*degrees=*/1);
+    assert(ier == 0);
+
+    ier = mnt_grid_loadFromFV32DFile(&grd, "${CMAKE_SOURCE_DIR}/data/C24_SCRIP_desc.181018.nc");
+    assert(ier == 0);
+
+    // C24 cubed-sphere has 6 * 24 * 24 = 3456 cells
+    std::size_t numCells = 0;
+    ier = mnt_grid_getNumberOfCells(&grd, &numCells);
+    assert(ier == 0);
+    assert(numCells == 3456);
+    std::cout << "testFV32DFile: " << numCells << " cells\n";
+
+    // all cells should have positive area
+    std::size_t numBadCells = 0;
+    ier = mnt_grid_check(&grd, &numBadCells);
+    assert(ier == 0);
+    assert(numBadCells == 0);
+
+    // spot-check: vertices of first and last cell should be finite and in [-180,360] x [-90,90]
+    double* verts = NULL;
+    ier = mnt_grid_getPointsPtr(&grd, &verts);
+    assert(ier == 0);
+    for (std::size_t cellId : {std::size_t(0), numCells - 1}) {
+        for (int v = 0; v < MNT_NUM_VERTS_PER_QUAD; ++v) {
+            std::size_t k = 3 * (cellId * MNT_NUM_VERTS_PER_QUAD + v);
+            double lon = verts[k + LON_INDEX];
+            double lat = verts[k + LAT_INDEX];
+            assert(lon >= -180.0 && lon <= 360.0);
+            assert(lat >=  -90.0 && lat <=  90.0);
+        }
+    }
+
+    ier = mnt_grid_dump(&grd, "C24_SCRIP_grid.vtk");
+    assert(ier == 0);
+
+    ier = mnt_grid_del(&grd);
+    assert(ier == 0);
+}
+
+
 int main(int argc, char** argv) {
 
     //testIrisGrid();
@@ -208,6 +259,7 @@ int main(int argc, char** argv) {
     testLFRic();
     testUgrid();
     testVTK();
+    testFV32DFile();
 
     mnt_printLogMessages();
 
