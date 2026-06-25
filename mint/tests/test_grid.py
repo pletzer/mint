@@ -165,6 +165,51 @@ def test_load_ugrid_data():
     gr.dump('singleCell.vtk')
 
 
+def test_load_from_fv3_file():
+    gr = Grid()
+    gr.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
+    filename = str(DATA_DIR / Path('C24_SCRIP_desc.181018.nc'))
+    gr.loadFromFV32DFile(filename)
+
+    # C24 cubed-sphere: 6 faces * 24 * 24 = 3456 cells
+    ncells = gr.getNumberOfCells()
+    assert ncells == 3456, f'expected 3456 cells, got {ncells}'
+
+    # all cells should have positive area
+    num_bad_cells = gr.check()
+    assert num_bad_cells == 0, f'{num_bad_cells} bad cells found'
+
+    # vertices should be within valid ranges
+    pts = gr.getPoints()   # shape (ncells, 4, 3): [..., 0]=lon, [..., 1]=lat
+    assert pts.shape == (ncells, 4, 3)
+    # latitudes must be in [-90, 90]
+    assert pts[..., 1].min() >= -90.0 and pts[..., 1].max() <= 90.0
+    # dateline fixing may shift longitudes by ±360, so the absolute range is
+    # not bounded to [-180, 360]; instead check that each cell's lon span < 180
+    cell_lon_span = pts[..., 0].max(axis=1) - pts[..., 0].min(axis=1)
+    assert cell_lon_span.max() < 180.0, \
+        f'cell lon span too large: {cell_lon_span.max():.2f} deg'
+
+    with TemporaryDirectory() as d:
+        gr.dump(str(Path(d) / 'C24_SCRIP_grid.vtk'))
+
+
+def test_load_from_fv3_data():
+    import netCDF4
+    filename = str(DATA_DIR / Path('C24_SCRIP_desc.181018.nc'))
+    with netCDF4.Dataset(filename) as ds:
+        lon_corners = numpy.ascontiguousarray(ds['grid_corner_lon'][:], dtype=numpy.float64)
+        lat_corners = numpy.ascontiguousarray(ds['grid_corner_lat'][:], dtype=numpy.float64)
+
+    gr = Grid()
+    gr.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
+    gr.loadFromFV32DData(lon_corners, lat_corners)
+
+    ncells = gr.getNumberOfCells()
+    assert ncells == 3456, f'expected 3456 cells, got {ncells}'
+    assert gr.check() == 0
+
+
 if __name__ == '__main__':
 
     test_edge_arc_lengths()
@@ -172,3 +217,5 @@ if __name__ == '__main__':
     test_create_grid()
     test_load_grid()
     test_load_from_ugrid_file()
+    test_load_from_fv3_file()
+    test_load_from_fv3_data()
