@@ -187,8 +187,24 @@ int mnt_grid_get(Grid_t** self, vtkUnstructuredGrid** grid_ptr);
  * @note this method will copy the data structures
  */
 LIBRARY_API
-int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t numCells, std::size_t numEdges, std::size_t numPoints, 
+int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t numCells, std::size_t numEdges, std::size_t numPoints,
                                  const double xyz[], const std::size_t face2nodes[], const std::size_t edge2nodes[]);
+
+/**
+ * Load the grid from FV3/SCRIP-style cell-corner arrays
+ * @param self instance of Grid_t
+ * @param numCells number of cells
+ * @param lon_corners flat array of size numCells*4 — longitude of each corner (degrees), fastest index is corner (0-3)
+ * @param lat_corners flat array of size numCells*4 — latitude of each corner (degrees), fastest index is corner (0-3)
+ * @return error code (0 = OK)
+ * @note corner ordering must follow the same CCW convention used elsewhere in mnt (SW, SE, NE, NW)
+ * @note no edge or face-node connectivity is built; mnt_grid_getNodeIds and mnt_grid_getEdgeId
+ *       will return an error if called on a grid loaded via this method
+ * @note call mnt_grid_setFlags before this call to control dateline and pole handling
+ */
+LIBRARY_API
+int mnt_grid_loadFromFV32DData(Grid_t** self, std::size_t numCells,
+                               const double lon_corners[], const double lat_corners[]);
 
 /**
  * Load a grid from a 2D Ugrid file

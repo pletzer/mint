@@ -410,7 +410,7 @@ template<class T>
 Vector<T> abs(const Vector<T> &v) 
 { 
   Vector<T> b(v.size());  
-  std::transform(v.begin(), v.end(), b.begin(), std::abs<T>);
+  std::transform(v.begin(), v.end(), b.begin(), [](T x){ return std::abs(x); });
   return b;  
 }
 
