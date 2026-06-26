@@ -98,6 +98,49 @@ class Grid(object):
         if ier:
             error_handler(FILE, 'loadFromUgrid2DFile', ier)
 
+    def loadFromFV32DData(self, lon_corners: numpy.ndarray, lat_corners: numpy.ndarray) -> None:
+        """
+        Load a grid from FV3/SCRIP-style cell-corner arrays.
+
+        :param lon_corners: longitudes of cell corners, shape (ncells, 4), degrees, C contiguous
+        :param lat_corners: latitudes  of cell corners, shape (ncells, 4), degrees, C contiguous
+
+        .. note:: corner ordering is SW, SE, NE, NW (CCW)
+        .. note:: no edge or face-node connectivity is built; getNodeIds/getEdgeId will fail
+        .. note:: call setFlags before this method to control dateline and pole handling
+        """
+        if not lon_corners.flags.c_contiguous or not lat_corners.flags.c_contiguous:
+            error_handler(FILE, 'loadFromFV32DData', 'input arrays must be C contiguous!')
+
+        ncells = lon_corners.shape[0]
+        if lon_corners.shape != (ncells, 4) or lat_corners.shape != (ncells, 4):
+            error_handler(FILE, 'loadFromFV32DData',
+                          f'expected shape (ncells, 4), got {lon_corners.shape} / {lat_corners.shape}')
+
+        MINTLIB.mnt_grid_loadFromFV32DData.argtypes = [POINTER(c_void_p),
+                                                       c_size_t,
+                                                       DOUBLE_ARRAY_PTR,
+                                                       DOUBLE_ARRAY_PTR]
+        ier = MINTLIB.mnt_grid_loadFromFV32DData(self.obj, c_size_t(ncells),
+                                                  lon_corners, lat_corners)
+        if ier:
+            error_handler(FILE, 'loadFromFV32DData', ier)
+
+    def loadFromFV32DFile(self, filename: str) -> None:
+        """
+        Load a grid from a FV3/SCRIP NetCDF file.
+
+        :param filename: path to a SCRIP-format NetCDF file containing
+                         ``grid_corner_lon`` and ``grid_corner_lat`` variables
+                         of dimensions ``(grid_size, grid_corners=4)``
+
+        .. note:: call setFlags before this method to control dateline and pole handling
+        """
+        MINTLIB.mnt_grid_loadFromFV32DFile.argtypes = [POINTER(c_void_p), c_char_p]
+        ier = MINTLIB.mnt_grid_loadFromFV32DFile(self.obj, filename.encode('utf-8'))
+        if ier:
+            error_handler(FILE, 'loadFromFV32DFile', ier)
+
     def load(self, filename: str):
         """
         Load the grid from a VTK file.

@@ -521,6 +521,151 @@ int mnt_grid_loadFromUgrid2DData(Grid_t** self, std::size_t ncells, std::size_t 
 
 
 LIBRARY_API
+int mnt_grid_loadFromFV32DData(Grid_t** self, std::size_t numCells,
+                               const double lon_corners[], const double lat_corners[]) {
+
+    if ((*self)->grid) {
+        std::string msg = "grid has already been built";
+        mntlog::info(__FILE__, __func__, __LINE__, msg);
+        return 0;
+    }
+
+    // Allocate the flat vertex array: numCells * 4 verts * 3 components (lon, lat, elv)
+    (*self)->verts = new double[numCells * MNT_NUM_VERTS_PER_QUAD * 3];
+    (*self)->ownsVerts = true;
+
+    for (std::size_t icell = 0; icell < numCells; ++icell) {
+
+        // Use the first corner of each cell as the longitude reference for dateline fixing
+        double lonBase = lon_corners[icell * MNT_NUM_VERTS_PER_QUAD + 0];
+
+        double avgLon = 0.0;
+        long long poleNodeIdx = -1;
+        int count = 0;
+
+        for (int nodeIdx = 0; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
+
+            double lon = lon_corners[icell * MNT_NUM_VERTS_PER_QUAD + nodeIdx];
+            double lat = lat_corners[icell * MNT_NUM_VERTS_PER_QUAD + nodeIdx];
+
+            if ((*self)->fixLonAcrossDateline) {
+                lon = fixLongitude((*self)->periodX, lonBase, lon);
+            }
+
+            const double eps = 100 * std::numeric_limits<double>::epsilon();
+            if (std::fabs(std::abs(lat) - 0.25 * (*self)->periodX) < eps) {
+                // node sits on a pole — longitude is ill-defined
+                poleNodeIdx = nodeIdx;
+            }
+            else {
+                avgLon += lon;
+                count++;
+            }
+
+            std::size_t base = icell * MNT_NUM_VERTS_PER_QUAD * 3 + nodeIdx * 3;
+            (*self)->verts[base + LON_INDEX] = lon;
+            (*self)->verts[base + LAT_INDEX] = lat;
+            (*self)->verts[base + ELV_INDEX] = 0.0;
+        }
+
+        if (count > 0) {
+            avgLon /= count;
+        }
+
+        // Replace the ill-defined pole longitude with the average of the other corners
+        if ((*self)->averageLonAtPole && poleNodeIdx >= 0) {
+            std::stringstream msg;
+            std::size_t base = icell * MNT_NUM_VERTS_PER_QUAD * 3 + poleNodeIdx * 3;
+            msg << "cell " << icell << ": setting pole longitude "
+                << (*self)->verts[base + LON_INDEX] << " -> " << avgLon;
+            mntlog::info(__FILE__, __func__, __LINE__, msg.str());
+            (*self)->verts[base + LON_INDEX] = avgLon;
+        }
+
+        // Second dateline pass (after the pole longitude has been corrected)
+        if ((*self)->fixLonAcrossDateline) {
+            lonBase = (*self)->verts[icell * MNT_NUM_VERTS_PER_QUAD * 3 + LON_INDEX];
+            for (int nodeIdx = 1; nodeIdx < MNT_NUM_VERTS_PER_QUAD; ++nodeIdx) {
+                std::size_t base = icell * MNT_NUM_VERTS_PER_QUAD * 3 + nodeIdx * 3;
+                double lon = (*self)->verts[base + LON_INDEX];
+                (*self)->verts[base + LON_INDEX] = fixLongitude((*self)->periodX, lonBase, lon);
+            }
+        }
+    }
+
+    return mnt_grid_build(self, MNT_NUM_VERTS_PER_QUAD, (vtkIdType) numCells);
+}
+
+
+LIBRARY_API
+int mnt_grid_loadFromFV32DFile(Grid_t** self, const char* filename) {
+
+    int ncid, ier;
+
+    // open file
+    ier = nc_open(filename, NC_NOWRITE, &ncid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "cannot open \"" + std::string(filename) + "\": " + nc_strerror(ier));
+        return 1;
+    }
+
+    // read grid_size dimension
+    int dimid;
+    ier = nc_inq_dimid(ncid, "grid_size", &dimid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "\"grid_size\" dimension not found in \"" + std::string(filename) + "\"");
+        nc_close(ncid);
+        return 2;
+    }
+    std::size_t numCells;
+    nc_inq_dimlen(ncid, dimid, &numCells);
+
+    // allocate flat arrays: numCells * 4 corners
+    std::vector<double> lon_corners(numCells * 4);
+    std::vector<double> lat_corners(numCells * 4);
+
+    // read grid_corner_lon
+    int varid;
+    ier = nc_inq_varid(ncid, "grid_corner_lon", &varid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "variable \"grid_corner_lon\" not found in \"" + std::string(filename) + "\"");
+        nc_close(ncid);
+        return 3;
+    }
+    ier = nc_get_var_double(ncid, varid, lon_corners.data());
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "failed to read \"grid_corner_lon\": " + std::string(nc_strerror(ier)));
+        nc_close(ncid);
+        return 4;
+    }
+
+    // read grid_corner_lat
+    ier = nc_inq_varid(ncid, "grid_corner_lat", &varid);
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "variable \"grid_corner_lat\" not found in \"" + std::string(filename) + "\"");
+        nc_close(ncid);
+        return 5;
+    }
+    ier = nc_get_var_double(ncid, varid, lat_corners.data());
+    if (ier != NC_NOERR) {
+        mntlog::error(__FILE__, __func__, __LINE__,
+            "failed to read \"grid_corner_lat\": " + std::string(nc_strerror(ier)));
+        nc_close(ncid);
+        return 6;
+    }
+
+    nc_close(ncid);
+
+    return mnt_grid_loadFromFV32DData(self, numCells, lon_corners.data(), lat_corners.data());
+}
+
+
+LIBRARY_API
 int mnt_grid_loadFromUgrid2DFile(Grid_t** self, const char* fileAndMeshName) {
 
     // extract the filename and the mesh name from "filename$meshname"

@@ -71,6 +71,60 @@ if ((NOT "${VTK_INCLUDE_DIR}" STREQUAL "") AND (NOT "${VTK_LIBRARY_DIR}" STREQUA
 else ()
     # let MINT search for the location of VTK
     set(VTK_DIR "" CACHE PATH "The directory containing VTKConfig.cmake or vtk-config.cmake")
+
+    # VTK 9.4 was compiled against Boost 1.86.0 and its cmake config requests that exact
+    # version. Work around the EXACT check by writing a package-redirect config that
+    # reports 1.86.0 while pointing at whatever Boost headers are actually installed.
+    # Boost 1.90.x is ABI-compatible with 1.86.0 so this is safe in practice.
+    find_package(Boost QUIET)   # locate real headers; CONFIG or module, either is fine
+    if (NOT Boost_VERSION_STRING STREQUAL "1.86.0")
+        # Determine the include path: use what find_package found, or fall back to
+        # the conda prefix (which is always set inside a conda environment).
+        if (NOT Boost_INCLUDE_DIRS)
+            if (DEFINED ENV{CONDA_PREFIX})
+                set(Boost_INCLUDE_DIRS "$ENV{CONDA_PREFIX}/include")
+            else()
+                message(FATAL_ERROR "Cannot locate Boost headers — set BOOST_ROOT or activate your conda environment")
+            endif()
+        endif()
+        message(STATUS "Boost ${Boost_VERSION_STRING} found at ${Boost_INCLUDE_DIRS}; "
+                       "redirecting to 1.86.0 to satisfy VTK 9.4's exact-version check")
+        set(_boost_redirect "${CMAKE_BINARY_DIR}/BoostRedirect")
+        file(MAKE_DIRECTORY "${_boost_redirect}")
+        file(WRITE "${_boost_redirect}/BoostConfig.cmake"
+            "# Auto-generated redirect: reports 1.86.0 so VTK 9.4 config accepts it.\n"
+            "set(Boost_FOUND TRUE)\n"
+            "set(BOOST_VERSION \"1.86.0\")\n"
+            "set(Boost_VERSION_STRING \"1.86.0\")\n"
+            "set(Boost_INCLUDE_DIRS \"${Boost_INCLUDE_DIRS}\")\n"
+            "set(Boost_INCLUDE_DIR  \"${Boost_INCLUDE_DIRS}\")\n"
+            "if (NOT TARGET Boost::headers)\n"
+            "  add_library(Boost::headers INTERFACE IMPORTED GLOBAL)\n"
+            "  target_include_directories(Boost::headers INTERFACE \"${Boost_INCLUDE_DIRS}\")\n"
+            "endif()\n"
+        )
+        # cmake checks BoostConfigVersion.cmake (in the same dir) for version matching
+        file(WRITE "${_boost_redirect}/BoostConfigVersion.cmake"
+            "set(PACKAGE_VERSION \"1.86.0\")\n"
+            "if (PACKAGE_FIND_VERSION_EXACT)\n"
+            "  if (PACKAGE_FIND_VERSION STREQUAL PACKAGE_VERSION)\n"
+            "    set(PACKAGE_VERSION_EXACT TRUE)\n"
+            "    set(PACKAGE_VERSION_COMPATIBLE TRUE)\n"
+            "  else()\n"
+            "    set(PACKAGE_VERSION_COMPATIBLE FALSE)\n"
+            "  endif()\n"
+            "elseif (PACKAGE_VERSION VERSION_GREATER_EQUAL PACKAGE_FIND_VERSION)\n"
+            "  set(PACKAGE_VERSION_COMPATIBLE TRUE)\n"
+            "else()\n"
+            "  set(PACKAGE_VERSION_COMPATIBLE FALSE)\n"
+            "endif()\n"
+        )
+        set(CMAKE_FIND_PACKAGE_REDIRECTS_DIR "${_boost_redirect}")
+        # Also set Boost_DIR so cmake uses our redirect exclusively when VTK calls
+        # find_package(Boost), regardless of cmake version behaviour differences.
+        set(Boost_DIR "${_boost_redirect}" CACHE PATH "" FORCE)
+    endif()
+
     if (VTK_VERSION VERSION_LESS "8.90.0")
         find_package(VTK REQUIRED)
     else()

@@ -1,4 +1,7 @@
-from mint import RegridEdges, Grid, UNIQUE_EDGE_DATA, FUNC_SPACE_W2, FUNC_SPACE_W1, NUM_VERTS_PER_QUAD, NUM_EDGES_PER_QUAD
+from mint import (RegridEdges, Grid,
+                  CELL_BY_CELL_DATA, UNIQUE_EDGE_DATA,
+                  FUNC_SPACE_W2, FUNC_SPACE_W1,
+                  NUM_VERTS_PER_QUAD, NUM_EDGES_PER_QUAD)
 import numpy
 from pathlib import Path
 
@@ -372,7 +375,77 @@ def test_identity2():
     assert error < 1.e-6
 
 
+def _potential(lon_deg, lat_deg):
+    """Scalar potential φ(λ, θ) = sin(λ) * cos(θ), angles in degrees."""
+    return numpy.sin(numpy.deg2rad(lon_deg)) * numpy.cos(numpy.deg2rad(lat_deg))
+
+
+def test_fv3_to_latlon_weights():
+    """
+    Compute regridding weights from an FV3/SCRIP C24 cubed-sphere source grid
+    to a regular lat-lon destination grid, apply a potential-derived velocity
+    field, and verify the regridded integrals against the analytical reference.
+
+    Potential:  φ(λ, θ) = sin(λ) * cos(θ)
+    W1 edge integral from A to B: ∫∇φ·dl = φ(B) − φ(A)  (exact for any path)
+    """
+    # ── grids ────────────────────────────────────────────────────────────────
+    src_grid = Grid()
+    src_grid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
+    src_grid.loadFromFV32DFile(str(DATA_DIR / 'C24_SCRIP_desc.181018.nc'))
+    src_ncells = src_grid.getNumberOfCells()
+    assert src_ncells == 3456
+
+    dst_grid = Grid()
+    dst_grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True)
+    dst_grid.loadFromUgrid2DFile(str(DATA_DIR / 'latlon100x50.nc') + '$latlon')
+    dst_ncells = dst_grid.getNumberOfCells()
+    assert dst_ncells == 5000
+
+    # ── weights ──────────────────────────────────────────────────────────────
+    rg = RegridEdges()
+    rg.setSrcGrid(src_grid)
+    rg.setDstGrid(dst_grid)
+    rg.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
+    rg.computeWeights()
+    rg.dumpWeights('test_fv3_c24_to_latlon100x50_weights.nc')
+
+    # ── source edge integrals  ────────────────────────────────────────────────
+    # For a potential field, the W1 line integral along edge ie of cell icell is
+    #   φ(corner[ie+1]) − φ(corner[ie])
+    # where corners are ordered CCW: 0=SW, 1=SE, 2=NE, 3=NW.
+    src_pts = src_grid.getPoints()   # (ncells, 4, 3): axis-2 order is lon, lat, elv
+    src_data = numpy.empty(src_ncells * NUM_EDGES_PER_QUAD, dtype=numpy.float64)
+    for icell in range(src_ncells):
+        for ie in range(NUM_EDGES_PER_QUAD):
+            ie1 = (ie + 1) % NUM_EDGES_PER_QUAD
+            phi0 = _potential(src_pts[icell, ie,  0], src_pts[icell, ie,  1])
+            phi1 = _potential(src_pts[icell, ie1, 0], src_pts[icell, ie1, 1])
+            src_data[icell * NUM_EDGES_PER_QUAD + ie] = phi1 - phi0
+
+    # ── apply weights ────────────────────────────────────────────────────────
+    dst_data = numpy.zeros(dst_ncells * NUM_EDGES_PER_QUAD, dtype=numpy.float64)
+    rg.apply(src_data, dst_data, placement=CELL_BY_CELL_DATA)
+
+    # ── accuracy check ───────────────────────────────────────────────────────
+    # Regridded integrals should match φ(B) − φ(A) on the dst grid
+    dst_pts = dst_grid.getPoints()
+    error = 0.0
+    for icell in range(dst_ncells):
+        for ie in range(NUM_EDGES_PER_QUAD):
+            ie1 = (ie + 1) % NUM_EDGES_PER_QUAD
+            phi0 = _potential(dst_pts[icell, ie,  0], dst_pts[icell, ie,  1])
+            phi1 = _potential(dst_pts[icell, ie1, 0], dst_pts[icell, ie1, 1])
+            exact = phi1 - phi0
+            error += abs(dst_data[icell * NUM_EDGES_PER_QUAD + ie] - exact)
+    error /= dst_ncells * NUM_EDGES_PER_QUAD
+
+    print(f'test_fv3_to_latlon_weights: mean edge-integral error = {error:.6e}')
+    assert error < 0.05, f'mean edge-integral error too large: {error:.6e}'
+
+
 if __name__ == '__main__':
 
     test_compute_weights()
     test_apply_weights()
+    test_fv3_to_latlon_weights()
