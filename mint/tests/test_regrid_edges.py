@@ -391,12 +391,14 @@ def test_fv3_to_latlon_weights():
     """
     # ── grids ────────────────────────────────────────────────────────────────
     src_grid = Grid()
+    # recommended flags for the cubed-sphere
     src_grid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
     src_grid.loadFromFV32DFile(str(DATA_DIR / 'C24_SCRIP_desc.181018.nc'))
     src_ncells = src_grid.getNumberOfCells()
     assert src_ncells == 3456
 
     dst_grid = Grid()
+    # recommended flags for a rectilinear grid
     dst_grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True)
     dst_grid.loadFromUgrid2DFile(str(DATA_DIR / 'latlon100x50.nc') + '$latlon')
     dst_ncells = dst_grid.getNumberOfCells()
@@ -406,6 +408,8 @@ def test_fv3_to_latlon_weights():
     rg = RegridEdges()
     rg.setSrcGrid(src_grid)
     rg.setDstGrid(dst_grid)
+    # use 32 to 128 buckets, should not be below 32, could use enableFolding=True but would
+    # run a little slower
     rg.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
     rg.computeWeights()
     rg.dumpWeights('test_fv3_c24_to_latlon100x50_weights.nc')
@@ -419,8 +423,10 @@ def test_fv3_to_latlon_weights():
     for icell in range(src_ncells):
         for ie in range(NUM_EDGES_PER_QUAD):
             ie1 = (ie + 1) % NUM_EDGES_PER_QUAD
-            phi0 = _potential(src_pts[icell, ie,  0], src_pts[icell, ie,  1])
-            phi1 = _potential(src_pts[icell, ie1, 0], src_pts[icell, ie1, 1])
+            lon0, lat0 = src_pts[icell, ie,  0], src_pts[icell, ie,  1]
+            phi0 = _potential(lon0, lat0)
+            lon1, lat1 = src_pts[icell, ie1,  0], src_pts[icell, ie1,  1]
+            phi1 = _potential(lon1, lat1)
             src_data[icell * NUM_EDGES_PER_QUAD + ie] = phi1 - phi0
 
     # ── apply weights ────────────────────────────────────────────────────────
