@@ -365,6 +365,13 @@ int mnt_regridedges_getNumDstEdges(RegridEdges_t** self, std::size_t* n);
  * @param src_data edge centred data on the source grid (input)
  * @param dst_data edge centred data on the destination grid (output)
  * @param placement MNT_CELL_BY_CELL_DATA for cell by cell data, MNT_UNIQUE_EDGE_DATA for unique edge data
+ * @note the orientation of edges is left to right, bottom to top when using CELL_BY_CELL
+ * 3--->---2
+ * |       |
+ * ^       ^
+ * |       |
+ * 0--->---1
+ * The line integrals should be compatible with the orientation of the edges.
  * @return error code (0 is OK)
  */
 LIBRARY_API

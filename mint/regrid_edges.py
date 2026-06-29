@@ -234,6 +234,14 @@ class RegridEdges(object):
         :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell
                           (size of array is numCells * mint.NUM_EDGES_PER_QUAD),
                           assume unique edge Id data otherwise (size of array is numEdges)
+
+        Note that the orientation of edges is left to right, bottom to top when using CELL_BY_CELL
+        3--->---2
+        |       |
+        ^       ^
+        |       |
+        0--->---1
+        The line integrals should be compatible with the orientation of the edges.
         """
 
         MINTLIB.mnt_regridedges_apply.argtypes = [POINTER(c_void_p),

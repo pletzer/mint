@@ -416,8 +416,16 @@ def test_fv3_to_latlon_weights():
 
     # ── source edge integrals  ────────────────────────────────────────────────
     # For a potential field, the W1 line integral along edge ie of cell icell is
-    #   φ(corner[ie+1]) − φ(corner[ie])
-    # where corners are ordered CCW: 0=SW, 1=SE, 2=NE, 3=NW.
+    #   (φ(corner[ie+1]) − φ(corner[ie])) * sign
+    # where corners are ordered CCW: 0=SW, 1=SE, 2=NE, 3=NW and sign = 2*(ie // 2) - 1.
+    #
+    # Note: in MINT
+    # cell by cell edges are oriented from left to right and bottom to top
+    # 3--->---2
+    # |       |
+    # ^       ^
+    # |       |
+    # 0--->---1
     src_pts = src_grid.getPoints()   # (ncells, 4, 3): axis-2 order is lon, lat, elv
     src_data = numpy.empty(src_ncells * NUM_EDGES_PER_QUAD, dtype=numpy.float64)
     for icell in range(src_ncells):
@@ -427,7 +435,8 @@ def test_fv3_to_latlon_weights():
             phi0 = _potential(lon0, lat0)
             lon1, lat1 = src_pts[icell, ie1,  0], src_pts[icell, ie1,  1]
             phi1 = _potential(lon1, lat1)
-            src_data[icell * NUM_EDGES_PER_QUAD + ie] = phi1 - phi0
+            sign = 2*(ie // 2) - 1
+            src_data[icell * NUM_EDGES_PER_QUAD + ie] = sign*(phi1 - phi0)
 
     # ── apply weights ────────────────────────────────────────────────────────
     dst_data = numpy.zeros(dst_ncells * NUM_EDGES_PER_QUAD, dtype=numpy.float64)
@@ -442,12 +451,13 @@ def test_fv3_to_latlon_weights():
             ie1 = (ie + 1) % NUM_EDGES_PER_QUAD
             phi0 = _potential(dst_pts[icell, ie,  0], dst_pts[icell, ie,  1])
             phi1 = _potential(dst_pts[icell, ie1, 0], dst_pts[icell, ie1, 1])
-            exact = phi1 - phi0
+            sign = 2*(ie // 2) - 1
+            exact = sign*(phi1 - phi0)
             error += abs(dst_data[icell * NUM_EDGES_PER_QUAD + ie] - exact)
     error /= dst_ncells * NUM_EDGES_PER_QUAD
 
     print(f'test_fv3_to_latlon_weights: mean edge-integral error = {error:.6e}')
-    assert error < 0.05, f'mean edge-integral error too large: {error:.6e}'
+    assert error < 1.e-3, f'mean edge-integral error too large: {error:.6e}'
 
 
 if __name__ == '__main__':
