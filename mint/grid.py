@@ -207,7 +207,7 @@ class Grid(object):
                       num_verts_per_cell, 3)
 
         note: the returned array is a view into the C++ side's memory, so it will be 
-        invalidated if the C++ side is deleted or if setPoints is called again. If
+        invalidated if the C++ side is deleted or if setPoints is called again.
         """
         MINTLIB.mnt_grid_getPointsPtr.argtypes = [POINTER(c_void_p), POINTER(POINTER(c_double))]
 
