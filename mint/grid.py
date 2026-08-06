@@ -196,6 +196,7 @@ class Grid(object):
         ier = MINTLIB.mnt_grid_build(self.obj, num_verts_per_cell, ncells)
         if ier:
             error_handler(FILE, 'build', ier)
+        # keep a reference to the points array so it is not garbage collected
         self._points = points
 
     def getPoints(self) -> numpy.ndarray:
