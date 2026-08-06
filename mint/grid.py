@@ -171,6 +171,15 @@ class Grid(object):
 
         :param points: numpy contiguous array of shape (ncells,
                        num_verts_per_cell, 3) using C ordering
+
+        note:: mnt_grid_setPointsPtr hands the C++ side a raw pointer into
+               `points`, it does not copy the data (same as attach(...,
+               copy=False)). We keep our own reference to `points` here so
+               it stays alive for as long as this Grid does -- otherwise,
+               if the caller lets their own reference go out of scope (e.g.
+               a helper function that builds the array and returns just the
+               Grid), Python is free to garbage-collect it, leaving the C++
+               side holding a dangling pointer into freed/reused memory.
         """
         if not points.flags.c_contiguous:
             error_handler(FILE, 'setPoints', 'points array must be C contiguous!')
@@ -187,6 +196,7 @@ class Grid(object):
         ier = MINTLIB.mnt_grid_build(self.obj, num_verts_per_cell, ncells)
         if ier:
             error_handler(FILE, 'build', ier)
+        self._points = points
 
     def getPoints(self) -> numpy.ndarray:
         """

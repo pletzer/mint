@@ -129,19 +129,14 @@ def buildCubedSphereGrid(M):
     mint.Grid (with the flags a cubed-sphere grid requires, see
     Grid.setFlags).
 
-    NOTE: Grid.setPoints hands mint's C++ side a raw pointer into the numpy
-    array (mnt_grid_setPointsPtr does not copy it), so that array must stay
-    alive for as long as the grid is used -- if nothing keeps a Python
-    reference to it, the garbage collector is free to reclaim (or reuse)
-    that memory once this function returns, and grid.getPoints() will read
-    back garbage. Stashing it on the grid object itself ties its lifetime
-    to the grid's.
+    Grid.setPoints keeps its own reference to the points array (it hands
+    mint's C++ side a raw, non-copied pointer into it, so it must stay
+    alive for as long as the grid is used) -- no extra bookkeeping needed
+    here.
     """
-    points = cubedSphereGridPoints(M)
     grid = mint.Grid()
     grid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
-    grid.setPoints(points)
-    grid._points_keepalive = points  # see NOTE above -- do not remove
+    grid.setPoints(cubedSphereGridPoints(M))
     return grid
 
 
