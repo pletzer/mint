@@ -13,10 +13,23 @@ giving finite nonzero velocity at the north pole (g(1) = 2) and exactly
 zero velocity at the south pole (g(-1) = 0).
 
 For each (grid family, test line) combination, the flux computed by
-mint.PolylineIntegral is compared against the EXACT line integral (not a
-quadrature approximation -- see exactLineIntegral below) at increasing grid
-resolution, and |error| is plotted against N = number of grid cells on
-log-log axes, alongside a reference N^-1 slope.
+mint.PolylineIntegral is compared against the EXACT line integral (see
+exactLineIntegral below) at increasing grid resolution, and |error| is
+plotted against N = number of grid cells on log-log axes, alongside a
+reference N^-1 slope.
+
+The per-edge input data (buildEdgeData) still uses a fast quadrature
+(straightLineIntegral), not the exact method -- see the comments on both
+functions for why: the exact method needs sympy per call, which is too
+slow to run on every edge of every grid (~2-3 ms/edge -> minutes for the
+~170000 edges used below), and the natural way to make it fast (derive the
+closed form once with symbolic endpoints, then lambdify to a vectorized
+numpy function) turns out to be numerically unsafe -- see the note above
+exactLineIntegral. The quadrature error on edges this short is separately
+verified to be ~1e-6 or smaller (see the git history / conversation this
+script came out of), utterly negligible next to the ~1e-2 to 1e-4 errors
+under study, so it is not a meaningful source of error here even though it
+is not the literal exact value.
 
 Usage: python scripts/pole_asymmetric_convergence.py
 """
@@ -35,7 +48,9 @@ DEG2RAD = numpy.pi / 180.0
 
 
 # ---------------------------------------------------------------------------
-# The pole-asymmetric field (see mint/tests/test_pole_asymmetric.py)
+# Fast quadrature, used only for the per-edge input data (buildEdgeData) --
+# see the module docstring for why this, and not the exact method below, is
+# used there.
 # ---------------------------------------------------------------------------
 def uDotDl(lam, theta, dlam, dtheta):
     """u . dl integrand at (lam, theta) for a local displacement (dlam, dtheta)."""
@@ -45,13 +60,9 @@ def uDotDl(lam, theta, dlam, dtheta):
 
 def straightLineIntegral(p0, p1, n=50):
     """
-    Line integral of u . dl along the path STRAIGHT IN (lon, lat) from p0
+    Line integral of u . dl along the path straight in (lon, lat) from p0
     to p1 (lon, lat in degrees; trailing axis of size 2, batchable),
-    evaluated by an n-point quadrature. Used only for buildEdgeData below,
-    where it is called thousands of times on short grid edges (quadrature
-    error there is utterly negligible relative to the errors being
-    studied); see exactLineIntegral for the reference value used to judge
-    those errors, which has no quadrature error at all.
+    evaluated by an n-point quadrature.
     """
     p0 = numpy.asarray(p0, dtype=numpy.float64)
     p1 = numpy.asarray(p1, dtype=numpy.float64)
@@ -68,18 +79,59 @@ def straightLineIntegral(p0, p1, n=50):
     return dt * (integrand[..., 0] / 2. + integrand[..., 1:-1].sum(axis=-1) + integrand[..., -1] / 2.)
 
 
+def buildEdgeData(grid):
+    """
+    Cell-by-cell edge-integrated data for u on the grid's own edges, via
+    straightLineIntegral (see module docstring for why not the exact
+    method). Also assumes each edge is straight in (lon, lat), which is
+    exact for the lat-lon grids below but only approximate for the
+    cubed-sphere grids (whose true edges are closer to great-circle arcs)
+    -- that geometric mismatch is itself a discretization error that
+    should shrink with resolution, same as the rest of the scheme.
+    """
+    ncells = grid.getNumberOfCells()
+    points = grid.getPoints()  # (ncells, 4, 3): lon, lat, elev in degrees
+    data = numpy.zeros((ncells, NUM_EDGES_PER_QUAD))
+    for i0 in range(NUM_EDGES_PER_QUAD):
+        i1 = (i0 + 1) % NUM_EDGES_PER_QUAD
+        # edges 2 and 3 run backwards relative to the (i0 -> i1) node order
+        sign = 1 - 2 * (i0 // 2)
+        data[:, i0] = sign * straightLineIntegral(points[:, i0, :2], points[:, i1, :2])
+    return data
+
+
 # ---------------------------------------------------------------------------
 # EXACT (not quadrature) straight-line integral, used only for the handful
 # of whole-polyline reference values (one per test line -- cheap even
-# though sympy is slow per call). Substituting the straight line into
-# u . dl turns it into a finite trigonometric polynomial in t (products and
-# sums of sin/cos of expressions linear in t); rewriting sin/cos as complex
-# exponentials turns every term into coeff * exp(intercept + slope * t),
-# each of which integrates over [0, 1] in closed form -- see
+# though sympy is slow per call, at ~2-3 ms depending on the endpoints).
+#
+# Substituting the straight line lam(t) = lamA + t*(lamB-lamA),
+# theta(t) = thA + t*(thB-thA) into u . dl turns it into a finite
+# trigonometric polynomial in t; rewriting sin/cos as complex exponentials
+# turns every term into coeff * exp(intercept + slope * t), each of which
+# integrates over [0, 1] in closed form -- see
 # work/vector_potential/vector_potential.py's
-# _integrate_unit_interval_trig_polynomial for the derivation and further
-# discussion of why this is both exact and much faster than sympy's
-# general-purpose integrator on an expression like this.
+# _integrate_unit_interval_trig_polynomial for the derivation.
+#
+# An approach that was tried and rejected: doing this symbolic integration
+# ONCE with the four endpoint angles left as free symbols, then lambdifying
+# to a numpy-vectorized function, so the exact formula could be used for
+# every grid edge too (not just these few reference values) at numpy speed.
+# It is numerically unsafe: the `if slope == 0` branch below only fires
+# when slope is the LITERAL sympy integer 0; with free symbols it is
+# instead some linear combination like `lamA - lamB - 3*thA + 3*thB`, which
+# sympy cannot know in advance will be exactly zero, so the `else`
+# (divide-by-slope) branch is always taken. In exact arithmetic the terms
+# this produces still cancel in pairs to a finite real result (that's what
+# sympy.re(expand_complex(...)) verified), but written as a sum of
+# individually-singular fractions, evaluating it in floating point at
+# specific endpoints where one of those linear combinations is zero (or
+# merely close to zero) produced NaN across every single test case here.
+# Substituting the numbers FIRST, as done below, means `slope` is already a
+# plain float, so the `== 0` check (and its floating-point-safe branch)
+# actually fires when it should -- at the cost of redoing the symbolic
+# integration from scratch on every call, which is why this is only used
+# for the reference values, not per grid edge (see buildEdgeData above).
 # ---------------------------------------------------------------------------
 _lam_s, _th_s, _t_s, _dlam_s, _dth_s = sympy.symbols('lam theta t dlam dtheta', real=True)
 _UDOTDL_SYM = (sympy.cos(_th_s) * (sympy.cos(2 * _th_s) - sympy.sin(_th_s)) * sympy.cos(_lam_s) * _dlam_s
@@ -107,7 +159,8 @@ def _integrateUnitIntervalTrigPolynomial(expr, t_sym):
 def exactLineIntegral(p0, p1):
     """
     EXACT (no quadrature) line integral of u . dl along the path straight
-    in (lon, lat) from p0 to p1 (lon, lat in degrees).
+    in (lon, lat) from p0 to p1 (lon, lat in degrees), for a single pair
+    of scalar endpoints.
     """
     lamA, thA = p0[0] * DEG2RAD, p0[1] * DEG2RAD
     lamB, thB = p1[0] * DEG2RAD, p1[1] * DEG2RAD
@@ -117,26 +170,6 @@ def exactLineIntegral(p0, p1):
     th_t = thA + _t_s * dth
     integrand = sympy.expand(_UDOTDL_SYM.subs({_lam_s: lam_t, _th_s: th_t, _dlam_s: dlam, _dth_s: dth}))
     return float(_integrateUnitIntervalTrigPolynomial(integrand, _t_s))
-
-
-def buildEdgeData(grid):
-    """
-    Quadrature-exact cell-by-cell edge-integrated data for u on the grid's
-    own edges. Note: this assumes each edge is straight in (lon, lat),
-    which is exact for the lat-lon grids below but only approximate for
-    the cubed-sphere grids (whose true edges are closer to great-circle
-    arcs) -- that extra approximation is itself a discretization error
-    that should shrink with resolution, same as the rest of the scheme.
-    """
-    ncells = grid.getNumberOfCells()
-    points = grid.getPoints()  # (ncells, 4, 3): lon, lat, elev in degrees
-    data = numpy.zeros((ncells, NUM_EDGES_PER_QUAD))
-    for i0 in range(NUM_EDGES_PER_QUAD):
-        i1 = (i0 + 1) % NUM_EDGES_PER_QUAD
-        # edges 2 and 3 run backwards relative to the (i0 -> i1) node order
-        sign = 1 - 2 * (i0 // 2)
-        data[:, i0] = sign * straightLineIntegral(points[:, i0, :2], points[:, i1, :2])
-    return data
 
 
 # ---------------------------------------------------------------------------
@@ -190,23 +223,24 @@ def computeFlux(grid, periodX, p0, p1, data):
 
 def main():
     # results[(familyName, lineName)] = (list of numCells, list of |error|)
-    results = {}
+    results = {(familyName, lineName): ([], []) for familyName, _, _, _ in GRID_FAMILIES
+               for lineName, _, _ in TEST_LINES}
+    exactByLine = {lineName: exactLineIntegral(p0, p1) for lineName, p0, p1 in TEST_LINES}
 
     for familyName, resolutions, loader, periodX in GRID_FAMILIES:
-        for lineName, p0, p1 in TEST_LINES:
-            exact = exactLineIntegral(p0, p1)
-            numCellsList, errs = [], []
-            for n in resolutions:
-                grid = loader(n)
-                numCells = grid.getNumberOfCells()
-                data = buildEdgeData(grid)
+        for n in resolutions:
+            grid = loader(n)
+            numCells = grid.getNumberOfCells()
+            # built once per (family, resolution), reused for every test line below
+            data = buildEdgeData(grid)
+            for lineName, p0, p1 in TEST_LINES:
+                exact = exactByLine[lineName]
                 flux = computeFlux(grid, periodX, p0, p1, data)
                 err = abs(flux - exact)
-                numCellsList.append(numCells)
-                errs.append(err)
+                results[(familyName, lineName)][0].append(numCells)
+                results[(familyName, lineName)][1].append(err)
                 print(f'{familyName:13s} | {lineName:26s} | ncells={numCells:7d} '
                       f'flux={flux:12.6f} exact={exact:12.6f} err={err:.3e}')
-            results[(familyName, lineName)] = (numCellsList, errs)
         print()
 
     plotResults(results)
