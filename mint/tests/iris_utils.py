@@ -2,7 +2,7 @@ import numpy as np
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.experimental.ugrid import Connectivity, Mesh, PARSE_UGRID_ON_LOAD
+from iris.mesh import Connectivity, MeshXY
 import mint
 
 DEG2RAD = np.pi / 180.
@@ -77,9 +77,10 @@ def _u_v_cubes_from_ugrid_file(filename,
     :param v_std_name: standard name for the meridional component of the vector field
     :returns (u_cube, v_cube)
     """
-    with PARSE_UGRID_ON_LOAD.context():
-        u_cube = iris.load_cube(filename, u_std_name)
-        v_cube = iris.load_cube(filename, v_std_name)
+    # PARSE_UGRID_ON_LOAD is no longer needed as of iris 3.14: UGRID loading
+    # is now applied automatically to any file containing a mesh.
+    u_cube = iris.load_cube(filename, u_std_name)
+    v_cube = iris.load_cube(filename, v_std_name)
     return (u_cube, v_cube)
 
 
@@ -164,7 +165,7 @@ def _gridlike_mesh(n_lons, n_lats):
     edge_lon_coord = AuxCoord(edge_lons, standard_name="longitude")
     edge_lat_coord = AuxCoord(edge_lats, standard_name="latitude")
 
-    mesh = Mesh(2, ((lons, "x"), (lats, "y")), [fnc, enc])
+    mesh = MeshXY(2, ((lons, "x"), (lats, "y")), [fnc, enc])
 
     mesh.add_coords(
         face_x=face_lon_coord,
