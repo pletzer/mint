@@ -49,6 +49,14 @@ lat = 45 deg, tightening to lat = 35.264 deg at the face's corners
 (lon = +-45, +-135). Both paths below stay at |lon| <= 30 and
 lat >= 55 deg, comfortably clear of that boundary (worst case, at
 lon = +-30, the boundary is at lat = 40.9 deg).
+
+The module also has 4 more closed-loop tests (test_closed_loop_*) built
+from the SAME loop shape, shifted to 4 different locations, to check that
+the "closed loop -> 0" discrete-Stokes property survives the seams where
+a bug would most likely hide: entirely inside one panel, straddling 2
+panels, straddling 3 panels (at a cube vertex), and crossing the
+longitude +-180 dateline. See the comment above LOOP_ONE_PANEL etc. for
+the geometry.
 """
 import sys
 from pathlib import Path
@@ -123,6 +131,89 @@ def _onNodeOpenPath(M):
     lonB, latB = _topFaceNode(M, i, j_pos)
     assert lonA < 0. < lonB, 'expected the two nodes to straddle longitude = 0'
     return numpy.array([(lonA, latA, 0.), (lonB, latB, 0.)])
+
+
+# --- Closed loops that specifically exercise panel-boundary and dateline
+# handling --------------------------------------------------------------
+#
+# The discrete-Stokes property (see module docstring) says a closed loop's
+# line integral of the exact discrete gradient is ~0 regardless of
+# resolution and regardless of which cell(s) it runs through. The 4 tests
+# built from the loops below check that this actually holds not just for
+# a loop entirely inside one cubed-sphere panel, but for the SAME loop
+# shape shifted to straddle 2 panels, 3 panels, and one crossing the
+# longitude +-180 dateline -- the seams where a bug in per-cell
+# dateline/corner handling (see generate_cubedsphere_grid._fixCellLongitudes)
+# would most likely show up.
+
+def _faceOf(lon, lat):
+    """Which of the 6 cube faces (+X, -X, +Y, -Y, +Z, -Z) a (lon, lat)
+    direction falls on: whichever cube axis has the largest-magnitude
+    component, with its sign -- the same classification implicit in
+    generate_cubedsphere_grid._faceFrames."""
+    lam, th = lon * DEG2RAD, lat * DEG2RAD
+    d = numpy.array([numpy.cos(th) * numpy.cos(lam),
+                     numpy.cos(th) * numpy.sin(lam),
+                     numpy.sin(th)])
+    axis = int(numpy.argmax(numpy.abs(d)))
+    sign = '+' if d[axis] > 0. else '-'
+    return sign + 'XYZ'[axis]
+
+
+def _facesTouched(path, n=50):
+    """The set of cube faces touched anywhere along a closed polyline's
+    perimeter (not just its corners -- n interior samples per segment
+    too), used to confirm each loop below actually straddles the panels
+    it's meant to and no others."""
+    faces = set()
+    for (lon0, lat0, _), (lon1, lat1, _) in zip(path[:-1], path[1:]):
+        for t in numpy.linspace(0., 1., n):
+            faces.add(_faceOf(lon0 + t * (lon1 - lon0), lat0 + t * (lat1 - lat0)))
+    return faces
+
+
+def _closedRectangle(lon0, lat0, dlon, dlat):
+    """A closed lon/lat rectangle centred at (lon0, lat0)."""
+    return numpy.array([(lon0 - dlon, lat0 - dlat, 0.),
+                        (lon0 + dlon, lat0 - dlat, 0.),
+                        (lon0 + dlon, lat0 + dlat, 0.),
+                        (lon0 - dlon, lat0 + dlat, 0.),
+                        (lon0 - dlon, lat0 - dlat, 0.)])
+
+
+_LOOP_HALFWIDTH = 8.0  # degrees, shared by the 3 panel-crossing loops below
+
+# +X face is centred at (lon, lat) = (0, 0); this loop sits comfortably
+# inside it, away from every panel boundary.
+LOOP_ONE_PANEL = _closedRectangle(0., 0., _LOOP_HALFWIDTH, _LOOP_HALFWIDTH)
+
+# +X and +Y share the meridian lon = 45 deg (for |lat| < 35.264 deg, see
+# _CORNER_LAT below) -- the SAME loop, shifted to be centred on that
+# meridian, straddles exactly those two panels.
+LOOP_TWO_PANELS = _closedRectangle(45., 0., _LOOP_HALFWIDTH, _LOOP_HALFWIDTH)
+
+# +X, +Y and +Z all meet at the cube vertex in direction (1, 1, 1)/sqrt(3),
+# i.e. (lon, lat) = (45, 35.264 deg). A cube vertex always has exactly 3
+# faces meeting there, so the SAME loop, shifted to be centred on this
+# vertex, touches exactly those 3 panels and no 4th one.
+_CORNER_LAT = numpy.degrees(numpy.arcsin(1. / numpy.sqrt(3.)))
+LOOP_THREE_PANELS = _closedRectangle(45., _CORNER_LAT, _LOOP_HALFWIDTH, _LOOP_HALFWIDTH)
+
+# -X face is centred at (lon, lat) = (180, 0) -- i.e. it's the panel the
+# longitude +-180 branch cut runs straight through. This loop is fully
+# inside -X (it stays well clear of the +Y/-Y panels, which start around
+# lon = +-135), but its two vertical edges each cross the dateline once
+# (e.g. from lon=170 to lon=190, the latter representing the same point as
+# lon=-170).
+LOOP_DATELINE = _closedRectangle(180., 0., 10., 10.)
+
+# Confirm each loop touches exactly the panels it's meant to, at
+# collection time -- if this ever fails, the geometry assumptions above
+# (not the discrete-Stokes property under test) are what broke.
+assert _facesTouched(LOOP_ONE_PANEL) == {'+X'}
+assert _facesTouched(LOOP_TWO_PANELS) == {'+X', '+Y'}
+assert _facesTouched(LOOP_THREE_PANELS) == {'+X', '+Y', '+Z'}
+assert _facesTouched(LOOP_DATELINE) == {'-X'}
 
 
 def potential(p):
@@ -228,9 +319,59 @@ def test_closed_path_crossing_lon0(M):
     assert abs(flux) < 1.e-8
 
 
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_single_panel(M):
+    """
+    Test 1: closed loop entirely inside one panel (+X). Baseline
+    discrete-Stokes check, with no panel boundary or dateline involved.
+    """
+    flux = _computeLineIntegral(M, LOOP_ONE_PANEL)
+    print(f'M={M} single-panel loop: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_two_panels(M):
+    """
+    Test 2: the same loop as test 1, shifted to straddle the +X/+Y panel
+    boundary. Still exactly 0, i.e. the discrete gradient built
+    independently on each panel is consistent across the shared edge.
+    """
+    flux = _computeLineIntegral(M, LOOP_TWO_PANELS)
+    print(f'M={M} two-panel loop: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_three_panels(M):
+    """
+    Test 3: the same loop again, shifted to the +X/+Y/+Z cube vertex, so
+    it straddles all 3 panels that meet there.
+    """
+    flux = _computeLineIntegral(M, LOOP_THREE_PANELS)
+    print(f'M={M} three-panel loop: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_across_dateline(M):
+    """
+    Test 4: the same loop shape, now centred on (lon, lat) = (180, 0) --
+    fully inside the -X panel, but with both its vertical edges crossing
+    the longitude +-180 branch cut once each.
+    """
+    flux = _computeLineIntegral(M, LOOP_DATELINE)
+    print(f'M={M} dateline loop: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
 if __name__ == '__main__':
     test_open_path_crossing_lon0()
     for M in (8, 16, 32, 64):
         test_open_path_exact_when_endpoints_are_grid_nodes(M)
     for M in (4, 8, 16):
         test_closed_path_crossing_lon0(M)
+        test_closed_loop_single_panel(M)
+        test_closed_loop_two_panels(M)
+        test_closed_loop_three_panels(M)
+        test_closed_loop_across_dateline(M)
