@@ -26,7 +26,28 @@ import mint
 NUM_VERTS_PER_QUAD = 4
 
 
-def _faceFrames():
+def rotateZ(v, angleDeg):
+    """
+    Rotate a 3-vector (or an array of 3-vectors, last axis of length 3) by
+    angleDeg about the vertical (Z) axis. Since Z-axis rotation is exactly
+    an azimuthal rotation, applying this to every point of a cubed-sphere
+    grid is equivalent to adding angleDeg to every point's longitude and
+    leaving its latitude untouched -- but doing it here, on the cube's own
+    face frames (see _faceFrames), rotates the panels themselves (and
+    hence where their seams and the dateline/pole fix-ups have to cope
+    with them), rather than post-hoc patching (lon, lat) pairs.
+    """
+    if angleDeg == 0.0:
+        return v
+    a = numpy.radians(angleDeg)
+    c, s = numpy.cos(a), numpy.sin(a)
+    R = numpy.array([[c, -s, 0.],
+                     [s, c, 0.],
+                     [0., 0., 1.]])
+    return v.dot(R.T)
+
+
+def _faceFrames(rotationDeg=0.0):
     """
     The 6 cube faces as (name, normal, u_hat, v_hat) unit vectors, chosen
     so that u_hat x v_hat = normal for every face. Walking a face's local
@@ -34,9 +55,17 @@ def _faceFrames():
     as seen from OUTSIDE the sphere -- the orientation convention used
     elsewhere in this repository (e.g. the "0-->--1 / ^ ^ / 3-->--2" node
     ordering in mint/tests/test_polyline_integral.py).
+
+    :param rotationDeg: rotate the whole cube (all 6 faces, hence all
+                        panel seams and the dateline/pole they may cross)
+                        by this many degrees about the vertical (Z) axis.
+                        0 (the default) reproduces the original,
+                        axis-aligned cube exactly (rotateZ is a no-op for
+                        angleDeg=0, so this is bit-for-bit identical to
+                        not rotating at all).
     """
     X, Y, Z = numpy.eye(3)
-    return [
+    frames = [
         ('+X', X, Y, Z),
         ('-X', -X, Z, Y),
         ('+Y', Y, Z, X),
@@ -44,6 +73,10 @@ def _faceFrames():
         ('+Z', Z, X, Y),
         ('-Z', -Z, Y, X),
     ]
+    if rotationDeg == 0.0:
+        return frames
+    return [(name, rotateZ(normal, rotationDeg), rotateZ(u_hat, rotationDeg), rotateZ(v_hat, rotationDeg))
+            for name, normal, u_hat, v_hat in frames]
 
 
 def _unwrapLongitudes(lon):
@@ -77,13 +110,19 @@ def _fixCellLongitudes(lon, lat, pole_tol_deg=1.e-8):
     return lon
 
 
-def cubedSphereGridPoints(M):
+def cubedSphereGridPoints(M, rotationDeg=0.0):
     """
     Build a cubed-sphere grid with M x M cells per face (6 * M^2 cells
     total) by projecting a uniform grid on each face of a circumscribing
     cube radially onto the sphere.
 
     :param M: number of cells along one edge of a cube face
+    :param rotationDeg: rotate the whole cube about the vertical (Z) axis
+                        by this many degrees before projecting -- shifts
+                        where every panel's seams (and hence the dateline
+                        and pole singularities relative to them) fall,
+                        without changing the grid's topology. 0 (the
+                        default) is the original, axis-aligned cube.
     :returns: numpy array of shape (6*M*M, 4, 3): (longitude, latitude, 0)
               in degrees, ready for mint.Grid().setPoints(...)
 
@@ -100,7 +139,7 @@ def cubedSphereGridPoints(M):
 
     points = numpy.empty((6 * M * M, NUM_VERTS_PER_QUAD, 3), dtype=numpy.float64)
     icell = 0
-    for name, normal, u_hat, v_hat in _faceFrames():
+    for name, normal, u_hat, v_hat in _faceFrames(rotationDeg):
         U, V = numpy.meshgrid(edges, edges, indexing='ij')  # (M+1, M+1)
         cube_pts = (normal[None, None, :]
                     + U[..., None] * u_hat[None, None, :]
@@ -123,11 +162,14 @@ def cubedSphereGridPoints(M):
     return points
 
 
-def buildCubedSphereGrid(M):
+def buildCubedSphereGrid(M, rotationDeg=0.0):
     """
     Convenience wrapper: build the points and return a ready-to-use
     mint.Grid (with the flags a cubed-sphere grid requires, see
     Grid.setFlags).
+
+    :param M: number of cells along one edge of a cube face
+    :param rotationDeg: see cubedSphereGridPoints
 
     Grid.setPoints keeps its own reference to the points array (it hands
     mint's C++ side a raw, non-copied pointer into it, so it must stay
@@ -136,7 +178,7 @@ def buildCubedSphereGrid(M):
     """
     grid = mint.Grid()
     grid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
-    grid.setPoints(cubedSphereGridPoints(M))
+    grid.setPoints(cubedSphereGridPoints(M, rotationDeg))
     return grid
 
 
@@ -160,7 +202,7 @@ def _checkOrientation(points):
     return int((outward <= 0).sum())
 
 
-def _sanityChecks(M):
+def _sanityChecks(M, rotationDeg=0.0):
     """
     Quantitative checks that the generated grid is correct, not just
     "looks plausible":
@@ -176,12 +218,18 @@ def _sanityChecks(M):
        expected cell-size non-uniformity).
     3. mint.PolylineIntegral of a CLOSED loop, with edge data built from an
        EXACT global potential (finite differences of a smooth function),
-       should be zero to near machine precision regardless of M or the
-       loop chosen.
+       should be zero to near machine precision regardless of M, the loop
+       chosen, or the panel rotation.
+
+    :param rotationDeg: passed straight through to buildCubedSphereGrid,
+                        so these same checks can be re-run with the cube's
+                        panel seams shifted to arbitrary, non-round
+                        longitudes (rather than just the un-rotated cube's
+                        own seams at 0/45/90/.../-180 etc.).
     """
-    grid = buildCubedSphereGrid(M)
+    grid = buildCubedSphereGrid(M, rotationDeg)
     ncells = grid.getNumberOfCells()
-    print(f'M={M}: {ncells} cells (expected {6 * M * M})')
+    print(f'M={M}, rotationDeg={rotationDeg}: {ncells} cells (expected {6 * M * M})')
     assert ncells == 6 * M * M
 
     points = grid.getPoints()
@@ -235,6 +283,18 @@ if __name__ == '__main__':
 
     for m in (2, 3, 4, 8, 16):
         _sanityChecks(m)
+
+    # also exercise the rotated-panels code path, at a deliberately
+    # non-round angle so the panel seams land at generic longitudes.
+    # Skips M=2: this particular (very large, near-global) diagnostic
+    # loop skims the domain edge at that coarse a resolution for some
+    # rotation angles -- a locator-robustness limit of testing a huge
+    # loop against a handful of giant cells, the same class of issue
+    # that already rules out M=1 above, not a bug in the rotation itself
+    # (every cell's own corner longitude span stays well under 180 deg;
+    # M=3 upward all pass to near machine precision).
+    for m in (3, 4, 8, 16):
+        _sanityChecks(m, rotationDeg=23.7)
 
     grid = buildCubedSphereGrid(M)
     outfile = Path(__file__).parent / f'cubedsphere_M{M}.vtk'

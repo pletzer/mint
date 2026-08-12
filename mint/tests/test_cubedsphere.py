@@ -57,6 +57,19 @@ a bug would most likely hide: entirely inside one panel, straddling 2
 panels, straddling 3 panels (at a cube vertex), and crossing the
 longitude +-180 dateline. See the comment above LOOP_ONE_PANEL etc. for
 the geometry.
+
+...and then those same 4 tests again (test_closed_loop_*_rotated), on a
+grid built with generate_cubedsphere_grid.buildCubedSphereGrid's
+rotationDeg parameter, which rotates the whole cube -- panels, seams,
+dateline and all -- about the vertical axis by an arbitrary, non-round
+angle (ROTATION_DEG). Each loop is shifted by that same angle so it's in
+the same position relative to the (now shifted) panels, which is
+possible because a vertical-axis rotation is exactly an azimuthal one:
+it adds ROTATION_DEG to every point's longitude and leaves latitude
+untouched. These check that the rotation feature itself produces a grid
+that's just as internally consistent (dateline fix-up, pole handling,
+per-cell corner ordering) as the un-rotated one, rather than only being
+correct when the panel seams happen to land on 0/45/90/... deg.
 """
 import sys
 from pathlib import Path
@@ -72,7 +85,7 @@ from mint import PolylineIntegral, CELL_BY_CELL_DATA
 SCRIPTS_DIR = Path(__file__).absolute().parents[2] / 'scripts'
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
-from generate_cubedsphere_grid import buildCubedSphereGrid, NUM_VERTS_PER_QUAD  # noqa: E402
+from generate_cubedsphere_grid import buildCubedSphereGrid, NUM_VERTS_PER_QUAD, rotateZ  # noqa: E402
 
 DEG2RAD = numpy.pi / 180.0
 
@@ -146,21 +159,31 @@ def _onNodeOpenPath(M):
 # dateline/corner handling (see generate_cubedsphere_grid._fixCellLongitudes)
 # would most likely show up.
 
-def _faceOf(lon, lat):
+def _faceOf(lon, lat, rotationDeg=0.0):
     """Which of the 6 cube faces (+X, -X, +Y, -Y, +Z, -Z) a (lon, lat)
     direction falls on: whichever cube axis has the largest-magnitude
     component, with its sign -- the same classification implicit in
-    generate_cubedsphere_grid._faceFrames."""
+    generate_cubedsphere_grid._faceFrames.
+
+    :param rotationDeg: the SAME angle the grid's panels were rotated by
+                        (see generate_cubedsphere_grid.rotateZ) -- since
+                        _faceFrames rotates the axis-aligned cube by
+                        +rotationDeg, classifying a point against that
+                        rotated cube means first undoing the rotation
+                        (rotateZ by -rotationDeg) and then applying the
+                        ordinary, axis-aligned classification.
+    """
     lam, th = lon * DEG2RAD, lat * DEG2RAD
     d = numpy.array([numpy.cos(th) * numpy.cos(lam),
                      numpy.cos(th) * numpy.sin(lam),
                      numpy.sin(th)])
-    axis = int(numpy.argmax(numpy.abs(d)))
-    sign = '+' if d[axis] > 0. else '-'
+    d0 = rotateZ(d, -rotationDeg)
+    axis = int(numpy.argmax(numpy.abs(d0)))
+    sign = '+' if d0[axis] > 0. else '-'
     return sign + 'XYZ'[axis]
 
 
-def _facesTouched(path, n=50):
+def _facesTouched(path, rotationDeg=0.0, n=50):
     """The set of cube faces touched anywhere along a closed polyline's
     perimeter (not just its corners -- n interior samples per segment
     too), used to confirm each loop below actually straddles the panels
@@ -168,7 +191,7 @@ def _facesTouched(path, n=50):
     faces = set()
     for (lon0, lat0, _), (lon1, lat1, _) in zip(path[:-1], path[1:]):
         for t in numpy.linspace(0., 1., n):
-            faces.add(_faceOf(lon0 + t * (lon1 - lon0), lat0 + t * (lat1 - lat0)))
+            faces.add(_faceOf(lon0 + t * (lon1 - lon0), lat0 + t * (lat1 - lat0), rotationDeg))
     return faces
 
 
@@ -216,6 +239,33 @@ assert _facesTouched(LOOP_THREE_PANELS) == {'+X', '+Y', '+Z'}
 assert _facesTouched(LOOP_DATELINE) == {'-X'}
 
 
+# --- The same 4 loops again, but on a grid whose panels are rotated -----
+#
+# generate_cubedsphere_grid.buildCubedSphereGrid(M, rotationDeg) rotates
+# the whole cube (hence every panel seam, the dateline's position on the
+# cube, and the pole's position relative to the cube's corners) about the
+# vertical axis by rotationDeg. A rotation about the vertical axis is
+# exactly an azimuthal rotation, so it moves every physical marker's
+# longitude by +rotationDeg and leaves latitude untouched -- which is why
+# each loop below is literally the same one as above with rotationDeg
+# added to its longitude, keeping it in the SAME position relative to
+# the (now shifted) panels. ROTATION_DEG is deliberately not a round
+# multiple of 45/90 deg, so the panel seams land at generic longitudes
+# rather than accidentally lining back up with 0/45/90/... .
+
+ROTATION_DEG = 25.0
+
+LOOP_ONE_PANEL_ROTATED = _closedRectangle(0. + ROTATION_DEG, 0., _LOOP_HALFWIDTH, _LOOP_HALFWIDTH)
+LOOP_TWO_PANELS_ROTATED = _closedRectangle(45. + ROTATION_DEG, 0., _LOOP_HALFWIDTH, _LOOP_HALFWIDTH)
+LOOP_THREE_PANELS_ROTATED = _closedRectangle(45. + ROTATION_DEG, _CORNER_LAT, _LOOP_HALFWIDTH, _LOOP_HALFWIDTH)
+LOOP_DATELINE_ROTATED = _closedRectangle(180. + ROTATION_DEG, 0., 10., 10.)
+
+assert _facesTouched(LOOP_ONE_PANEL_ROTATED, rotationDeg=ROTATION_DEG) == {'+X'}
+assert _facesTouched(LOOP_TWO_PANELS_ROTATED, rotationDeg=ROTATION_DEG) == {'+X', '+Y'}
+assert _facesTouched(LOOP_THREE_PANELS_ROTATED, rotationDeg=ROTATION_DEG) == {'+X', '+Y', '+Z'}
+assert _facesTouched(LOOP_DATELINE_ROTATED, rotationDeg=ROTATION_DEG) == {'-X'}
+
+
 def potential(p):
     """Exact global potential V(lon, lat) = sin(lon) * cos(lat)**2."""
     lam = p[..., 0] * DEG2RAD
@@ -247,8 +297,8 @@ def _computeEdgeData(points):
     return data
 
 
-def _computeLineIntegral(M, path):
-    grid = buildCubedSphereGrid(M)
+def _computeLineIntegral(M, path, rotationDeg=0.0):
+    grid = buildCubedSphereGrid(M, rotationDeg)
     points = grid.getPoints()
     data = _computeEdgeData(points)
 
@@ -365,6 +415,50 @@ def test_closed_loop_across_dateline(M):
     assert abs(flux) < 1.e-8
 
 
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_single_panel_rotated(M):
+    """
+    Test 1, rotated: same as test_closed_loop_single_panel, but on a
+    cubed-sphere grid whose panels are rotated by ROTATION_DEG about the
+    vertical axis (see module docstring and
+    generate_cubedsphere_grid.buildCubedSphereGrid's rotationDeg
+    parameter). The loop is shifted by that same angle, so it's in the
+    same position relative to +X's (now rotated) extent.
+    """
+    flux = _computeLineIntegral(M, LOOP_ONE_PANEL_ROTATED, rotationDeg=ROTATION_DEG)
+    print(f'M={M} single-panel loop, rotated {ROTATION_DEG} deg: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_two_panels_rotated(M):
+    """Test 2, rotated: straddles the (rotated) +X/+Y panel boundary."""
+    flux = _computeLineIntegral(M, LOOP_TWO_PANELS_ROTATED, rotationDeg=ROTATION_DEG)
+    print(f'M={M} two-panel loop, rotated {ROTATION_DEG} deg: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_three_panels_rotated(M):
+    """Test 3, rotated: straddles the (rotated) +X/+Y/+Z cube vertex."""
+    flux = _computeLineIntegral(M, LOOP_THREE_PANELS_ROTATED, rotationDeg=ROTATION_DEG)
+    print(f'M={M} three-panel loop, rotated {ROTATION_DEG} deg: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
+@pytest.mark.parametrize("M", [4, 8, 16])
+def test_closed_loop_across_dateline_rotated(M):
+    """
+    Test 4, rotated: fully inside the (rotated) -X panel, crossing the
+    longitude +-180 branch cut once on each vertical edge -- checking
+    that the dateline fix-up doesn't secretly depend on the dateline
+    lining up with a panel's un-rotated seam.
+    """
+    flux = _computeLineIntegral(M, LOOP_DATELINE_ROTATED, rotationDeg=ROTATION_DEG)
+    print(f'M={M} dateline loop, rotated {ROTATION_DEG} deg: flux={flux:.3e} (exact 0)')
+    assert abs(flux) < 1.e-8
+
+
 if __name__ == '__main__':
     test_open_path_crossing_lon0()
     for M in (8, 16, 32, 64):
@@ -375,3 +469,7 @@ if __name__ == '__main__':
         test_closed_loop_two_panels(M)
         test_closed_loop_three_panels(M)
         test_closed_loop_across_dateline(M)
+        test_closed_loop_single_panel_rotated(M)
+        test_closed_loop_two_panels_rotated(M)
+        test_closed_loop_three_panels_rotated(M)
+        test_closed_loop_across_dateline_rotated(M)
