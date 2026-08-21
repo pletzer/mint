@@ -203,18 +203,44 @@ vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3]
 vtkIdType
 vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notUsed, double pcoords[3], double *weights) {
 
-    int bucketId = this->getBucketId(point);
     double closestPoint[3];
     int subId;
     double dist2;
 
-    const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
+    // Try the point as given, then folded across the pole and/or shifted by
+    // +-periodX, so a point near a periodic seam or pole singularity is
+    // looked up in the bucket(s) where its true cell actually lives --
+    // mirrors the shift-before-bucket-lookup pattern already used by
+    // findIntersectionsWithLine for line integrals.
+    for (const int& kFold : this->kFolding) {
 
-    for (const vtkIdType& cId : faces) {
-        if (this->containsPoint(cId, point, tol)) {
-            vtkCell* quad = this->grid->GetCell(cId);
-            quad->EvaluatePosition((double*) point, closestPoint, subId, pcoords, dist2, weights);
-            return cId;
+        Vec3 p(point);
+
+        if (kFold == 1) {
+            if (std::abs(p[1]) <= 90) {
+                // folding only makes sense for points that already fell
+                // outside the +-90 deg latitude range
+                continue;
+            }
+            this->foldAtPole(&p[0]);
+        }
+
+        for (const double& modPx : this->modPeriodX) {
+
+            p[0] += modPx;
+
+            int bucketId = this->getBucketId(&p[0]);
+            const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
+
+            for (const vtkIdType& cId : faces) {
+                if (this->containsPoint(cId, &p[0], tol)) {
+                    vtkCell* quad = this->grid->GetCell(cId);
+                    quad->EvaluatePosition(&p[0], closestPoint, subId, pcoords, dist2, weights);
+                    return cId;
+                }
+            }
+
+            p[0] -= modPx;
         }
     }
 
