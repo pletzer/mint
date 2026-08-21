@@ -50,6 +50,13 @@ vmtCellLocator::vmtCellLocator() {
 
     this->grid = NULL;
 
+    // 0 (not periodic) until setPeriodicityLengthX says otherwise -- containsPoint
+    // uses this to decide whether (lon, lat)-in-degrees semantics apply at all
+    this->periodX = 0.0;
+
+    // false until setCubedSphere says otherwise
+    this->isCubedSphere = false;
+
     // will be determined in SetDataSet
     this->numBucketsX = 1;
     this->numBucketsY = 1;
@@ -115,6 +122,13 @@ vmtCellLocator::BuildLocator() {
     // assign each face to one or more buckets depending on where the face's nodes fall
     // WARNING: this could fail if the buckets are much smaller than some cells!
     vtkIdType numFaces = this->grid->GetNumberOfCells();
+
+    if (this->periodX > 0 && this->isCubedSphere) {
+        this->cubedSphereVerts.resize(numFaces*4);
+        this->cubedSphereCentroid.resize(numFaces);
+        this->cubedSphereRadius2.resize(numFaces);
+    }
+
     for (vtkIdType faceId = 0; faceId < numFaces; ++faceId) {
         std::vector<Vec3> nodes = getFacePoints(faceId);
         for (const Vec3& p : nodes) {
@@ -122,6 +136,24 @@ vmtCellLocator::BuildLocator() {
             // that no corners are fully inside a face
             int bucketId = this->getBucketId(&p[0]);
             this->bucket2Faces[bucketId].insert(faceId);
+        }
+
+        if (this->periodX > 0 && this->isCubedSphere) {
+            // precompute this face's corners in Cartesian XYZ, plus its centroid and
+            // radius for containsPointCubedSphere's cheap pre-filter, once here instead
+            // of on every containment check against this face
+            Vec3* verts = &this->cubedSphereVerts[faceId*4];
+            for (int i = 0; i < 4; ++i) {
+                verts[i] = this->lonLatDegToXYZ(&nodes[i][0]);
+            }
+            Vec3 centroid = (verts[0] + verts[1] + verts[2] + verts[3]) / 4.;
+            double radius2 = 0.0;
+            for (int i = 0; i < 4; ++i) {
+                Vec3 d = verts[i] - centroid;
+                radius2 = std::max(radius2, dot(d, d));
+            }
+            this->cubedSphereCentroid[faceId] = centroid;
+            this->cubedSphereRadius2[faceId] = radius2;
         }
     }
 
@@ -154,16 +186,66 @@ vmtCellLocator::enableFolding() {
     this->kFolding[1] = 1;
 }
 
-bool 
+bool
 vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
 
     tol = std::abs(tol);
+
+    if (this->periodX > 0 && this->isCubedSphere) {
+        // a genuine gnomonic cubed sphere (see setCubedSphere) -- use the exact
+        // spherical bilinear patch rather than a straight (lon, lat) chord; pcoords and
+        // weights are not needed here, only the containment decision
+        double pcoords[3], weights[8];
+        return this->containsPointCubedSphere(faceId, point, tol, pcoords, weights);
+    }
+
     std::vector<Vec3> nodes = this->getFacePoints(faceId);
     Vec3 targetPoint(point);
+    return isPointInQuad(targetPoint, nodes, tol);
+}
 
-    bool res = isPointInQuad(targetPoint, nodes, tol);
 
-    return res;
+bool
+vmtCellLocator::invertSphericalBilinearPatch(const Vec3& target, const Vec3 verts[4],
+                                              double& xsi, double& eta) const {
+
+    const int maxIter = 30;
+    const double newtonTol2 = 1.e-24; // (1.e-12)^2
+    const double h = 1.e-6;
+
+    xsi = 0.5;
+    eta = 0.5;
+
+    for (int iter = 0; iter < maxIter; ++iter) {
+
+        Vec3 res = this->sphericalBilinearMap(xsi, eta, verts) - target;
+
+        // finite-difference Jacobian columns, d(map)/dXsi and d(map)/dEta
+        Vec3 rXsi = (this->sphericalBilinearMap(xsi + h, eta, verts) -
+                     this->sphericalBilinearMap(xsi - h, eta, verts)) / (2.*h);
+        Vec3 rEta = (this->sphericalBilinearMap(xsi, eta + h, verts) -
+                     this->sphericalBilinearMap(xsi, eta - h, verts)) / (2.*h);
+
+        // Gauss-Newton step: solve the 2x2 normal equations (J^T J) delta = -J^T res,
+        // where J = [rXsi, rEta] is the map's (3 x 2) Jacobian
+        double a11 = dot(rXsi, rXsi), a12 = dot(rXsi, rEta), a22 = dot(rEta, rEta);
+        double b1 = -dot(rXsi, res), b2 = -dot(rEta, res);
+        double det = a11*a22 - a12*a12;
+        if (std::abs(det) < 1.e-30) {
+            // degenerate Jacobian -- should not happen for a non-degenerate quad
+            return false;
+        }
+        double dXsi = (a22*b1 - a12*b2) / det;
+        double dEta = (a11*b2 - a12*b1) / det;
+
+        xsi += dXsi;
+        eta += dEta;
+
+        if (dXsi*dXsi + dEta*dEta < newtonTol2) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -203,18 +285,55 @@ vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3]
 vtkIdType
 vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notUsed, double pcoords[3], double *weights) {
 
-    int bucketId = this->getBucketId(point);
     double closestPoint[3];
     int subId;
     double dist2;
 
-    const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
+    // Try the point as given, then folded across the pole and/or shifted by
+    // +-periodX, so a point near a periodic seam or pole singularity is
+    // looked up in the bucket(s) where its true cell actually lives --
+    // mirrors the shift-before-bucket-lookup pattern already used by
+    // findIntersectionsWithLine for line integrals.
+    for (const int& kFold : this->kFolding) {
 
-    for (const vtkIdType& cId : faces) {
-        if (this->containsPoint(cId, point, tol)) {
-            vtkCell* quad = this->grid->GetCell(cId);
-            quad->EvaluatePosition((double*) point, closestPoint, subId, pcoords, dist2, weights);
-            return cId;
+        Vec3 p(point);
+
+        if (kFold == 1) {
+            if (std::abs(p[1]) <= 90) {
+                // folding only makes sense for points that already fell
+                // outside the +-90 deg latitude range
+                continue;
+            }
+            this->foldAtPole(&p[0]);
+        }
+
+        for (const double& modPx : this->modPeriodX) {
+
+            p[0] += modPx;
+
+            int bucketId = this->getBucketId(&p[0]);
+            const std::set<vtkIdType>& faces = this->bucket2Faces.find(bucketId)->second;
+
+            for (const vtkIdType& cId : faces) {
+                if (this->periodX > 0 && this->isCubedSphere) {
+                    // get pcoords/weights from the same spherical model used for the
+                    // containment decision itself (see containsPointCubedSphere) --
+                    // computing them together, here, avoids solving twice and, more
+                    // importantly, avoids handing this point to vtkQuad::EvaluatePosition's
+                    // unrelated flat, straight-(lon,lat)-chord model below, which can
+                    // extrapolate (xsi, eta) wildly for a point close to a pole
+                    if (this->containsPointCubedSphere(cId, &p[0], tol, pcoords, weights)) {
+                        return cId;
+                    }
+                }
+                else if (this->containsPoint(cId, &p[0], tol)) {
+                    vtkCell* quad = this->grid->GetCell(cId);
+                    quad->EvaluatePosition(&p[0], closestPoint, subId, pcoords, dist2, weights);
+                    return cId;
+                }
+            }
+
+            p[0] -= modPx;
         }
     }
 

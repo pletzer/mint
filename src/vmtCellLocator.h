@@ -112,6 +112,25 @@ public:
     void enableFolding();
 
     /**
+     * Declare whether the grid is a gnomonic (central-projection) cubed sphere, e.g. FV3's
+     * @param isCubedSphere true if the grid is a cubed sphere
+     * @note only meaningful together with a periodic-longitude-in-degrees grid (periodX
+     *       set > 0); for such a grid, a straight (lon, lat) chord between two cell
+     *       corners is an excellent approximation of that cube-face edge everywhere
+     *       except close to a pole -- where, since gnomonic projection maps straight
+     *       lines on a cube face to great circles, the actual edge is a great circle that
+     *       a straight (lon, lat) chord can badly misrepresent (see
+     *       invertSphericalBilinearPatch). A plain (possibly rotated) lon-lat grid has no
+     *       such cube faces -- its cell edges (lines of constant longitude or latitude)
+     *       are exactly what a straight (lon, lat) chord already represents (a meridian
+     *       is itself a great circle; a circle of latitude is not, but is still not a
+     *       cubed-sphere edge either) -- so leave this false (the default) for those.
+     */
+    void setCubedSphere(bool isCubedSphere) {
+        this->isCubedSphere = isCubedSphere;
+    }
+
+    /**
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
      * @param pEnd end point of the line
@@ -179,6 +198,22 @@ private:
     // periodicity in x
     double periodX;
 
+    // true if the grid is a gnomonic cubed sphere (see setCubedSphere)
+    bool isCubedSphere;
+
+    // for a cubed-sphere grid, every face's 4 corners as unit vectors in Cartesian XYZ
+    // (flat array, faceId*4 + corner), computed once in BuildLocator instead of on every
+    // containsPointCubedSphere call -- the same handful of candidate faces per bucket get
+    // tested against many different target points, so this easily pays for itself
+    std::vector<Vec3> cubedSphereVerts;
+
+    // for a cubed-sphere grid, every face's centroid (mean of its 4 corners' unit
+    // vectors, not itself a unit vector) and squared radius (largest squared distance
+    // from that centroid to any of the 4 corners) -- the cheap pre-filter in
+    // containsPointCubedSphere compares against these instead of recomputing them
+    std::vector<Vec3> cubedSphereCentroid;
+    std::vector<double> cubedSphereRadius2;
+
     /**
      * Adjust the longitude and latitude to account for the folding at the pole
      * @param point lon, lat in input and transformed lon, lat on output
@@ -188,6 +223,137 @@ private:
         double sgnTheta = point[1] >= 0? 1.: -1.;
         point[0] -= sgnLambda*180.;
         point[1] = sgnTheta*180 - point[1];
+    }
+
+    /**
+     * Convert a (lon, lat) point, in degrees, to a unit vector in 3D Cartesian space
+     * @param lonLatDeg pointer to lon, lat, in degrees
+     * @return unit vector on the sphere
+     */
+    inline Vec3 lonLatDegToXYZ(const double lonLatDeg[2]) const {
+        const double deg2rad = M_PI / 180.0;
+        double lam = lonLatDeg[0] * deg2rad;
+        double the = lonLatDeg[1] * deg2rad;
+        double cosThe = std::cos(the);
+        Vec3 xyz;
+        xyz[0] = cosThe * std::cos(lam);
+        xyz[1] = cosThe * std::sin(lam);
+        xyz[2] = std::sin(the);
+        return xyz;
+    }
+
+    /**
+     * Spherical linear interpolation between two unit vectors
+     * @param u start unit vector
+     * @param w end unit vector
+     * @param t interpolation parameter, in [0, 1]
+     * @return unit vector, u at t=0, w at t=1, along the great-circle arc between them
+     */
+    inline Vec3 slerp(const Vec3& u, const Vec3& w, double t) const {
+        double cosOmega = std::max(-1.0, std::min(1.0, dot(u, w)));
+        double omega = std::acos(cosOmega);
+        if (omega < 1.e-9) {
+            // u and w (nearly) coincide -- avoid the 0/0 below, any t gives the same point
+            return u;
+        }
+        double s = std::sin(omega);
+        return (std::sin((1. - t)*omega)/s)*u + (std::sin(t*omega)/s)*w;
+    }
+
+    /**
+     * Map parametric coordinates to a point on the exact spherical quad spanned by a
+     * cubed-sphere face's 4 corners (a "spherical bilinear patch": interpolate along the
+     * 0->1 and 3->2 edges at xsi, then between those two points at eta -- all by great
+     * circle, via slerp)
+     * @param xsi xsi parametric coordinate, in [0, 1] inside the face
+     * @param eta eta parametric coordinate, in [0, 1] inside the face
+     * @param verts the face's 4 corners, unit vectors in Cartesian XYZ, in the same
+     *              0->1->2->3 corner order used everywhere else in this class
+     * @return unit vector on the sphere
+     */
+    inline Vec3 sphericalBilinearMap(double xsi, double eta, const Vec3 verts[4]) const {
+        Vec3 a = this->slerp(verts[0], verts[1], xsi);
+        Vec3 b = this->slerp(verts[3], verts[2], xsi);
+        Vec3 r = this->slerp(a, b, eta);
+        return r / std::sqrt(dot(r, r));
+    }
+
+    /**
+     * Find the parametric coordinates (xsi, eta) at which the spherical bilinear patch
+     * spanned by a cubed-sphere face's 4 corners passes through a target point, by
+     * Gauss-Newton iteration (finite-difference Jacobian)
+     * @param target target point, unit vector in Cartesian XYZ
+     * @param verts the face's 4 corners, unit vectors in Cartesian XYZ
+     * @param xsi xsi parametric coordinate (output), whether or not the iteration converges
+     * @param eta eta parametric coordinate (output), whether or not the iteration converges
+     * @return true if the iteration converged
+     * @note convergence to (xsi, eta) outside [0, 1] is expected and correct for a target
+     *       point outside the face -- the values stay bounded and well behaved (verified
+     *       against faces spanning up to a full pole-adjacent cubed-sphere panel corner),
+     *       they are just not a valid location inside this particular face
+     */
+    bool invertSphericalBilinearPatch(const Vec3& target, const Vec3 verts[4],
+                                       double& xsi, double& eta) const;
+
+    /**
+     * Check if a point is inside a cubed-sphere face, using the exact spherical bilinear
+     * patch spanned by its 4 corners for both the containment decision and the
+     * parametric coordinates -- see invertSphericalBilinearPatch
+     * @param faceId face/cell Id
+     * @param point point, (lon, lat) in degrees
+     * @param tol tolerance on xsi, eta
+     * @param pcoords parametric coordinates (output): pcoords[0] = xsi, pcoords[1] = eta,
+     *                pcoords[2] = 0; valid whether or not the point turns out to be inside
+     * @param weights bilinear interpolation weights from (xsi, eta) (output), one per
+     *                corner, in the same 0->1->2->3 order
+     * @return true if inside
+     * @note deriving both the containment decision and the parametric coordinates from
+     *       the same spherical model, instead of pairing an accurate containment test
+     *       with vtkQuad's flat, straight-(lon,lat)-chord EvaluatePosition, is the point:
+     *       the two can never disagree with each other close to a pole, where they used
+     *       to -- a point the flat model sees as just outside its own corners can get
+     *       assigned wildly extrapolated (xsi, eta), and from there arbitrarily large
+     *       interpolation weights.
+     */
+    inline bool containsPointCubedSphere(vtkIdType faceId, const double point[3], double tol,
+                                          double pcoords[3], double weights[8]) const {
+        // corners, centroid and radius are all precomputed once, in BuildLocator -- see
+        // cubedSphereVerts
+        const Vec3* verts = &this->cubedSphereVerts[faceId*4];
+        Vec3 target = this->lonLatDegToXYZ(point);
+
+        // cheap pre-filter: the locator's buckets are sized for a handful-of-flops
+        // containment test, so a bucket can hold many candidate cells for every one
+        // that actually contains a given point -- reject the (typically large) majority
+        // that are nowhere close before paying for a multi-iteration Newton solve.
+        // Compare squared Cartesian distance to this cell's own centroid against its own
+        // "radius" (the farthest corner from that centroid), inflated by a generous
+        // safety factor: this can only ever over-accept (falling through to the exact
+        // solve below), never wrongly reject a point that's actually inside -- every
+        // point of the spherical bilinear patch stays within the spherical convex hull
+        // of its 4 corners, which in turn stays within their centroid's own radius, so
+        // safetyFactor > 1 is already conservative; the extra margin is just insurance.
+        const double safetyFactor = 2.0;
+        Vec3 dt = target - this->cubedSphereCentroid[faceId];
+        if (dot(dt, dt) > safetyFactor*safetyFactor*this->cubedSphereRadius2[faceId]) {
+            pcoords[0] = pcoords[1] = pcoords[2] = -1.0; // clearly outside, not solved
+            weights[0] = weights[1] = weights[2] = weights[3] = 0.0;
+            return false;
+        }
+
+        double xsi = 0.5, eta = 0.5;
+        bool converged = this->invertSphericalBilinearPatch(target, verts, xsi, eta);
+
+        pcoords[0] = xsi;
+        pcoords[1] = eta;
+        pcoords[2] = 0.0;
+
+        weights[0] = (1. - xsi)*(1. - eta);
+        weights[1] = xsi*(1. - eta);
+        weights[2] = xsi*eta;
+        weights[3] = (1. - xsi)*eta;
+
+        return converged && xsi >= -tol && xsi <= 1. + tol && eta >= -tol && eta <= 1. + tol;
     }
 
 

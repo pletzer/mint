@@ -56,6 +56,11 @@ int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, 
     if (enableFolding == 1) {
         (*self)->locator->enableFolding();
     }
+    // fixLonAcrossDateline and averageLonAtPole are only ever both set for a gnomonic
+    // cubed-sphere grid (see Grid_t/mnt_grid_setFlags) -- a plain (possibly rotated)
+    // lon-lat grid sets neither, even when it reaches a pole
+    (*self)->locator->setCubedSphere((*self)->grid->fixLonAcrossDateline &&
+                                      (*self)->grid->averageLonAtPole);
     (*self)->locator->BuildLocator();
 
     return 0;

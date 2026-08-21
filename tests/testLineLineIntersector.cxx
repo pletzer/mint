@@ -16,8 +16,8 @@ void test1() {
     lli.setPoints(2, p0, p1, q0, q1);
     Vec2 xi = lli.getSolution();
     std::cout << "test1: xi = " << xi << '\n';
-    assert(abs(xi[0] - 1./2.) < tol);
-    assert(abs(xi[1] - 1./3.) < tol);
+    assert(std::abs(xi[0] - 1./2.) < tol);
+    assert(std::abs(xi[1] - 1./3.) < tol);
 }
 
 void test1_3d() {
@@ -30,8 +30,8 @@ void test1_3d() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     Vec2 xi = lli.getSolution();
-    assert(abs(xi[0] - 1./2.) < tol);
-    assert(abs(xi[1] - 1./3.) < tol);
+    assert(std::abs(xi[0] - 1./2.) < tol);
+    assert(std::abs(xi[1] - 1./3.) < tol);
 }
 
 void test1_3DOffset() {
@@ -44,8 +44,8 @@ void test1_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     Vec2 xi = lli.getSolution();
-    assert(abs(xi[0] - 1./2.) < tol);
-    assert(abs(xi[1] - 1./3.) < tol);
+    assert(std::abs(xi[0] - 1./2.) < tol);
+    assert(std::abs(xi[1] - 1./3.) < tol);
 }
 
 
@@ -59,7 +59,7 @@ void test2() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(lli.hasSolution(tol));
 }
 
@@ -73,7 +73,7 @@ void test2_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(! lli.hasSolution(tol));
 }
 
@@ -87,7 +87,7 @@ void test3() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     std::cout << "test3: det = " << det << '\n';
     assert(! lli.hasSolution(tol));
 }
@@ -102,7 +102,7 @@ void test3_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     // no solution as the two lines run parallel without ever touch each other
     assert(! lli.hasSolution(tol));
 }
@@ -118,7 +118,7 @@ void test3_crossAt0() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     std::cerr << "test3_crossAt0: det = " << det << '\n';
-    assert(abs(det) > tol);
+    assert(std::abs(det) > tol);
     assert(lli.hasSolution(tol));
 }
 
@@ -133,7 +133,7 @@ void test3_touchMiddle() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     std::cerr << "test3_touchMiddle: det = " << det << '\n';
-    assert(abs(det) > tol);
+    assert(std::abs(det) > tol);
     assert(lli.hasSolution(tol));
 }
 
@@ -148,7 +148,7 @@ void test3_noTouchMiddle() {
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
     std::cerr << "test3_noTouchMiddle: det = " << det << '\n';
-    assert(abs(det) > tol);
+    assert(std::abs(det) > tol);
     assert(lli.hasSolution(tol));
 }
 
@@ -162,7 +162,7 @@ void testNoOverlap() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(! lli.hasSolution(tol));
 }
 
@@ -176,7 +176,7 @@ void testNoOverlap_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(! lli.hasSolution(tol));
 }
 
@@ -190,7 +190,7 @@ void testNoOverlap2() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(! lli.hasSolution(tol));
 }
 
@@ -204,7 +204,7 @@ void testNoOverlap2_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(! lli.hasSolution(tol));
 }
 
@@ -217,7 +217,7 @@ void testPartialOverlap() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
@@ -250,7 +250,7 @@ void testPartialOverlap_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     // lines don't touch
     assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
@@ -305,8 +305,8 @@ void testPartialOverlap2() {
     }
     u /= sqrt(dot(dp10, dp10));
 
-    assert(abs(dot(dpaq0, u)) < tol);
-    assert(abs(dot(dpbp1, u)) < tol);
+    assert(std::abs(dot(dpaq0, u)) < tol);
+    assert(std::abs(dot(dpbp1, u)) < tol);
 }
 
 void testPartialOverlap2_3DOffset() {
@@ -339,8 +339,8 @@ void testPartialOverlap2_3DOffset() {
     }
     u /= sqrt(dot(dp10, dp10));
 
-    assert(abs(dot(dpaq0, u)) < tol);
-    assert(abs(dot(dpbp1, u)) < tol);
+    assert(std::abs(dot(dpaq0, u)) < tol);
+    assert(std::abs(dot(dpbp1, u)) < tol);
 }
 
 void testPartialOverlap3() {
@@ -352,7 +352,7 @@ void testPartialOverlap3() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     std::cerr << "testPartialOverlap3: det = " << det << '\n';
     assert(lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
@@ -372,8 +372,8 @@ void testPartialOverlap3() {
         dp10[i] = p1[i] - p0[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpap0, u)) < tol);
-    assert(abs(dot(dpbq0, u)) < tol);
+    assert(std::abs(dot(dpap0, u)) < tol);
+    assert(std::abs(dot(dpbq0, u)) < tol);
 }
 
 void testPartialOverlap3_3DOffset() {
@@ -386,7 +386,7 @@ void testPartialOverlap3_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     // lines don't touch
     assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
@@ -406,8 +406,8 @@ void testPartialOverlap3_3DOffset() {
         dp10[i] = p1[i] - p0[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpap0, u)) < tol);
-    assert(abs(dot(dpbq0, u)) < tol);
+    assert(std::abs(dot(dpap0, u)) < tol);
+    assert(std::abs(dot(dpbq0, u)) < tol);
 }
 
 
@@ -421,7 +421,7 @@ void testQInsideP() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
@@ -440,8 +440,8 @@ void testQInsideP() {
         dpbq1[i] = pb[i] - q1[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpaq0, u)) < tol);
-    assert(abs(dot(dpbq1, u)) < tol);
+    assert(std::abs(dot(dpaq0, u)) < tol);
+    assert(std::abs(dot(dpbq1, u)) < tol);
 }
 
 void testQInsideP_3DOffset() {
@@ -454,7 +454,7 @@ void testQInsideP_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     // lines don't touch
     assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
@@ -474,8 +474,8 @@ void testQInsideP_3DOffset() {
         dpbq1[i] = pb[i] - q1[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpaq0, u)) < tol);
-    assert(abs(dot(dpbq1, u)) < tol);
+    assert(std::abs(dot(dpaq0, u)) < tol);
+    assert(std::abs(dot(dpbq1, u)) < tol);
 }
 
 void testPInsideQ() {
@@ -488,7 +488,7 @@ void testPInsideQ() {
     LineLineIntersector lli;
     lli.setPoints(2, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     assert(lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
     double lamA = p.first;
@@ -507,8 +507,8 @@ void testPInsideQ() {
         dpbp1[i] = pb[i] - p1[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpap0, u)) < tol);
-    assert(abs(dot(dpbp1, u)) < tol);
+    assert(std::abs(dot(dpap0, u)) < tol);
+    assert(std::abs(dot(dpbp1, u)) < tol);
 }
 
 void testPInsideQ_3DOffset() {
@@ -521,7 +521,7 @@ void testPInsideQ_3DOffset() {
     LineLineIntersector lli;
     lli.setPoints(3, p0, p1, q0, q1);
     double det = lli.getDet();
-    assert(abs(det) < tol);
+    assert(std::abs(det) < tol);
     // lines don't touch
     assert(! lli.hasSolution(tol));
     std::pair< double, double > p = lli.getBegEndParamCoords();
@@ -541,8 +541,8 @@ void testPInsideQ_3DOffset() {
         dpbp1[i] = pb[i] - p1[i];
     }
     u /= sqrt(dot(dp10, dp10));
-    assert(abs(dot(dpap0, u)) < tol);
-    assert(abs(dot(dpbp1, u)) < tol);
+    assert(std::abs(dot(dpap0, u)) < tol);
+    assert(std::abs(dot(dpbp1, u)) < tol);
 }
 
 
