@@ -74,7 +74,10 @@ from pathlib import Path
 import numpy
 import pytest
 
-from mint import VectorInterp, CELL_BY_CELL_DATA
+from mint import Grid, VectorInterp, CELL_BY_CELL_DATA
+from tempfile import TemporaryDirectory
+
+DATA_DIR = Path(__file__).absolute().parent.parent.parent / Path('data')
 
 # scripts/generate_cubedsphere_grid.py is not part of the mint package;
 # reach it via sys.path, as in test_cubedsphere.py.
@@ -234,6 +237,33 @@ def test_vector_interp_convergence():
         assert e_next < e_prev, (
             f'refining M={M_prev} -> M={M_next} should reduce the max error '
             f'({e_prev:.3e} -> {e_next:.3e}): the reconstruction is not converging')
+
+
+def test_lonlat_vector_interp_fv3_grid():
+    # Read in the FV3 cubed-sphere grid.
+    src_grid = Grid()
+    src_grid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
+    filename = str(DATA_DIR / Path('C24_SCRIP_desc.181018.nc'))
+    src_grid.loadFromFV32DFile(filename)
+
+    # Construct target points that are regularly spaced
+    # in lon-lat coordinates
+    lon_reg_A = numpy.linspace(1, 359, 180)
+    lat_reg_A = numpy.linspace(-89, 89, 90)
+
+    LAT_REG_A, LON_REG_A = numpy.meshgrid(lat_reg_A, lon_reg_A)
+    ntarget = LON_REG_A.shape[0] * LAT_REG_A.shape[1]
+    target_points_A = numpy.zeros((ntarget, 3), numpy.float64)
+    target_points_A[:, 0] = LON_REG_A.flat
+    target_points_A[:, 1] = LAT_REG_A.flat  
+
+    # Check the points are valid
+    vi = VectorInterp()
+    vi.setGrid(src_grid)
+    vi.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=True)
+    numbad = vi.findPoints(target_points_A, tol2=1.e-12)    
+
+    assert numbad == 0, f'{numbad} bad cells found'
 
 
 if __name__ == '__main__':
