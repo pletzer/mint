@@ -162,6 +162,48 @@ def cubedSphereGridPoints(M, rotationDeg=0.0):
     return points
 
 
+_CUBE_FACE_NAMES = ['+X', '-X', '+Y', '-Y', '+Z', '-Z']
+_CUBE_FACE_AXES = numpy.array([
+    [1., 0., 0.], [-1., 0., 0.], [0., 1., 0.], [0., -1., 0.], [0., 0., 1.], [0., 0., -1.],
+])
+
+
+def cubeFaceOf(lonDeg, latDeg):
+    """
+    Which of the 6 circumscribing-cube faces (see _faceFrames, unrotated:
+    rotationDeg=0) a (lon, lat) point's own radial direction projects onto
+    under gnomonic projection -- the face whose own outward normal has the
+    largest dot product with the point's unit vector, which is exactly the
+    face gnomonic projection would assign it to (the face the ray from the
+    sphere's centre through this point hits first).
+
+    :returns: one of '+X', '-X', '+Y', '-Y', '+Z', '-Z'
+    """
+    lam = numpy.radians(lonDeg)
+    theta = numpy.radians(latDeg)
+    xyz = numpy.array([numpy.cos(theta) * numpy.cos(lam),
+                        numpy.cos(theta) * numpy.sin(lam),
+                        numpy.sin(theta)])
+    dots = _CUBE_FACE_AXES.dot(xyz)
+    return _CUBE_FACE_NAMES[int(numpy.argmax(dots))]
+
+
+def facesAlongPath(p0, p1, n=50):
+    """
+    The set of distinct cube faces (see cubeFaceOf) touched by n points
+    sampled along the straight-in-(lon,lat) path from p0 to p1 -- used to
+    verify a test path genuinely crosses a cubed-sphere panel seam, not
+    just many cells within a single panel.
+
+    :param p0, p1: (lonDeg, latDeg) endpoints
+    :returns: set of face-name strings
+    """
+    ts = numpy.linspace(0., 1., n)
+    lons = p0[0] + ts * (p1[0] - p0[0])
+    lats = p0[1] + ts * (p1[1] - p0[1])
+    return {cubeFaceOf(lo, la) for lo, la in zip(lons, lats)}
+
+
 def buildCubedSphereGrid(M, rotationDeg=0.0):
     """
     Convenience wrapper: build the points and return a ready-to-use
