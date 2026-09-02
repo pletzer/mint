@@ -40,10 +40,14 @@ jobs:
             numpy \
             pytest \
             netcdf4 \
-            iris
+            iris \
+            cxx-compiler
 
       - name: Install mint Python bindings
-        run: pip install .
+        run: |
+          export CC="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-cc"
+          export CXX="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-c++"
+          pip install .
 
       - name: Run tests
         run: pytest
