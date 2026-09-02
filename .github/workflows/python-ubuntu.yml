@@ -23,7 +23,7 @@ jobs:
           miniforge-version: latest
           activate-environment: mint-env
           auto-activate-base: false
-          python-version: "3.13"
+          python-version: "3.12"
           channels: conda-forge
           channel-priority: strict
 
