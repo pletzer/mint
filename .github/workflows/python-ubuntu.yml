@@ -23,7 +23,8 @@ jobs:
           miniforge-version: latest
           activate-environment: mint-env
           auto-activate-base: false
-          channels: conda-forge,defaults
+          python-version: "3.13"
+          channels: conda-forge
           channel-priority: strict
 
       - name: Install dependencies
@@ -39,10 +40,14 @@ jobs:
             numpy \
             pytest \
             netcdf4 \
-            iris
+            iris \
+            cxx-compiler
 
       - name: Install mint Python bindings
-        run: pip install .
+        run: |
+          export CC="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-cc"
+          export CXX="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-c++"
+          pip install .
 
       - name: Run tests
         run: pytest
