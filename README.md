@@ -37,7 +37,7 @@ The source and destination grids are stored as a collection of grid cells with f
 
 ## Thank you
 
-The development of the numerical method and its implementation are supported by the [Next Generation Modelling Systems](https://www.metoffice.gov.uk/research/approach/modelling-systems/next-gen-modelling-systems) effort at the [UK Met Office](https://www.metoffice.gov.uk/), the National Institute for Water and Atmospheric ([NIWA](https://niwa.co.nz/)) research and the New Zealand eScience Infrastructure ([NeSI](https://www.nesi.org.nz/)).
+The development of the numerical method and its implementation were supported by the [Next Generation Modelling Systems](https://www.metoffice.gov.uk/research/approach/modelling-systems/next-gen-modelling-systems) effort at the [UK Met Office](https://www.metoffice.gov.uk/), the National Institute for Water and Atmospheric ([NIWA](https://niwa.co.nz/)) research and the New Zealand eScience Infrastructure ([NeSI](https://www.nesi.org.nz/)).
 
 ## References
 
