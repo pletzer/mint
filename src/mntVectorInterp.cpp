@@ -140,11 +140,11 @@ int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
     }
 
     int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta;
+    Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
     double jac;
 
     for (std::size_t iTargetId = 0;
-                     iTargetId < (*self)->cellIds.size(); 
+                     iTargetId < (*self)->cellIds.size();
                      ++iTargetId) {
 
         vtkIdType cellId = (*self)->cellIds[iTargetId];
@@ -155,18 +155,15 @@ int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
             continue;
         }
 
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, jac);
+        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
 
-        // contravariant bases
-        gradXsi[0] = + drdEta[1]/jac;
-        gradXsi[1] = - drdEta[0]/jac;
-        gradXsi[2] = 0.0;
+        // contravariant bases (in the cell's own tangent plane -- see
+        // getTangentVectors for why this is normal-based rather than the old
+        // zHat-only formula)
+        gradXsi = cross(drdEta, normal) / jac;
+        gradEta = cross(normal, drdXsi) / jac;
 
-        gradEta[0] = - drdXsi[1]/jac;
-        gradEta[1] = + drdXsi[0]/jac;
-        gradEta[2] = 0.0;
-
-        // parametric coordinates of the target point 
+        // parametric coordinates of the target point
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
         double isx = 1.0 - xsi;
@@ -212,11 +209,11 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self,
     }
 
     int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta;
+    Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
     double jac;
 
     for (std::size_t iTargetId = 0;
-                     iTargetId < (*self)->cellIds.size(); 
+                     iTargetId < (*self)->cellIds.size();
                      ++iTargetId) {
 
         vtkIdType cellId = (*self)->cellIds[iTargetId];
@@ -227,9 +224,9 @@ int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self,
             continue;
         }
 
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, jac);
+        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
 
-        // parametric coordinates of the target point 
+        // parametric coordinates of the target point
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
         double isx = 1.0 - xsi;
@@ -279,11 +276,11 @@ int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
     }
 
     int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta;
+    Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
     double jac;
 
     for (std::size_t iTargetId = 0;
-                     iTargetId < (*self)->cellIds.size(); 
+                     iTargetId < (*self)->cellIds.size();
                      ++iTargetId) {
 
         vtkIdType cellId = (*self)->cellIds[iTargetId];
@@ -294,18 +291,15 @@ int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
             continue;
         }
 
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, jac);
+        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
 
-        // contravariant bases
-        gradXsi[0] = + drdEta[1]/jac;
-        gradXsi[1] = - drdEta[0]/jac;
-        gradXsi[2] = 0.0;
+        // contravariant bases (in the cell's own tangent plane -- see
+        // getTangentVectors for why this is normal-based rather than the old
+        // zHat-only formula)
+        gradXsi = cross(drdEta, normal) / jac;
+        gradEta = cross(normal, drdXsi) / jac;
 
-        gradEta[0] = - drdXsi[1]/jac;
-        gradEta[1] = + drdXsi[0]/jac;
-        gradEta[2] = 0.0;
-
-        // parametric coordinates of the target point 
+        // parametric coordinates of the target point
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
         double isx = 1.0 - xsi;
@@ -358,11 +352,11 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
     }
 
     int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta;
+    Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
     double jac;
 
     for (std::size_t iTargetId = 0;
-                     iTargetId < (*self)->cellIds.size(); 
+                     iTargetId < (*self)->cellIds.size();
                      ++iTargetId) {
 
         vtkIdType cellId = (*self)->cellIds[iTargetId];
@@ -373,9 +367,9 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
             continue;
         }
 
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, jac);
+        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
 
-        // parametric coordinates of the target point 
+        // parametric coordinates of the target point
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
         double isx = 1.0 - xsi;

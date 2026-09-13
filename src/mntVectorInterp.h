@@ -257,19 +257,19 @@ inline Vec3 cartesianFromRadians(const Vec3& p) {
 }
 
 inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_t iTargetId,
-                                                Vec3& drdXsi, Vec3& drdEta, double& jac) {
+                                                Vec3& drdXsi, Vec3& drdEta, Vec3& normal, double& jac) {
 
         Vec3 v0, v1, v2, v3;
         vtkIdType cellId = (*self)->cellIds[iTargetId];
         int ier = 0;
 
-        // parametric coordinates of the target point 
+        // parametric coordinates of the target point
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
         double isx = 1.0 - xsi;
         double ate = 1.0 - eta;
 
-        // get the cell vertices, this should never fail 
+        // get the cell vertices, this should never fail
         mnt_grid_getPoints(&(*self)->grid, cellId, 0, &v0[0], &v1[0]);
         mnt_grid_getPoints(&(*self)->grid, cellId, 2, &v3[0], &v2[0]);
 
@@ -278,11 +278,32 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         Vec3 c = v2 - v3;
         Vec3 d = v3 - v0;
 
-        // Jacobians attached to each vertex (can be zero if points are degenerate)
-        double a013 = crossDotZHat(a, d);
-        double a120 = crossDotZHat(a, b);
-        double a231 = crossDotZHat(c, b);
-        double a302 = crossDotZHat(c, d);
+        // Reference normal for this cell, computed from the actual 3D embedded
+        // corner points (cross of the two diagonals) rather than assumed to be
+        // zHat -- this is what lets a cell be genuinely non-planar (e.g. a
+        // curved surface mesh in real x,y,z) without the Jacobian/dual-basis
+        // silently discarding whichever coordinate isn't x or y. For a flat,
+        // z=0 quad this reduces exactly to (0,0,1), the previous implicit
+        // assumption, so behaviour on such meshes is unchanged.
+        normal = cross(v2 - v0, v3 - v1);
+        double normalNorm = sqrt(dot(normal, normal));
+        if (normalNorm > 0) {
+            normal = normal / normalNorm;
+        }
+        else {
+            // degenerate (zero-area) quad -- fall back to the old assumption
+            // rather than dividing by zero
+            normal[0] = 0.; normal[1] = 0.; normal[2] = 1.;
+        }
+
+        // Jacobians attached to each vertex (can be zero if points are degenerate).
+        // crossDot(x, y, normal) is normal . (x cross y); this used to be
+        // crossDotZHat(x, y) (= zHat . (x cross y), i.e. just x[0]*y[1]-x[1]*y[0]),
+        // which silently assumed the cell lies flat in the z=0 plane.
+        double a013 = crossDot(a, d, normal);
+        double a120 = crossDot(a, b, normal);
+        double a231 = crossDot(c, b, normal);
+        double a302 = crossDot(c, d, normal);
 
         // Jacobian for this quad, should be a strictly positive quantity if nodes are
         // ordered correctly
@@ -290,7 +311,7 @@ inline int mnt_vectorinterp__getTangentVectors(VectorInterp_t** self, std::size_
         if (jac <= 0) {
             std::stringstream msg;
             msg << "bad cell " << cellId << " vertices: " <<
-                            v0 << ";" << v1 << ";" << v2  << ";" << v3; 
+                            v0 << ";" << v1 << ";" << v2  << ";" << v3;
             mntlog::warn(__FILE__, __func__, __LINE__, msg.str());
             ier = 1;
         }

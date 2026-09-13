@@ -6,6 +6,38 @@
 #include <algorithm>
 
 
+// local 3D cross product -- not reusing mntVectorInterp.h's `cross` here to
+// avoid a circular include (mntVectorInterp.h already includes this header)
+inline Vec3 cross3(const Vec3& a, const Vec3& b) {
+    Vec3 res;
+    res[0] = a[1]*b[2] - a[2]*b[1];
+    res[1] = a[2]*b[0] - a[0]*b[2];
+    res[2] = a[0]*b[1] - a[1]*b[0];
+    return res;
+}
+
+// Newell's method: a robust normal estimate for a (possibly non-planar)
+// polygon of any size >= 3 -- unlike a single diagonal cross product, this
+// doesn't hard-code which vertex indices to use, so it works whether
+// `nodes` is the quad mint otherwise always assumes or something else
+// (getFacePoints reads the vertex count from VTK rather than assuming 4).
+// Reduces exactly to (0,0,1) for a CCW (as seen from +z), planar polygon
+// in the z=0 plane -- the previous, implicit assumption -- verified against
+// the standard unit-square case.
+inline Vec3 polygonNormal(const std::vector<Vec3>& nodes) {
+    Vec3 normal(0.);
+    std::size_t n = nodes.size();
+    for (std::size_t i0 = 0; i0 < n; ++i0) {
+        std::size_t i1 = (i0 + 1) % n;
+        const Vec3& p0 = nodes[i0];
+        const Vec3& p1 = nodes[i1];
+        normal[0] += (p0[1] - p1[1]) * (p0[2] + p1[2]);
+        normal[1] += (p0[2] - p1[2]) * (p0[0] + p1[0]);
+        normal[2] += (p0[0] - p1[0]) * (p0[1] + p1[1]);
+    }
+    return normal;
+}
+
 inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, double tol) {
 
     bool res = true;
@@ -13,24 +45,37 @@ inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, dou
     // number of points in the quad
     std::size_t npts = nodes.size();
 
+    // Reference normal for this (possibly non-planar) quad -- same idea as
+    // mnt_vectorinterp__getTangentVectors's `normal` (mntVectorInterp.h),
+    // and for the same reason: the edge-side test below used to look only
+    // at the x,y components (equivalent to assuming normal=(0,0,1)), which
+    // is silently wrong for a genuinely 3D-embedded 2D mesh (e.g. real
+    // x,y,z surface coordinates) wherever the 3rd coordinate actually
+    // varies.
+    Vec3 normal = polygonNormal(nodes);
+    double normalNorm = sqrt(dot(normal, normal));
+    if (normalNorm > 0) {
+        normal = normal / normalNorm;
+    }
+    else {
+        // degenerate (zero-area) quad -- fall back to the old assumption
+        normal[0] = 0.; normal[1] = 0.; normal[2] = 1.;
+    }
+
     // iterate over the edges of the quad
     for (std::size_t i0 = 0; i0 < npts; ++i0) {
 
         std::size_t i1 = (i0 + 1) % npts;
 
-        // starting/end points of the edge
-        double* p0 = &nodes[i0][0];
-        double* p1 = &nodes[i1][0];
-
         // vectors from point to the vertices
-        double dx0 = p0[0] - targetPoint[0];
-        double dx1 = p1[0] - targetPoint[0];
-        double dy0 = p0[1] - targetPoint[1];
-        double dy1 = p1[1] - targetPoint[1];
+        Vec3 d0 = nodes[i0] - targetPoint;
+        Vec3 d1 = nodes[i1] - targetPoint;
 
-        // area is positive if point is inside the quad
-        double cross = dx0*dy1 - dy0*dx1;
-        res &= (cross > -tol);
+        // signed area w.r.t. the quad's own normal is positive if point is
+        // inside (this used to be just dx0*dy1 - dy0*dx1, the z-component
+        // of d0 x d1, i.e. dot(cross3(d0, d1), (0,0,1)) -- see above)
+        double crossComponent = dot(cross3(d0, d1), normal);
+        res &= (crossComponent > -tol);
     }
 
     return res;
