@@ -24,7 +24,9 @@
 
 struct RegridEdges_t {
 
-    /** cell locator (octree-based) for fast cell search */
+    /** cell locator (octree-based) for fast cell search -- vmtLonLatCellLocator
+     *  by default, or vmtXYZCellLocator when built with useXYZLocator=1
+     *  (see mnt_regridedges_buildLocator) */
     vmtCellLocator* srcLoc;
 
     /** interpolation weights */
@@ -299,14 +301,22 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
  * Build the cell locator
  * @param self instance of the regridding object
  * @param numCellsPerBucket average number of cells per bucket
- * @param periodX periodicity length (set to 0 if non-periodic)
- * @param enableFolding set to 1 if latitudes can take values > 90 or < -90 degrees
+ * @param periodX periodicity length (set to 0 if non-periodic); ignored if useXYZLocator != 0
+ * @param enableFolding set to 1 if latitudes can take values > 90 or < -90 degrees;
+ *                      ignored if useXYZLocator != 0
+ * @param useXYZLocator 0 (default) builds a vmtLonLatCellLocator, exactly as before -- for a
+ *                      (lon, lat[, elev=0]) source grid, periodic or not. Set to 1 for a
+ *                      genuinely 3D-embedded (x, y, z) source grid with no periodic seam: builds
+ *                      a vmtXYZCellLocator instead (periodX/enableFolding are then ignored) --
+ *                      see vmtCellLocator.h and vmtXYZCellLocator.h's findIntersectionsWithLine
+ *                      for how source cells are found along a destination edge in that case
+ *                      (a straight 3D chord, not an exact line-in-a-shared-plane intersection)
  * @return error code (0 is OK)
  * @note call this before comoputing the weights
  */
 LIBRARY_API
 int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
-                                 double periodX, int enableFolding);
+                                 double periodX, int enableFolding, int useXYZLocator);
 
 /**
  * Compute the regridding weights

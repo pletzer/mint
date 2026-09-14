@@ -2,6 +2,7 @@
 #include <mntGrid.h>
 #include <mntNcFieldRead.h>
 #include <mntVectorInterp.h>
+#include <vmtLonLatCellLocator.h>
 #undef NDEBUG // turn on asserts
 #include <cassert>
 #include <cmath>
@@ -42,7 +43,7 @@ std::vector<double> computeFluxes(Grid_t* grd,
 }
 
 
-void createGridAndLocator(Grid_t** grd, vmtCellLocator** cloc) {
+void createGridAndLocator(Grid_t** grd, vmtLonLatCellLocator** cloc) {
 
     int ier;
     ier = mnt_grid_new(grd);
@@ -66,13 +67,13 @@ void createGridAndLocator(Grid_t** grd, vmtCellLocator** cloc) {
     ier = mnt_grid_get(grd, &ugrid);
     assert(ier == 0);
 
-    *cloc = vmtCellLocator::New();
+    *cloc = vmtLonLatCellLocator::New();
     (*cloc)->SetDataSet(ugrid);
     (*cloc)->SetNumberOfCellsPerBucket(100);
     (*cloc)->BuildLocator();
 }
 
-void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fluxes) {
+void getVectors(Grid_t* grd, vmtLonLatCellLocator* cloc, const std::vector<double>& fluxes) {
 
     int ier;
 
@@ -124,7 +125,7 @@ void getVectors(Grid_t* grd, vmtCellLocator* cloc, const std::vector<double>& fl
 void testZonal() {
 
     Grid_t* grd;
-    vmtCellLocator* cloc;
+    vmtLonLatCellLocator* cloc;
     int ier;
 
     createGridAndLocator(&grd, &cloc);
@@ -171,7 +172,7 @@ void testZonal() {
 void testMeridional() {
 
     Grid_t* grd;
-    vmtCellLocator* cloc;
+    vmtLonLatCellLocator* cloc;
     int ier;
 
     createGridAndLocator(&grd, &cloc);

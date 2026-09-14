@@ -1,5 +1,5 @@
 #define _USE_MATH_DEFINES // M_PI for Visual Studio
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <mntGrid.h>
 #include <mntVectorInterp.h>
 #include <mntMatMxN.h>
@@ -73,7 +73,7 @@ void testSimple() {
     assert(ier == 0);
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     vtkUnstructuredGrid* ugrid;
     ier = mnt_grid_get(&mgrid, &ugrid);
     assert(ier == 0);
@@ -199,7 +199,7 @@ void testRotated() {
     int numCellsPerBucket = 10;
     double periodX = 0.;
     int enableFolding = 0;
-    ier = mnt_vectorinterp_buildLocator(&vp, numCellsPerBucket, periodX, enableFolding);
+    ier = mnt_vectorinterp_buildLocator(&vp, numCellsPerBucket, periodX, enableFolding, 0);
     double tol2 = 1.e-10;
 
     // set some data
@@ -329,7 +329,7 @@ void testUniformGrid(int nx, int ny) {
     mnt_grid_build(&mgrid, 4, ny*nx);
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     vtkUnstructuredGrid* ugrid;
     mnt_grid_get(&mgrid, &ugrid);
     cloc->SetDataSet(ugrid);

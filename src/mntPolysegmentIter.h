@@ -16,11 +16,15 @@ public:
     /**
      * Constructor
      * @param grid instance of vtkUnstructuredGrid
-     * @param locator vmtCellLocator instance attached to the above grid
+     * @param locator a vmtCellLocator instance attached to the above grid --
+     *                either concrete class (vmtLonLatCellLocator or
+     *                vmtXYZCellLocator) works: this only calls
+     *                findIntersectionsWithLine and getPeriodicityLengthX,
+     *                both part of the shared abstract interface
      * @param p0 start point
      * @param p1 end point
      */
-    PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator, 
+    PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator,
                     const double p0[], const double p1[]);
 
     /**

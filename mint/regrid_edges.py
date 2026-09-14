@@ -161,15 +161,25 @@ class RegridEdges(object):
             error_handler(FILE, 'getNumDstEdges', ier)
         return n.value
 
-    def buildLocator(self, numCellsPerBucket=100, periodX=360., enableFolding=0):
+    def buildLocator(self, numCellsPerBucket=100, periodX=360., enableFolding=0, useXYZLocator=False):
         """
         Build the locator.
 
         :param numCellsPerBucket: average number of cells per bucket,
                                   performance typically improves with a higher
                                   number of cells per bucket
-        :param periodX: periodicity length (set to 0 if non-periodic)
-        :param enableFolding: whether (1) or not (0) to allow for |latitude| > 90
+        :param periodX: periodicity length (set to 0 if non-periodic); ignored if useXYZLocator is True
+        :param enableFolding: whether (1) or not (0) to allow for |latitude| > 90;
+                              ignored if useXYZLocator is True
+        :param useXYZLocator: False (default) builds the usual (lon, lat[, elev=0]) locator, exactly
+                              as before. Set True if the source grid is a genuinely 3D-embedded
+                              (x, y, z) surface mesh with no periodic seam -- periodX/enableFolding
+                              make no sense for such a mesh and are ignored. Source cells along a
+                              destination edge are then found by treating the edge as a straight 3D
+                              chord (see vmtXYZCellLocator.h's findIntersectionsWithLine) rather than
+                              an exact line-in-a-shared-plane intersection -- accurate at ordinary
+                              resolutions, degrading only when a destination edge spans an
+                              unrealistically large fraction of the surface's own curvature.
         :warning: There are cases at very coarse resolution where the regridding
                   may fail for some edges if the number of cells per bucket is too small
         """
@@ -177,11 +187,12 @@ class RegridEdges(object):
         enableFoldingInt = 0
         if enableFolding:
             enableFoldingInt = 1
+        useXYZLocatorInt = 1 if useXYZLocator else 0
 
         MINTLIB.mnt_regridedges_buildLocator.argtypes = [POINTER(c_void_p), c_int,
-                                                         c_double, c_int]
+                                                         c_double, c_int, c_int]
         ier = MINTLIB.mnt_regridedges_buildLocator(self.obj, numCellsPerBucket,
-                                                   periodX, enableFoldingInt)
+                                                   periodX, enableFoldingInt, useXYZLocatorInt)
         if ier:
             msg = "Failed to build locator"
             warning_handler(FILE, 'buildLocator', ier, detailedmsg=msg)

@@ -1,10 +1,42 @@
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <vtkQuad.h>
 #include <vtkPoints.h>
 #include <vtkCell.h>
 #include <mntLineLineIntersector.h>
 #include <algorithm>
 
+
+// local 3D cross product -- not reusing mntVectorInterp.h's `cross` here to
+// avoid a circular include (mntVectorInterp.h already includes this header)
+inline Vec3 cross3(const Vec3& a, const Vec3& b) {
+    Vec3 res;
+    res[0] = a[1]*b[2] - a[2]*b[1];
+    res[1] = a[2]*b[0] - a[0]*b[2];
+    res[2] = a[0]*b[1] - a[1]*b[0];
+    return res;
+}
+
+// Newell's method: a robust normal estimate for a (possibly non-planar)
+// polygon of any size >= 3 -- unlike a single diagonal cross product, this
+// doesn't hard-code which vertex indices to use, so it works whether
+// `nodes` is the quad mint otherwise always assumes or something else
+// (getFacePoints reads the vertex count from VTK rather than assuming 4).
+// Reduces exactly to (0,0,1) for a CCW (as seen from +z), planar polygon
+// in the z=0 plane -- the previous, implicit assumption -- verified against
+// the standard unit-square case.
+inline Vec3 polygonNormal(const std::vector<Vec3>& nodes) {
+    Vec3 normal(0.);
+    std::size_t n = nodes.size();
+    for (std::size_t i0 = 0; i0 < n; ++i0) {
+        std::size_t i1 = (i0 + 1) % n;
+        const Vec3& p0 = nodes[i0];
+        const Vec3& p1 = nodes[i1];
+        normal[0] += (p0[1] - p1[1]) * (p0[2] + p1[2]);
+        normal[1] += (p0[2] - p1[2]) * (p0[0] + p1[0]);
+        normal[2] += (p0[0] - p1[0]) * (p0[1] + p1[1]);
+    }
+    return normal;
+}
 
 inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, double tol) {
 
@@ -13,24 +45,37 @@ inline bool isPointInQuad(const Vec3& targetPoint, std::vector<Vec3>& nodes, dou
     // number of points in the quad
     std::size_t npts = nodes.size();
 
+    // Reference normal for this (possibly non-planar) quad -- same idea as
+    // mnt_vectorinterp__getTangentVectors's `normal` (mntVectorInterp.h),
+    // and for the same reason: the edge-side test below used to look only
+    // at the x,y components (equivalent to assuming normal=(0,0,1)), which
+    // is silently wrong for a genuinely 3D-embedded 2D mesh (e.g. real
+    // x,y,z surface coordinates) wherever the 3rd coordinate actually
+    // varies.
+    Vec3 normal = polygonNormal(nodes);
+    double normalNorm = sqrt(dot(normal, normal));
+    if (normalNorm > 0) {
+        normal = normal / normalNorm;
+    }
+    else {
+        // degenerate (zero-area) quad -- fall back to the old assumption
+        normal[0] = 0.; normal[1] = 0.; normal[2] = 1.;
+    }
+
     // iterate over the edges of the quad
     for (std::size_t i0 = 0; i0 < npts; ++i0) {
 
         std::size_t i1 = (i0 + 1) % npts;
 
-        // starting/end points of the edge
-        double* p0 = &nodes[i0][0];
-        double* p1 = &nodes[i1][0];
-
         // vectors from point to the vertices
-        double dx0 = p0[0] - targetPoint[0];
-        double dx1 = p1[0] - targetPoint[0];
-        double dy0 = p0[1] - targetPoint[1];
-        double dy1 = p1[1] - targetPoint[1];
+        Vec3 d0 = nodes[i0] - targetPoint;
+        Vec3 d1 = nodes[i1] - targetPoint;
 
-        // area is positive if point is inside the quad
-        double cross = dx0*dy1 - dy0*dx1;
-        res &= (cross > -tol);
+        // signed area w.r.t. the quad's own normal is positive if point is
+        // inside (this used to be just dx0*dy1 - dy0*dx1, the z-component
+        // of d0 x d1, i.e. dot(cross3(d0, d1), (0,0,1)) -- see above)
+        double crossComponent = dot(cross3(d0, d1), normal);
+        res &= (crossComponent > -tol);
     }
 
     return res;
@@ -46,7 +91,7 @@ struct LambdaBegFunctor {
 };
 
 
-vmtCellLocator::vmtCellLocator() {
+vmtLonLatCellLocator::vmtLonLatCellLocator() {
 
     this->grid = NULL;
 
@@ -76,7 +121,7 @@ vmtCellLocator::vmtCellLocator() {
 
 
 void 
-vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
+vmtLonLatCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
 
     this->grid = grid;
 
@@ -99,7 +144,7 @@ vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
 }
 
 void 
-vmtCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
+vmtLonLatCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 
     vtkIdType numCells = this->grid->GetNumberOfCells();
     this->numBucketsY = std::max(1, static_cast<int>(numCells/(this->numBucketsX * avgNumFacesPerBucket)));
@@ -107,7 +152,7 @@ vmtCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 
 
 void 
-vmtCellLocator::BuildLocator() {
+vmtLonLatCellLocator::BuildLocator() {
 
     std::set<vtkIdType> empty;
     // attach an empty set of face Ids to each bucket
@@ -161,7 +206,7 @@ vmtCellLocator::BuildLocator() {
 
 
 void 
-vmtCellLocator::setPeriodicityLengthX(double periodX) {
+vmtLonLatCellLocator::setPeriodicityLengthX(double periodX) {
 
     this->periodX = periodX;
 
@@ -175,19 +220,19 @@ vmtCellLocator::setPeriodicityLengthX(double periodX) {
 }
 
 double
-vmtCellLocator::getPeriodicityLengthX() const {
+vmtLonLatCellLocator::getPeriodicityLengthX() const {
     return this->periodX;
 }
 
 void
-vmtCellLocator::enableFolding() {
+vmtLonLatCellLocator::enableFolding() {
     this->kFolding.resize(2);
     this->kFolding[0] = 0;
     this->kFolding[1] = 1;
 }
 
 bool
-vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
+vmtLonLatCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
 
     tol = std::abs(tol);
 
@@ -206,7 +251,7 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
 
 bool
-vmtCellLocator::invertSphericalBilinearPatch(const Vec3& target, const Vec3 verts[4],
+vmtLonLatCellLocator::invertSphericalBilinearPatch(const Vec3& target, const Vec3 verts[4],
                                               double& xsi, double& eta) const {
 
     const int maxIter = 30;
@@ -250,7 +295,7 @@ vmtCellLocator::invertSphericalBilinearPatch(const Vec3& target, const Vec3 vert
 
 
 bool 
-vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3], double tol) const {
+vmtLonLatCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3], double tol) const {
 
     bool res = false;
     tol = std::abs(tol);
@@ -283,7 +328,7 @@ vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3]
 
 
 vtkIdType
-vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notUsed, double pcoords[3], double *weights) {
+vmtLonLatCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notUsed, double pcoords[3], double *weights) {
 
     double closestPoint[3];
     int subId;
@@ -344,7 +389,7 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
 
 
 void
-vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds) {
+vmtLonLatCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds) {
 
     cellIds->Reset();
 
@@ -407,7 +452,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 
 
 std::vector< std::pair<vtkIdType, Vec4> >
-vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
+vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     Vec3 direction;
     Vec3 p0 = pBeg;
@@ -515,7 +560,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
 
 void 
-vmtCellLocator::printBuckets() const {
+vmtLonLatCellLocator::printBuckets() const {
     for (const auto& b2f : this->bucket2Faces) {
         int bucketId = b2f.first;
         int m, n;
@@ -530,7 +575,7 @@ vmtCellLocator::printBuckets() const {
 
 
 std::vector<double>
-vmtCellLocator::collectIntersectionPoints(vtkIdType cellId, 
+vmtLonLatCellLocator::collectIntersectionPoints(vtkIdType cellId, 
                                           const Vec3& pBeg,
                                           const Vec3& direction) {
 

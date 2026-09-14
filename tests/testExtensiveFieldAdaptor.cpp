@@ -201,7 +201,7 @@ void testLatLon2Cs() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
@@ -251,7 +251,7 @@ void testLatLon2Cs() {
     assert(ier == 0);
     ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
     assert(ier == 0);
-    ier = mnt_vectorinterp_buildLocator(&vp, 256, 360., 0);
+    ier = mnt_vectorinterp_buildLocator(&vp, 256, 360., 0, 0);
     assert(ier == 0);
     ier = mnt_vectorinterp_findPoints(&vp, dst_numEdges, &dst_edgePoints[0], 1.e-10);
     assert(ier == 0);
@@ -467,7 +467,7 @@ void testCs() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
@@ -516,7 +516,7 @@ void testCs() {
     assert(ier == 0);
     ier = mnt_vectorinterp_setGrid(&vp, dst_grd);
     assert(ier == 0);
-    ier = mnt_vectorinterp_buildLocator(&vp, 256, 360., 0);
+    ier = mnt_vectorinterp_buildLocator(&vp, 256, 360., 0, 0);
     assert(ier == 0);
     ier = mnt_vectorinterp_findPoints(&vp, dst_numEdges, &dst_edgePoints[0], 1.e-10);
     assert(ier == 0);
@@ -900,7 +900,7 @@ void testLatLon2Itself() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
@@ -1037,7 +1037,7 @@ void testCubedSphere2Itself() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 1024, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 1024, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);

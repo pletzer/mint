@@ -1,7 +1,7 @@
 #include <limits> // required by vtkUnstructuredGrid
 #include <iostream>
 #include <mntGrid.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <vtkDoubleArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -80,7 +80,7 @@ void testNetCDFFile(const std::string& fileNameAndMesh, const Vec3& point) {
     assert(ier == 0);
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     cloc->SetDataSet(vtkUGrid);
     cloc->SetNumberOfCellsPerBucket(10);
     cloc->BuildLocator();
@@ -108,7 +108,7 @@ void testContainsPoint(int nx, int ny) {
     createUniformGrid(nx, ny, grid, points, coords);
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     cloc->SetDataSet(grid);
     cloc->SetNumberOfCellsPerBucket(10);
     cloc->BuildLocator();
@@ -173,7 +173,7 @@ void test1Quad(int numCellsPerBucket) {
     ptIds->Delete();
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     cloc->SetDataSet(grid);
     cloc->SetNumberOfCellsPerBucket(numCellsPerBucket);
     cloc->BuildLocator();
@@ -243,7 +243,7 @@ void testUniformLatLonGrid(int nx, int ny, int numCellsPerBucket) {
     writer->Delete();
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     cloc->SetDataSet(grid);
     cloc->SetNumberOfCellsPerBucket(numCellsPerBucket);
     cloc->BuildLocator();
@@ -465,7 +465,7 @@ void testPeriodic(int nx, int ny) {
     std::cout << "testPeriodic: number of cells: " << grid->GetNumberOfCells() << '\n';
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     cloc->SetDataSet(grid);
     cloc->BuildLocator();
     cloc->setPeriodicityLengthX(360.);
@@ -516,7 +516,7 @@ void testFolding(int nx, int ny) {
     std::cout << "testFolding: number of cells: " << grid->GetNumberOfCells() << '\n';
 
     // create locator
-    vmtCellLocator* cloc = vmtCellLocator::New();
+    vmtLonLatCellLocator* cloc = vmtLonLatCellLocator::New();
     cloc->SetDataSet(grid);
     cloc->BuildLocator();
     cloc->enableFolding();

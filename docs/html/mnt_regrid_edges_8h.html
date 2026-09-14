@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.14.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MINT: /Users/apletzer/work/mint/src/mntRegridEdges.h File Reference</title>
+<title>MINT: src/mntRegridEdges.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -143,8 +143,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:afd4456bc1fa2c433a5d2da07d6fcf731"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a source grid from a 2D UGRID file.  <br /></td></tr>
 <tr class="memitem:ae6724181862e70af6f4ddb19f525d871" id="r_ae6724181862e70af6f4ddb19f525d871"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae6724181862e70af6f4ddb19f525d871">mnt_regridedges_loadDstGrid</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, const char *fort_filename, int n)</td></tr>
 <tr class="memdesc:ae6724181862e70af6f4ddb19f525d871"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a destination grid from a 2D UGRID file.  <br /></td></tr>
-<tr class="memitem:a3cdc62a9585e2471f8f90280ba6a6edc" id="r_a3cdc62a9585e2471f8f90280ba6a6edc"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3cdc62a9585e2471f8f90280ba6a6edc">mnt_regridedges_buildLocator</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int numCellsPerBucket, double periodX, int enableFolding)</td></tr>
-<tr class="memdesc:a3cdc62a9585e2471f8f90280ba6a6edc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the cell locator.  <br /></td></tr>
+<tr class="memitem:ab9952727927e5089e0df4835062b3b54" id="r_ab9952727927e5089e0df4835062b3b54"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab9952727927e5089e0df4835062b3b54">mnt_regridedges_buildLocator</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int numCellsPerBucket, double periodX, int enableFolding, int useXYZLocator)</td></tr>
+<tr class="memdesc:ab9952727927e5089e0df4835062b3b54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build the cell locator.  <br /></td></tr>
 <tr class="memitem:a4d766ac5d33e285fa7670e6eb854d671" id="r_a4d766ac5d33e285fa7670e6eb854d671"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d766ac5d33e285fa7670e6eb854d671">mnt_regridedges_computeWeights</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, int debug)</td></tr>
 <tr class="memdesc:a4d766ac5d33e285fa7670e6eb854d671"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the regridding weights.  <br /></td></tr>
 <tr class="memitem:a4a7f9072bf4e336d054d35768ed9f368" id="r_a4a7f9072bf4e336d054d35768ed9f368"><td class="memItemLeft" align="right" valign="top">LIBRARY_API int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4a7f9072bf4e336d054d35768ed9f368">mnt_regridedges_getNumSrcCells</a> (<a class="el" href="struct_regrid_edges__t.html">RegridEdges_t</a> **self, std::size_t *n)</td></tr>
@@ -228,8 +228,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a3cdc62a9585e2471f8f90280ba6a6edc" name="a3cdc62a9585e2471f8f90280ba6a6edc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3cdc62a9585e2471f8f90280ba6a6edc">&#9670;&#160;</a></span>mnt_regridedges_buildLocator()</h2>
+<a id="ab9952727927e5089e0df4835062b3b54" name="ab9952727927e5089e0df4835062b3b54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9952727927e5089e0df4835062b3b54">&#9670;&#160;</a></span>mnt_regridedges_buildLocator()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -252,7 +252,12 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>enableFolding</em></span>&#160;)</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>enableFolding</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>useXYZLocator</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -262,8 +267,9 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">self</td><td>instance of the regridding object </td></tr>
     <tr><td class="paramname">numCellsPerBucket</td><td>average number of cells per bucket </td></tr>
-    <tr><td class="paramname">periodX</td><td>periodicity length (set to 0 if non-periodic) </td></tr>
-    <tr><td class="paramname">enableFolding</td><td>set to 1 if latitudes can take values &gt; 90 or &lt; -90 degrees </td></tr>
+    <tr><td class="paramname">periodX</td><td>periodicity length (set to 0 if non-periodic); ignored if useXYZLocator != 0 </td></tr>
+    <tr><td class="paramname">enableFolding</td><td>set to 1 if latitudes can take values &gt; 90 or &lt; -90 degrees; ignored if useXYZLocator != 0 </td></tr>
+    <tr><td class="paramname">useXYZLocator</td><td>0 (default) builds a vmtLonLatCellLocator, exactly as before &ndash; for a (lon, lat[, elev=0]) source grid, periodic or not. Set to 1 for a genuinely 3D-embedded (x, y, z) source grid with no periodic seam: builds a vmtXYZCellLocator instead (periodX/enableFolding are then ignored) &ndash; see vmtCellLocator.h and vmtXYZCellLocator.h's findIntersectionsWithLine for how source cells are found along a destination edge in that case (a straight 3D chord, not an exact line-in-a-shared-plane intersection) </td></tr>
   </table>
   </dd>
 </dl>

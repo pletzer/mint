@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include <vtkUnstructuredGrid.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <mntGrid.h>
 
 #ifndef MNT_POLY_LINE_INTEGRAL
@@ -23,7 +23,7 @@ struct PolylineIntegral_t {
     Grid_t* gridObj;
 
     /* cell locator */
-    vmtCellLocator* loc;
+    vmtLonLatCellLocator* loc;
 
     /* VTK grid (borrowed pointer) */
     vtkUnstructuredGrid* vgrid;

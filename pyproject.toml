@@ -6,6 +6,7 @@ requires = [
     "wheel",
     "netCDF4",
     "vtk>=9.0.1",
+    "sympy",
 ]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"

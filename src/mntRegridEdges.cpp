@@ -9,6 +9,8 @@
 #include <mntExtensiveFieldAdaptor.h>
 #include <mntVectorInterp.h>
 #include <mntWeights.h>
+#include <vmtLonLatCellLocator.h>
+#include <vmtXYZCellLocator.h>
 #include "mntFileMeshNameExtractor.h"
 
 #include <netcdf.h>
@@ -30,7 +32,7 @@ LIBRARY_API
 int mnt_regridedges_new(RegridEdges_t** self) {
 
     *self = new RegridEdges_t();
-    (*self)->srcLoc = vmtCellLocator::New();
+    (*self)->srcLoc = vmtLonLatCellLocator::New();
 
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
@@ -545,7 +547,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
 
 LIBRARY_API
 int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
-                                 double periodX, int enableFolding) {
+                                 double periodX, int enableFolding, int useXYZLocator) {
 
     std::string msg;
     // checks
@@ -555,21 +557,35 @@ int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
         return 1;
     }
 
+    // mnt_regridedges_new always constructs a vmtLonLatCellLocator (matching
+    // the original, useXYZLocator-less behaviour exactly when this flag is
+    // left at its default 0); swap it for a vmtXYZCellLocator here instead
+    // if requested -- see vmtCellLocator.h and mnt_vectorinterp_buildLocator's
+    // analogous flag for why this is opt-in rather than inferred from
+    // periodX <= 0 (that was tried for VectorInterp and reverted: periodX<=0
+    // is also the default for an ordinary non-periodic lon-lat grid).
+    if (useXYZLocator) {
+        (*self)->srcLoc->Delete();
+        (*self)->srcLoc = vmtXYZCellLocator::New();
+    }
+
     // build the locator
     (*self)->srcLoc->SetDataSet((*self)->srcGridObj->grid);
     (*self)->srcLoc->SetNumberOfCellsPerBucket(numCellsPerBucket);
-    (*self)->srcLoc->setPeriodicityLengthX(periodX);
-    if (enableFolding == 1) {
-        (*self)->srcLoc->enableFolding();
+    if (!useXYZLocator) {
+        (*self)->srcLoc->setPeriodicityLengthX(periodX);
+        if (enableFolding == 1) {
+            (*self)->srcLoc->enableFolding();
+        }
+        // NOTE: deliberately not calling setCubedSphere here. containsPoint's spherical
+        // treatment (see vmtLonLatCellLocator.h) is only consistent with FindCell/VectorInterp,
+        // whose pcoords/weights come from the very same spherical model. RegridEdges'
+        // line/cell-edge intersections (collectIntersectionPoints) use a separate, still
+        // flat-(lon,lat)-straight-line algorithm (LineLineIntersector) that setCubedSphere
+        // would put out of sync with containsPoint near a pole -- fixing that would mean
+        // reworking the intersection math itself to use great-circle arcs, not just this
+        // locator, so it's left as flat/unchanged here rather than partially fixed.
     }
-    // NOTE: deliberately not calling setCubedSphere here. containsPoint's spherical
-    // treatment (see vmtCellLocator.h) is only consistent with FindCell/VectorInterp,
-    // whose pcoords/weights come from the very same spherical model. RegridEdges'
-    // line/cell-edge intersections (collectIntersectionPoints) use a separate, still
-    // flat-(lon,lat)-straight-line algorithm (LineLineIntersector) that setCubedSphere
-    // would put out of sync with containsPoint near a pole -- fixing that would mean
-    // reworking the intersection math itself to use great-circle arcs, not just this
-    // locator, so it's left as flat/unchanged here rather than partially fixed.
     (*self)->srcLoc->BuildLocator();
 
     return 0;

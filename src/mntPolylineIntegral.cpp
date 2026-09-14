@@ -13,7 +13,7 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     
     *self = new PolylineIntegral_t();
 
-    (*self)->loc = vmtCellLocator::New();
+    (*self)->loc = vmtLonLatCellLocator::New();
     (*self)->vgrid = NULL;
 
     return 0;
@@ -62,7 +62,7 @@ int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self,
         (*self)->loc->enableFolding();
     }
     // NOTE: deliberately not calling setCubedSphere here. containsPoint's spherical
-    // treatment (see vmtCellLocator.h) is only consistent with FindCell/VectorInterp,
+    // treatment (see vmtLonLatCellLocator.h) is only consistent with FindCell/VectorInterp,
     // whose pcoords/weights come from the very same spherical model. PolylineIntegral's
     // line/cell-edge intersections (collectIntersectionPoints) use a separate, still
     // flat-(lon,lat)-straight-line algorithm (LineLineIntersector) that setCubedSphere

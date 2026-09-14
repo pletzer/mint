@@ -52,23 +52,47 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
-    def buildLocator(self, numCellsPerBucket=10, periodX=360., enableFolding=False):
+    def setLocator(self, locator):
+        """
+        Attach a locator you built and configured yourself -- a
+        mint.LonLatCellLocator or mint.XYZCellLocator instance -- instead
+        of having buildLocator build one for you.
+
+        :param locator: a LonLatCellLocator or XYZCellLocator instance
+        :note: taken as a borrowed reference -- this VectorInterp does not
+               take ownership or delete it, so keep the Python locator
+               object alive for as long as this VectorInterp uses it (and
+               call this after setGrid, before findPoints)
+        """
+        MINTLIB.mnt_vectorinterp_setLocator.argtypes = [POINTER(c_void_p), c_void_p]
+        ier = MINTLIB.mnt_vectorinterp_setLocator(self.obj, locator.ptr)
+        if ier:
+            error_handler(FILE, 'setLocator', ier)
+
+    def buildLocator(self, numCellsPerBucket=10, periodX=360., enableFolding=False, useXYZLocator=False):
         """
         Build the cell locator.
 
         :param numCellsPerBucket: approximate number of cells per bucket
-        :param periodX: periodicity in x (set to 0 if non-periodic)
-        :param enableFolding: whether (1) or not (0) |latitudes| > 90 should be folded back into the domain
+        :param periodX: periodicity in x (set to 0 if non-periodic); ignored if useXYZLocator is True
+        :param enableFolding: whether (1) or not (0) |latitudes| > 90 should be folded back into the domain;
+                               ignored if useXYZLocator is True
+        :param useXYZLocator: False (default) builds the usual (lon, lat[, elev=0]) locator, exactly as
+                               before. Set True for a genuinely 3D-embedded (x, y, z) surface mesh with no
+                               periodic seam -- periodX/enableFolding make no sense for such a mesh and are
+                               ignored.
         :note: call this after setGrid
         """
         enableFoldingInt = 0
         if enableFolding:
             enableFoldingInt = 1
+        useXYZLocatorInt = 1 if useXYZLocator else 0
 
         MINTLIB.mnt_vectorinterp_buildLocator.argtypes = [POINTER(c_void_p),
-                                                          c_int, c_double, c_int]
+                                                          c_int, c_double, c_int, c_int]
         ier = MINTLIB.mnt_vectorinterp_buildLocator(self.obj,
-                                                    numCellsPerBucket, periodX, enableFoldingInt)
+                                                    numCellsPerBucket, periodX, enableFoldingInt,
+                                                    useXYZLocatorInt)
         if ier:
             error_handler(FILE, 'buildLocator', ier)
 

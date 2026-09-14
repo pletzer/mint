@@ -6,7 +6,7 @@
 #include <cmath>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPoints.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <iostream>
@@ -35,7 +35,7 @@ void test1Cell() {
     grid->InsertNextCell(VTK_QUAD, ptIds);
     
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -106,7 +106,7 @@ void test1CellLineOutside() {
     grid->InsertNextCell(VTK_QUAD, ptIds);
     
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -171,7 +171,7 @@ void test2Cells() {
        grid->InsertNextCell(VTK_QUAD, ptIds);
     }
     
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -235,7 +235,7 @@ void test2CellsEdge() {
        grid->InsertNextCell(VTK_QUAD, ptIds);
     }
     
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 
@@ -302,7 +302,7 @@ void testPointOutside() {
        grid->InsertNextCell(VTK_QUAD, ptIds);
     }
     
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
     double xPeriod = 2.0;
@@ -371,7 +371,7 @@ void test3Points() {
        grid->InsertNextCell(VTK_QUAD, ptIds);
     }
     
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(grid);
     loc->BuildLocator();
 

@@ -89,7 +89,7 @@ void testVector2Vector(int fs) {
     int numCellsPerBucket = 256;
     double periodX = 360.;
     int enableFolding = 1;
-    ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;
@@ -240,7 +240,7 @@ void testExtensiveFieldRegriddingUniqueEdgeData() {
     int numCellsPerBucket = 256;
     double periodX = 360.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;
@@ -376,7 +376,7 @@ void testExtensiveFieldCellByCellData() {
     int numCellsPerBucket = 256;
     double periodX = 360.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rgd, numCellsPerBucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;
