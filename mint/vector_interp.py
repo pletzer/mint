@@ -52,6 +52,23 @@ class VectorInterp(object):
         if ier:
             error_handler(FILE, 'setGrid', ier)
 
+    def setLocator(self, locator):
+        """
+        Attach a locator you built and configured yourself -- a
+        mint.LonLatCellLocator or mint.XYZCellLocator instance -- instead
+        of having buildLocator build one for you.
+
+        :param locator: a LonLatCellLocator or XYZCellLocator instance
+        :note: taken as a borrowed reference -- this VectorInterp does not
+               take ownership or delete it, so keep the Python locator
+               object alive for as long as this VectorInterp uses it (and
+               call this after setGrid, before findPoints)
+        """
+        MINTLIB.mnt_vectorinterp_setLocator.argtypes = [POINTER(c_void_p), c_void_p]
+        ier = MINTLIB.mnt_vectorinterp_setLocator(self.obj, locator.ptr)
+        if ier:
+            error_handler(FILE, 'setLocator', ier)
+
     def buildLocator(self, numCellsPerBucket=10, periodX=360., enableFolding=False, useXYZLocator=False):
         """
         Build the cell locator.

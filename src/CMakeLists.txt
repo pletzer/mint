@@ -8,6 +8,7 @@ set(LIB_FILES
   mntFileMeshNameExtractor.cpp
   vmtLonLatCellLocator.cpp
   vmtXYZCellLocator.cpp
+  mntVmtCellLocator.cpp
   mntUgrid2D.cpp
   mntQuadEdgeIter.cpp
   mntPolylineParser.cpp
@@ -59,6 +60,7 @@ set(HEADER_FILES
   vmtCellLocator.h
   vmtLonLatCellLocator.h
   vmtXYZCellLocator.h
+  mntVmtCellLocator.h
   mntUgrid2D.h
   mntQuadEdgeIter.h
   mntPolylineParser.h
