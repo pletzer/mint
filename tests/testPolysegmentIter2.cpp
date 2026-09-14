@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cmath>
 #include <vtkUnstructuredGrid.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <iostream>
 
 void test(const std::string& filename, size_t npoints, const double points[]) {
@@ -28,7 +28,7 @@ void test(const std::string& filename, size_t npoints, const double points[]) {
     ier = mnt_grid_get(&grid, &ugrid);
     assert(ier == 0);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(ugrid);
     loc->BuildLocator();
     loc->setPeriodicityLengthX(2*M_PI);
@@ -86,7 +86,7 @@ void testUM(const std::string& filename, size_t npoints, const double points[]) 
     ier = mnt_grid_get(&grid, &ugrid);
     assert(ier == 0);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(ugrid);
     loc->BuildLocator();
     loc->setPeriodicityLengthX(2*M_PI);

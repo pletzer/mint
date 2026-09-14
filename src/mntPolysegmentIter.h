@@ -2,7 +2,7 @@
 #include <limits> // required by vtkUnstructuredGrid
 #include <mntVecN.h>
 #include <vtkUnstructuredGrid.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <map>
 #include <algorithm>
 
@@ -16,11 +16,11 @@ public:
     /**
      * Constructor
      * @param grid instance of vtkUnstructuredGrid
-     * @param locator vmtCellLocator instance attached to the above grid
+     * @param locator vmtLonLatCellLocator instance attached to the above grid
      * @param p0 start point
      * @param p1 end point
      */
-    PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator, 
+    PolysegmentIter(vtkUnstructuredGrid* grid, vmtLonLatCellLocator* locator, 
                     const double p0[], const double p1[]);
 
     /**
@@ -117,7 +117,7 @@ private:
 
     vtkUnstructuredGrid* grid;
 
-    vmtCellLocator* locator;
+    vmtLonLatCellLocator* locator;
 
     double eps;
     double eps100;

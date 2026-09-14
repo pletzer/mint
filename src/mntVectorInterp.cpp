@@ -3,6 +3,8 @@
 
 #include <mntVectorInterp.h>
 #include <vtkGenericCell.h>
+#include <vmtLonLatCellLocator.h>
+#include <vmtXYZCellLocator.h>
 
 
 LIBRARY_API 
@@ -40,7 +42,8 @@ int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator) 
 }
 
 LIBRARY_API
-int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX, int enableFolding) {
+int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX, int enableFolding,
+                                   int useXYZLocator) {
 
     if (!(*self)->grid) {
         std::string msg ="must call setGrid before invoking buildLocator";
@@ -49,18 +52,37 @@ int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, 
     }
 
     (*self)->ownsLocator = true;
-    (*self)->locator = vmtCellLocator::New();
+
+    // useXYZLocator defaults to 0, giving EXACTLY the original behaviour
+    // (always vmtLonLatCellLocator, regardless of periodX) -- deliberately
+    // an explicit opt-in rather than inferring "this must be a genuinely
+    // 3D-embedded mesh" from periodX <= 0, which also covers plain,
+    // ordinary non-periodic (lon, lat[, elev=0]) grids that
+    // vmtLonLatCellLocator already handles correctly (auto-selecting on
+    // periodX alone was tried and reverted: it silently changed behaviour
+    // for existing periodX=0 callers, including regressing a degenerate-cell
+    // case vmtLonLatCellLocator's lenient (x,y)-only test happened to
+    // tolerate but vtkStaticCellLocator does not).
+    if (!useXYZLocator) {
+        (*self)->locator = vmtLonLatCellLocator::New();
+        (*self)->locator->setPeriodicityLengthX(periodX);
+        if (enableFolding == 1) {
+            (*self)->locator->enableFolding();
+        }
+        // fixLonAcrossDateline and averageLonAtPole are only ever both set for a gnomonic
+        // cubed-sphere grid (see Grid_t/mnt_grid_setFlags) -- a plain (possibly rotated)
+        // lon-lat grid sets neither, even when it reaches a pole
+        (*self)->locator->setCubedSphere((*self)->grid->fixLonAcrossDateline &&
+                                          (*self)->grid->averageLonAtPole);
+    }
+    else {
+        // genuinely 3D-embedded (x, y, z) surface mesh, no periodic seam --
+        // see vmtCellLocator.h's docstring and test_cell_locator_xyz.py
+        (*self)->locator = vmtXYZCellLocator::New();
+    }
+
     (*self)->locator->SetDataSet((*self)->grid->grid);
     (*self)->locator->SetNumberOfCellsPerBucket(numCellsPerBucket);
-    (*self)->locator->setPeriodicityLengthX(periodX);
-    if (enableFolding == 1) {
-        (*self)->locator->enableFolding();
-    }
-    // fixLonAcrossDateline and averageLonAtPole are only ever both set for a gnomonic
-    // cubed-sphere grid (see Grid_t/mnt_grid_setFlags) -- a plain (possibly rotated)
-    // lon-lat grid sets neither, even when it reaches a pole
-    (*self)->locator->setCubedSphere((*self)->grid->fixLonAcrossDateline &&
-                                      (*self)->grid->averageLonAtPole);
     (*self)->locator->BuildLocator();
 
     return 0;

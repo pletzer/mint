@@ -30,7 +30,7 @@ LIBRARY_API
 int mnt_regridedges_new(RegridEdges_t** self) {
 
     *self = new RegridEdges_t();
-    (*self)->srcLoc = vmtCellLocator::New();
+    (*self)->srcLoc = vmtLonLatCellLocator::New();
 
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
@@ -563,7 +563,7 @@ int mnt_regridedges_buildLocator(RegridEdges_t** self, int numCellsPerBucket,
         (*self)->srcLoc->enableFolding();
     }
     // NOTE: deliberately not calling setCubedSphere here. containsPoint's spherical
-    // treatment (see vmtCellLocator.h) is only consistent with FindCell/VectorInterp,
+    // treatment (see vmtLonLatCellLocator.h) is only consistent with FindCell/VectorInterp,
     // whose pcoords/weights come from the very same spherical model. RegridEdges'
     // line/cell-edge intersections (collectIntersectionPoints) use a separate, still
     // flat-(lon,lat)-straight-line algorithm (LineLineIntersector) that setCubedSphere

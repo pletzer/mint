@@ -1,7 +1,7 @@
 #include <mntGrid.h>
 #include <CmdLineArgParser.h>
 #include <mntVecN.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <mntPolysegmentIter.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
     Vec3 p1 = getVectorFromString(args.get<std::string>("-p1"));
     std::cout << "end   point: " << p1 << '\n';
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(ugrid);
     loc->SetNumberOfCellsPerBucket(args.get<int>("-N"));
     loc->BuildLocator();

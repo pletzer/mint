@@ -5,7 +5,7 @@
 #include <string>
 #include <vtkUnstructuredGrid.h>
 #include <mntGlobal.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
 #include <mntNcAttributes.h>
@@ -25,7 +25,7 @@
 struct RegridEdges_t {
 
     /** cell locator (octree-based) for fast cell search */
-    vmtCellLocator* srcLoc;
+    vmtLonLatCellLocator* srcLoc;
 
     /** interpolation weights */
     std::vector<double> weights;

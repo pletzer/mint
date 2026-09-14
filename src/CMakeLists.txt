@@ -6,7 +6,8 @@ include_directories(
 set(LIB_FILES
   mntLogger.cpp
   mntFileMeshNameExtractor.cpp
-  vmtCellLocator.cpp
+  vmtLonLatCellLocator.cpp
+  vmtXYZCellLocator.cpp
   mntUgrid2D.cpp
   mntQuadEdgeIter.cpp
   mntPolylineParser.cpp
@@ -56,6 +57,8 @@ set(HEADER_FILES
   mntLogger.h
   mntFileMeshNameExtractor.h
   vmtCellLocator.h
+  vmtLonLatCellLocator.h
+  vmtXYZCellLocator.h
   mntUgrid2D.h
   mntQuadEdgeIter.h
   mntPolylineParser.h

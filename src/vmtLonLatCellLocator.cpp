@@ -1,4 +1,4 @@
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <vtkQuad.h>
 #include <vtkPoints.h>
 #include <vtkCell.h>
@@ -91,7 +91,7 @@ struct LambdaBegFunctor {
 };
 
 
-vmtCellLocator::vmtCellLocator() {
+vmtLonLatCellLocator::vmtLonLatCellLocator() {
 
     this->grid = NULL;
 
@@ -121,7 +121,7 @@ vmtCellLocator::vmtCellLocator() {
 
 
 void 
-vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
+vmtLonLatCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
 
     this->grid = grid;
 
@@ -144,7 +144,7 @@ vmtCellLocator::SetDataSet(vtkUnstructuredGrid* grid) {
 }
 
 void 
-vmtCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
+vmtLonLatCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 
     vtkIdType numCells = this->grid->GetNumberOfCells();
     this->numBucketsY = std::max(1, static_cast<int>(numCells/(this->numBucketsX * avgNumFacesPerBucket)));
@@ -152,7 +152,7 @@ vmtCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 
 
 void 
-vmtCellLocator::BuildLocator() {
+vmtLonLatCellLocator::BuildLocator() {
 
     std::set<vtkIdType> empty;
     // attach an empty set of face Ids to each bucket
@@ -206,7 +206,7 @@ vmtCellLocator::BuildLocator() {
 
 
 void 
-vmtCellLocator::setPeriodicityLengthX(double periodX) {
+vmtLonLatCellLocator::setPeriodicityLengthX(double periodX) {
 
     this->periodX = periodX;
 
@@ -220,19 +220,19 @@ vmtCellLocator::setPeriodicityLengthX(double periodX) {
 }
 
 double
-vmtCellLocator::getPeriodicityLengthX() const {
+vmtLonLatCellLocator::getPeriodicityLengthX() const {
     return this->periodX;
 }
 
 void
-vmtCellLocator::enableFolding() {
+vmtLonLatCellLocator::enableFolding() {
     this->kFolding.resize(2);
     this->kFolding[0] = 0;
     this->kFolding[1] = 1;
 }
 
 bool
-vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
+vmtLonLatCellLocator::containsPoint(vtkIdType faceId, const double point[3], double tol) const {
 
     tol = std::abs(tol);
 
@@ -251,7 +251,7 @@ vmtCellLocator::containsPoint(vtkIdType faceId, const double point[3], double to
 
 
 bool
-vmtCellLocator::invertSphericalBilinearPatch(const Vec3& target, const Vec3 verts[4],
+vmtLonLatCellLocator::invertSphericalBilinearPatch(const Vec3& target, const Vec3 verts[4],
                                               double& xsi, double& eta) const {
 
     const int maxIter = 30;
@@ -295,7 +295,7 @@ vmtCellLocator::invertSphericalBilinearPatch(const Vec3& target, const Vec3 vert
 
 
 bool 
-vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3], double tol) const {
+vmtLonLatCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3], double tol) const {
 
     bool res = false;
     tol = std::abs(tol);
@@ -328,7 +328,7 @@ vmtCellLocator::containsPointMultiValued(vtkIdType faceId, const double point[3]
 
 
 vtkIdType
-vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notUsed, double pcoords[3], double *weights) {
+vmtLonLatCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notUsed, double pcoords[3], double *weights) {
 
     double closestPoint[3];
     int subId;
@@ -389,7 +389,7 @@ vmtCellLocator::FindCell(const double point[3], double tol, vtkGenericCell *notU
 
 
 void
-vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds) {
+vmtLonLatCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], double tol2, vtkIdList *cellIds) {
 
     cellIds->Reset();
 
@@ -452,7 +452,7 @@ vmtCellLocator::FindCellsAlongLine(const double p0[3], const double p1[3], doubl
 
 
 std::vector< std::pair<vtkIdType, Vec4> >
-vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
+vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
     Vec3 direction;
     Vec3 p0 = pBeg;
@@ -560,7 +560,7 @@ vmtCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) {
 
 
 void 
-vmtCellLocator::printBuckets() const {
+vmtLonLatCellLocator::printBuckets() const {
     for (const auto& b2f : this->bucket2Faces) {
         int bucketId = b2f.first;
         int m, n;
@@ -575,7 +575,7 @@ vmtCellLocator::printBuckets() const {
 
 
 std::vector<double>
-vmtCellLocator::collectIntersectionPoints(vtkIdType cellId, 
+vmtLonLatCellLocator::collectIntersectionPoints(vtkIdType cellId, 
                                           const Vec3& pBeg,
                                           const Vec3& direction) {
 

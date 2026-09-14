@@ -6,7 +6,7 @@
 #include <cassert>
 #include <cmath>
 #include <vtkUnstructuredGrid.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <iostream>
 
 void test(const std::string& filename, const double p0[], const double p1[], double tol,
@@ -29,7 +29,7 @@ void test(const std::string& filename, const double p0[], const double p1[], dou
     ier = mnt_grid_get(&grid, &ugrid);
     assert(ier == 0);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     loc->SetDataSet(ugrid);
     loc->BuildLocator();
     if (degrees == 0) {

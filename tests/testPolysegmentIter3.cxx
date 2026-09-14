@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <vtkUnstructuredGrid.h>
 #include <vtkPoints.h>
-#include <vmtCellLocator.h>
+#include <vmtLonLatCellLocator.h>
 #include <vtkIdList.h>
 #include <vtkGenericCell.h>
 #include <iostream>
@@ -77,7 +77,7 @@ void testSimple() {
 
     createUniformGrid(36, 18, grid, points, coords);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     const double xPeriod = 360.0;
     loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
@@ -134,7 +134,7 @@ void testFold() {
 
     createUniformGrid(10, 5, grid, points, coords);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     const double xPeriod = 360.0;
     loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
@@ -191,7 +191,7 @@ void testFold2() {
 
     createUniformGrid(10, 5, grid, points, coords);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     double xPeriod = 360.0;
     loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
@@ -253,7 +253,7 @@ void testFold3() {
 
     createUniformGrid(10, 5, grid, points, coords);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     double xPeriod = 360.0;
     loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();
@@ -311,7 +311,7 @@ void testFold4() {
 
     createUniformGrid(10, 5, grid, points, coords);
 
-    vmtCellLocator* loc = vmtCellLocator::New();
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
     double xPeriod = 360.0;
     loc->setPeriodicityLengthX(xPeriod);
     loc->enableFolding();

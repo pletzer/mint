@@ -67,14 +67,22 @@ int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
 /**
  * Build the grid cell locator
  * @param self instance of VectorInterp_t
- * @param numCellsPerBucket number of cells per bucket. The smaller the faster the cell search. However, 
+ * @param numCellsPerBucket number of cells per bucket. The smaller the faster the cell search. However,
  *                          small values may casue problems, we recommend about 100 or more
- * @param periodX period length, use 0 if non-periodic in the first coordinate
+ * @param periodX period length, use 0 if non-periodic in the first coordinate (ignored if useXYZLocator != 0)
  * @param enableFolding whether (1) or not (0) |latitude| > 90 deg values should be folded back into the domain
+ *                      (ignored if useXYZLocator != 0)
+ * @param useXYZLocator 0 (default) builds a vmtLonLatCellLocator, exactly as before -- for a (lon, lat[, elev=0])
+ *                      grid, periodic or not. Set to 1 for a genuinely 3D-embedded (x, y, z) surface mesh with no
+ *                      periodic seam: builds a vmtXYZCellLocator instead, which indexes on all 3 coordinates
+ *                      (periodX/enableFolding make no sense for such a mesh and are ignored) -- see
+ *                      vmtCellLocator.h and test_cell_locator_xyz.py for why a (lon,lat)-style locator can
+ *                      silently miss points on a genuinely 3D surface.
  * @return error code (0 = OK)
  */
 LIBRARY_API
-int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX, int enableFolding);
+int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, double periodX, int enableFolding,
+                                   int useXYZLocator);
 
 /**
  * Find target points

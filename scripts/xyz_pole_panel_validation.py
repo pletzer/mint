@@ -148,7 +148,7 @@ def computeErrors(M):
         grid = buildXYZGrid(points)
         vi = mint.VectorInterp()
         vi.setGrid(grid)
-        vi.buildLocator(numCellsPerBucket=128, periodX=0.0, enableFolding=False)
+        vi.buildLocator(numCellsPerBucket=128, periodX=0.0, enableFolding=False, useXYZLocator=True)
         numBad = vi.findPoints(targets, tol2=1.e-6)
         assert numBad == 0, f'M={M}: {numBad}/{len(targets)} target points at {label} not found'
 
