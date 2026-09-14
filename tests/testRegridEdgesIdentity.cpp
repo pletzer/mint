@@ -32,7 +32,7 @@ void testIdentityLatLon() {
     int num_cells_per_bucket = 128;
     double periodX = 360.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;
@@ -100,7 +100,7 @@ void testIdentityCubedSphere() {
     int num_cells_per_bucket = 128;
     double periodX = 360.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;

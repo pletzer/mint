@@ -277,9 +277,9 @@ int main(int argc, char** argv) {
         // compute the weights
         mntlog::info(__FILE__, __func__, __LINE__, 
             "building the cell locator");
-        ier = mnt_regridedges_buildLocator(&rg, args.get<int>("-N"), 
+        ier = mnt_regridedges_buildLocator(&rg, args.get<int>("-N"),
                                            args.get<double>("-P"),
-                                           args.get<int>("-F"));
+                                           args.get<int>("-F"), 0);
         if (ier != 0) {
             return finalize(6, args.get<bool>("-verbose"));
         }

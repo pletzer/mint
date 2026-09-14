@@ -1,5 +1,8 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkGenericCell.h>
+#include <mntVecN.h>
+#include <vector>
+#include <utility>
 
 #ifndef VMT_CELL_LOCATOR
 #define VMT_CELL_LOCATOR
@@ -29,12 +32,18 @@
  * type explicitly rather than relying on that auto-selection -- construct
  * either subclass directly and hand it to setLocator.
  *
- * This interface only covers what VectorInterp needs (a plain point-in-cell
- * query). PolylineIntegral/PolysegmentIter need considerably more
- * (periodic line-crossing queries, multi-valued containment near a pole,
- * ...) and so use vmtLonLatCellLocator directly rather than through this
- * interface -- that machinery is inherently lon-lat-specific and has no
- * vmtXYZCellLocator equivalent (yet).
+ * Covers what VectorInterp needs (plain point-in-cell queries via FindCell)
+ * plus what PolysegmentIter needs (findIntersectionsWithLine, tracing a
+ * straight line/edge across however many cells it crosses -- see that
+ * method's own docstring for how the two concrete classes' answers differ:
+ * vmtLonLatCellLocator solves this exactly in the shared flat (lon, lat)
+ * plane, vmtXYZCellLocator approximates it for a genuinely curved surface
+ * by treating the line as a straight 3D chord). PolylineIntegral itself
+ * (as opposed to PolysegmentIter, which it uses) needs considerably more
+ * beyond that (multi-valued containment near a pole, bucket introspection,
+ * ...) and so uses vmtLonLatCellLocator directly rather than through this
+ * interface -- that extra machinery is inherently lon-lat-specific and has
+ * no vmtXYZCellLocator equivalent (yet).
  */
 class vmtCellLocator {
 
@@ -99,6 +108,22 @@ public:
      * @note only meaningful for vmtLonLatCellLocator
      */
     virtual void setCubedSphere(bool isCubedSphere) = 0;
+
+    /**
+     * Find all intersection points between a line and the grid -- used by
+     * PolysegmentIter to break a (destination) edge into the sequence of
+     * (source) cells it crosses.
+     * @param pBeg start point of the line
+     * @param pEnd end point of the line
+     * @return list of (cellId, [lambda0, lambda1, periodXOffset, fold]) pairs
+     * @note lambda0/lambda1 are the linear parametric coordinates of the
+     *       entry/exit points into/from the cell, along pBeg->pEnd
+     * @note periodXOffset/fold are always 0 for vmtXYZCellLocator (no
+     *       periodicity or pole-folding for a plain embedded mesh); see
+     *       vmtLonLatCellLocator.h for what they mean there
+     */
+    virtual std::vector< std::pair<vtkIdType, Vec4> >
+    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) = 0;
 
 };
 

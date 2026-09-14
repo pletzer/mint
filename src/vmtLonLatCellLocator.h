@@ -149,7 +149,7 @@ public:
      * @note periodXOffset is the periodic offset to add to pBeg[0] and pEnd[0]
      */
     std::vector< std::pair<vtkIdType, Vec4> >
-    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd);
+    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) override;
 
     /**
      * Check if a point is inside a face

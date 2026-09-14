@@ -73,7 +73,7 @@ void test2Triangles2() {
     int num_cells_per_bucket = 128;
     double periodX = 0.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;
@@ -182,7 +182,7 @@ void test2TrianglesSingleGrid() {
     int num_cells_per_bucket = 128;
     double periodX = 0.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;
@@ -287,7 +287,7 @@ void test1Quad() {
     int num_cells_per_bucket = 128;
     double periodX = 360.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;

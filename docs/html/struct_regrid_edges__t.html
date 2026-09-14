@@ -86,8 +86,8 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ae6ff89c5d7ebbaa5bbac167214825146" id="r_ae6ff89c5d7ebbaa5bbac167214825146"><td class="memItemLeft" align="right" valign="top">vmtLonLatCellLocator *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae6ff89c5d7ebbaa5bbac167214825146">srcLoc</a></td></tr>
-<tr class="memdesc:ae6ff89c5d7ebbaa5bbac167214825146"><td class="mdescLeft">&#160;</td><td class="mdescRight">cell locator (octree-based) for fast cell search  <br /></td></tr>
+<tr class="memitem:aa963b852b5c03b050bbf3340423b7eac" id="r_aa963b852b5c03b050bbf3340423b7eac"><td class="memItemLeft" align="right" valign="top">vmtCellLocator *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa963b852b5c03b050bbf3340423b7eac">srcLoc</a></td></tr>
+<tr class="memdesc:aa963b852b5c03b050bbf3340423b7eac"><td class="mdescLeft">&#160;</td><td class="mdescRight">cell locator (octree-based) for fast cell search &ndash; vmtLonLatCellLocator by default, or vmtXYZCellLocator when built with useXYZLocator=1 (see mnt_regridedges_buildLocator)  <br /></td></tr>
 <tr class="memitem:a372d0bd26d0b7269ed1f407af8b31f57" id="r_a372d0bd26d0b7269ed1f407af8b31f57"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a372d0bd26d0b7269ed1f407af8b31f57">weights</a></td></tr>
 <tr class="memdesc:a372d0bd26d0b7269ed1f407af8b31f57"><td class="mdescLeft">&#160;</td><td class="mdescRight">interpolation weights  <br /></td></tr>
 <tr class="memitem:a6c5939f48254c7d4852116324a6541de" id="r_a6c5939f48254c7d4852116324a6541de"><td class="memItemLeft" align="right" valign="top">std::vector&lt; vtkIdType &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6c5939f48254c7d4852116324a6541de">weightDstCellIds</a></td></tr>
@@ -342,19 +342,19 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ae6ff89c5d7ebbaa5bbac167214825146" name="ae6ff89c5d7ebbaa5bbac167214825146"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6ff89c5d7ebbaa5bbac167214825146">&#9670;&#160;</a></span>srcLoc</h2>
+<a id="aa963b852b5c03b050bbf3340423b7eac" name="aa963b852b5c03b050bbf3340423b7eac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa963b852b5c03b050bbf3340423b7eac">&#9670;&#160;</a></span>srcLoc</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">vmtLonLatCellLocator* RegridEdges_t::srcLoc</td>
+          <td class="memname">vmtCellLocator* RegridEdges_t::srcLoc</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>cell locator (octree-based) for fast cell search </p>
+<p>cell locator (octree-based) for fast cell search &ndash; vmtLonLatCellLocator by default, or vmtXYZCellLocator when built with useXYZLocator=1 (see mnt_regridedges_buildLocator) </p>
 
 </div>
 </div>
@@ -503,7 +503,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>/Users/apletzer/work/mint/src/<a class="el" href="mnt_regrid_edges_8h_source.html">mntRegridEdges.h</a></li>
+<li>src/<a class="el" href="mnt_regrid_edges_8h_source.html">mntRegridEdges.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -2,7 +2,7 @@
 #include <limits> // required by vtkUnstructuredGrid
 #include <mntVecN.h>
 #include <vtkUnstructuredGrid.h>
-#include <vmtLonLatCellLocator.h>
+#include <vmtCellLocator.h>
 #include <map>
 #include <algorithm>
 
@@ -16,11 +16,15 @@ public:
     /**
      * Constructor
      * @param grid instance of vtkUnstructuredGrid
-     * @param locator vmtLonLatCellLocator instance attached to the above grid
+     * @param locator a vmtCellLocator instance attached to the above grid --
+     *                either concrete class (vmtLonLatCellLocator or
+     *                vmtXYZCellLocator) works: this only calls
+     *                findIntersectionsWithLine and getPeriodicityLengthX,
+     *                both part of the shared abstract interface
      * @param p0 start point
      * @param p1 end point
      */
-    PolysegmentIter(vtkUnstructuredGrid* grid, vmtLonLatCellLocator* locator, 
+    PolysegmentIter(vtkUnstructuredGrid* grid, vmtCellLocator* locator,
                     const double p0[], const double p1[]);
 
     /**
@@ -117,7 +121,7 @@ private:
 
     vtkUnstructuredGrid* grid;
 
-    vmtLonLatCellLocator* locator;
+    vmtCellLocator* locator;
 
     double eps;
     double eps100;

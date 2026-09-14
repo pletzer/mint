@@ -40,7 +40,7 @@ void test1() {
     int numCellsPerBucket = 8;
     double period = 0.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, numCellsPerBucket, period, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, numCellsPerBucket, period, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 1;
@@ -128,7 +128,7 @@ void regridEdgeFieldTest(const std::string& testName, const std::string& srcFile
     assert(ier == 0);
     double period = 0.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, numCellsPerBucket, period, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, numCellsPerBucket, period, enableFolding, 0);
     std::cerr << testName << ": build...OK\n";
     assert(ier == 0);
 

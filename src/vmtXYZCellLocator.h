@@ -61,10 +61,62 @@ public:
 
     void setCubedSphere(bool isCubedSphere) override;
 
+    /**
+     * Trace the straight 3D chord pBeg->pEnd across however many cells it
+     * crosses -- see the .cpp for why this is NOT a ray-cast (a chord
+     * between two points on a curved surface dips strictly inside it
+     * everywhere except at the endpoints, so a literal ray-vs-surface
+     * intersection test would find zero intermediate cells) and what it
+     * does instead. periodXOffset/fold in the returned Vec4 are always 0.
+     */
+    std::vector< std::pair<vtkIdType, Vec4> >
+    findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) override;
+
 private:
 
     vtkStaticCellLocator* locator;
     vtkGenericCell* scratchCell;
+    vtkUnstructuredGrid* grid;
+
+    /**
+     * Flat (non-spherical) bilinear map, corners in the usual 0->1->2->3
+     * convention -- same shape as vmtLonLatCellLocator::sphericalBilinearMap
+     * but without the slerp (this is a flat 3D patch, not one constrained
+     * to a sphere).
+     */
+    inline Vec3 bilinearMap(double xi, double eta, const Vec3 verts[4]) const {
+        return (1. - xi) * (1. - eta) * verts[0] + xi * (1. - eta) * verts[1]
+             + xi * eta * verts[2] + (1. - xi) * eta * verts[3];
+    }
+
+    /**
+     * Find the (xi, eta) at which the flat bilinear patch spanned by a
+     * cell's 4 corners passes closest to target, by Gauss-Newton iteration
+     * (finite-difference Jacobian) -- same recipe, tolerances and
+     * iteration count as vmtLonLatCellLocator::invertSphericalBilinearPatch,
+     * just for a flat (not great-circle-constrained) patch. xi, eta are
+     * BOTH the initial guess (in) and the result (out): findIntersectionsWithLine
+     * warm-starts each call from the previous one's converged (xi, eta),
+     * which matters here -- an unconditional (0.5, 0.5) restart (what
+     * vtkCell::EvaluatePosition uses internally) was tried first and found,
+     * empirically, to fail to converge reliably during bisection, silently
+     * producing wrong "outside" verdicts and hence wrong (too-short)
+     * segments.
+     * @return true if the iteration converged
+     */
+    bool invertBilinearPatch(const Vec3& target, const Vec3 verts[4],
+                              double& xi, double& eta) const;
+
+    /**
+     * Is point p inside cell cellId, to within parametric tolerance tol on
+     * its (xi, eta) coordinates? xi, eta are the warm-start guess (in) and
+     * the converged solution (out) -- see invertBilinearPatch.
+     * @note deliberately NOT going through FindCell/the bucket search --
+     *       this checks one SPECIFIC, already-known cell directly, which
+     *       is what the bisection in findIntersectionsWithLine needs
+     */
+    bool pointIsInCell(vtkIdType cellId, const double p[3], double tol,
+                        double& xi, double& eta) const;
 
 };
 

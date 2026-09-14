@@ -31,7 +31,7 @@ int main() {
     int num_cells_per_bucket = 1;
     double periodX = 0.;
     int enableFolding = 0;
-    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding);
+    ier = mnt_regridedges_buildLocator(&rg, num_cells_per_bucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     int debug = 2;

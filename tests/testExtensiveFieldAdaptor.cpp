@@ -201,7 +201,7 @@ void testLatLon2Cs() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
@@ -467,7 +467,7 @@ void testCs() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
@@ -900,7 +900,7 @@ void testLatLon2Itself() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 128, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
@@ -1037,7 +1037,7 @@ void testCubedSphere2Itself() {
     assert(ier == 0);
     ier = mnt_regridedges_setDstGrid(&rgd, dst_grd);
     assert(ier == 0);
-    ier = mnt_regridedges_buildLocator(&rgd, 1024, 360., 0);
+    ier = mnt_regridedges_buildLocator(&rgd, 1024, 360., 0, 0);
     assert(ier == 0);
     int debug = 2;
     ier = mnt_regridedges_computeWeights(&rgd, debug);
