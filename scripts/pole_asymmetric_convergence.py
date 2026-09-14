@@ -32,9 +32,19 @@ under study, so it is not a meaningful source of error here even though it
 is not the literal exact value.
 
 Usage: python scripts/pole_asymmetric_convergence.py
+
+Note: sympy is only needed for exactLineIntegral (the handful of whole-
+polyline reference values below) -- NOT for uDotDl/straightLineIntegral/
+buildEdgeData, which other modules (e.g. xyz_pole_panel_validation.py, and
+hence mint/tests/test_regrid_edges_xyz.py) import purely for the plain-numpy
+vector field. sympy is therefore imported lazily (see _sympySymbols below)
+so importing this module -- and anything that transitively imports it just
+for uDotDl -- does not require sympy to be installed; a CI environment
+missing sympy hit exactly this (test_regrid_edges_xyz.py failed to collect
+because sympy wasn't in the test env, even though it never calls
+exactLineIntegral).
 """
 import numpy
-import sympy
 from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
@@ -133,12 +143,25 @@ def buildEdgeData(grid):
 # integration from scratch on every call, which is why this is only used
 # for the reference values, not per grid edge (see buildEdgeData above).
 # ---------------------------------------------------------------------------
-_lam_s, _th_s, _t_s, _dlam_s, _dth_s = sympy.symbols('lam theta t dlam dtheta', real=True)
-_UDOTDL_SYM = (sympy.cos(_th_s) * (sympy.cos(2 * _th_s) - sympy.sin(_th_s)) * sympy.cos(_lam_s) * _dlam_s
-               + (1 + sympy.sin(_th_s)) * sympy.sin(_lam_s) * _dth_s)
+_SYMPY_CACHE = {}
+
+
+def _sympySymbols():
+    """Lazily import sympy and build its module-level symbols/expression on
+    first use only -- see the module docstring for why this isn't done at
+    import time."""
+    if not _SYMPY_CACHE:
+        import sympy
+        lam_s, th_s, t_s, dlam_s, dth_s = sympy.symbols('lam theta t dlam dtheta', real=True)
+        udotdl_sym = (sympy.cos(th_s) * (sympy.cos(2 * th_s) - sympy.sin(th_s)) * sympy.cos(lam_s) * dlam_s
+                      + (1 + sympy.sin(th_s)) * sympy.sin(lam_s) * dth_s)
+        _SYMPY_CACHE.update(sympy=sympy, lam_s=lam_s, th_s=th_s, t_s=t_s,
+                             dlam_s=dlam_s, dth_s=dth_s, udotdl_sym=udotdl_sym)
+    return _SYMPY_CACHE
 
 
 def _integrateUnitIntervalTrigPolynomial(expr, t_sym):
+    sympy = _sympySymbols()['sympy']
     expr_exp = sympy.expand(expr.rewrite(sympy.exp))
     total = sympy.Integer(0)
     for term in sympy.Add.make_args(expr_exp):
@@ -162,14 +185,19 @@ def exactLineIntegral(p0, p1):
     in (lon, lat) from p0 to p1 (lon, lat in degrees), for a single pair
     of scalar endpoints.
     """
+    cache = _sympySymbols()
+    sympy, lam_s, th_s, t_s, dlam_s, dth_s, udotdl_sym = (
+        cache['sympy'], cache['lam_s'], cache['th_s'], cache['t_s'],
+        cache['dlam_s'], cache['dth_s'], cache['udotdl_sym'])
+
     lamA, thA = p0[0] * DEG2RAD, p0[1] * DEG2RAD
     lamB, thB = p1[0] * DEG2RAD, p1[1] * DEG2RAD
     dlam, dth = lamB - lamA, thB - thA
 
-    lam_t = lamA + _t_s * dlam
-    th_t = thA + _t_s * dth
-    integrand = sympy.expand(_UDOTDL_SYM.subs({_lam_s: lam_t, _th_s: th_t, _dlam_s: dlam, _dth_s: dth}))
-    return float(_integrateUnitIntervalTrigPolynomial(integrand, _t_s))
+    lam_t = lamA + t_s * dlam
+    th_t = thA + t_s * dth
+    integrand = sympy.expand(udotdl_sym.subs({lam_s: lam_t, th_s: th_t, dlam_s: dlam, dth_s: dth}))
+    return float(_integrateUnitIntervalTrigPolynomial(integrand, t_s))
 
 
 # ---------------------------------------------------------------------------
