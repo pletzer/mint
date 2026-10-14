@@ -31,9 +31,12 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->locator = locator;
 
     Vec3 p0(p0In);
-    this->__makePeriodic(p0);
     Vec3 p1(p1In);
-    this->__makePeriodic(p1);
+    // shift both end points by the same period so a segment crossing the
+    // domain boundary is not turned into one going the long way around
+    double lonBeg = p0[0];
+    this->__makePeriodic(p0);
+    p1[0] += p0[0] - lonBeg;
 
     Vec3 dp = p1 - p0;
 

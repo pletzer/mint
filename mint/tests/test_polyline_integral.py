@@ -263,6 +263,61 @@ def test_identity():
     assert abs(flux - 38.) < 1.e-10
 
 
+def _lonlat2xyz(lon, lat):
+    lon, lat = numpy.radians(lon), numpy.radians(lat)
+    return numpy.stack([numpy.cos(lat) * numpy.cos(lon),
+                        numpy.cos(lat) * numpy.sin(lon),
+                        numpy.sin(lat)], -1)
+
+
+def test_segment_across_periodic_boundary():
+    """
+    A segment crossing the grid's minimum longitude must give the same
+    integral as the same segment shifted by 360 deg (issue #129). After
+    fixLonAcrossDateline the FV3 C24 grid spans lon [-10, 440].
+    """
+    grid = Grid()
+    grid.setFlags(fixLonAcrossDateline=1, averageLonAtPole=1, degrees=True)
+    grid.loadFromFV32DFile(str(DATA_DIR / Path('C24_SCRIP_desc.181018.nc')))
+    pts = grid.getPoints()
+    assert abs(pts[..., 0].min() + 10.) < 1.e-8
+
+    # midpoint-rule edge integrals of v = omega x r, a field with non-zero
+    # circulation (a gradient field would hide the error)
+    omega = numpy.array([0.3, 0.5, 0.8])
+    x = _lonlat2xyz(pts[..., 0], pts[..., 1])
+    a, b = x[:, [0, 1, 3, 0]], x[:, [1, 2, 2, 3]]
+    mid = (a + b) / numpy.linalg.norm(a + b, axis=-1, keepdims=True)
+    data = numpy.sum(numpy.cross(omega, mid) * (b - a), -1).ravel()
+
+    pli = PolylineIntegral()
+    pli.setGrid(grid)
+    pli.buildLocator(numCellsPerBucket=100, periodX=360., enableFolding=True)
+
+    def integral(points):
+        xyz = numpy.zeros((len(points), 3))
+        xyz[:, :2] = points
+        pli.computeWeights(xyz, counterclock=False)
+        return pli.getIntegral(data=data, placement=CELL_BY_CELL_DATA)
+
+    # open segment crossing lon = -10
+    flux = integral([(-12., 30.), (0., 30.)])
+    flux_shifted = integral([(348., 30.), (360., 30.)])
+    print(f'flux = {flux} shifted = {flux_shifted}')
+    assert abs(flux - flux_shifted) < 1.e-10
+    # exact value 0.1034; the bug added a full latitude circle, -3.77
+    assert abs(flux - 0.1034) < 1.e-3
+
+    # closed path crossing lon = -10
+    gam = numpy.linspace(0., 2*numpy.pi, 21)
+    r = numpy.degrees(numpy.arcsin(1./numpy.sqrt(3.)))
+    circle = numpy.stack([r*numpy.sin(gam), r*numpy.cos(gam)], -1)
+    flux = integral(circle + (-10., 0.))
+    flux_shifted = integral(circle + (350., 0.))
+    print(f'closed path flux = {flux} shifted = {flux_shifted}')
+    assert abs(flux - flux_shifted) < 1.e-10
+
+
 if __name__ == '__main__':
 
     test_identity()
