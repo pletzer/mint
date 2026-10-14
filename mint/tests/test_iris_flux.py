@@ -45,7 +45,9 @@ def test_cs_zt():
     flux = flx_calc.evaluate_from_vector(src_u, src_v, fs=mint.FUNC_SPACE_W2)
 
     # check, vector field derives from a stream function so closed loop integral is zero
-    assert np.all(np.fabs(flux - 0.0) < 1.e-10)
+    # up to the discretisation error of the edge data (same tolerance as test_cs_zt2).
+    # The segment (360, 0) -> (160, 70) goes west, see issue #129
+    assert np.all(np.fabs(flux - 0.0) < 6.e-5)
 
 
 def test_cs_zt2():
