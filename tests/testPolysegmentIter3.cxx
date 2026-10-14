@@ -105,6 +105,11 @@ void testSimple() {
             vtkIdType cellId = psi.getCellId();
             const Vec3& xia = psi.getBegCellParamCoord();
             const Vec3& xib = psi.getEndCellParamCoord();
+            // the parametric coords must be inside the cell
+            for (size_t k = 0; k < 2; ++k) {
+                assert(xia[k] > -1.e-10 && xia[k] < 1. + 1.e-10);
+                assert(xib[k] > -1.e-10 && xib[k] < 1. + 1.e-10);
+            }
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
@@ -163,6 +168,11 @@ void testFold() {
             vtkIdType cellId = psi.getCellId();
             const Vec3& xia = psi.getBegCellParamCoord();
             const Vec3& xib = psi.getEndCellParamCoord();
+            // the parametric coords must be inside the cell
+            for (size_t k = 0; k < 2; ++k) {
+                assert(xia[k] > -1.e-10 && xia[k] < 1. + 1.e-10);
+                assert(xib[k] > -1.e-10 && xib[k] < 1. + 1.e-10);
+            }
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
@@ -224,6 +234,11 @@ void testFold2() {
             vtkIdType cellId = psi.getCellId();
             const Vec3& xia = psi.getBegCellParamCoord();
             const Vec3& xib = psi.getEndCellParamCoord();
+            // the parametric coords must be inside the cell
+            for (size_t k = 0; k < 2; ++k) {
+                assert(xia[k] > -1.e-10 && xia[k] < 1. + 1.e-10);
+                assert(xib[k] > -1.e-10 && xib[k] < 1. + 1.e-10);
+            }
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
@@ -282,6 +297,11 @@ void testFold3() {
             vtkIdType cellId = psi.getCellId();
             const Vec3& xia = psi.getBegCellParamCoord();
             const Vec3& xib = psi.getEndCellParamCoord();
+            // the parametric coords must be inside the cell
+            for (size_t k = 0; k < 2; ++k) {
+                assert(xia[k] > -1.e-10 && xia[k] < 1. + 1.e-10);
+                assert(xib[k] > -1.e-10 && xib[k] < 1. + 1.e-10);
+            }
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();
@@ -340,6 +360,11 @@ void testFold4() {
             vtkIdType cellId = psi.getCellId();
             const Vec3& xia = psi.getBegCellParamCoord();
             const Vec3& xib = psi.getEndCellParamCoord();
+            // the parametric coords must be inside the cell
+            for (size_t k = 0; k < 2; ++k) {
+                assert(xia[k] > -1.e-10 && xia[k] < 1. + 1.e-10);
+                assert(xib[k] > -1.e-10 && xib[k] < 1. + 1.e-10);
+            }
             double ta = psi.getBegLineParamCoord();
             double tb = psi.getEndLineParamCoord();
             double coeff = psi.getCoefficient();

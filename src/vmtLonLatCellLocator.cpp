@@ -464,15 +464,14 @@ vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pE
     std::vector< std::pair<vtkIdType, Vec4> > res;
 
     const double eps = 10 * std::numeric_limits<double>::epsilon();
+    const double eps100 = 100*eps;
 
     vtkIdList* cellIds = vtkIdList::New();
 
-    double lam0 = pBeg[0];
-    double the0 = pBeg[1];
-    double lam1 = pEnd[0];
-    double the1 = pEnd[1];
-
     for (int kFold : this->kFolding) {
+
+        p0 = pBeg;
+        p1 = pEnd;
 
         if (kFold == 1) {
 
@@ -482,8 +481,7 @@ vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pE
             }
 
             // transform
-            foldAtPole(&p0[0]);
-            foldAtPole(&p1[0]);
+            this->foldLine(p0, p1);
         }
 
         direction = p1 - p0;
@@ -493,14 +491,35 @@ vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pE
             continue;
         }
 
-        for (double modPx : this->modPeriodX) {
+        // the periodicity shifts that bring part of the segment into
+        // the domain. A segment may extend beyond the domain by more
+        // than one period, e.g. after folding
+        std::vector<double> modPxs{0.0};
+        if (this->periodX > 0) {
+            double lamLo = std::min(p0[0], p1[0]);
+            double lamHi = std::max(p0[0], p1[0]);
+            int kLo = (int) std::ceil((this->xmin[0] - lamHi)/this->periodX - eps100);
+            int kHi = (int) std::floor((this->xmax[0] - lamLo)/this->periodX + eps100);
+            // keep the -+periodX shifts that were always tried
+            kLo = std::min(kLo, -1);
+            kHi = std::max(kHi, 1);
+            for (int k = kLo; k <= kHi; ++k) {
+                if (k != 0) {
+                    modPxs.push_back(k*this->periodX);
+                }
+            }
+        }
+
+        for (double modPx : modPxs) {
 
             // add/subtract periodicity to start/end points
-            p0[0] += modPx;
-            p1[0] += modPx;
+            Vec3 q0 = p0;
+            Vec3 q1 = p1;
+            q0[0] += modPx;
+            q1[0] += modPx;
 
             // collect the cell Ids intersected by the line  
-            this->FindCellsAlongLine(&p0[0], &p1[0], eps, cellIds);
+            this->FindCellsAlongLine(&q0[0], &q1[0], eps, cellIds);
 
             // iterate over the intersected cells
             for (vtkIdType i = 0; i < cellIds->GetNumberOfIds(); ++i) {
@@ -508,7 +527,7 @@ vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pE
                 vtkIdType cellId = cellIds->GetId(i);
 
                 std::vector<double> lambdas = 
-                     this->collectIntersectionPoints(cellId, p0, direction);
+                     this->collectIntersectionPoints(cellId, q0, direction);
 
                 std::size_t nLam = lambdas.size();
                 double lamBeg = -1;
@@ -529,10 +548,6 @@ vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pE
                     res.push_back(  std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriodFold)  );
                 }
             }
-
-            // revert to the original values
-            p0[0] = lam0; p0[1] = the0;
-            p1[0] = lam1; p1[1] = the1;
         }
     }
 

@@ -125,6 +125,17 @@ public:
     virtual std::vector< std::pair<vtkIdType, Vec4> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) = 0;
 
+    /**
+     * Fold the end points of a line across the pole, as done by
+     * findIntersectionsWithLine for the intersections it returns with
+     * fold == 1. The lambdas of these intersections are linear parametric
+     * coordinates along the folded line
+     * @param p0 start point of the line (in/out)
+     * @param p1 end point of the line (in/out)
+     * @note no-op unless the locator supports pole folding
+     */
+    virtual void foldLine(Vec3& p0, Vec3& p1) const {}
+
 };
 
 #endif // VMT_CELL_LOCATOR

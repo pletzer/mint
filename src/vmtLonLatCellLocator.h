@@ -152,6 +152,21 @@ public:
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) override;
 
     /**
+     * Fold the end points of a line across the pole. Both end points are
+     * shifted by the same longitude, otherwise a line crossing lambdaMid
+     * would change length
+     * @param p0 start point of the line (in/out)
+     * @param p1 end point of the line (in/out)
+     */
+    void foldLine(Vec3& p0, Vec3& p1) const override {
+        double lon0 = p0[0];
+        double lon1 = p1[0];
+        this->foldAtPole(&p0[0]);
+        this->foldAtPole(&p1[0]);
+        p1[0] = lon1 + (p0[0] - lon0);
+    }
+
+    /**
      * Check if a point is inside a face
      * @param faceId face/cell Id
      * @param point point
