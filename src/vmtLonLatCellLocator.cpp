@@ -164,8 +164,10 @@ vmtLonLatCellLocator::BuildLocator() {
         }
     }
 
-    // assign each face to one or more buckets depending on where the face's nodes fall
-    // WARNING: this could fail if the buckets are much smaller than some cells!
+    // assign each face to every bucket overlapped by the bounding box of its nodes. Registering
+    // the face only in the buckets that contain its nodes is not enough: when buckets are
+    // smaller than a face (e.g. many more buckets in y than cell rows), a point in the interior
+    // of the face falls in a bucket that contains none of its nodes
     vtkIdType numFaces = this->grid->GetNumberOfCells();
 
     if (this->periodX > 0 && this->isCubedSphere) {
@@ -176,11 +178,20 @@ vmtLonLatCellLocator::BuildLocator() {
 
     for (vtkIdType faceId = 0; faceId < numFaces; ++faceId) {
         std::vector<Vec3> nodes = getFacePoints(faceId);
+        int mMin = this->numBucketsX, mMax = -1;
+        int nMin = this->numBucketsY, nMax = -1;
         for (const Vec3& p : nodes) {
-            // assumes that the buckets are always bigger than the faces, or alternatively
-            // that no corners are fully inside a face
-            int bucketId = this->getBucketId(&p[0]);
-            this->bucket2Faces[bucketId].insert(faceId);
+            int m, n;
+            this->getBucketIndices(this->getBucketId(&p[0]), &m, &n);
+            mMin = std::min(mMin, m);
+            mMax = std::max(mMax, m);
+            nMin = std::min(nMin, n);
+            nMax = std::max(nMax, n);
+        }
+        for (int m = mMin; m <= mMax; ++m) {
+            for (int n = nMin; n <= nMax; ++n) {
+                this->bucket2Faces[m * this->numBucketsY + n].insert(faceId);
+            }
         }
 
         if (this->periodX > 0 && this->isCubedSphere) {
