@@ -479,20 +479,26 @@ vmtLonLatCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pE
 
     vtkIdList* cellIds = vtkIdList::New();
 
-    for (int kFold : this->kFolding) {
+    // the unfolded line, plus the line folded across each pole it extends beyond. A line can
+    // extend beyond both poles, each of its ends then needs to be folded across a different pole
+    std::vector<int> folds{0};
+    if (this->kFolding.size() > 1) {
+        if (std::max(pBeg[1], pEnd[1]) > 90.) {
+            folds.push_back(1);
+        }
+        if (std::min(pBeg[1], pEnd[1]) < -90.) {
+            folds.push_back(-1);
+        }
+    }
+
+    for (int kFold : folds) {
 
         p0 = pBeg;
         p1 = pEnd;
 
-        if (kFold == 1) {
-
-            if (std::abs(p0[1]) <= 90 && std::abs(p1[1]) <= 90) {
-                // no need to fold
-                continue;
-            }
-
+        if (kFold != 0) {
             // transform
-            this->foldLine(p0, p1);
+            this->foldLine(p0, p1, kFold);
         }
 
         direction = p1 - p0;
