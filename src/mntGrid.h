@@ -288,7 +288,8 @@ int mnt_grid_getNodeIds(Grid_t** self, vtkIdType cellId, int edgeIndex, vtkIdTyp
  * @param edgeIndex edge index in the range 0-3
  * @param edgeId edge Id (output)
  * @param signEdge +1 if edge edgeId points in the same direction as (cellid, edgeIndex), -1 otherwise
- * @return error code (0 = OK)
+ * @return error code (0 = OK, 1 = the grid has no connectivity, e.g. it was built with mnt_grid_setPointsPtr,
+ *         2 = no edge of the cell matches, inconsistent connectivity). edgeId is not set unless 0 is returned
  */
 LIBRARY_API 
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 

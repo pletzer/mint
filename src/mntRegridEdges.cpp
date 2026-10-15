@@ -967,6 +967,16 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     int ier;
     int numFailures = 0;
 
+    // the vector fields are defined on unique edges, their Ids come from the connectivity
+    // of the source and destination grids
+    for (Grid_t* grd : {(*self)->srcGridObj, (*self)->dstGridObj}) {
+        if (!grd || grd->faceEdgeConnectivity.size() == 0 || grd->edgeNodeConnectivity.size() == 0) {
+            std::string msg = "source or destination grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return -1;
+        }
+    }
+
     std::size_t src_numCells;
     ier = mnt_regridedges_getNumSrcCells(self, &src_numCells);
     if (ier != 0) numFailures++;
@@ -996,7 +1006,11 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     for (std::size_t icell = 0; icell < src_numCells; ++icell) {
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             ier = mnt_grid_getEdgeId(&src_grd, icell, ie, &edgeId, &edgeSign);
-            if (ier != 0) numFailures++;
+            if (ier != 0) {
+                // the edge Id is not known, leave the cell by cell value to zero
+                numFailures++;
+                continue;
+            }
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
             src_uCellByCell[k] = src_u[edgeId];
             src_vCellByCell[k] = src_v[edgeId];

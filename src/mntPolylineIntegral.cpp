@@ -297,6 +297,15 @@ int mnt_polylineintegral_vectorGetIntegral(PolylineIntegral_t** self, const doub
     int ier;
     int numFailures = 0;
 
+    // u and v are defined on unique edges, their Ids come from the connectivity
+    if (!(*self)->gridObj ||
+        (*self)->gridObj->faceEdgeConnectivity.size() == 0 ||
+        (*self)->gridObj->edgeNodeConnectivity.size() == 0) {
+        std::string msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
+
     std::size_t numCells;
     ier = mnt_grid_getNumberOfCells(&(*self)->gridObj, &numCells);
     if (ier != 0) numFailures++;
@@ -318,7 +327,11 @@ int mnt_polylineintegral_vectorGetIntegral(PolylineIntegral_t** self, const doub
     for (std::size_t icell = 0; icell < numCells; ++icell) {
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &edgeSign);
-            if (ier != 0) numFailures++;
+            if (ier != 0) {
+                // the edge Id is not known, leave the cell by cell value to zero
+                numFailures++;
+                continue;
+            }
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
             src_uCellByCell[k] = u[edgeId];
             src_vCellByCell[k] = v[edgeId];
