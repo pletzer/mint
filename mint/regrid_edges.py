@@ -89,6 +89,8 @@ class RegridEdges(object):
         ier = MINTLIB.mnt_regridedges_setSrcGrid(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setSrcGrid', ier)
+        # the C side borrows the grid, keep it alive for as long as it may use it
+        self._srcGrid = grid
 
 
     def setDstGrid(self, grid):
@@ -101,6 +103,8 @@ class RegridEdges(object):
         ier = MINTLIB.mnt_regridedges_setDstGrid(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setDstGrid', ier)
+        # the C side borrows the grid, keep it alive for as long as it may use it
+        self._dstGrid = grid
 
 
     def loadSrcGrid(self, filename):

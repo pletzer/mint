@@ -17,9 +17,9 @@ class _VmtCellLocatorBase(object):
     Once built, hand the locator to VectorInterp.setLocator instead of
     calling VectorInterp.buildLocator -- e.g. to configure it beyond what
     buildLocator exposes, or to share one locator across several
-    VectorInterp/PolylineIntegral objects. setLocator takes it as a
-    borrowed reference (it does not take ownership), so keep this Python
-    object alive for as long as anything is using it.
+    VectorInterp objects. setLocator takes it as a borrowed reference (it
+    does not take ownership) and keeps this Python object alive for as long
+    as it uses it.
     """
 
     _NEW_FUNC_NAME = None  # set by subclasses
@@ -56,6 +56,8 @@ class _VmtCellLocatorBase(object):
         ier = MINTLIB.mnt_vmtcelllocator_setDataSet(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setDataSet', ier)
+        # the C side borrows the grid, keep it alive for as long as it may use it
+        self._grid = grid
 
     def setNumberOfCellsPerBucket(self, n):
         """

@@ -45,6 +45,8 @@ class PolylineIntegral(object):
         if ier:
             msg = "Failed to set the grid"
             warning_handler(FILE, 'setGrid', ier, detailedmsg=msg)
+        # the C side borrows the grid, keep it alive for as long as it may use it
+        self._grid = grid
 
     def buildLocator(self, numCellsPerBucket=128, periodX=0.0, enableFolding=False, useXYZLocator=False):
         """

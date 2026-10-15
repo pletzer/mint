@@ -51,6 +51,8 @@ class VectorInterp(object):
         ier = MINTLIB.mnt_vectorinterp_setGrid(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setGrid', ier)
+        # the C side borrows the grid, keep it alive for as long as it may use it
+        self._grid = grid
 
     def setLocator(self, locator):
         """
@@ -60,14 +62,16 @@ class VectorInterp(object):
 
         :param locator: a LonLatCellLocator or XYZCellLocator instance
         :note: taken as a borrowed reference -- this VectorInterp does not
-               take ownership or delete it, so keep the Python locator
-               object alive for as long as this VectorInterp uses it (and
-               call this after setGrid, before findPoints)
+               take ownership or delete it, but keeps the Python locator
+               object alive for as long as it uses it (call this after
+               setGrid, before findPoints)
         """
         MINTLIB.mnt_vectorinterp_setLocator.argtypes = [POINTER(c_void_p), c_void_p]
         ier = MINTLIB.mnt_vectorinterp_setLocator(self.obj, locator.ptr)
         if ier:
             error_handler(FILE, 'setLocator', ier)
+        # the C side borrows the locator, keep it alive for as long as it may use it
+        self._locator = locator
 
     def buildLocator(self, numCellsPerBucket=10, periodX=360., enableFolding=False, useXYZLocator=False):
         """
@@ -95,6 +99,8 @@ class VectorInterp(object):
                                                     useXYZLocatorInt)
         if ier:
             error_handler(FILE, 'buildLocator', ier)
+        # the C side now owns its locator, release any borrowed one
+        self._locator = None
 
     def findPoints(self, targetPoints, tol2=1.e-12):
         """
