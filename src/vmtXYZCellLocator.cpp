@@ -205,6 +205,11 @@ vmtXYZCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd)
     // pathological/degenerate geometry rather than assuming it can't happen
     const int maxSegments = 100000;
 
+    // tStart is where the next segment starts (the previous segment's exit point), t is
+    // where its cell is looked up -- slightly past tStart (see nudge), so the cell just
+    // exited is not found again. The segment itself starts at tStart, not t, otherwise
+    // [tStart, t] would not be assigned to any cell
+    double tStart = 0.0;
     double t = 0.0;
     int numSegments = 0;
     // persists across iterations -- the last segment's converged (xi, eta),
@@ -218,7 +223,7 @@ vmtXYZCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd)
     // corner (exactly where this fallback tends to fire), truncating the
     // walk well short of t=1.
     double xiPrev = 0.5, etaPrev = 0.5;
-    while (t < 1.0 - eps) {
+    while (tStart < 1.0 - eps) {
 
         if (++numSegments > maxSegments) {
             std::stringstream msg;
@@ -357,14 +362,16 @@ vmtXYZCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd)
             tb = lo;
         }
         Vec4 lambdaInOutPeriodFold;
-        lambdaInOutPeriodFold[0] = t;
+        lambdaInOutPeriodFold[0] = tStart;
         lambdaInOutPeriodFold[1] = tb;
         lambdaInOutPeriodFold[2] = 0.0; // no periodicity for a plain embedded (x,y,z) mesh
         lambdaInOutPeriodFold[3] = 0.0; // no pole-folding either
         result.push_back(std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriodFold));
 
-        // nudge past the boundary before locating the next cell
-        t = tb + nudge;
+        // nudge past the boundary before locating the next cell, without going past the
+        // end of the line
+        tStart = tb;
+        t = std::min(tb + nudge, 0.5*(tb + 1.0));
     }
 
     return result;

@@ -147,9 +147,91 @@ void testTiltedQuad() {
     coords->Delete();
 }
 
+/**
+ * Trace lines across a flat n x n grid of unit-square cells in the z=0 plane
+ * with findIntersectionsWithLine. The segments must cover the whole line,
+ * [0, 1] in t, without gaps: each segment must start where the previous one
+ * ended, even though the next cell is looked up slightly past the boundary
+ */
+void testLineAcrossCells() {
+    const int n = 10;
+    const double h = 1.0 / n;
+
+    vtkDoubleArray* coords = vtkDoubleArray::New();
+    coords->SetNumberOfComponents(3);
+    coords->SetNumberOfTuples(4*n*n);
+    vtkIdType k = 0;
+    for (int j = 0; j < n; ++j) {
+        for (int i = 0; i < n; ++i) {
+            double x0 = i*h, x1 = (i + 1)*h, y0 = j*h, y1 = (j + 1)*h;
+            double c[4][3] = {{x0, y0, 0.}, {x1, y0, 0.}, {x1, y1, 0.}, {x0, y1, 0.}};
+            for (int v = 0; v < 4; ++v) {
+                coords->SetTuple(k*4 + v, c[v]);
+            }
+            k++;
+        }
+    }
+    vtkPoints* points = vtkPoints::New();
+    points->SetData(coords);
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+    grid->SetPoints(points);
+    grid->Allocate(n*n, 1);
+    vtkIdList* ptIds = vtkIdList::New();
+    ptIds->SetNumberOfIds(4);
+    for (vtkIdType iCell = 0; iCell < n*n; ++iCell) {
+        for (vtkIdType v = 0; v < 4; ++v) {
+            ptIds->SetId(v, iCell*4 + v);
+        }
+        grid->InsertNextCell(VTK_QUAD, ptIds);
+    }
+    ptIds->Delete();
+
+    vmtXYZCellLocator* loc = vmtXYZCellLocator::New();
+    loc->SetDataSet(grid);
+    loc->SetNumberOfCellsPerBucket(4);
+    loc->BuildLocator();
+
+    const double lines[][6] = {
+        {0.05, 0.03, 0.,  0.95,    0.87, 0.},
+        // ends just past a cell boundary, the last cell is entered within
+        // less than the look-up nudge of the end of the line
+        {0.05, 0.55, 0.,  0.90005, 0.55, 0.},
+    };
+    for (const auto& line : lines) {
+        Vec3 pBeg(&line[0]), pEnd(&line[3]);
+        std::vector< std::pair<vtkIdType, Vec4> > segs = loc->findIntersectionsWithLine(pBeg, pEnd);
+        assert(segs.size() > 0);
+
+        double totalT = 0.0;
+        double tPrev = 0.0;
+        for (const auto& s : segs) {
+            double ta = s.second[0], tb = s.second[1];
+            // no gap or overlap with the previous segment
+            assert(std::abs(ta - tPrev) < 1.e-12);
+            tPrev = tb;
+            totalT += tb - ta;
+
+            // the segment's mid point lies in its cell
+            Vec3 pMid = pBeg + (pEnd - pBeg)*(0.5*(ta + tb));
+            double* bounds = grid->GetCell(s.first)->GetBounds();
+            assert(pMid[0] > bounds[0] - 1.e-6 && pMid[0] < bounds[1] + 1.e-6);
+            assert(pMid[1] > bounds[2] - 1.e-6 && pMid[1] < bounds[3] + 1.e-6);
+        }
+        std::cout << "testLineAcrossCells: " << segs.size() << " segments, total t = "
+                  << totalT << " error = " << totalT - 1.0 << '\n';
+        assert(std::abs(totalT - 1.0) < 1.e-10);
+    }
+
+    loc->Delete();
+    grid->Delete();
+    points->Delete();
+    coords->Delete();
+}
+
 int main() {
     testXConstQuad();
     testTiltedQuad();
+    testLineAcrossCells();
     std::cout << "SUCCESS\n";
     return 0;
 }
