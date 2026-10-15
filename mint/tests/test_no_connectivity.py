@@ -12,12 +12,16 @@ from pathlib import Path
 
 import pytest
 
-SRC_DIR = Path(__file__).absolute().parent.parent.parent
+import mint
+
+# the subprocesses must import the same mint package as this process (an installed
+# package, or the source tree with libmint built in place), from its parent directory
+MINT_PARENT_DIR = Path(mint.__file__).absolute().parent.parent
 
 
 PREAMBLE = f"""
 import sys
-sys.path.insert(0, {str(SRC_DIR)!r})
+sys.path.insert(0, {str(MINT_PARENT_DIR)!r})
 import numpy
 from mint import Grid, PolylineIntegral, RegridEdges, VectorInterp, FUNC_SPACE_W1, UNIQUE_EDGE_DATA
 
