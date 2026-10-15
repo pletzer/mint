@@ -89,7 +89,8 @@ struct RegridEdges_t {
     /** start indices for multi-array iterator */
     std::vector<std::size_t> startIndices;
 
-    /** whether the gridder owns the grids */
+    /** whether the regridder owns the grids (true for the grids created by mnt_regridedges_new,
+     *  false for grids set with mnt_regridedges_setSrcGrid/setDstGrid, which belong to the caller) */
     bool srcGridIsOwned;
     bool dstGridIsOwned;
 };
@@ -115,6 +116,8 @@ int mnt_regridedges_del(RegridEdges_t** self);
  * @param self instance of the regridding object
  * @param grid instance of Grid_t
  * @return error code (0 = OK)
+ * @note the grid is borrowed, it remains owned by the caller and must outlive the regridding
+ *       object. A subsequent mnt_regridedges_loadSrcGrid loads into this grid.
  */
 LIBRARY_API
 int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid);
@@ -124,6 +127,8 @@ int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid);
  * @param self instance of the regridding object
  * @param grid instance of Grid_t
  * @return error code (0 = OK)
+ * @note the grid is borrowed, it remains owned by the caller and must outlive the regridding
+ *       object. A subsequent mnt_regridedges_loadDstGrid loads into this grid.
  */
 LIBRARY_API
 int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid);

@@ -144,26 +144,33 @@ public:
      * Find all intersection points between line and the grid
      * @param pBeg start point of the line
      * @param pEnd end point of the line
-     * @return list of (cellId, [lambda0, lambda1, periodXOffset]) pairs
+     * @return list of (cellId, [lambda0, lambda1, periodXOffset, fold]) pairs
      * @note lambda0/lambda1 are the linear parametric coordinates of the entry/exit points into/from the cell
      * @note periodXOffset is the periodic offset to add to pBeg[0] and pEnd[0]
+     * @note fold is 0 if the intersection was found on the line itself, +1 (-1) if it was found on the
+     *       line folded across the north (south) pole (see foldLine), in which case lambda0/lambda1
+     *       and periodXOffset refer to the folded line
      */
     std::vector< std::pair<vtkIdType, Vec4> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) override;
 
     /**
-     * Fold the end points of a line across the pole. Both end points are
+     * Fold the end points of a line across a pole. Both end points are
      * shifted by the same longitude, otherwise a line crossing lambdaMid
-     * would change length
+     * would change length, and reflected about the same pole, otherwise a
+     * line starting on the other side of the equator would no longer be the
+     * image of the original line
      * @param p0 start point of the line (in/out)
      * @param p1 end point of the line (in/out)
+     * @param fold +1 to fold across the north pole, -1 across the south pole
      */
-    void foldLine(Vec3& p0, Vec3& p1) const override {
-        double lon0 = p0[0];
-        double lon1 = p1[0];
-        this->foldAtPole(&p0[0]);
-        this->foldAtPole(&p1[0]);
-        p1[0] = lon1 + (p0[0] - lon0);
+    void foldLine(Vec3& p0, Vec3& p1, int fold) const override {
+        double sgnTheta = fold >= 0? 1.: -1.;
+        double sgnLambda = p0[0] >= this->lambdaMid? 1.: -1.;
+        p0[0] -= sgnLambda*180.;
+        p1[0] -= sgnLambda*180.;
+        p0[1] = sgnTheta*180. - p0[1];
+        p1[1] = sgnTheta*180. - p1[1];
     }
 
     /**

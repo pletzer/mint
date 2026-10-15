@@ -1,13 +1,27 @@
 from ctypes import (c_void_p, c_int, byref, POINTER, c_char_p,
-                    c_size_t, c_longlong, c_double)
+                    c_size_t, c_longlong, c_double, cast)
 from . import MINTLIB, NUM_VERTS_PER_QUAD, NUM_VERTS_PER_EDGE
 from . import error_handler
 import numpy
 
 
 FILE = 'grid.py'
-DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
-SIZE_T_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp)
+DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64, flags="C_CONTIGUOUS")
+SIZE_T_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp, flags="C_CONTIGUOUS")
+
+
+class _BorrowedArray(object):
+    """
+    Expose memory owned by a C object as a numpy array without copying it. A numpy
+    array built from an instance of this class holds a reference to it (as its base),
+    and hence to the owner, so the owner and its memory stay alive as long as the array.
+    """
+    def __init__(self, owner, address, shape, dtype):
+        self.owner = owner
+        self.__array_interface__ = {'shape': tuple(shape),
+                                    'typestr': numpy.dtype(dtype).str,
+                                    'data': (address, False),
+                                    'version': 3}
 
 
 class Grid(object):
@@ -206,8 +220,9 @@ class Grid(object):
         :return numpy contiguous array of shape (ncells,
                       num_verts_per_cell, 3)
 
-        note: the returned array is a view into the C++ side's memory, so it will be 
-        invalidated if the C++ side is deleted or if setPoints is called again.
+        note: the returned array is a view into the C++ side's memory, no copy is made.
+        The view keeps this grid alive, but it is invalidated if the points are reset
+        (setPoints or one of the load methods called again).
         """
         MINTLIB.mnt_grid_getPointsPtr.argtypes = [POINTER(c_void_p), POINTER(POINTER(c_double))]
 
@@ -217,8 +232,12 @@ class Grid(object):
             error_handler(FILE, 'getPointsPtr', ier)
             
         ncells = self.getNumberOfCells()
-        # create a numpy array from a C pointer
-        return numpy.ctypeslib.as_array(pointsPtr, shape=(ncells, NUM_VERTS_PER_QUAD, 3))
+        shape = (ncells, NUM_VERTS_PER_QUAD, 3)
+        address = cast(pointsPtr, c_void_p).value
+        if ncells == 0 or not address:
+            return numpy.empty(shape, numpy.float64)
+        # a view of the C pointer, which keeps this grid alive
+        return numpy.asarray(_BorrowedArray(self, address, shape, numpy.float64))
 
     def getEdgeId(self, cellId: int, edgeIndex: int) -> tuple[int, int]:
         """
@@ -290,7 +309,8 @@ class Grid(object):
 
         :param varname: field name
         :param data: numpy array of size (ncells, :)
-        :param copy: set to False if you do not want the data to be copied
+        :param copy: set to False if you do not want the data to be copied, the grid
+                     then keeps a reference to data (which must be C contiguous)
         """
         nDataPerCell = 1
         if len(data.shape) > 1:
@@ -304,6 +324,8 @@ class Grid(object):
             ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
                                           nDataPerCell, self.data[varname])
         else:
+            # no copy, the C side borrows data, keep it alive for as long as the grid
+            self.data[varname] = data
             ier = MINTLIB.mnt_grid_attach(self.obj, varname.encode('utf-8'),
                                           nDataPerCell, data)
         if ier:

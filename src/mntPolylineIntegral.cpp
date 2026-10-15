@@ -2,6 +2,8 @@
 #include <mntGlobal.h>
 #include <mntPolylineIntegral.h>
 #include <mntPolysegmentIter.h>
+#include <vmtLonLatCellLocator.h>
+#include <vmtXYZCellLocator.h>
 #include <mntWeights.h>
 #include <mntExtensiveFieldAdaptor.h>
 #include <iostream>
@@ -14,6 +16,7 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     *self = new PolylineIntegral_t();
 
     (*self)->loc = vmtLonLatCellLocator::New();
+    (*self)->gridObj = NULL;
     (*self)->vgrid = NULL;
 
     return 0;
@@ -40,7 +43,6 @@ int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
     // get VTK grid
     mnt_grid_get(&grid, &(*self)->vgrid);
     (*self)->gridObj = grid;
-    (*self)->loc->SetDataSet((*self)->vgrid);
 
     return ier;
 }
@@ -50,16 +52,36 @@ LIBRARY_API
 int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self,
                                       int numCellsPerBucket,
                                       double periodX,
-                                      int enableFolding) {
+                                      int enableFolding,
+                                      int useXYZLocator) {
 
     int ier = 0;
     std::string msg;
 
+    if (!(*self)->vgrid) {
+        msg = "must set the grid before building the locator";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return 1;
+    }
+
+    // mnt_polylineintegral_new constructs a vmtLonLatCellLocator, swap it for a
+    // vmtXYZCellLocator if requested (see mnt_regridedges_buildLocator)
+    (*self)->loc->Delete();
+    if (useXYZLocator) {
+        (*self)->loc = vmtXYZCellLocator::New();
+    }
+    else {
+        (*self)->loc = vmtLonLatCellLocator::New();
+    }
+
     // build the cell locator
+    (*self)->loc->SetDataSet((*self)->vgrid);
     (*self)->loc->SetNumberOfCellsPerBucket(numCellsPerBucket);
-    (*self)->loc->setPeriodicityLengthX(periodX);
-    if (enableFolding == 1) {
-        (*self)->loc->enableFolding();
+    if (!useXYZLocator) {
+        (*self)->loc->setPeriodicityLengthX(periodX);
+        if (enableFolding == 1) {
+            (*self)->loc->enableFolding();
+        }
     }
     // NOTE: deliberately not calling setCubedSphere here. containsPoint's spherical
     // treatment (see vmtLonLatCellLocator.h) is only consistent with FindCell/VectorInterp,
@@ -275,6 +297,15 @@ int mnt_polylineintegral_vectorGetIntegral(PolylineIntegral_t** self, const doub
     int ier;
     int numFailures = 0;
 
+    // u and v are defined on unique edges, their Ids come from the connectivity
+    if (!(*self)->gridObj ||
+        (*self)->gridObj->faceEdgeConnectivity.size() == 0 ||
+        (*self)->gridObj->edgeNodeConnectivity.size() == 0) {
+        std::string msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -1;
+    }
+
     std::size_t numCells;
     ier = mnt_grid_getNumberOfCells(&(*self)->gridObj, &numCells);
     if (ier != 0) numFailures++;
@@ -296,7 +327,11 @@ int mnt_polylineintegral_vectorGetIntegral(PolylineIntegral_t** self, const doub
     for (std::size_t icell = 0; icell < numCells; ++icell) {
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             ier = mnt_grid_getEdgeId(&grd, icell, ie, &edgeId, &edgeSign);
-            if (ier != 0) numFailures++;
+            if (ier != 0) {
+                // the edge Id is not known, leave the cell by cell value to zero
+                numFailures++;
+                continue;
+            }
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
             src_uCellByCell[k] = u[edgeId];
             src_vCellByCell[k] = v[edgeId];

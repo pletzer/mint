@@ -1,4 +1,11 @@
 module mnt_regridedges_capi_mod
+  use, intrinsic :: iso_c_binding, only: c_int
+  implicit none
+
+  !> Data placement flags for mnt_regridedges_apply (must match mntGlobal.h)
+  integer(c_int), parameter :: MNT_CELL_BY_CELL_DATA = 0
+  integer(c_int), parameter :: MNT_UNIQUE_EDGE_DATA = 1
+
   !> C function prototypes
   interface
 
@@ -106,7 +113,7 @@ module mnt_regridedges_capi_mod
         use, intrinsic :: iso_c_binding, only: c_int, c_ptr, c_double
         implicit none
         type(c_ptr), intent(inout)               :: obj !> void**
-        real(c_double), intent(out)              :: data(*)
+        real(c_double), intent(in)               :: data(*)
         integer(c_int)                           :: mnt_regridedges_dumpDstSlice
     end function mnt_regridedges_dumpDstSlice
 
@@ -207,8 +214,10 @@ module mnt_regridedges_capi_mod
     !> @param num_cells_per_bucket number of cells per bucket
     !> @param periodX period in longitudes (0 if non-periodic)
     !> @param enableFolding set to 1 if |latitude| > 90 deg.
+    !> @param useXYZLocator set to 1 to use the 3D Cartesian (XYZ) cell locator, 0 for the lon-lat locator
     !> @return 0 if successful
-    function mnt_regridedges_buildLocator(obj, num_cells_per_bucket, periodX, enableFolding) &
+    function mnt_regridedges_buildLocator(obj, num_cells_per_bucket, periodX, enableFolding, &
+                                          useXYZLocator) &
                                           bind(C, name='mnt_regridedges_buildLocator')
       use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
@@ -216,6 +225,7 @@ module mnt_regridedges_capi_mod
       integer(c_int), value            :: num_cells_per_bucket
       real(c_double), value            :: periodX
       integer(c_int), value            :: enableFolding
+      integer(c_int), value            :: useXYZLocator
       integer(c_int)                   :: mnt_regridedges_buildLocator
     end function mnt_regridedges_buildLocator
 
@@ -300,28 +310,45 @@ module mnt_regridedges_capi_mod
     !> @param src_data edge field defined cell by cell on the source grid (array of size 4*num_src_cells)
     !> @param dst_data edge field defined cell by cell on the destination grid (array of size 4*num_dst_cells)
     !> @return 0 if successful
-    function mnt_regridedges_applyCellEdge(obj, src_data, dst_data) &
-                                           bind(C, name='mnt_regridedges_applyCellEdge')
+    function mnt_regridedges_applyToCellByCellData(obj, src_data, dst_data) &
+                                   bind(C, name='mnt_regridedges_applyToCellByCellData')
       use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
       type(c_ptr), intent(inout)               :: obj !> void**
       real(c_double), intent(in)               :: src_data(*)
       real(c_double), intent(out)              :: dst_data(*)
-      integer(c_int)                           :: mnt_regridedges_applyCellEdge
-    end function mnt_regridedges_applyCellEdge
+      integer(c_int)                           :: mnt_regridedges_applyToCellByCellData
+    end function mnt_regridedges_applyToCellByCellData
 
     !> Apply the weights to an edge field with unique edge Ids
     !> @param obj instance of mntRegridEdges_t (opaque handle)
     !> @param src_data source field defined for each unique edge Id
-    !> @param dst_data destination field defined for each for each unique edge Id
+    !> @param dst_data destination field defined for each unique edge Id
     !> @return 0 if successful
-    function mnt_regridedges_apply(obj, src_data, dst_data) &
-                                   bind(C, name='mnt_regridedges_apply')
-      use, intrinsic :: iso_c_binding, only: c_size_t, c_int, c_double, c_ptr
+    function mnt_regridedges_applyToUniqueEdgeData(obj, src_data, dst_data) &
+                                   bind(C, name='mnt_regridedges_applyToUniqueEdgeData')
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
       implicit none
       type(c_ptr), intent(inout)               :: obj !> void**
       real(c_double), intent(in)               :: src_data(*)
       real(c_double), intent(out)              :: dst_data(*)
+      integer(c_int)                           :: mnt_regridedges_applyToUniqueEdgeData
+    end function mnt_regridedges_applyToUniqueEdgeData
+
+    !> Apply the weights to an edge field
+    !> @param obj instance of mntRegridEdges_t (opaque handle)
+    !> @param src_data source edge field
+    !> @param dst_data destination edge field (output)
+    !> @param placement MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA
+    !> @return 0 if successful
+    function mnt_regridedges_apply(obj, src_data, dst_data, placement) &
+                                   bind(C, name='mnt_regridedges_apply')
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
+      implicit none
+      type(c_ptr), intent(inout)               :: obj !> void**
+      real(c_double), intent(in)               :: src_data(*)
+      real(c_double), intent(out)              :: dst_data(*)
+      integer(c_int), value                    :: placement
       integer(c_int)                           :: mnt_regridedges_apply
     end function mnt_regridedges_apply
 

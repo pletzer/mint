@@ -5,7 +5,7 @@ import numpy
 
 
 FILE = 'polyline_integral.py'
-DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
+DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64, flags="C_CONTIGUOUS")
 
 
 class PolylineIntegral(object):
@@ -45,8 +45,10 @@ class PolylineIntegral(object):
         if ier:
             msg = "Failed to set the grid"
             warning_handler(FILE, 'setGrid', ier, detailedmsg=msg)
+        # the C side borrows the grid, keep it alive for as long as it may use it
+        self._grid = grid
 
-    def buildLocator(self, numCellsPerBucket=128, periodX=0.0, enableFolding=False):
+    def buildLocator(self, numCellsPerBucket=128, periodX=0.0, enableFolding=False, useXYZLocator=False):
         """
         Build the locator.
 
@@ -54,8 +56,13 @@ class PolylineIntegral(object):
                                   performance typically improves with a higher
                                   number of cells per bucket
         :param periodX: periodicity length in x (longitudes),
-                        set to 0 if non-periodic.
-        :param enableFolding: whether (1) or not (0) to allow for |latitude| > 90
+                        set to 0 if non-periodic. Ignored if useXYZLocator is True.
+        :param enableFolding: whether (1) or not (0) to allow for |latitude| > 90.
+                              Ignored if useXYZLocator is True.
+        :param useXYZLocator: False (default) for a (lon, lat) grid, periodic or not.
+                              True for a 3D-embedded (x, y, z) grid with no periodic
+                              seam; the polyline segments are then traced as straight
+                              3D chords through the grid cells
         :note: call this after setGrid
         """
 
@@ -64,9 +71,10 @@ class PolylineIntegral(object):
             enableFoldingInt = 1
 
         MINTLIB.mnt_polylineintegral_buildLocator.argtypes = [POINTER(c_void_p),
-                                                              c_int, c_double, c_int]
+                                                              c_int, c_double, c_int, c_int]
         ier = MINTLIB.mnt_polylineintegral_buildLocator(self.obj,
-                                                        numCellsPerBucket, periodX, enableFoldingInt)
+                                                        numCellsPerBucket, periodX, enableFoldingInt,
+                                                        int(bool(useXYZLocator)))
         if ier:
             msg = "Failed to build locator"
             warning_handler(FILE, 'buildLocator', ier, detailedmsg=msg)

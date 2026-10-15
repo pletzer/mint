@@ -5,7 +5,7 @@ import numpy
 
 
 FILE = 'extensive_field_adaptor.py'
-DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
+DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64, flags="C_CONTIGUOUS")
 
 
 class ExtensiveFieldAdaptor(object):
@@ -49,6 +49,8 @@ class ExtensiveFieldAdaptor(object):
         ier = MINTLIB.mnt_extensivefieldadaptor_setGrid(self.obj, grid.ptr)
         if ier:
             error_handler(FILE, 'setGrid', ier)
+        # the C side borrows the grid, keep it alive for as long as it may use it
+        self._grid = grid
 
     def fromVectorField(self, u, v, data, placement, fs):
         """

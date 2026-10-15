@@ -47,8 +47,10 @@ int mnt_regridedges_new(RegridEdges_t** self) {
 
     (*self)->dstWriter = NULL;
 
-    (*self)->srcGridIsOwned = false;
-    (*self)->dstGridIsOwned = false;
+    // the grids created above belong to the regridder, until replaced by
+    // grids set with mnt_regridedges_setSrcGrid/setDstGrid
+    (*self)->srcGridIsOwned = true;
+    (*self)->dstGridIsOwned = true;
 
     return 0;
 }
@@ -94,10 +96,13 @@ LIBRARY_API
 int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
 
     int ier = 0;
-    if ((*self)->srcGridObj) {
+    // only delete the current grid if the regridder owns it, a grid set
+    // previously belongs to the caller
+    if ((*self)->srcGridObj && (*self)->srcGridIsOwned) {
         ier = mnt_grid_del(&((*self)->srcGridObj));
     }
     (*self)->srcGridObj = grid;
+    (*self)->srcGridIsOwned = false;
     return ier;
 }
 
@@ -105,10 +110,13 @@ LIBRARY_API
 int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid) {
 
     int ier = 0;
-    if ((*self)->dstGridObj) {
+    // only delete the current grid if the regridder owns it, a grid set
+    // previously belongs to the caller
+    if ((*self)->dstGridObj && (*self)->dstGridIsOwned) {
         ier = mnt_grid_del(&((*self)->dstGridObj));
     }
     (*self)->dstGridObj = grid;
+    (*self)->dstGridIsOwned = false;
     return ier;
 }
 
@@ -521,7 +529,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
         return 1;
     }
 
-    (*self)->srcGridIsOwned = true; // the regridder owns the src grid
+    // loading does not change who owns the source grid
     return ier;
 }
 
@@ -541,7 +549,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
         return 1;
     }
 
-    (*self)->dstGridIsOwned = true; // the regridder owns the dst grid
+    // loading does not change who owns the destination grid
     return ier;
 }
 
@@ -895,8 +903,11 @@ int mnt_regridedges_applyToUniqueEdgeData(RegridEdges_t** self,
 
     // number of faces sharing the same edge. As a result of the multivaluedness of the longitudes,
     // each of the edges is treated independently (the longitude values may be different as seen from
-    // the two faces). edgeMultiplicity tracks the number of adjacent faces. 
+    // the two faces). edgeMultiplicity tracks the number of adjacent faces that contribute to the edge.
+    // A face typically contributes several weights to the same edge (one per source cell overlapping
+    // the edge), so count the distinct faces, not the weights.
     std::vector<int> edgeMultiplicity(numDstEdges, 0);
+    std::vector<vtkIdType> edgeFirstFace(numDstEdges, -1);
 
     // add the contributions from each cell overlap
     for (std::size_t i = 0; i < (*self)->weights.size(); ++i) {
@@ -914,7 +925,13 @@ int mnt_regridedges_applyToUniqueEdgeData(RegridEdges_t** self,
         dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
 
         // up to 2 faces can own this edge
-        edgeMultiplicity[dstEdgeId] = std::min(2, edgeMultiplicity[dstEdgeId] + 1);
+        if (edgeFirstFace[dstEdgeId] < 0) {
+            edgeFirstFace[dstEdgeId] = dstCellId;
+            edgeMultiplicity[dstEdgeId] = 1;
+        }
+        else if (dstCellId != edgeFirstFace[dstEdgeId]) {
+            edgeMultiplicity[dstEdgeId] = 2;
+        }
     }
 
     for (std::size_t i = 0; i < numDstEdges; ++i) {
@@ -950,6 +967,16 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     int ier;
     int numFailures = 0;
 
+    // the vector fields are defined on unique edges, their Ids come from the connectivity
+    // of the source and destination grids
+    for (Grid_t* grd : {(*self)->srcGridObj, (*self)->dstGridObj}) {
+        if (!grd || grd->faceEdgeConnectivity.size() == 0 || grd->edgeNodeConnectivity.size() == 0) {
+            std::string msg = "source or destination grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return -1;
+        }
+    }
+
     std::size_t src_numCells;
     ier = mnt_regridedges_getNumSrcCells(self, &src_numCells);
     if (ier != 0) numFailures++;
@@ -979,7 +1006,11 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
     for (std::size_t icell = 0; icell < src_numCells; ++icell) {
         for (int ie = 0; ie < MNT_NUM_EDGES_PER_QUAD; ++ie) {
             ier = mnt_grid_getEdgeId(&src_grd, icell, ie, &edgeId, &edgeSign);
-            if (ier != 0) numFailures++;
+            if (ier != 0) {
+                // the edge Id is not known, leave the cell by cell value to zero
+                numFailures++;
+                continue;
+            }
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
             src_uCellByCell[k] = src_u[edgeId];
             src_vCellByCell[k] = src_v[edgeId];

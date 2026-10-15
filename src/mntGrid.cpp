@@ -838,8 +838,10 @@ LIBRARY_API
 int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex, 
                        std::size_t* edgeId, int* signEdge) {
 
-    if ((*self)->faceNodeConnectivity.size() == 0) {
-        std::string msg = "no face-node connectivity, grid is empty or was not built from Ugrid";
+    if ((*self)->faceNodeConnectivity.size() == 0 ||
+        (*self)->faceEdgeConnectivity.size() == 0 ||
+        (*self)->edgeNodeConnectivity.size() == 0) {
+        std::string msg = "no face-node/face-edge/edge-node connectivity, grid is empty or was not built from Ugrid";
         mntlog::warn(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
@@ -878,6 +880,14 @@ int mnt_grid_getEdgeId(Grid_t** self, vtkIdType cellId, int edgeIndex,
             *edgeId = eId;
             break;
         }
+    }
+
+    if (*signEdge == 0) {
+        // the face's edges don't include an edge with these nodes, inconsistent connectivity
+        std::string msg = "could not find the edge Id of cell " + std::to_string(cellId) + 
+                          " edge index " + std::to_string(edgeIndex) + ", inconsistent connectivity";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        return 2;
     }
 
     return 0;

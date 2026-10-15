@@ -17,12 +17,22 @@ int mnt_vectorinterp_new(VectorInterp_t** self) {
     return 0;
 }
 
+/**
+ * Delete the locator if owned, a locator set with mnt_vectorinterp_setLocator
+ * belongs to the caller
+ */
+static void mnt_vectorinterp__releaseLocator(VectorInterp_t** self) {
+    if ((*self)->ownsLocator && (*self)->locator) {
+        (*self)->locator->Delete();
+    }
+    (*self)->locator = NULL;
+    (*self)->ownsLocator = false;
+}
+
 LIBRARY_API
 int mnt_vectorinterp_del(VectorInterp_t** self) {
 
-    if ((*self)->ownsLocator) {
-        (*self)->locator->Delete();
-    }
+    mnt_vectorinterp__releaseLocator(self);
 
     delete *self;
 
@@ -37,7 +47,9 @@ int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid) {
 
 LIBRARY_API
 int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator) {
+    mnt_vectorinterp__releaseLocator(self);
     (*self)->locator = locator;
+    (*self)->ownsLocator = false;
     return 0;
 }
 
@@ -51,6 +63,8 @@ int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, 
         return -1;
     }
 
+    // replace any previous locator
+    mnt_vectorinterp__releaseLocator(self);
     (*self)->ownsLocator = true;
 
     // useXYZLocator defaults to 0, giving EXACTLY the original behaviour
@@ -291,6 +305,14 @@ int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
         return -2;
     }
 
+    // the data or vectors are indexed by unique edge Ids, which come from the connectivity
+    if ((*self)->grid->faceEdgeConnectivity.size() == 0 ||
+        (*self)->grid->edgeNodeConnectivity.size() == 0) {
+        msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -3;
+    }
+
     if ((*self)->pcoords.size() == 0) {
         msg ="there is no target point in the domain";
         mntlog::warn(__FILE__, __func__, __LINE__, msg);
@@ -365,6 +387,14 @@ int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
         msg ="must set the grid before calling this";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -2;
+    }
+
+    // the data or vectors are indexed by unique edge Ids, which come from the connectivity
+    if ((*self)->grid->faceEdgeConnectivity.size() == 0 ||
+        (*self)->grid->edgeNodeConnectivity.size() == 0) {
+        msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -3;
     }
 
     if ((*self)->pcoords.size() == 0) {
@@ -464,6 +494,14 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
         return -2;
     }
 
+    // u and v are defined on unique edges, their Ids come from the connectivity
+    if ((*self)->grid->faceEdgeConnectivity.size() == 0 ||
+        (*self)->grid->edgeNodeConnectivity.size() == 0) {
+        msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -3;
+    }
+
     const double deg2rad = M_PI/180.;
 
     std::size_t numCells;
@@ -533,14 +571,15 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
         std::size_t k0, k1, k2, k3;
         std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
         int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
-        if (ier != 0) numFailures++;
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
-        if (ier != 0) numFailures++;
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
-        if (ier != 0) numFailures++;
-        ier = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
-        if (ier != 0) numFailures++;
+        int ier0 = mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
+        int ier1 = mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
+        int ier2 = mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
+        int ier3 = mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
+        if (ier0 != 0 || ier1 != 0 || ier2 != 0 || ier3 != 0) {
+            // the edge Ids are not known, skip this cell
+            numFailures++;
+            continue;
+        }
 
         if (placement == MNT_CELL_BY_CELL_DATA) {
             edgeSign0 = 1;
@@ -704,6 +743,14 @@ int mnt_vectorinterp_getVectorsOnEdgesSpherical(VectorInterp_t** self,
         msg ="must set the grid before calling this";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -2;
+    }
+
+    // the data or vectors are indexed by unique edge Ids, which come from the connectivity
+    if ((*self)->grid->faceEdgeConnectivity.size() == 0 ||
+        (*self)->grid->edgeNodeConnectivity.size() == 0) {
+        msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        return -3;
     }
 
     const double deg2rad = M_PI/180.;

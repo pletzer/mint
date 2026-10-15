@@ -8,7 +8,7 @@ program test
     implicit none
     type(c_ptr)                  :: prsr
     type(c_ptr)                  :: crg
-    integer                      :: num_cells_per_bucket, ier, nargs, nargs1, i, debug, enablefolding
+    integer                      :: num_cells_per_bucket, ier, nargs, nargs1, i, debug, enablefolding, usexyzlocator
     character(len=1), allocatable                    :: args(:)
     character(len=mnt_string_size)                   :: argv_full
     character(len=1), dimension(mnt_string_size)     :: src_filename, dst_filename, output_filename
@@ -74,7 +74,8 @@ program test
     num_cells_per_bucket = 8
     periodx = 0._8
     enablefolding = 0
-    ier = mnt_regridedges_buildLocator(crg, num_cells_per_bucket, periodx, enablefolding)
+    usexyzlocator = 0
+    ier = mnt_regridedges_buildLocator(crg, num_cells_per_bucket, periodx, enablefolding, usexyzlocator)
     if(ier /= 0) print*,'ERROR ier = after build', ier
     
     debug = 1

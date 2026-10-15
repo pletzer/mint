@@ -60,7 +60,7 @@ void test1Triangle(const std::vector<double>& targetLine, double exactFlux) {
     int numCellsPerBucket = 128;
     double periodX = 0;
     int enableFolding = 0;
-    ier = mnt_polylineintegral_buildLocator(&pli, numCellsPerBucket, periodX, enableFolding);
+    ier = mnt_polylineintegral_buildLocator(&pli, numCellsPerBucket, periodX, enableFolding, 0);
     assert(ier == 0);
 
     std::size_t numTargetPoints = targetLine.size() / 3;

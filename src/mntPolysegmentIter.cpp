@@ -43,12 +43,14 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     std::vector< std::pair<vtkIdType, Vec4> >
       cellIdLambdasPeriodFold = this->locator->findIntersectionsWithLine(p0, p1);
 
-    // the line folded across the pole, along which the lambdas of the
-    // intersections with fold == 1 are measured
-    Vec3 p0Folded = p0;
-    Vec3 p1Folded = p1;
-    this->locator->foldLine(p0Folded, p1Folded);
-    Vec3 dpFolded = p1Folded - p0Folded;
+    // the line folded across the north (fold == 1) and south (fold == -1) poles, along
+    // which the lambdas of the intersections with fold != 0 are measured
+    Vec3 p0FoldedN = p0, p1FoldedN = p1;
+    this->locator->foldLine(p0FoldedN, p1FoldedN, 1);
+    Vec3 dpFoldedN = p1FoldedN - p0FoldedN;
+    Vec3 p0FoldedS = p0, p1FoldedS = p1;
+    this->locator->foldLine(p0FoldedS, p1FoldedS, -1);
+    Vec3 dpFoldedS = p1FoldedS - p0FoldedS;
 
     // arrays of cell Ids, start/end "t" values, start/end "xi" param coords, and 
     // duplicity coefficients for each subsegment
@@ -75,9 +77,13 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
 
         Vec3 pa = p0 + dp*ta;
         Vec3 pb = p0 + dp*tb;
-        if (fold == 1) {
-            pa = p0Folded + dpFolded*ta;
-            pb = p0Folded + dpFolded*tb;
+        if (fold > 0) {
+            pa = p0FoldedN + dpFoldedN*ta;
+            pb = p0FoldedN + dpFoldedN*tb;
+        }
+        else if (fold < 0) {
+            pa = p0FoldedS + dpFoldedS*ta;
+            pb = p0FoldedS + dpFoldedS*tb;
         }
         pa[0] += periodOffset;
         pb[0] += periodOffset;

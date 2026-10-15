@@ -385,9 +385,97 @@ void testFold4() {
 }
 
 
+void testFold5() {
+    // segments starting on the other side of the equator from the pole they cross. Both
+    // end points must be folded about the same (crossed) pole, otherwise the folded line
+    // is not the image of the original segment and pieces land in the wrong cells
+
+    vtkUnstructuredGrid* grid = vtkUnstructuredGrid::New();
+    vtkPoints* points = vtkPoints::New();
+    vtkDoubleArray* coords = vtkDoubleArray::New();
+
+    createUniformGrid(36, 18, grid, points, coords);
+
+    vmtLonLatCellLocator* loc = vmtLonLatCellLocator::New();
+    loc->setPeriodicityLengthX(360.0);
+    loc->enableFolding();
+    loc->SetDataSet(grid);
+    loc->BuildLocator();
+
+    const double segs[][4] = {
+        // lon0, lat0, lon1, lat1
+        {30., -80.,   30.,  100.},
+        {30.,  -1.,   30.,  100.},
+        {30., -1.e-6, 30.,  100.},
+        {30.,   0.,   30.,  100.},
+        {30.,  80.,   30., -100.},
+        {30.,   1.,   30., -100.},
+        {30., -80.,   50.,  100.},
+        {200., 20.,  190., -110.},
+        {30., -95.,   30.,   95.},  // beyond both poles
+        {30.,  95.,   50.,  -95.},
+    };
+
+    printf("testFold5\n");
+    for (const auto& s : segs) {
+
+        Vec3 pa, pb;
+        pa[0] = s[0]; pa[1] = s[1]; pa[2] = 0.;
+        pb[0] = s[2]; pb[1] = s[3]; pb[2] = 0.;
+        PolysegmentIter psi(grid, loc, &pa[0], &pb[0]);
+
+        size_t numSegs = psi.getNumberOfSegments();
+        psi.reset();
+        for (size_t i = 0; i < numSegs; ++i) {
+            vtkIdType cellId = psi.getCellId();
+            const Vec3& xia = psi.getBegCellParamCoord();
+            const Vec3& xib = psi.getEndCellParamCoord();
+            for (size_t k = 0; k < 2; ++k) {
+                assert(xia[k] > -1.e-10 && xia[k] < 1. + 1.e-10);
+                assert(xib[k] > -1.e-10 && xib[k] < 1. + 1.e-10);
+            }
+
+            // the mid point of this piece of the original segment, brought back into
+            // the domain, must lie in the cell
+            double t = 0.5*(psi.getBegLineParamCoord() + psi.getEndLineParamCoord());
+            double lon = pa[0] + t*(pb[0] - pa[0]);
+            double lat = pa[1] + t*(pb[1] - pa[1]);
+            if (lat > 90.) {
+                lat = 180. - lat;
+                lon += 180.;
+            }
+            else if (lat < -90.) {
+                lat = -180. - lat;
+                lon += 180.;
+            }
+            lon -= 360.*std::floor(lon/360.);
+            double* bounds = grid->GetCell(cellId)->GetBounds();
+            const double tol = 1.e-8;
+            if (lon < bounds[0] - tol || lon > bounds[1] + tol ||
+                lat < bounds[2] - tol || lat > bounds[3] + tol) {
+                printf("testFold5: segment (%g,%g)->(%g,%g) t = %g: mid point (%g,%g) not in cell %lld [%g,%g]x[%g,%g]\n",
+                       s[0], s[1], s[2], s[3], t, lon, lat, cellId,
+                       bounds[0], bounds[1], bounds[2], bounds[3]);
+                assert(false);
+            }
+            psi.next();
+        }
+        double tTotal = psi.getIntegratedParamCoord();
+        double error = tTotal - 1.0;
+        printf("testFold5: (%g,%g)->(%g,%g) total t = %.12f error = %g\n", s[0], s[1], s[2], s[3], tTotal, error);
+        assert(std::abs(error) < 1.e-10);
+    }
+
+    loc->Delete();
+    grid->Delete();
+    points->Delete();
+    coords->Delete();
+}
+
 int main(int argc, char** argv) {
 
     testSimple();
+    testFold5();
     testFold4();
     testFold3();
     testFold2();
