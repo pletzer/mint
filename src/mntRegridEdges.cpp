@@ -47,8 +47,10 @@ int mnt_regridedges_new(RegridEdges_t** self) {
 
     (*self)->dstWriter = NULL;
 
-    (*self)->srcGridIsOwned = false;
-    (*self)->dstGridIsOwned = false;
+    // the grids created above belong to the regridder, until replaced by
+    // grids set with mnt_regridedges_setSrcGrid/setDstGrid
+    (*self)->srcGridIsOwned = true;
+    (*self)->dstGridIsOwned = true;
 
     return 0;
 }
@@ -94,10 +96,13 @@ LIBRARY_API
 int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
 
     int ier = 0;
-    if ((*self)->srcGridObj) {
+    // only delete the current grid if the regridder owns it, a grid set
+    // previously belongs to the caller
+    if ((*self)->srcGridObj && (*self)->srcGridIsOwned) {
         ier = mnt_grid_del(&((*self)->srcGridObj));
     }
     (*self)->srcGridObj = grid;
+    (*self)->srcGridIsOwned = false;
     return ier;
 }
 
@@ -105,10 +110,13 @@ LIBRARY_API
 int mnt_regridedges_setDstGrid(RegridEdges_t** self, Grid_t* grid) {
 
     int ier = 0;
-    if ((*self)->dstGridObj) {
+    // only delete the current grid if the regridder owns it, a grid set
+    // previously belongs to the caller
+    if ((*self)->dstGridObj && (*self)->dstGridIsOwned) {
         ier = mnt_grid_del(&((*self)->dstGridObj));
     }
     (*self)->dstGridObj = grid;
+    (*self)->dstGridIsOwned = false;
     return ier;
 }
 
@@ -521,7 +529,7 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
         return 1;
     }
 
-    (*self)->srcGridIsOwned = true; // the regridder owns the src grid
+    // loading does not change who owns the source grid
     return ier;
 }
 
@@ -541,7 +549,7 @@ int mnt_regridedges_loadDstGrid(RegridEdges_t** self,
         return 1;
     }
 
-    (*self)->dstGridIsOwned = true; // the regridder owns the dst grid
+    // loading does not change who owns the destination grid
     return ier;
 }
 

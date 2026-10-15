@@ -17,12 +17,22 @@ int mnt_vectorinterp_new(VectorInterp_t** self) {
     return 0;
 }
 
+/**
+ * Delete the locator if owned, a locator set with mnt_vectorinterp_setLocator
+ * belongs to the caller
+ */
+static void mnt_vectorinterp__releaseLocator(VectorInterp_t** self) {
+    if ((*self)->ownsLocator && (*self)->locator) {
+        (*self)->locator->Delete();
+    }
+    (*self)->locator = NULL;
+    (*self)->ownsLocator = false;
+}
+
 LIBRARY_API
 int mnt_vectorinterp_del(VectorInterp_t** self) {
 
-    if ((*self)->ownsLocator) {
-        (*self)->locator->Delete();
-    }
+    mnt_vectorinterp__releaseLocator(self);
 
     delete *self;
 
@@ -37,7 +47,9 @@ int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid) {
 
 LIBRARY_API
 int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator) {
+    mnt_vectorinterp__releaseLocator(self);
     (*self)->locator = locator;
+    (*self)->ownsLocator = false;
     return 0;
 }
 
@@ -51,6 +63,8 @@ int mnt_vectorinterp_buildLocator(VectorInterp_t** self, int numCellsPerBucket, 
         return -1;
     }
 
+    // replace any previous locator
+    mnt_vectorinterp__releaseLocator(self);
     (*self)->ownsLocator = true;
 
     // useXYZLocator defaults to 0, giving EXACTLY the original behaviour

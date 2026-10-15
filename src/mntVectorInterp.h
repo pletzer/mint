@@ -60,6 +60,7 @@ int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid);
  * @param self instance of VectorInterp_t
  * @param locator locator (borrowed reference)
  * @return error code (0 = OK)
+ * @note replaces the previous locator, which is deleted if it was built by mnt_vectorinterp_buildLocator
  */
 LIBRARY_API
 int mnt_vectorinterp_setLocator(VectorInterp_t** self, vmtCellLocator* locator);
