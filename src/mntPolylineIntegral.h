@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include <vtkUnstructuredGrid.h>
-#include <vmtLonLatCellLocator.h>
+#include <vmtCellLocator.h>
 #include <mntGrid.h>
 
 #ifndef MNT_POLY_LINE_INTEGRAL
@@ -22,8 +22,9 @@ struct PolylineIntegral_t {
     /* grid */
     Grid_t* gridObj;
 
-    /* cell locator */
-    vmtLonLatCellLocator* loc;
+    /* cell locator, a vmtLonLatCellLocator by default, or a vmtXYZCellLocator when built
+     * with useXYZLocator=1 */
+    vmtCellLocator* loc;
 
     /* VTK grid (borrowed pointer) */
     vtkUnstructuredGrid* vgrid;
@@ -60,9 +61,14 @@ int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
  * @param self instance of the polyline integral object
  * @param numCellsPerBucket number of cells per bucket (small number allows a faster search,
  *                          large numbers are sometimes required, we recommend ~100)
- * @param periodX periodicity length (0. if not periodic)
+ * @param periodX periodicity length (0. if not periodic); ignored if useXYZLocator != 0
  * @param enableFolding whether (1) or not (0) to enable folding across the poles
- *                      (allow |latitude| > 90)
+ *                      (allow |latitude| > 90); ignored if useXYZLocator != 0
+ * @param useXYZLocator 0 builds a vmtLonLatCellLocator, for a (lon, lat[, elev=0]) grid,
+ *                      periodic or not. Set to 1 for a 3D-embedded (x, y, z) grid with no
+ *                      periodic seam: builds a vmtXYZCellLocator instead, which traces each
+ *                      polyline segment as a straight 3D chord through the grid cells (see
+ *                      vmtXYZCellLocator.h's findIntersectionsWithLine)
  * @return error code (0 is OK)
  * @note call this after mnt_polylineintegral_setGrid
  */
@@ -70,7 +76,8 @@ LIBRARY_API
 int mnt_polylineintegral_buildLocator(PolylineIntegral_t** self,
                                       int numCellsPerBucket,
                                       double periodX,
-                                      int enableFolding);
+                                      int enableFolding,
+                                      int useXYZLocator);
 
 /** 
  * Compute the interpolation weights

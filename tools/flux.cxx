@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
             std::cerr << "ERROR: after calling mnt_polylineintegral_setGrid ier = " << ier << '\n';
         }
 
-        ier = mnt_polylineintegral_buildLocator(&fluxCalc, numCellsPerBucket, periodX, enableFolding);
+        ier = mnt_polylineintegral_buildLocator(&fluxCalc, numCellsPerBucket, periodX, enableFolding, 0);
         if (ier != 0) {
             std::cerr << "ERROR: after calling mnt_polylineintegral_buildLocator ier = " << ier << '\n';
         }
