@@ -464,6 +464,61 @@ def test_fv3_to_latlon_weights():
     assert error < 1.e-3, f'mean edge-integral error too large: {error:.6e}'
 
 
+def _unique_edge_integrals(grid, potential):
+    """
+    Line integrals of grad(potential) along the unique edges of grid, oriented as
+    the edges are seen from the first cell that has them.
+    """
+    pts = grid.getPoints()
+    data = numpy.zeros(grid.getNumberOfEdges(), numpy.float64)
+    for icell in range(grid.getNumberOfCells()):
+        for ie in range(NUM_EDGES_PER_QUAD):
+            ie1 = (ie + 1) % NUM_EDGES_PER_QUAD
+            phi0 = potential(pts[icell, ie, 0], pts[icell, ie, 1])
+            phi1 = potential(pts[icell, ie1, 0], pts[icell, ie1, 1])
+            # cell-by-cell edges go left to right and bottom to top
+            sign = -2*(ie // 2) + 1
+            edgeId, edgeSign = grid.getEdgeId(icell, ie)
+            data[edgeId] = edgeSign * sign * (phi1 - phi0)
+    return data
+
+
+def test_regional_dst_unique_edges():
+    """
+    Regrid unique-edge data onto a regional destination grid (tiny1x2: two 1x1 deg
+    cells) lying inside a single source cell row. Each destination edge gets several
+    weights from the same face; boundary edges, which belong to one face only, used to
+    be divided by 2 as if they were shared by two faces.
+    """
+    def potential(lon, lat):
+        # linear, its edge integrals are reproduced exactly
+        return lon + 2.*lat
+
+    src_grid = Grid()
+    src_grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True)
+    src_grid.loadFromUgrid2DFile(f'{DATA_DIR}/latlon100x50.nc$latlon')
+
+    dst_grid = Grid()
+    dst_grid.setFlags(fixLonAcrossDateline=0, averageLonAtPole=0, degrees=True)
+    dst_grid.loadFromUgrid2DFile(f'{DATA_DIR}/tiny1x2.nc$physics')
+
+    rg = RegridEdges()
+    rg.setSrcGrid(src_grid)
+    rg.setDstGrid(dst_grid)
+    rg.buildLocator(numCellsPerBucket=128, periodX=360., enableFolding=False)
+    rg.computeWeights()
+
+    src_data = _unique_edge_integrals(src_grid, potential)
+    exact = _unique_edge_integrals(dst_grid, potential)
+
+    dst_data = numpy.empty(dst_grid.getNumberOfEdges(), numpy.float64)
+    rg.apply(src_data, dst_data, placement=UNIQUE_EDGE_DATA)
+
+    print(f'dst_data = {dst_data}')
+    print(f'exact    = {exact}')
+    assert numpy.abs(dst_data - exact).max() < 1.e-10
+
+
 if __name__ == '__main__':
 
     test_compute_weights()
