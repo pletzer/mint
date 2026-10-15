@@ -61,7 +61,12 @@ class ExtensiveFieldAdaptor(object):
         :param placement: mint.CELL_BY_CELL_DATA if vx and vy are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
                           vx and vy are assumed to be on unique edges otherwise (size num edges)
         :param fs: function space, either FUNC_SPACE_W1 or FUNC_SPACE_W2
-        :note: A radius of 1 is assumed for the planet.
+        :note: A radius of 1 is assumed for the planet. Cell by cell data are line
+               integrals (W1) and fluxes (W2) with the longitude/latitude increments
+               in radians, the W2 flux being u*dy - v*dx along each cell edge. Unique
+               edge data use increments in degrees and W2 fluxes pointing in the
+               positive logical direction of the cell. On a Cartesian grid
+               (degrees=False) the increments are plain coordinate differences.
         """
 
         # check the function space
@@ -105,7 +110,9 @@ class ExtensiveFieldAdaptor(object):
         :param v: meridional (y) component (output)
         :param placement: mint.CELL_BY_CELL_DATA if the data are cell by cell (size num cells * mint.NUM_EDGES_PER_QUAD),
                           otherwise assumed to be on unique edges (size num edges)
-        :note: a radius of 1 is assumed for the planet.
+        :note: a radius of 1 is assumed for the planet. edge_data and face_data must
+               follow the convention of fromVectorField for the same placement,
+               toVectorField is then the inverse of fromVectorField.
         """
 
         # check the data size

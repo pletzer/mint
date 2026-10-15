@@ -238,11 +238,10 @@ int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldA
     int numFailures = 0;
     int ier;
 
-    double coef = 0;
-    if ((*self)->grid->degrees) {
-        coef = 1.0;
-    }
-    double deg2rad = M_PI / 180.;
+    // cell by cell data are line integrals on the unit sphere, with lon/lat in radians,
+    // or plain line integrals for a Cartesian grid
+    const bool spherical = (*self)->grid->degrees;
+    const double deg2rad = spherical? M_PI / 180.: 1.0;
 
     double point0[3];
     double point1[3];
@@ -259,8 +258,8 @@ int mnt_extensivefieldadaptor__fromVectorFieldEdgeCellByCellData(ExtensiveFieldA
             double y1 = point1[LAT_INDEX] * deg2rad;
             double dy = y1 - y0;
 
-            // length on the surface of the sphere (1 if no spherical)
-            double cosTheDx = cos( coef * 0.5 * (y1 + y0) ) * dx;
+            // length on the surface of the sphere (1 if not spherical)
+            double cosTheDx = (spherical? cos( 0.5 * (y1 + y0) ): 1.0) * dx;
 
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
             data[k] = u[k]*cosTheDx + v[k]*dy;
@@ -290,6 +289,14 @@ int mnt_extensivefieldadaptor__fromVectorFieldFaceCellByCellData(ExtensiveFieldA
 
             ier = mnt_grid_getPoints(&(*self)->grid, icell, ie, point0, point1);
             numFailures += ier;
+
+            if (!(*self)->grid->degrees) {
+                // Cartesian grid, plain flux through the edge
+                double dx = point1[LON_INDEX] - point0[LON_INDEX];
+                double dy = point1[LAT_INDEX] - point0[LAT_INDEX];
+                data[k] = u[k]*dy - v[k]*dx;
+                continue;
+            }
 
             double lam0 = point0[LON_INDEX] * deg2rad;
             double lam1 = point1[LON_INDEX] * deg2rad;
@@ -434,10 +441,11 @@ int mnt_extensivefieldadaptor__toVectorFieldCellByCellData(ExtensiveFieldAdaptor
     std::string msg;
     int ier, numFailures = 0;
 
-    double deg2rad = 0;
-    if ((*self)->grid->degrees) {
-        deg2rad = M_PI/180.0;
-    }
+    // cell by cell data are line integrals and fluxes on the unit sphere, with lon/lat in
+    // radians, or plain line integrals and fluxes for a Cartesian grid (same convention as
+    // mnt_extensivefieldadaptor__fromVectorField{Edge,Face}CellByCellData)
+    const bool spherical = (*self)->grid->degrees;
+    const double deg2rad = spherical? M_PI/180.0: 1.0;
 
     double point0[3];
     double point1[3];
@@ -448,18 +456,15 @@ int mnt_extensivefieldadaptor__toVectorFieldCellByCellData(ExtensiveFieldAdaptor
             ier = mnt_grid_getPoints(&(*self)->grid, icell, iedge, point0, point1);
             if (ier != 0) numFailures++;
 
-            double x0 = point0[LON_INDEX];
-            double x1 = point1[LON_INDEX];
+            double x0 = point0[LON_INDEX] * deg2rad;
+            double x1 = point1[LON_INDEX] * deg2rad;
             double dx = x1 - x0;
-            double y0 = point0[LAT_INDEX];
-            double y1 = point1[LAT_INDEX];
+            double y0 = point0[LAT_INDEX] * deg2rad;
+            double y1 = point1[LAT_INDEX] * deg2rad;
             double dy = y1 - y0;
 
-            // TO CHECK: do we want dx, dy in rad or degrees? We will need to be consistent between the
-            // toVector and fromVector calls
-
-            // length on the surface of the sphere (1 if no spherical)
-            double cosTheDx = cos( deg2rad * 0.5 * (y1 + y0) ) * dx;
+            // length on the surface of the sphere (1 if not spherical)
+            double cosTheDx = (spherical? cos( 0.5 * (y1 + y0) ): 1.0) * dx;
 
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + iedge;
 

@@ -57,6 +57,12 @@ int mnt_extensivefieldadaptor_setGrid(ExtensiveFieldAdaptor_t** self, Grid_t* gr
  *                  arrays should be num_cells*MNT_NUM_EDGES_PER_QUAD while in the latter it should be num_edges
  * @param fs function space, either MNT_FUNC_SPACE_W1 or MNT_FUNC_SPACE_W2
  * @return error code (0 = OK)
+ * @note units: cell by cell data (MNT_CELL_BY_CELL_DATA) are line integrals (W1) and fluxes (W2) on the
+ *       unit sphere, with the longitude/latitude increments in radians, and W2 fluxes u*dy - v*dx along each
+ *       cell edge as oriented in the cell (this is what mnt_vectorinterp_getVectorsOnEdges expects). Unique
+ *       edge data (MNT_UNIQUE_EDGE_DATA) use increments in degrees and W2 fluxes pointing in the positive
+ *       logical direction of the cell. On a Cartesian grid (degrees flag not set), the increments are plain
+ *       coordinate differences for both placements.
  */
 LIBRARY_API
 int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, const double u[], const double v[],
@@ -72,6 +78,8 @@ int mnt_extensivefieldadaptor_fromVectorField(ExtensiveFieldAdaptor_t** self, co
  * @param placement either MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA. In the former case the size of the
  *                  arrays should be num_cells*MNT_NUM_EDGES_PER_QUAD while in the latter it should be num_edges
  * @return error code (0 = OK)
+ * @note edgeData and faceData must follow the convention of mnt_extensivefieldadaptor_fromVectorField for
+ *       the same placement, toVectorField is then the inverse of fromVectorField
  */
 LIBRARY_API
 int mnt_extensivefieldadaptor_toVectorField(ExtensiveFieldAdaptor_t** self,

@@ -311,9 +311,8 @@ void testLatLon2Cs() {
 
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
 
-            // NOTE: to degrees conversion
-            dst_u2edge[edgeId] = (180/M_PI) * dst_u2[k];
-            dst_v2edge[edgeId] = (180/M_PI) * dst_v2[k];
+            dst_u2edge[edgeId] = dst_u2[k];
+            dst_v2edge[edgeId] = dst_v2[k];
 
             double lamMid = dst_edgePoints[edgeId*3 + 0] * deg2rad;
             double theMid = dst_edgePoints[edgeId*3 + 1] * deg2rad;
@@ -576,9 +575,8 @@ void testCs() {
 
             std::size_t k = icell*MNT_NUM_EDGES_PER_QUAD + ie;
 
-            // NOTE: to degrees conversion
-            dst_u2edge[edgeId] = (180/M_PI) * dst_u2[k];
-            dst_v2edge[edgeId] = (180/M_PI) * dst_v2[k];
+            dst_u2edge[edgeId] = dst_u2[k];
+            dst_v2edge[edgeId] = dst_v2[k];
 
             double lamMid = dst_edgePoints[edgeId*3 + 0] * deg2rad;
             double theMid = dst_edgePoints[edgeId*3 + 1] * deg2rad;
