@@ -6,8 +6,8 @@ import numpy
 
 
 FILE = 'grid.py'
-DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
-SIZE_T_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp)
+DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64, flags="C_CONTIGUOUS")
+SIZE_T_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp, flags="C_CONTIGUOUS")
 
 
 class Grid(object):

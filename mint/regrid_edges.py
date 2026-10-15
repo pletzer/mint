@@ -6,7 +6,7 @@ import numpy
 
 
 FILE = 'regrid_edges.py'
-DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64)
+DOUBLE_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.float64, flags="C_CONTIGUOUS")
 
 
 class RegridEdges(object):

@@ -6,7 +6,7 @@ import numpy
 
 
 FILE = 'multi_array_iter.py'
-SIZE_T_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp)
+SIZE_T_ARRAY_PTR = numpy.ctypeslib.ndpointer(dtype=numpy.uintp, flags="C_CONTIGUOUS")
 
 
 class MultiArrayIter(object):
