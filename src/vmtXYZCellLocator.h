@@ -72,11 +72,29 @@ public:
     std::vector< std::pair<vtkIdType, Vec4> >
     findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd) override;
 
+    /**
+     * Parametric coordinates of p in cell cellId by central projection, the
+     * same map findIntersectionsWithLine uses (see invertBilinearPatch)
+     */
+    void getParametricCoords(vtkUnstructuredGrid* grid, vtkIdType cellId,
+                             const Vec3& p, Vec3& pcoords) override;
+
 private:
 
     vtkStaticCellLocator* locator;
     vtkGenericCell* scratchCell;
     vtkUnstructuredGrid* grid;
+
+    // centre of the central projection of points onto the cells, see setProjectionCentre
+    Vec3 projCentre;
+
+    /**
+     * Choose the projection centre: the origin if every cell faces it from
+     * the same side (e.g. a sphere), otherwise a point far off the mesh
+     * along its mean normal (e.g. a flat mesh). Each ray from the centre
+     * must meet the mesh at most once.
+     */
+    void setProjectionCentre();
 
     /**
      * Flat (non-spherical) bilinear map, corners in the usual 0->1->2->3
@@ -90,33 +108,66 @@ private:
     }
 
     /**
-     * Find the (xi, eta) at which the flat bilinear patch spanned by a
-     * cell's 4 corners passes closest to target, by Gauss-Newton iteration
-     * (finite-difference Jacobian) -- same recipe, tolerances and
-     * iteration count as vmtLonLatCellLocator::invertSphericalBilinearPatch,
-     * just for a flat (not great-circle-constrained) patch. xi, eta are
-     * BOTH the initial guess (in) and the result (out): findIntersectionsWithLine
-     * warm-starts each call from the previous one's converged (xi, eta),
-     * which matters here -- an unconditional (0.5, 0.5) restart (what
-     * vtkCell::EvaluatePosition uses internally) was tried first and found,
-     * empirically, to fail to converge reliably during bisection, silently
-     * producing wrong "outside" verdicts and hence wrong (too-short)
-     * segments.
-     * @return true if the iteration converged
+     * Find the (xi, eta) at which the ray from the projection centre through
+     * target meets the flat bilinear patch spanned by a cell's 4 corners
+     * (central projection), by Newton iteration on (xi, eta, lambda) with
+     * bilinearMap(xi, eta) = lambda*target, target and verts relative to the
+     * projection centre. Two cells sharing an edge then map a point whose
+     * ray crosses that edge to the same point of the edge, so the cells tile
+     * the surface with no gaps or overlaps, and line integrals telescope
+     * across cell boundaries. A point on the patch itself (e.g. on a flat
+     * mesh) maps to itself. Falls back to closestPointOnBilinearPatch if the
+     * ray is (nearly) parallel to the patch. xi, eta are both the initial
+     * guess (in) and the result (out).
+     * @return false if the iteration did not converge or the patch is behind
+     *         the centre (lambda <= 0, e.g. the antipodal cell of a sphere),
+     *         true otherwise (including the fallback)
      */
     bool invertBilinearPatch(const Vec3& target, const Vec3 verts[4],
                               double& xi, double& eta) const;
 
     /**
-     * Is point p inside cell cellId, to within parametric tolerance tol on
-     * its (xi, eta) coordinates? xi, eta are the warm-start guess (in) and
-     * the converged solution (out) -- see invertBilinearPatch.
-     * @note deliberately NOT going through FindCell/the bucket search --
-     *       this checks one SPECIFIC, already-known cell directly, which
-     *       is what the bisection in findIntersectionsWithLine needs
+     * Find the (xi, eta) at which the flat bilinear patch passes closest to
+     * target, by Gauss-Newton iteration (finite-difference Jacobian). Not
+     * consistent between neighbouring cells for points off the patches;
+     * only used as a fallback by invertBilinearPatch.
+     * @return true if the iteration converged
      */
-    bool pointIsInCell(vtkIdType cellId, const double p[3], double tol,
-                        double& xi, double& eta) const;
+    bool closestPointOnBilinearPatch(const Vec3& target, const Vec3 verts[4],
+                                     double& xi, double& eta) const;
+
+    /**
+     * Get the 4 corners of a cell, relative to the projection centre
+     */
+    void getCellVerts(vtkIdType cellId, Vec3 verts[4]) const;
+
+    /**
+     * Unit normals of the 4 planes through the projection centre and the edges of a
+     * cell, oriented towards the cell's interior (zero for a degenerate edge)
+     */
+    void getEdgePlanes(vtkIdType cellId, Vec3 normals[4]) const;
+
+    /**
+     * Is p inside the cone of a cell (on the inner side of its 4 edge
+     * planes, to within relative tolerance eps)?
+     */
+    bool coneContains(const Vec3 normals[4], const Vec3& p, double eps) const;
+
+    /**
+     * Line parameter >= t0 at which pBeg + t*direction leaves a cell's
+     * cone, capped at 1
+     */
+    double coneExit(const Vec3 normals[4], const Vec3& pBeg, const Vec3& direction,
+                    double t0) const;
+
+    /**
+     * Find the cell that the line pBeg + t*direction is in just after t = t0,
+     * with pBeg relative to the projection centre
+     * @param tExit line parameter at which the line leaves that cell (output)
+     * @return cell Id, -1 if there is none
+     */
+    vtkIdType findCellAlongLine(const Vec3& pBeg, const Vec3& direction, double t0,
+                                double& tExit);
 
 };
 

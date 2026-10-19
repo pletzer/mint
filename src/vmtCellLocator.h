@@ -137,6 +137,26 @@ public:
      */
     virtual void foldLine(Vec3& p0, Vec3& p1, int fold) const {}
 
+    /**
+     * Parametric coordinates of a point in a given cell, computed the same
+     * way findIntersectionsWithLine decides where a line enters and leaves
+     * that cell. PolysegmentIter must use these, so that the exit point of a
+     * line from one cell and its entry point into the next are the same
+     * point on their shared edge.
+     * @param cellId cell Id
+     * @param p point
+     * @param pcoords parametric coordinates (output)
+     * @note the default is vtkCell::EvaluatePosition, exact for the flat
+     *       (lon, lat) cells of vmtLonLatCellLocator
+     */
+    virtual void getParametricCoords(vtkUnstructuredGrid* grid, vtkIdType cellId,
+                                     const Vec3& p, Vec3& pcoords) {
+        double closestPoint[3], dist2, weights[8];
+        int subId;
+        grid->GetCell(cellId)->EvaluatePosition(&p[0], closestPoint, subId,
+                                                &pcoords[0], dist2, weights);
+    }
+
 };
 
 #endif // VMT_CELL_LOCATOR

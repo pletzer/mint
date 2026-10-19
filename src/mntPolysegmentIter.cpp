@@ -61,11 +61,7 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
     this->segXibs.resize(0);
     this->segCoeffs.resize(0);
 
-    double closestPoint[3];
-    int subId;
     Vec3 xia, xib;
-    double dist2;
-    double weights[8];
     for (const auto& cIdLamPF : cellIdLambdasPeriodFold) {
 
         vtkIdType cId = cIdLamPF.first;
@@ -88,10 +84,10 @@ PolysegmentIter::PolysegmentIter(vtkUnstructuredGrid* grid,
         pa[0] += periodOffset;
         pb[0] += periodOffset;
 
-        // compute the cell parametric coords
-        vtkCell* cell = this->grid->GetCell(cId);
-        cell->EvaluatePosition(&pa[0], closestPoint, subId, &xia[0], dist2, weights);
-        cell->EvaluatePosition(&pb[0], closestPoint, subId, &xib[0], dist2, weights);
+        // compute the cell parametric coords, consistently with how the
+        // locator found the entry/exit points
+        this->locator->getParametricCoords(this->grid, cId, pa, xia);
+        this->locator->getParametricCoords(this->grid, cId, pb, xib);
 
         // fill in
         this->segCellIds.push_back(cId);
