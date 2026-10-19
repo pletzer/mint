@@ -7,10 +7,20 @@
 #include <algorithm>
 
 
+static inline Vec3 crossProduct(const Vec3& a, const Vec3& b) {
+    Vec3 res;
+    res[0] = a[1]*b[2] - a[2]*b[1];
+    res[1] = a[2]*b[0] - a[0]*b[2];
+    res[2] = a[0]*b[1] - a[1]*b[0];
+    return res;
+}
+
+
 vmtXYZCellLocator::vmtXYZCellLocator() {
     this->locator = vtkStaticCellLocator::New();
     this->scratchCell = vtkGenericCell::New();
     this->grid = nullptr;
+    this->projCentre = Vec3(0.0);
 }
 
 
@@ -36,6 +46,55 @@ vmtXYZCellLocator::SetNumberOfCellsPerBucket(int avgNumFacesPerBucket) {
 void
 vmtXYZCellLocator::BuildLocator() {
     this->locator->BuildLocator();
+    this->projCentre = Vec3(0.0);
+    this->setProjectionCentre();
+}
+
+
+void
+vmtXYZCellLocator::setProjectionCentre() {
+    // The cells are projected centrally from projCentre, which must see
+    // every cell from the same side: the origin for a sphere (or any
+    // surface around it), otherwise a point far off the mesh along its
+    // mean normal (e.g. for a flat mesh through the origin)
+    vtkIdType numCells = this->grid->GetNumberOfCells();
+    if (numCells == 0) {
+        return;
+    }
+    Vec3 verts[4];
+    Vec3 meanCentroid(0.0), meanNormal(0.0);
+    double minCos = 1.0, maxCos = -1.0;
+    double bounds[6];
+    this->grid->GetBounds(bounds);
+    double diam = std::sqrt((bounds[1] - bounds[0])*(bounds[1] - bounds[0]) +
+                            (bounds[3] - bounds[2])*(bounds[3] - bounds[2]) +
+                            (bounds[5] - bounds[4])*(bounds[5] - bounds[4]));
+    for (vtkIdType cellId = 0; cellId < numCells; ++cellId) {
+        this->getCellVerts(cellId, verts);
+        Vec3 c = 0.25 * (verts[0] + verts[1] + verts[2] + verts[3]);
+        Vec3 n = crossProduct(verts[2] - verts[0], verts[3] - verts[1]);
+        double nn = std::sqrt(dot(n, n)), cc = std::sqrt(dot(c, c));
+        if (nn > 0.) {
+            meanNormal += n / nn;
+        }
+        meanCentroid += c;
+        double cosAngle = (nn > 0. && cc > 0.) ? dot(n, c) / (nn * cc) : 0.0;
+        minCos = std::min(minCos, cosAngle);
+        maxCos = std::max(maxCos, cosAngle);
+    }
+    // every cell faces the origin, from the same side
+    if (minCos > 0.1 || maxCos < -0.1) {
+        return;
+    }
+    meanCentroid = meanCentroid / double(numCells);
+    double mn = std::sqrt(dot(meanNormal, meanNormal));
+    if (mn < 1.e-10 * numCells) {
+        mntlog::warn(__FILE__, __func__, __LINE__,
+                     "the cells do not all face the origin and have no mean normal: "
+                     "line tracing may be inaccurate");
+        return;
+    }
+    this->projCentre = meanCentroid - (100. * diam / mn) * meanNormal;
 }
 
 
@@ -84,6 +143,56 @@ bool
 vmtXYZCellLocator::invertBilinearPatch(const Vec3& target, const Vec3 verts[4],
                                         double& xi, double& eta) const {
     const int maxIter = 30;
+    const double newtonTol2 = 1.e-28; // (1.e-14)^2
+
+    double xi0 = xi, eta0 = eta;
+    Vec3 b = this->bilinearMap(xi, eta, verts);
+    double tt = dot(target, target);
+    if (tt <= 0.) {
+        this->closestPointOnBilinearPatch(target, verts, xi, eta);
+        return true;
+    }
+    double lambda = dot(b, target) / tt;
+
+    for (int iter = 0; iter < maxIter; ++iter) {
+
+        // residual and Jacobian columns of F(xi, eta, lambda) = B(xi, eta) - lambda*target
+        Vec3 res = this->bilinearMap(xi, eta, verts) - lambda * target;
+        Vec3 bXsi = (1. - eta) * (verts[1] - verts[0]) + eta * (verts[2] - verts[3]);
+        Vec3 bEta = (1. - xi) * (verts[3] - verts[0]) + xi * (verts[2] - verts[1]);
+        Vec3 c = -1.0 * target;
+
+        // solve [bXsi bEta c] (dXsi, dEta, dLambda) = -res by Cramer's rule
+        Vec3 bEtaXc = crossProduct(bEta, c);
+        double det = dot(bXsi, bEtaXc);
+        if (std::abs(det) < 1.e-14 * std::sqrt(dot(bXsi, bXsi) * dot(bEta, bEta) * tt)) {
+            // ray (nearly) parallel to the patch
+            xi = xi0;
+            eta = eta0;
+            this->closestPointOnBilinearPatch(target, verts, xi, eta);
+            return true;
+        }
+        Vec3 rhs = -1.0 * res;
+        double dXsi = dot(rhs, bEtaXc) / det;
+        double dEta = dot(bXsi, crossProduct(rhs, c)) / det;
+        double dLambda = dot(bXsi, crossProduct(bEta, rhs)) / det;
+
+        xi += dXsi;
+        eta += dEta;
+        lambda += dLambda;
+
+        if (dXsi * dXsi + dEta * dEta < newtonTol2) {
+            return lambda > 0.;
+        }
+    }
+    return false;
+}
+
+
+bool
+vmtXYZCellLocator::closestPointOnBilinearPatch(const Vec3& target, const Vec3 verts[4],
+                                                double& xi, double& eta) const {
+    const int maxIter = 30;
     const double newtonTol2 = 1.e-24; // (1.e-12)^2
     const double h = 1.e-6;
 
@@ -116,33 +225,121 @@ vmtXYZCellLocator::invertBilinearPatch(const Vec3& target, const Vec3 verts[4],
 }
 
 
-bool
-vmtXYZCellLocator::pointIsInCell(vtkIdType cellId, const double p[3], double tol,
-                                  double& xi, double& eta) const {
-    Vec3 verts[4];
+void
+vmtXYZCellLocator::getCellVerts(vtkIdType cellId, Vec3 verts[4]) const {
     vtkCell* c = this->grid->GetCell(cellId);
     vtkPoints* pts = c->GetPoints();
     for (int i = 0; i < 4; ++i) {
-        verts[i] = Vec3(pts->GetPoint(i));
+        verts[i] = Vec3(pts->GetPoint(i)) - this->projCentre;
     }
-    Vec3 target(p);
-    // NOTE: deliberately NOT requiring invertBilinearPatch's own strict
-    // convergence flag (its Newton iteration stops as soon as the step size
-    // is below 1e-12, which is appropriate for a single, near-surface
-    // point-location query -- vmtLonLatCellLocator's
-    // containsPointCubedSphere, the pattern this was based on, only ever
-    // uses it that way). Here, bisection tests points that can start well
-    // away from where the warm start is actually valid, and the iteration
-    // can legitimately need a few more than maxIter steps, or settle to a
-    // slightly looser tolerance, while still landing on the geometrically
-    // correct answer -- requiring strict convergence as a PRECONDITION for
-    // "inside" was tried first and found, empirically, to produce spurious
-    // "outside" verdicts for points that were actually still inside,
-    // stalling the walk in scripts/xyz_regrid_prototype.py-sized steps
-    // (its own locateInCell never checks convergence either, only the
-    // final (xi, eta) bounds -- this now matches that exactly).
-    this->invertBilinearPatch(target, verts, xi, eta);
-    return xi >= -tol && xi <= 1. + tol && eta >= -tol && eta <= 1. + tol;
+}
+
+
+void
+vmtXYZCellLocator::getParametricCoords(vtkUnstructuredGrid* grid, vtkIdType cellId,
+                                       const Vec3& p, Vec3& pcoords) {
+    Vec3 verts[4];
+    this->getCellVerts(cellId, verts);
+    double xi = 0.5, eta = 0.5;
+    this->invertBilinearPatch(p - this->projCentre, verts, xi, eta);
+    pcoords[0] = xi;
+    pcoords[1] = eta;
+    pcoords[2] = 0.0;
+}
+
+
+void
+vmtXYZCellLocator::getEdgePlanes(vtkIdType cellId, Vec3 normals[4]) const {
+    Vec3 verts[4];
+    this->getCellVerts(cellId, verts);
+    Vec3 centroid = 0.25 * (verts[0] + verts[1] + verts[2] + verts[3]);
+    for (int k = 0; k < 4; ++k) {
+        Vec3 n = crossProduct(verts[k], verts[(k + 1) % 4]);
+        double nn = std::sqrt(dot(n, n));
+        if (nn > 0.) {
+            n = (dot(n, centroid) >= 0. ? 1.0 : -1.0) / nn * n;
+        }
+        // a degenerate edge (coincident corners) gives n = 0: no constraint
+        normals[k] = n;
+    }
+}
+
+
+bool
+vmtXYZCellLocator::coneContains(const Vec3 normals[4], const Vec3& p, double eps) const {
+    double tol = eps * std::sqrt(dot(p, p));
+    for (int k = 0; k < 4; ++k) {
+        if (dot(normals[k], p) < -tol) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+double
+vmtXYZCellLocator::coneExit(const Vec3 normals[4], const Vec3& pBeg, const Vec3& direction,
+                            double t0) const {
+    // p(t) = pBeg + t*direction is inside plane k while dot(n_k, p(t)) >= 0,
+    // which is linear in t: leaves it at t = -dot(n_k, pBeg)/dot(n_k, direction)
+    // if dot(n_k, direction) < 0. A line lying in the plane never leaves it.
+    const double tiny = 1.e-14 * std::sqrt(dot(direction, direction));
+    double tExit = 1.0;
+    for (int k = 0; k < 4; ++k) {
+        double nd = dot(normals[k], direction);
+        if (nd < -tiny) {
+            double tk = -dot(normals[k], pBeg) / nd;
+            tExit = std::min(tExit, std::max(tk, t0));
+        }
+    }
+    return tExit;
+}
+
+
+vtkIdType
+vmtXYZCellLocator::findCellAlongLine(const Vec3& pBeg, const Vec3& direction, double t0,
+                                     double& tExit) {
+    const double eps = 1.e-12;
+    Vec3 p = pBeg + t0 * direction;
+    // the cells' bounding boxes hug the surface, while a chord sags below
+    // it: search around the radial projection of p onto the sphere through
+    // the chord's end points instead
+    double r = 0.5 * (std::sqrt(dot(pBeg, pBeg)) + std::sqrt(dot(pBeg + direction, pBeg + direction)));
+    double pn = std::sqrt(dot(p, p));
+    Vec3 q = (pn > 0. ? r / pn : 1.0) * p;
+
+    vtkIdList* candidates = vtkIdList::New();
+    vtkIdType bestCellId = -1;
+    double bestExit = t0;
+    double halfWidth = 1.e-3 * std::max(r, 1.e-300);
+    q += this->projCentre;   // absolute coordinates, for the bucket search
+    for (int grow = 0; grow < 12 && bestCellId < 0; ++grow) {
+        double bbox[6] = {q[0] - halfWidth, q[0] + halfWidth,
+                          q[1] - halfWidth, q[1] + halfWidth,
+                          q[2] - halfWidth, q[2] + halfWidth};
+        candidates->Reset();
+        this->locator->FindCellsWithinBounds(bbox, candidates);
+        // of the cells containing p, take the one the line stays in the
+        // longest: at a vertex or edge several cells contain p, but only
+        // the ones the line actually enters have tExit > t0
+        Vec3 normals[4];
+        for (vtkIdType i = 0; i < candidates->GetNumberOfIds(); ++i) {
+            vtkIdType cId = candidates->GetId(i);
+            this->getEdgePlanes(cId, normals);
+            if (!this->coneContains(normals, p, eps)) {
+                continue;
+            }
+            double te = this->coneExit(normals, pBeg, direction, t0);
+            if (te > bestExit) {
+                bestExit = te;
+                bestCellId = cId;
+            }
+        }
+        halfWidth *= 4.;
+    }
+    candidates->Delete();
+    tExit = bestExit;
+    return bestCellId;
 }
 
 
@@ -157,221 +354,46 @@ vmtXYZCellLocator::findIntersectionsWithLine(const Vec3& pBeg, const Vec3& pEnd)
         // zero-length segment
         return result;
     }
+    // relative to the projection centre
+    Vec3 pBegC = pBeg - this->projCentre;
 
-    // NOTE: this is deliberately NOT a ray-cast (VTK's IntersectWithLine).
-    // A straight 3D chord between two points on a curved surface dips
-    // strictly BELOW that surface everywhere except at its own endpoints
-    // (verified numerically: ~0.0038 units below a unit sphere at the
-    // midpoint of a 10-degree-long chord) -- so a literal ray-vs-surface
-    // intersection test would find zero intermediate cells for any chord
-    // spanning more than one cell width, exactly the "coarser destination
-    // edge crossing several finer source cells" case regridding actually
-    // needs. Instead: walk along the chord, find the cell containing the
-    // current point (via the already-correct, bucket-indexed FindCell),
-    // then bisect forward to find where the chord exits that cell's own
-    // parametric [0,1]^2 domain, and repeat from there. Prototyped and
-    // validated in scripts/xyz_regrid_prototype.py: exact (to numerical
-    // noise, ~1e-7) on a flat surface, and converging at roughly
-    // O(h^2.5-3.5) on a curved one as resolution increases -- degrading
-    // only at deliberately unrealistic resolutions (e.g. a destination
-    // cell spanning most of a cubed-sphere panel), which is expected and
-    // accepted, not a bug this method needs to work around.
-    const double tol = 1.e-6;   // parametric-coordinate ("still inside") tolerance
-    // FindCell's own tolerance -- deliberately generous (NOT the tight 1e-6
-    // an ordinary point-location query would use). A coarse destination
-    // edge's chord can sag well away from the true source surface (e.g.
-    // ~0.076 units, for a unit sphere, at the midpoint of a ~45-degree
-    // chord -- consistent with the ~0.0038 sag measured for a 10-degree
-    // one, since sag grows roughly with the square of the chord's angular
-    // length): FindCell would otherwise reject the closest cell outright
-    // as "too far" purely because of that sag, not because the point is
-    // actually off the grid. The real containment decision here is
-    // pointIsInCell's parametric (xi, eta) test below, not physical
-    // distance, so this only needs to be generous enough that FindCell's
-    // own distance-based rejection never fires first.
-    const double tol2 = 1.0;
-    const int maxBisections = 60;
-    // nudge past a cell boundary once found -- must be well outside the
-    // fuzzy "still inside" tolerance zone (tol above) or FindCell can keep
-    // re-finding the just-exited cell (bisection alone narrows to near
-    // machine precision, so a machine-epsilon-scale nudge does NOT escape
-    // that zone -- this was tried first and found empirically to produce
-    // nothing but filtered-out zero-length segments). 1000x tol is small
-    // relative to any reasonably-sized cell, comfortably larger than tol.
-    const double nudge = 1000. * tol;
+    // Each cell is treated as the cone of rays from the projection centre
+    // (see setProjectionCentre) through its
+    // bilinear patch (central projection, see invertBilinearPatch). Its
+    // boundary is the 4 planes through the centre and the cell's straight
+    // edges, so a point is in the cell iff it is on the inner side of all 4
+    // planes, and the line pBeg->pEnd leaves the cell where it crosses one
+    // of them -- a linear equation, solved exactly. The neighbour across
+    // that edge shares the plane, so the line's exit point from one cell is
+    // exactly its entry point into the next, and line integrals telescope.
+    // This also works for a chord between two points of a sphere, which
+    // dips below the cells' patches (a ray-vs-patch test would miss it).
 
-    // safety cap: a well-formed mesh should need at most a handful of
-    // segments per chord; this guards against an infinite loop on
-    // pathological/degenerate geometry rather than assuming it can't happen
+    // safety cap against an infinite loop on degenerate geometry
     const int maxSegments = 100000;
-
-    // tStart is where the next segment starts (the previous segment's exit point), t is
-    // where its cell is looked up -- slightly past tStart (see nudge), so the cell just
-    // exited is not found again. The segment itself starts at tStart, not t, otherwise
-    // [tStart, t] would not be assigned to any cell
-    double tStart = 0.0;
-    double t = 0.0;
     int numSegments = 0;
-    // persists across iterations -- the last segment's converged (xi, eta),
-    // reused as the Gauss-Newton initial guess for the NEXT segment's own
-    // cell (matches scripts/xyz_regrid_prototype.py's findIntersectionsWithLineXYZ,
-    // which carries xiGuess/etaGuess forward the same way). This matters
-    // most for the FindClosestPoint fallback below, which (unlike FindCell)
-    // has no parametric coordinates of its own to offer as a guess -- an
-    // arbitrary restart at (0.5, 0.5) was tried first and found, empirically,
-    // to make invertBilinearPatch diverge for points near a cell's edge or
-    // corner (exactly where this fallback tends to fire), truncating the
-    // walk well short of t=1.
-    double xiPrev = 0.5, etaPrev = 0.5;
-    while (tStart < 1.0 - eps) {
-
+    double t0 = 0.0;
+    while (t0 < 1.0 - eps) {
         if (++numSegments > maxSegments) {
             std::stringstream msg;
             msg << "exceeded " << maxSegments << " segments tracing a line -- "
-                   "likely degenerate geometry or a bisection tolerance issue";
+                   "likely degenerate geometry";
             mntlog::error(__FILE__, __func__, __LINE__, msg.str());
             break;
         }
-
-        Vec3 p = pBeg + direction * t;
-        double pcoords[3], weights[8];
-        vtkIdType cellId = this->FindCell(&p[0], tol2, this->scratchCell, pcoords, weights);
-        double xi0 = pcoords[0], eta0 = pcoords[1];
-        bool foundInside = false;
-        if (cellId >= 0) {
-            double xiCheck = xi0, etaCheck = eta0;
-            if (this->pointIsInCell(cellId, &p[0], tol, xiCheck, etaCheck)) {
-                xi0 = xiCheck;
-                eta0 = etaCheck;
-                foundInside = true;
-            }
-        }
-        if (!foundInside) {
-            // Either FindCell's own containment/tol2 test failed outright,
-            // or it returned some OTHER, nearby-but-wrong cell (its
-            // bucket search can hand back a plausible-looking candidate
-            // that our own, more precise (xi, eta) test then rejects --
-            // e.g. right after a cell-boundary crossing, where the exact
-            // nearest cell isn't necessarily the one whose bucket the
-            // query point happens to fall in). Either way this is
-            // expected (not "chord left the grid") for a coarse
-            // destination edge: the straight chord can sag well below the
-            // *source* cells' own tightly-fitting bounding boxes near the
-            // surface (each flat quad's bounding box is only as thick as
-            // that single cell's own sag, much less than the destination
-            // chord's), so the right bucket can easily end up empty, or
-            // hand back a neighbour instead.
-            //
-            // A single "nearest cell" (FindClosestPoint) is not always the
-            // RIGHT cell either: right at a boundary crossing, the true owning
-            // cell and the just-exited one can be nearly equidistant from
-            // p in plain 3D distance (e.g. both bow slightly away from p
-            // near a shared corner), so FindClosestPoint can keep handing
-            // back the cell we just left. Gather every candidate in a
-            // small box around p instead (growing the box until it is
-            // non-empty) and test each one with our own (xi, eta) check --
-            // this is the bucket-indexed analogue of
-            // scripts/xyz_regrid_prototype.py's findContainingCell, which
-            // scans every cell rather than trusting a single "closest" one.
-            vtkIdList* candidates = vtkIdList::New();
-            double boxHalfWidth = 1.e-2;
-            const double maxBoxHalfWidth = 2.0; // generous vs. any unit-sphere-scale mesh
-            for (int grow = 0; grow < 12 && candidates->GetNumberOfIds() == 0; ++grow) {
-                double bbox[6] = {p[0] - boxHalfWidth, p[0] + boxHalfWidth,
-                                   p[1] - boxHalfWidth, p[1] + boxHalfWidth,
-                                   p[2] - boxHalfWidth, p[2] + boxHalfWidth};
-                this->locator->FindCellsWithinBounds(bbox, candidates);
-                boxHalfWidth = std::min(boxHalfWidth * 4., maxBoxHalfWidth);
-            }
-            for (vtkIdType i = 0; i < candidates->GetNumberOfIds() && !foundInside; ++i) {
-                vtkIdType candCellId = candidates->GetId(i);
-                // try the persisted warm start first, and a neutral
-                // center-of-cell restart second -- a point landing very
-                // close to a shared CORNER (as opposed to just an edge) of
-                // the source mesh can leave invertBilinearPatch's
-                // Gauss-Newton in an ill-conditioned spot when warm-started
-                // from a value that itself sits right at a cell boundary
-                // (e.g. xi or eta == 1 exactly); a plain (0.5, 0.5) restart
-                // has no such degeneracy and empirically recovers those
-                // cases.
-                double xiCheck = xiPrev, etaCheck = etaPrev;
-                bool inside2 = this->pointIsInCell(candCellId, &p[0], tol, xiCheck, etaCheck);
-                if (!inside2) {
-                    xiCheck = 0.5;
-                    etaCheck = 0.5;
-                    inside2 = this->pointIsInCell(candCellId, &p[0], tol, xiCheck, etaCheck);
-                }
-                if (inside2) {
-                    cellId = candCellId;
-                    xi0 = xiCheck;
-                    eta0 = etaCheck;
-                    foundInside = true;
-                }
-            }
-            candidates->Delete();
-        }
-        if (!foundInside) {
-            // neither FindCell nor the nearest-cell fallback found a cell
-            // that actually claims this point in its own parametric
-            // bounds -- the chord has genuinely left the grid
+        double tExit;
+        vtkIdType cellId = this->findCellAlongLine(pBegC, direction, t0, tExit);
+        if (cellId < 0) {
+            // the line has left the grid
             break;
         }
-        xiPrev = xi0;
-        etaPrev = eta0;
-
-        // FIXED warm start for this whole segment (NOT updated per bisection
-        // test) -- the converged answer at t. Matches
-        // scripts/xyz_regrid_prototype.py's stillInside exactly: that
-        // closure captures (xi, eta) once, from the initial containing-cell
-        // search, and reuses the SAME values for every bisection test.
-        // Updating the warm start to the latest "confirmed inside" solution
-        // during bisection was tried first (a seemingly reasonable idea --
-        // warm-start from the closest known point) and found, empirically,
-        // to make convergence WORSE near a cell boundary: bisection's mid
-        // values don't move monotonically towards the true boundary, so an
-        // evolving warm start can end up seeded from a point that is
-        // (in xi, eta space) no closer to the current test point than a
-        // fixed one, while accumulating whatever numerical drift the
-        // updates introduce -- observed as the walk crawling forward in
-        // steps barely larger than `nudge`, never reaching the cell's true
-        // exit.
-
-        Vec3 pEndOfChord = pBeg + direction * 1.0;
-        double tb;
-        double xiTry = xi0, etaTry = eta0;
-        if (this->pointIsInCell(cellId, &pEndOfChord[0], tol, xiTry, etaTry)) {
-            // the rest of the chord, all the way to t=1, stays in this cell
-            tb = 1.0;
-        }
-        else {
-            // bisect between t (known inside) and 1 (known outside) to
-            // find where the chord exits this cell
-            double lo = t, hi = 1.0;
-            for (int iter = 0; iter < maxBisections; ++iter) {
-                double mid = 0.5 * (lo + hi);
-                Vec3 pMid = pBeg + direction * mid;
-                xiTry = xi0;
-                etaTry = eta0;
-                if (this->pointIsInCell(cellId, &pMid[0], tol, xiTry, etaTry)) {
-                    lo = mid;
-                }
-                else {
-                    hi = mid;
-                }
-            }
-            tb = lo;
-        }
         Vec4 lambdaInOutPeriodFold;
-        lambdaInOutPeriodFold[0] = tStart;
-        lambdaInOutPeriodFold[1] = tb;
+        lambdaInOutPeriodFold[0] = t0;
+        lambdaInOutPeriodFold[1] = tExit;
         lambdaInOutPeriodFold[2] = 0.0; // no periodicity for a plain embedded (x,y,z) mesh
         lambdaInOutPeriodFold[3] = 0.0; // no pole-folding either
         result.push_back(std::pair<vtkIdType, Vec4>(cellId, lambdaInOutPeriodFold));
-
-        // nudge past the boundary before locating the next cell, without going past the
-        // end of the line
-        tStart = tb;
-        t = std::min(tb + nudge, 0.5*(tb + 1.0));
+        t0 = tExit;
     }
 
     return result;
