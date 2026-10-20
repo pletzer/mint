@@ -33,7 +33,6 @@ set(LIB_FILES
   mntMultiArrayIter.cpp
   mntRegridAxis.cpp
   mntPolylineIntegral.cpp
-  mntWeights.cpp
   mntWhitneyElement.cpp
   mntVectorInterp.cpp
   mntExtensiveFieldAdaptor.cpp
@@ -85,7 +84,6 @@ set(HEADER_FILES
   mntMatMxN.h
   MvFunctors.h MvMatrix.h MvVector.h
   mntVecN.h
-  mntWeights.h
   mntWhitneyElement.h
   mntVectorInterp.h
   mntExtensiveFieldAdaptor.h
