@@ -30,6 +30,10 @@ Arms (cell-local contravariant velocity):
      circulations as A, no extra data, raised with the exact metric. Evaluated
      in the panel chart, where the equiangular grid is uniform, so the block's
      piecewise cell coordinates (biquadratic=False) are its exact geometry
+  S  as R, raised with the biquadratic-block metric: the covariant basis is
+     the derivative of the biquadratic map through the 9 nodes (xyz) of the
+     cell's 2x2 block, at the block coordinates X = (p + xi)/2,
+     Y = (q + eta)/2 -- the order 2 analogue of B's bilinear-corner metric
   E  exact velocity projected onto the exact dual basis (control: time and
      hand-over errors only)
 
@@ -45,7 +49,7 @@ sys.path.insert(0, str(Path(__file__).absolute().parent))
 from nodal_star import CubedSphere, nodalVectors, greatCircleIntegral, facePoint  # noqa: E402
 from cs_chart import _FRAMES, basis as chartBasis  # noqa: E402
 
-ARMS = ('A', 'B', 'C', 'D', 'W', 'R', 'E')
+ARMS = ('A', 'B', 'C', 'D', 'W', 'R', 'S', 'E')
 SNAP = 1e-9
 
 
@@ -104,7 +108,7 @@ class Tracer:
         self.Sy = numpy.array(Sy) if Sy else None
         self.Fx, self.Fy = numpy.array(Fx), numpy.array(Fy)
         self.V = numpy.array(V) if V else None
-        if 'R' in arms:
+        if 'R' in arms or 'S' in arms:
             self._buildMintElement(2)
         self.nSlide = 0
         self.nPanelCross = 0
@@ -172,6 +176,33 @@ class Tracer:
         ab = [self.mintElement.getCovariantComponents(cellIds, xi, eta, d) for d in self.mintData]
         return numpy.array([a for a, b in ab]), numpy.array([b for a, b in ab])
 
+    def _biquadraticBasis(self, st):
+        """
+        Covariant basis (dr/dxi, dr/deta) of the biquadratic map through the 9
+        nodes of each particle's 2x2 block. mint tiles each panel into the blocks
+        of cells (2a, 2a + 1) x (2b, 2b + 1), so cell (i, j) is at position
+        (p, q) = (i % 2, j % 2) of its block.
+        """
+        f, i, j, xi, eta = st
+        p, q = i % 2, j % 2
+        X, Y = 0.5 * (p + xi), 0.5 * (q + eta)
+
+        def lag(t):
+            return (numpy.stack([(1 - t) * (1 - 2 * t), 4 * t * (1 - t), t * (2 * t - 1)]),
+                    numpy.stack([4 * t - 3, 4 - 8 * t, 4 * t - 1]))
+        lx, dlx = lag(X)
+        ly, dly = lag(Y)
+        i0, j0 = i - p, j - q
+        dGdX = numpy.zeros((len(f), 3))
+        dGdY = numpy.zeros((len(f), 3))
+        for a in range(3):
+            for b in range(3):
+                node = self.P[f, i0 + a, j0 + b]
+                dGdX += (dlx[a] * ly[b])[:, None] * node
+                dGdY += (lx[a] * dly[b])[:, None] * node
+        # dX/dxi = dY/deta = 1/2
+        return 0.5 * dGdX, 0.5 * dGdY
+
     # ------------------------------------------------------------------
     def position(self, st):
         f, i, j, xi, eta = st
@@ -213,8 +244,8 @@ class Tracer:
             dx, dy = _dual(jx, jy)
             return numpy.sum(v * dx, -1), numpy.sum(v * dy, -1)
         c = self.fld.coeffs(t)                   # (nbasis,) + t.shape
-        if arm in 'ABWR':
-            if arm == 'R':
+        if arm in 'ABWRS':
+            if arm in 'RS':
                 avxi, aveta = self._mintCovariant(st)
                 vxi = numpy.sum(c * avxi, 0)
                 veta = numpy.sum(c * aveta, 0)
@@ -226,6 +257,8 @@ class Tracer:
                     c * ((1 - eta) * self.Sx[:, f, i, j] + eta * self.Sx[:, f, i, j + 1]), 0)
                 veta = veta + (2 * eta - 1) * numpy.sum(
                     c * ((1 - xi) * self.Sy[:, f, i, j] + xi * self.Sy[:, f, i + 1, j]), 0)
+            if arm == 'S':
+                jx, jy = self._biquadraticBasis(st)
             if arm == 'B':
                 P = self.P
                 p00, p10, p01, p11 = P[f, i, j], P[f, i + 1, j], P[f, i, j + 1], P[f, i + 1, j + 1]
