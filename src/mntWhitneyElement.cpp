@@ -52,11 +52,11 @@ static double computeEdgeWeight(const double srcXi0[], const double srcXi1[],
 
 
 void
-WhitneyElement::getCovariantComponents(double xi, double eta, const double dofs[],
+WhitneyElement::getCovariantComponents(vtkIdType cellId, double xi, double eta, const double dofs[],
                                        double* a, double* b) const {
     double as[MNT_MAX_DOFS_PER_CELL];
     double bs[MNT_MAX_DOFS_PER_CELL];
-    this->evalBasis(xi, eta, as, bs);
+    this->evalBasis(cellId, xi, eta, as, bs);
     *a = 0.0;
     *b = 0.0;
     for (int i = 0; i < this->getNumDofs(); ++i) {
@@ -85,7 +85,7 @@ WhitneyElement::getCellDofs(Grid_t* grid, vtkIdType cellId, const double data[],
 
 
 void
-WhitneyElementOrder1::evalBasis(double xi, double eta, double a[], double b[]) const {
+WhitneyElementOrder1::evalBasis(vtkIdType cellId, double xi, double eta, double a[], double b[]) const {
     // south
     a[0] = 1.0 - eta;
     b[0] = 0.0;
@@ -101,7 +101,7 @@ WhitneyElementOrder1::evalBasis(double xi, double eta, double a[], double b[]) c
 }
 
 void
-WhitneyElementOrder1::getCovariantComponents(double xi, double eta, const double dofs[],
+WhitneyElementOrder1::getCovariantComponents(vtkIdType cellId, double xi, double eta, const double dofs[],
                                              double* a, double* b) const {
     // closed form of the generic sum, skips the zero terms
     *a = dofs[0]*(1.0 - eta) + dofs[2]*eta;
@@ -109,7 +109,7 @@ WhitneyElementOrder1::getCovariantComponents(double xi, double eta, const double
 }
 
 void
-WhitneyElementOrder1::integrateBasis(const Vec3& xia, const Vec3& xib, double w[]) const {
+WhitneyElementOrder1::integrateBasis(vtkIdType cellId, const Vec3& xia, const Vec3& xib, double w[]) const {
     for (int i = 0; i < MNT_NUM_EDGES_PER_QUAD; ++i) {
         const double* xi0 = &QUAD_POSITIVEXI_EDGE_DIRECTION[6*i];
         const double* xi1 = &QUAD_POSITIVEXI_EDGE_DIRECTION[6*i + 3];

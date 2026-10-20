@@ -710,7 +710,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
                 }
 
                 // integrals of the source basis functions along this sub-segment
-                (*self)->srcElement->integrateBasis(xia, xib, basisIntegrals);
+                (*self)->srcElement->integrateBasis(srcCellId, xia, xib, basisIntegrals);
 
                 for (int srcEdgeIndex = 0; srcEdgeIndex < (*self)->srcElement->getNumDofs();
                        ++srcEdgeIndex) {

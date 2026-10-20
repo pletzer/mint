@@ -157,7 +157,7 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
             double coeff = polyseg.getCoefficient();
 
             // integrals of the basis functions along this sub-segment
-            element->integrateBasis(xia, xib, basisIntegrals);
+            element->integrateBasis(cellId, xia, xib, basisIntegrals);
 
             // store the weights for this sub-segment
             for (int edgeIndex = 0; edgeIndex < numDofs; ++edgeIndex) {

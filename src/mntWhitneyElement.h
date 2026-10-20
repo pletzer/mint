@@ -15,7 +15,9 @@
  *
  * A field is represented in each cell as sum_i dofs[i] w_i, where the basis
  * functions w_i = a_i(xi, eta) dxi + b_i(xi, eta) deta are dual to the
- * degrees of freedom (line integrals over edges or sub-edges). The physical
+ * degrees of freedom (line integrals over edges or sub-edges). (xi, eta) are
+ * always the parametric coordinates of the grid cell cellId found by the
+ * locator, even if the element spans several grid cells. The physical
  * vector follows from the covariant components (a, b) through
  *
  *    edge (W1) vector:  a * grad xi + b * grad eta
@@ -25,6 +27,9 @@
  *  - WhitneyElementOrder1: lowest order Whitney element, one degree of
  *    freedom per edge (the edge integral). This is what mint has always
  *    used.
+ *  - WhitneyElementMacro2: second order element on 2x2 blocks of grid
+ *    cells, whose degrees of freedom are the 12 edge integrals of the block
+ *    (see mntWhitneyElementMacro2.h).
  *
  * VectorInterp, PolylineIntegral and RegridEdges evaluate and integrate
  * the basis exclusively through this interface, so that a higher order
@@ -48,31 +53,34 @@ public:
 
     /**
      * Evaluate the covariant reference components of each basis function
+     * @param cellId grid cell Id
      * @param xi first parametric coordinate
      * @param eta second parametric coordinate
      * @param a dxi components, array of size getNumDofs() (output)
      * @param b deta components, array of size getNumDofs() (output)
      */
-    virtual void evalBasis(double xi, double eta, double a[], double b[]) const = 0;
+    virtual void evalBasis(vtkIdType cellId, double xi, double eta, double a[], double b[]) const = 0;
 
     /**
      * Compute the covariant reference components of a field
+     * @param cellId grid cell Id
      * @param xi first parametric coordinate
      * @param eta second parametric coordinate
      * @param dofs degrees of freedom of the cell, array of size getNumDofs()
      * @param a dxi component (output)
      * @param b deta component (output)
      */
-    virtual void getCovariantComponents(double xi, double eta, const double dofs[],
+    virtual void getCovariantComponents(vtkIdType cellId, double xi, double eta, const double dofs[],
                                         double* a, double* b) const;
 
     /**
      * Integrate each basis function along a straight segment in parameter space
+     * @param cellId grid cell Id, the segment must lie within this cell
      * @param xia start point of the segment, in parametric coordinates
      * @param xib end point of the segment, in parametric coordinates
      * @param w integrals, array of size getNumDofs() (output)
      */
-    virtual void integrateBasis(const Vec3& xia, const Vec3& xib, double w[]) const = 0;
+    virtual void integrateBasis(vtkIdType cellId, const Vec3& xia, const Vec3& xib, double w[]) const = 0;
 
     /**
      * Get the sign that converts a degree of freedom from the default
@@ -133,12 +141,12 @@ public:
 
     int getNumDofs() const override { return 4; }
 
-    void evalBasis(double xi, double eta, double a[], double b[]) const override;
+    void evalBasis(vtkIdType cellId, double xi, double eta, double a[], double b[]) const override;
 
-    void getCovariantComponents(double xi, double eta, const double dofs[],
+    void getCovariantComponents(vtkIdType cellId, double xi, double eta, const double dofs[],
                                 double* a, double* b) const override;
 
-    void integrateBasis(const Vec3& xia, const Vec3& xib, double w[]) const override;
+    void integrateBasis(vtkIdType cellId, const Vec3& xia, const Vec3& xib, double w[]) const override;
 
     int getCounterclockwiseSign(int dofIndex) const override;
 

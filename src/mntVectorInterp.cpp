@@ -222,7 +222,7 @@ static int mnt_vectorinterp__getVectors(VectorInterp_t** self,
         // covariant components of the field in the reference cell
         element->getCellDofs((*self)->grid, cellId, data, placement, dofs);
         double a, b;
-        element->getCovariantComponents(xsi, eta, dofs, &a, &b);
+        element->getCovariantComponents(cellId, xsi, eta, dofs, &a, &b);
 
         if (faceVectors) {
             for (std::size_t j = 0; j < 3; ++j) {
