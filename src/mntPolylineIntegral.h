@@ -59,6 +59,29 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self);
 LIBRARY_API
 int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid);
 
+/**
+ * Set the order of the edge element
+ * @param self instance of the polyline integral object
+ * @param order 1 (lowest order Whitney element, the default) or 2 (second order
+ *              element on 2x2 blocks of grid cells, using the same edge data)
+ * @return error code (0 = OK), the order is unchanged on error
+ * @note call after mnt_polylineintegral_setGrid and before
+ *       mnt_polylineintegral_computeWeights, changing the order discards the weights.
+ *       Order 2 requires a grid with UGRID connectivity that can be tiled into
+ *       2x2 blocks of cells
+ */
+LIBRARY_API
+int mnt_polylineintegral_setOrder(PolylineIntegral_t** self, int order);
+
+/**
+ * Get the order of the edge element
+ * @param self instance of the polyline integral object
+ * @param order 1 or 2 (output)
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_polylineintegral_getOrder(PolylineIntegral_t** self, int* order);
+
 
 /** 
  * Build the locator

@@ -45,7 +45,26 @@ int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
     mnt_grid_get(&grid, &(*self)->vgrid);
     (*self)->gridObj = grid;
 
+    // the order 2 element is tied to the grid
+    ier = mnt_whitneyelement_rebuild(&(*self)->element, grid);
+
     return ier;
+}
+
+LIBRARY_API
+int mnt_polylineintegral_setOrder(PolylineIntegral_t** self, int order) {
+    int ier = mnt_whitneyelement_setOrder(&(*self)->element, order, (*self)->gridObj);
+    if (ier == 0) {
+        // the weights depend on the element
+        (*self)->weights.clear();
+    }
+    return ier;
+}
+
+LIBRARY_API
+int mnt_polylineintegral_getOrder(PolylineIntegral_t** self, int* order) {
+    *order = (*self)->element->getOrder();
+    return 0;
 }
 
 

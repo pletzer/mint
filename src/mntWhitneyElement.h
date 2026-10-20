@@ -154,4 +154,32 @@ public:
                         std::size_t* index, int* sign) const override;
 };
 
+/**
+ * Create an edge element of a given order
+ * @param order 1 for WhitneyElementOrder1, 2 for WhitneyElementMacro2
+ * @param grid grid, needed for order 2 (the grid is tiled into 2x2 blocks of cells)
+ * @param element the new element, owned by the caller (output). Left unchanged on error
+ * @return error code (0 = OK)
+ */
+int mnt_whitneyelement_create(int order, Grid_t* grid, WhitneyElement** element);
+
+/**
+ * Replace an element by a new element of a given order
+ * @param element the element, deleted and replaced on success, unchanged on error
+ * @param order 1 or 2
+ * @param grid grid, needed for order 2
+ * @return error code (0 = OK)
+ */
+int mnt_whitneyelement_setOrder(WhitneyElement** element, int order, Grid_t* grid);
+
+/**
+ * Rebuild an element for a new grid, keeping its order. If the new grid
+ * cannot hold an element of that order, the element is replaced by the
+ * lowest order element
+ * @param element the element
+ * @param grid the new grid
+ * @return error code (0 = OK, otherwise the element fell back to order 1)
+ */
+int mnt_whitneyelement_rebuild(WhitneyElement** element, Grid_t* grid);
+
 #endif // MNT_WHITNEY_ELEMENT

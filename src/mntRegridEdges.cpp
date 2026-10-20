@@ -105,7 +105,30 @@ int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
     }
     (*self)->srcGridObj = grid;
     (*self)->srcGridIsOwned = false;
+
+    // the order 2 element is tied to the source grid
+    int ierElement = mnt_whitneyelement_rebuild(&(*self)->srcElement, grid);
+    return (ier != 0)? ier: ierElement;
+}
+
+LIBRARY_API
+int mnt_regridedges_setOrder(RegridEdges_t** self, int order) {
+    int ier = mnt_whitneyelement_setOrder(&(*self)->srcElement, order, (*self)->srcGridObj);
+    if (ier == 0) {
+        // the weights depend on the source element
+        (*self)->weights.clear();
+        (*self)->weightSrcCellIds.clear();
+        (*self)->weightSrcFaceEdgeIds.clear();
+        (*self)->weightDstCellIds.clear();
+        (*self)->weightDstFaceEdgeIds.clear();
+    }
     return ier;
+}
+
+LIBRARY_API
+int mnt_regridedges_getOrder(RegridEdges_t** self, int* order) {
+    *order = (*self)->srcElement->getOrder();
+    return 0;
 }
 
 LIBRARY_API
@@ -530,6 +553,9 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
     }
+
+    // the order 2 element is tied to the source grid
+    ier = mnt_whitneyelement_rebuild(&(*self)->srcElement, (*self)->srcGridObj);
 
     // loading does not change who owns the source grid
     return ier;

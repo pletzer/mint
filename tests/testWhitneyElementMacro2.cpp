@@ -10,6 +10,7 @@
 #include <iostream>
 #include <random>
 #include <vector>
+#include <cstring>
 
 // affine map from grid index space (s, t) to physical (x, y), so that a
 // potential quadratic in (x, y) is quadratic in the macro coordinates
@@ -250,7 +251,7 @@ void testTangentialContinuity() {
  * Gradient of the quadratic potential at random points through VectorInterp,
  * @return max error of the edge vectors
  */
-double vectorInterpError(WhitneyElement* element, int placement, bool faceVectors) {
+double vectorInterpError(int order, int placement, bool faceVectors) {
 
     Grid_t* grid = createGrid(6, 4);
     std::vector<double> cellByCell, uniqueEdge;
@@ -259,10 +260,11 @@ double vectorInterpError(WhitneyElement* element, int placement, bool faceVector
     VectorInterp_t* vp = NULL;
     mnt_vectorinterp_new(&vp);
     mnt_vectorinterp_setGrid(&vp, grid);
-    if (element) {
-        delete vp->element;
-        vp->element = element;
-    }
+    int ier = mnt_vectorinterp_setOrder(&vp, order);
+    assert(ier == 0);
+    int order2;
+    mnt_vectorinterp_getOrder(&vp, &order2);
+    assert(order2 == order);
     mnt_vectorinterp_buildLocator(&vp, 8, 0., 0, 0);
 
     std::mt19937 gen(42);
@@ -273,7 +275,7 @@ double vectorInterpError(WhitneyElement* element, int placement, bool faceVector
         affineMap(us(gen), ut(gen), &targets[3*i], &targets[3*i + 1]);
         targets[3*i + 2] = 0.;
     }
-    int ier = mnt_vectorinterp_findPoints(&vp, n, &targets[0], 1.e-10);
+    ier = mnt_vectorinterp_findPoints(&vp, n, &targets[0], 1.e-10);
     assert(ier == 0);
     const double* data = (placement == MNT_CELL_BY_CELL_DATA)? &cellByCell[0]: &uniqueEdge[0];
     if (faceVectors) {
@@ -301,12 +303,8 @@ double vectorInterpError(WhitneyElement* element, int placement, bool faceVector
 void testVectorInterp() {
     for (int placement : {MNT_CELL_BY_CELL_DATA, MNT_UNIQUE_EDGE_DATA}) {
         for (bool faceVectors : {false, true}) {
-            double error1 = vectorInterpError(NULL, placement, faceVectors);
-            WhitneyElementMacro2* macro = new WhitneyElementMacro2();
-            Grid_t* grid = createGrid(6, 4);
-            assert(macro->build(grid) == 0);
-            mnt_grid_del(&grid);
-            double error2 = vectorInterpError(macro, placement, faceVectors);
+            double error1 = vectorInterpError(1, placement, faceVectors);
+            double error2 = vectorInterpError(2, placement, faceVectors);
             std::cout << "testVectorInterp: placement " << placement << " face " << faceVectors
                       << " order 1 error " << error1 << " macro error " << error2 << '\n';
             // the macro element reproduces the gradient of a quadratic exactly, order 1 does not
@@ -321,7 +319,7 @@ void testVectorInterp() {
  * Line integral of the gradient of the potential along a polyline
  * @return error
  */
-double polylineIntegralError(WhitneyElement* element, int placement) {
+double polylineIntegralError(int order, int placement) {
 
     Grid_t* grid = createGrid(6, 4);
     std::vector<double> cellByCell, uniqueEdge;
@@ -330,10 +328,8 @@ double polylineIntegralError(WhitneyElement* element, int placement) {
     PolylineIntegral_t* pli = NULL;
     mnt_polylineintegral_new(&pli);
     mnt_polylineintegral_setGrid(&pli, grid);
-    if (element) {
-        delete pli->element;
-        pli->element = element;
-    }
+    int ier = mnt_polylineintegral_setOrder(&pli, order);
+    assert(ier == 0);
     mnt_polylineintegral_buildLocator(&pli, 8, 0., 0, 0);
 
     const double st[] = {0.3, 0.2,   2.7, 3.1,   4.9, 1.3,   5.6, 3.7};
@@ -341,7 +337,7 @@ double polylineIntegralError(WhitneyElement* element, int placement) {
     for (int i = 0; i < 4; ++i) {
         affineMap(st[2*i], st[2*i + 1], &xyz[3*i], &xyz[3*i + 1]);
     }
-    int ier = mnt_polylineintegral_computeWeights(&pli, 4, &xyz[0], 0);
+    ier = mnt_polylineintegral_computeWeights(&pli, 4, &xyz[0], 0);
     assert(ier == 0);
     const double* data = (placement == MNT_CELL_BY_CELL_DATA)? &cellByCell[0]: &uniqueEdge[0];
     double result;
@@ -356,12 +352,8 @@ double polylineIntegralError(WhitneyElement* element, int placement) {
 
 void testPolylineIntegral() {
     for (int placement : {MNT_CELL_BY_CELL_DATA, MNT_UNIQUE_EDGE_DATA}) {
-        double error1 = polylineIntegralError(NULL, placement);
-        WhitneyElementMacro2* macro = new WhitneyElementMacro2();
-        Grid_t* grid = createGrid(6, 4);
-        assert(macro->build(grid) == 0);
-        mnt_grid_del(&grid);
-        double error2 = polylineIntegralError(macro, placement);
+        double error1 = polylineIntegralError(1, placement);
+        double error2 = polylineIntegralError(2, placement);
         std::cout << "testPolylineIntegral: placement " << placement
                   << " order 1 error " << error1 << " macro error " << error2 << '\n';
         assert(error2 < 1.e-10);
@@ -374,7 +366,7 @@ void testPolylineIntegral() {
  * Regrid the edge integrals of the gradient of the potential onto a skewed grid
  * @return max error of the destination edge integrals
  */
-double regridError(bool macro) {
+double regridError(int order, const char* weightsFile = NULL) {
 
     Grid_t* srcGrid = createGrid(6, 4);
     Grid_t* dstGrid = createGrid(3, 3, 0.4, 5.3, 0.3, 3.6);
@@ -386,15 +378,18 @@ double regridError(bool macro) {
     mnt_regridedges_new(&rg);
     mnt_regridedges_setSrcGrid(&rg, srcGrid);
     mnt_regridedges_setDstGrid(&rg, dstGrid);
-    if (macro) {
-        WhitneyElementMacro2* elem = new WhitneyElementMacro2();
-        assert(elem->build(srcGrid) == 0);
-        delete rg->srcElement;
-        rg->srcElement = elem;
-    }
-    mnt_regridedges_buildLocator(&rg, 8, 0., 0, 0);
-    int ier = mnt_regridedges_computeWeights(&rg, 0);
+    int ier = mnt_regridedges_setOrder(&rg, order);
     assert(ier == 0);
+    if (weightsFile) {
+        // weights computed earlier with the same order
+        ier = mnt_regridedges_loadWeights(&rg, weightsFile, (int) strlen(weightsFile));
+        assert(ier == 0);
+    }
+    else {
+        mnt_regridedges_buildLocator(&rg, 8, 0., 0, 0);
+        ier = mnt_regridedges_computeWeights(&rg, 0);
+        assert(ier == 0);
+    }
     std::vector<double> result(dstUniqueEdge.size());
     ier = mnt_regridedges_apply(&rg, &srcUniqueEdge[0], &result[0], MNT_UNIQUE_EDGE_DATA);
     assert(ier == 0);
@@ -410,12 +405,84 @@ double regridError(bool macro) {
 }
 
 void testRegridEdges() {
-    double error1 = regridError(false);
-    double error2 = regridError(true);
+    double error1 = regridError(1);
+    double error2 = regridError(2);
     std::cout << "testRegridEdges: order 1 error " << error1 << " macro error " << error2 << '\n';
     assert(error2 < 1.e-10);
     assert(error1 > 1.e-4);
     std::cout << "testRegridEdges: OK\n";
+}
+
+void testSetOrderErrors() {
+
+    int order;
+
+    // invalid order
+    VectorInterp_t* vp = NULL;
+    mnt_vectorinterp_new(&vp);
+    assert(mnt_vectorinterp_setOrder(&vp, 3) != 0);
+    // order 2 needs a grid
+    assert(mnt_vectorinterp_setOrder(&vp, 2) != 0);
+    mnt_vectorinterp_getOrder(&vp, &order);
+    assert(order == 1);
+
+    // a grid that cannot be tiled into 2x2 blocks
+    Grid_t* oddGrid = createGrid(5, 4);
+    mnt_vectorinterp_setGrid(&vp, oddGrid);
+    assert(mnt_vectorinterp_setOrder(&vp, 2) != 0);
+    mnt_vectorinterp_getOrder(&vp, &order);
+    assert(order == 1);
+
+    // setting a new grid rebuilds the order 2 element, or falls back to order 1
+    Grid_t* grid = createGrid(6, 4);
+    assert(mnt_vectorinterp_setGrid(&vp, grid) == 0);
+    assert(mnt_vectorinterp_setOrder(&vp, 2) == 0);
+    Grid_t* grid2 = createGrid(4, 4);
+    assert(mnt_vectorinterp_setGrid(&vp, grid2) == 0);
+    mnt_vectorinterp_getOrder(&vp, &order);
+    assert(order == 2);
+    assert(mnt_vectorinterp_setGrid(&vp, oddGrid) != 0);
+    mnt_vectorinterp_getOrder(&vp, &order);
+    assert(order == 1);
+    mnt_vectorinterp_del(&vp);
+
+    // changing the order discards the polyline weights
+    PolylineIntegral_t* pli = NULL;
+    mnt_polylineintegral_new(&pli);
+    mnt_polylineintegral_setGrid(&pli, grid);
+    mnt_polylineintegral_buildLocator(&pli, 8, 0., 0, 0);
+    double xyz[] = {0.5, 0.5, 0.,  4.0, 2.0, 0.};
+    assert(mnt_polylineintegral_computeWeights(&pli, 2, xyz, 0) == 0);
+    assert(pli->weights.size() > 0);
+    assert(mnt_polylineintegral_setOrder(&pli, 2) == 0);
+    assert(pli->weights.size() == 0);
+    mnt_polylineintegral_getOrder(&pli, &order);
+    assert(order == 2);
+    mnt_polylineintegral_del(&pli);
+
+    // order 2 weights files can only be loaded with order 2
+    RegridEdges_t* rg = NULL;
+    mnt_regridedges_new(&rg);
+    Grid_t* dstGrid = createGrid(3, 3, 0.4, 5.3, 0.3, 3.6);
+    mnt_regridedges_setSrcGrid(&rg, grid);
+    mnt_regridedges_setDstGrid(&rg, dstGrid);
+    assert(mnt_regridedges_setOrder(&rg, 2) == 0);
+    mnt_regridedges_buildLocator(&rg, 8, 0., 0, 0);
+    assert(mnt_regridedges_computeWeights(&rg, 0) == 0);
+    const char* weightsFile = "testWhitneyElementMacro2_weights.nc";
+    assert(mnt_regridedges_dumpWeights(&rg, weightsFile, (int) strlen(weightsFile)) == 0);
+    assert(mnt_regridedges_setOrder(&rg, 1) == 0);
+    assert(rg->weights.size() == 0);
+    assert(mnt_regridedges_loadWeights(&rg, weightsFile, (int) strlen(weightsFile)) != 0);
+    mnt_regridedges_del(&rg);
+    // loading them with order 2 gives the same (exact) result
+    assert(regridError(2, weightsFile) < 1.e-10);
+
+    mnt_grid_del(&oddGrid);
+    mnt_grid_del(&grid);
+    mnt_grid_del(&grid2);
+    mnt_grid_del(&dstGrid);
+    std::cout << "testSetOrderErrors: OK\n";
 }
 
 int main(int argc, char** argv) {
@@ -428,6 +495,7 @@ int main(int argc, char** argv) {
     testVectorInterp();
     testPolylineIntegral();
     testRegridEdges();
+    testSetOrderErrors();
 
     return 0;
 }

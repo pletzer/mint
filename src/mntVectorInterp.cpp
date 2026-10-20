@@ -44,6 +44,18 @@ int mnt_vectorinterp_del(VectorInterp_t** self) {
 LIBRARY_API
 int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid) {
     (*self)->grid = grid;
+    // the order 2 element is tied to the grid
+    return mnt_whitneyelement_rebuild(&(*self)->element, grid);
+}
+
+LIBRARY_API
+int mnt_vectorinterp_setOrder(VectorInterp_t** self, int order) {
+    return mnt_whitneyelement_setOrder(&(*self)->element, order, (*self)->grid);
+}
+
+LIBRARY_API
+int mnt_vectorinterp_getOrder(VectorInterp_t** self, int* order) {
+    *order = (*self)->element->getOrder();
     return 0;
 }
 

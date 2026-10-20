@@ -1,5 +1,8 @@
+#include <string>
 #include <mntWhitneyElement.h>
+#include <mntWhitneyElementMacro2.h>
 #include <mntGlobal.h>
+#include <mntLogger.h>
 
 
 // edge start and end points in parameter space, edges point in the positive xi/eta direction
@@ -133,4 +136,63 @@ WhitneyElementOrder1::getDofDataIndex(Grid_t* grid, vtkIdType cellId, int dofInd
         return 0;
     }
     return mnt_grid_getEdgeId(&grid, cellId, dofIndex, index, sign);
+}
+
+int
+mnt_whitneyelement_create(int order, Grid_t* grid, WhitneyElement** element) {
+
+    std::string msg;
+    if (order == 1) {
+        *element = new WhitneyElementOrder1();
+        return 0;
+    }
+    if (order == 2) {
+        if (!grid) {
+            msg = "the order 2 element needs a grid, set the grid first";
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            return 2;
+        }
+        WhitneyElementMacro2* macro = new WhitneyElementMacro2();
+        int ier = macro->build(grid);
+        if (ier != 0) {
+            msg = "could not build the order 2 element on the grid";
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            delete macro;
+            return 3;
+        }
+        *element = macro;
+        return 0;
+    }
+    msg = "invalid element order " + std::to_string(order) + ", must be 1 or 2";
+    mntlog::error(__FILE__, __func__, __LINE__, msg);
+    return 1;
+}
+
+int
+mnt_whitneyelement_setOrder(WhitneyElement** element, int order, Grid_t* grid) {
+    WhitneyElement* newElement = NULL;
+    int ier = mnt_whitneyelement_create(order, grid, &newElement);
+    if (ier != 0) {
+        return ier;
+    }
+    delete *element;
+    *element = newElement;
+    return 0;
+}
+
+int
+mnt_whitneyelement_rebuild(WhitneyElement** element, Grid_t* grid) {
+    int order = (*element)->getOrder();
+    if (order == 1) {
+        // does not depend on the grid
+        return 0;
+    }
+    int ier = mnt_whitneyelement_setOrder(element, order, grid);
+    if (ier != 0) {
+        std::string msg = "the new grid does not support element order " + std::to_string(order) +
+                          ", falling back to order 1";
+        mntlog::warn(__FILE__, __func__, __LINE__, msg);
+        mnt_whitneyelement_setOrder(element, 1, grid);
+    }
+    return ier;
 }
