@@ -4,7 +4,6 @@
 #include <mntPolysegmentIter.h>
 #include <vmtLonLatCellLocator.h>
 #include <vmtXYZCellLocator.h>
-#include <mntWeights.h>
 #include <mntExtensiveFieldAdaptor.h>
 #include <iostream>
 
@@ -18,6 +17,7 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     (*self)->loc = vmtLonLatCellLocator::New();
     (*self)->gridObj = NULL;
     (*self)->vgrid = NULL;
+    (*self)->element = new WhitneyElementOrder1();
 
     return 0;
 }
@@ -27,6 +27,7 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
 
     // destroy everything here
     (*self)->loc->Delete();
+    delete (*self)->element;
 
     delete *self;
 
@@ -118,10 +119,9 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
         return -2;
     }
 
-    const double* xi0_xi1 = QUAD_POSITIVEXI_EDGE_DIRECTION;
-    if (counterclock > 0) {
-        xi0_xi1 = QUAD_COUNTERCLOCKWISE_EDGE_DIRECTION;
-    }
+    const WhitneyElement* element = (*self)->element;
+    const int numDofs = element->getNumDofs();
+    double basisIntegrals[MNT_MAX_DOFS_PER_CELL];
 
     // iterate over the Polyline segments
     for (int ip0 = 0; ip0 < npoints - 1; ++ip0) {
@@ -156,16 +156,16 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
             // runs along a cell edge)
             double coeff = polyseg.getCoefficient();
 
+            // integrals of the basis functions along this sub-segment
+            element->integrateBasis(xia, xib, basisIntegrals);
+
             // store the weights for this sub-segment
-            for (int edgeIndex = 0; edgeIndex < MNT_NUM_EDGES_PER_QUAD; ++edgeIndex) {
+            for (int edgeIndex = 0; edgeIndex < numDofs; ++edgeIndex) {
 
-                // starting point of the cell edge in parameter space
-                const double* xi0 = &xi0_xi1[6*edgeIndex];
-
-                // end point of the cell edge in parameter space
-                const double* xi1 = &xi0_xi1[6*edgeIndex + 3];
-
-                double weight = computeWeight(xi0, xi1, xia, xib);
+                double weight = basisIntegrals[edgeIndex];
+                if (counterclock > 0) {
+                    weight *= element->getCounterclockwiseSign(edgeIndex);
+                }
 #ifdef DEBUG
                 msg = "ip0: " + std::to_string(ip0) + " sgmt: " + std::to_string(i) + " cell " + std::to_string(cellId) + " edge: " + std::to_string(edgeIndex) + 
                       " xi beg/end: " + std::to_string(xia[0]) + "," + std::to_string(xia[1]) + ' ' + 

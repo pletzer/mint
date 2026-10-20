@@ -3,6 +3,7 @@
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntVecN.h>
+#include <mntWhitneyElement.h>
 #include <sstream> // std::stringstream
 #include "mntLogger.h"
 
@@ -28,6 +29,9 @@ struct VectorInterp_t {
 
     bool ownsLocator;
     bool calledFindPoints;
+
+    // edge element used to evaluate the basis functions (owned)
+    WhitneyElement* element;
 };
 
 /**

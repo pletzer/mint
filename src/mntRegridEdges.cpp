@@ -8,7 +8,6 @@
 #include <mntNcFieldWrite.h>
 #include <mntExtensiveFieldAdaptor.h>
 #include <mntVectorInterp.h>
-#include <mntWeights.h>
 #include <vmtLonLatCellLocator.h>
 #include <vmtXYZCellLocator.h>
 #include "mntFileMeshNameExtractor.h"
@@ -33,6 +32,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
 
     *self = new RegridEdges_t();
     (*self)->srcLoc = vmtLonLatCellLocator::New();
+    (*self)->srcElement = new WhitneyElementOrder1();
 
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
@@ -62,6 +62,8 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 
     // destroy the cell locator
     (*self)->srcLoc->Delete();
+
+    delete (*self)->srcElement;
 
     // destroy the source and destination grids
     if ((*self)->srcGridIsOwned) {
@@ -627,6 +629,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
     vtkIdList* srcCellIds = vtkIdList::New();
     double dstEdgePt0[] = {0., 0., 0.};
     double dstEdgePt1[] = {0., 0., 0.};
+    double basisIntegrals[MNT_MAX_DOFS_PER_CELL];
     vtkPoints* dstPoints = (*self)->dstGridObj->grid->GetPoints();
 
     std::size_t numDstCells = (*self)->dstGridObj->grid->GetNumberOfCells();
@@ -706,19 +709,14 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
                     mntlog::info(__FILE__, __func__, __LINE__, buffer);
                 }
 
-                vtkCell* srcCell = (*self)->srcGridObj->grid->GetCell(srcCellId);
-                double* srcCellParamCoords = srcCell->GetParametricCoords();
+                // integrals of the source basis functions along this sub-segment
+                (*self)->srcElement->integrateBasis(xia, xib, basisIntegrals);
 
-                for (int srcEdgeIndex = 0; srcEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
+                for (int srcEdgeIndex = 0; srcEdgeIndex < (*self)->srcElement->getNumDofs();
                        ++srcEdgeIndex) {
 
-                    int is0, is1;
-                    (*self)->edgeConnectivity.getCellPointIds(srcEdgeIndex, &is0, &is1);
-                    
                     // compute the interpolation weight
-                    double weight = computeWeight(&srcCellParamCoords[is0*3], 
-                                                  &srcCellParamCoords[is1*3], 
-                                                  xia, xib);
+                    double weight = basisIntegrals[srcEdgeIndex];
 
                     // coeff accounts for the duplicity in the case where segments are shared between cells
                     weight *= coeff;

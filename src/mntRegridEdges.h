@@ -8,6 +8,7 @@
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
+#include <mntWhitneyElement.h>
 #include <mntNcAttributes.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
@@ -52,6 +53,9 @@ struct RegridEdges_t {
 
     /** edge connectivity iterator */
     QuadEdgeIter edgeConnectivity;
+
+    // edge element of the source grid, used to integrate the basis functions (owned)
+    WhitneyElement* srcElement;
 
     /** number of dimensions */
     int ndims;

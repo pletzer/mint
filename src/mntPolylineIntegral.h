@@ -6,6 +6,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
+#include <mntWhitneyElement.h>
 
 #ifndef MNT_POLY_LINE_INTEGRAL
 #define MNT_POLY_LINE_INTEGRAL
@@ -28,6 +29,9 @@ struct PolylineIntegral_t {
 
     /* VTK grid (borrowed pointer) */
     vtkUnstructuredGrid* vgrid;
+
+    /* edge element used to integrate the basis functions (owned) */
+    WhitneyElement* element;
 };
 
 /**
