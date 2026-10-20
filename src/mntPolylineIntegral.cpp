@@ -201,33 +201,40 @@ int mnt_polylineintegral_getIntegralOfCellByCellData(PolylineIntegral_t** self, 
                                                      double* result) {
 
     *result = 0;
+    int ier = 0;
     for (auto it = (*self)->weights.cbegin(); it != (*self)->weights.cend(); ++it) {
 
         // get the cell Id
         vtkIdType cellId = it->first.first;
 
-        // get the edge index
+        // get the degree of freedom index
         int edgeIndex = it->first.second;
 
+        // location of the degree of freedom in the data
+        std::size_t k;
+        int sign;
+        ier = (*self)->element->getDofDataIndex((*self)->gridObj, cellId, edgeIndex,
+                                                MNT_CELL_BY_CELL_DATA, &k, &sign);
+
         // get the weight
-        double wght = it->second;
+        double wght = sign * it->second;
 
         // add the contribution
 #ifdef DEBUG
         std::string msg = "adding weight = " + std::to_string(wght) + " * edge integral = " + 
-                          std::to_string(data[cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex]) + " to the flux (" +
+                          std::to_string(data[k]) + " to the flux (" +
                           std::to_string(*result) + " so far) for cellId = " + 
                           std::to_string(cellId) + " edgeIndex = " + std::to_string(edgeIndex);
         mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
-        *result += wght * data[cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex];
+        *result += wght * data[k];
     }
 #ifdef DEBUG
     std::string msg = "total flux = " + std::to_string(*result);
     mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
 
-    return 0;
+    return ier;
 }
 
 LIBRARY_API
@@ -254,9 +261,11 @@ int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, 
         // get the edge index
         int edgeIndex = it->first.second;
 
+        // location of the degree of freedom in the data
         std::size_t edgeId;
         int edgeSign;
-        ier = mnt_grid_getEdgeId(&((*self)->gridObj), cellId, edgeIndex, &edgeId, &edgeSign);
+        ier = (*self)->element->getDofDataIndex((*self)->gridObj, cellId, edgeIndex,
+                                                MNT_UNIQUE_EDGE_DATA, &edgeId, &edgeSign);
 
         // get the weight
         double wght = it->second;

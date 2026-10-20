@@ -421,6 +421,8 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
  * @return error code (0 is OK)
  * @note This does not create the object, user must call mnt_regridedges_new prior to this call
  * @note Supplying the length of the filename string allows one to call this function from Fortran
+ * @note Fails (error 15) if the weights were computed with a different source element order,
+ *       files without a "src_element_order" attribute are assumed to be order 1
  */
 LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 

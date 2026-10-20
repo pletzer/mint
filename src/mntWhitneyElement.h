@@ -84,16 +84,37 @@ public:
     virtual int getCounterclockwiseSign(int dofIndex) const = 0;
 
     /**
+     * Map a degree of freedom to its location in the user's field data
+     *
+     * The field data always hold edge integrals of the grid, either cell by
+     * cell (numCells*MNT_NUM_EDGES_PER_QUAD) or on unique edges (numEdges),
+     * whatever the element. Weights are stored per (cellId, dofIndex), where
+     * cellId is the grid cell returned by the locator; this method tells how
+     * to fetch the value of that degree of freedom.
+     *
+     * @param grid grid
+     * @param cellId cell Id
+     * @param dofIndex local degree of freedom index, 0 <= dofIndex < getNumDofs()
+     * @param placement MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA
+     * @param index index into the field data (output)
+     * @param sign orientation sign to apply to the data value (output)
+     * @return error code (0 = OK)
+     */
+    virtual int getDofDataIndex(Grid_t* grid, vtkIdType cellId, int dofIndex, int placement,
+                                std::size_t* index, int* sign) const = 0;
+
+    /**
      * Gather the degrees of freedom of a cell, with orientation signs applied
      * @param grid grid
      * @param cellId cell Id
      * @param data field data, either cell by cell or on unique edges
      * @param placement MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA
      * @param dofs degrees of freedom, array of size getNumDofs() (output)
-     * @return error code (0 = OK)
+     * @return number of degrees of freedom that could not be found (0 = OK),
+     *         these are set to zero
      */
     virtual int getCellDofs(Grid_t* grid, vtkIdType cellId, const double data[], int placement,
-                            double dofs[]) const = 0;
+                            double dofs[]) const;
 };
 
 
@@ -121,8 +142,8 @@ public:
 
     int getCounterclockwiseSign(int dofIndex) const override;
 
-    int getCellDofs(Grid_t* grid, vtkIdType cellId, const double data[], int placement,
-                    double dofs[]) const override;
+    int getDofDataIndex(Grid_t* grid, vtkIdType cellId, int dofIndex, int placement,
+                        std::size_t* index, int* sign) const override;
 };
 
 #endif // MNT_WHITNEY_ELEMENT

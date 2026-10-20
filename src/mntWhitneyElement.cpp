@@ -18,6 +18,24 @@ WhitneyElement::getCovariantComponents(double xi, double eta, const double dofs[
 }
 
 
+int
+WhitneyElement::getCellDofs(Grid_t* grid, vtkIdType cellId, const double data[], int placement,
+                            double dofs[]) const {
+    int numFailures = 0;
+    std::size_t index;
+    int sign;
+    for (int i = 0; i < this->getNumDofs(); ++i) {
+        if (this->getDofDataIndex(grid, cellId, i, placement, &index, &sign) != 0) {
+            dofs[i] = 0.0;
+            numFailures++;
+            continue;
+        }
+        dofs[i] = data[index] * sign;
+    }
+    return numFailures;
+}
+
+
 void
 WhitneyElementOrder1::evalBasis(double xi, double eta, double a[], double b[]) const {
     // south
@@ -58,25 +76,13 @@ WhitneyElementOrder1::getCounterclockwiseSign(int dofIndex) const {
 }
 
 int
-WhitneyElementOrder1::getCellDofs(Grid_t* grid, vtkIdType cellId, const double data[], int placement,
-                                  double dofs[]) const {
-    int ier = 0;
+WhitneyElementOrder1::getDofDataIndex(Grid_t* grid, vtkIdType cellId, int dofIndex, int placement,
+                                      std::size_t* index, int* sign) const {
+    // one degree of freedom per edge
     if (placement == MNT_CELL_BY_CELL_DATA) {
-        for (int i = 0; i < MNT_NUM_EDGES_PER_QUAD; ++i) {
-            dofs[i] = data[cellId*MNT_NUM_EDGES_PER_QUAD + i];
-        }
+        *index = cellId*MNT_NUM_EDGES_PER_QUAD + dofIndex;
+        *sign = 1;
+        return 0;
     }
-    else {
-        std::size_t edgeId;
-        int edgeSign;
-        for (int i = 0; i < MNT_NUM_EDGES_PER_QUAD; ++i) {
-            if (mnt_grid_getEdgeId(&grid, cellId, i, &edgeId, &edgeSign) != 0) {
-                dofs[i] = 0.0;
-                ier++;
-                continue;
-            }
-            dofs[i] = data[edgeId] * edgeSign;
-        }
-    }
-    return ier;
+    return mnt_grid_getEdgeId(&grid, cellId, dofIndex, index, sign);
 }

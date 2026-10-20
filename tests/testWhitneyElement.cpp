@@ -1,4 +1,5 @@
 #include <mntWhitneyElement.h>
+#include <mntGlobal.h>
 #undef NDEBUG // turn on asserts
 #include <cassert>
 #include <cmath>
@@ -96,6 +97,26 @@ void testCounterclockwiseSigns(const WhitneyElement& elem) {
     std::cout << "testCounterclockwiseSigns: OK\n";
 }
 
+void testCellByCellDofs(const WhitneyElement& elem) {
+    // cell by cell data are stored as numCells * MNT_NUM_EDGES_PER_QUAD
+    const vtkIdType cellId = 3;
+    double data[5*MNT_NUM_EDGES_PER_QUAD];
+    for (int k = 0; k < 5*MNT_NUM_EDGES_PER_QUAD; ++k) data[k] = 0.5*k - 1.0;
+    std::size_t index;
+    int sign;
+    double dofs[MNT_MAX_DOFS_PER_CELL];
+    // the grid is not needed for cell by cell data
+    elem.getCellDofs(NULL, cellId, data, MNT_CELL_BY_CELL_DATA, dofs);
+    for (int i = 0; i < elem.getNumDofs(); ++i) {
+        int ier = elem.getDofDataIndex(NULL, cellId, i, MNT_CELL_BY_CELL_DATA, &index, &sign);
+        assert(ier == 0);
+        assert(index == (std::size_t) cellId*MNT_NUM_EDGES_PER_QUAD + i);
+        assert(sign == 1);
+        assert(dofs[i] == data[index]);
+    }
+    std::cout << "testCellByCellDofs: OK\n";
+}
+
 int main(int argc, char** argv) {
 
     WhitneyElementOrder1 elem;
@@ -106,6 +127,7 @@ int main(int argc, char** argv) {
     testIntegrateBasis(elem);
     testCovariantComponents(elem);
     testCounterclockwiseSigns(elem);
+    testCellByCellDofs(elem);
 
     return 0;
 }

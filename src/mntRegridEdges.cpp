@@ -856,10 +856,15 @@ int mnt_regridedges_applyToCellByCellData(RegridEdges_t** self,
         auto dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
         auto weight = (*self)->weights[i];
 
-        std::size_t srcIdx = srcCellId*MNT_NUM_EDGES_PER_QUAD + srcEdgeIndex;
+        // the source data index depends on the source element, the destination
+        // data are always edge integrals
+        std::size_t srcIdx;
+        int srcSign;
+        (*self)->srcElement->getDofDataIndex((*self)->srcGridObj, srcCellId, srcEdgeIndex,
+                                             MNT_CELL_BY_CELL_DATA, &srcIdx, &srcSign);
         std::size_t dstIdx = dstCellId*MNT_NUM_EDGES_PER_QUAD + dstEdgeIndex;
 
-        dst_data[dstIdx] += weight * src_data[srcIdx];
+        dst_data[dstIdx] += srcSign * weight * src_data[srcIdx];
     }
 
     return 0;
@@ -917,7 +922,8 @@ int mnt_regridedges_applyToUniqueEdgeData(RegridEdges_t** self,
 
         std::size_t srcEdgeId, dstEdgeId;
         int srcEdgeSign, dstEdgeSign;
-        ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
+        ier = (*self)->srcElement->getDofDataIndex((*self)->srcGridObj, srcCellId, srcEdgeIndex,
+                                                   MNT_UNIQUE_EDGE_DATA, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
 
         dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
@@ -1065,6 +1071,27 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
         msg = "could not open file \"" + filename + "\"!" + std::string(nc_strerror(ier));
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
+    }
+
+    // check that the weights were computed with the same source element,
+    // files without the attribute were computed with the lowest order element
+    int srcElementOrder = 1;
+    if (nc_inq_att(ncid, NC_GLOBAL, "src_element_order", NULL, NULL) == NC_NOERR) {
+        ier = nc_get_att_int(ncid, NC_GLOBAL, "src_element_order", &srcElementOrder);
+        if (ier != NC_NOERR) {
+            msg = "could not read attribute \"src_element_order\"!" + std::string(nc_strerror(ier));
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            nc_close(ncid);
+            return 14;
+        }
+    }
+    if (srcElementOrder != (*self)->srcElement->getOrder()) {
+        msg = "weights in \"" + filename + "\" were computed with source element order " +
+              std::to_string(srcElementOrder) + " but the regridder uses order " +
+              std::to_string((*self)->srcElement->getOrder());
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        nc_close(ncid);
+        return 15;
     }
 
     // get the sizes
@@ -1282,6 +1309,20 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 7;
+    }
+
+    // the source element the weights were computed with. Weights are stored per
+    // (src cell, src degree of freedom), so they can only be applied with the same
+    // element. Files without these attributes were computed with the lowest order element
+    int srcElementOrder = (*self)->srcElement->getOrder();
+    int srcNumDofsPerCell = (*self)->srcElement->getNumDofs();
+    ier = nc_put_att_int(ncid, NC_GLOBAL, "src_element_order", NC_INT, 1, &srcElementOrder);
+    ier |= nc_put_att_int(ncid, NC_GLOBAL, "src_num_dofs_per_cell", NC_INT, 1, &srcNumDofsPerCell);
+    if (ier != NC_NOERR) {
+        msg = "could not write the source element attributes! ier = " + std::to_string(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        nc_close(ncid);
+        return 14;
     }
 
     // close define mode
