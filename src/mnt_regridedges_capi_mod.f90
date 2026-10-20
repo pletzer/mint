@@ -63,6 +63,36 @@ module mnt_regridedges_capi_mod
         integer(c_int)                           :: mnt_regridedges_setDstGridFlags
     end function mnt_regridedges_setDstGridFlags
 
+    !> Set the order of the source edge element
+    !> @param obj instance of mntRegridEdges_t (opaque handle)
+    !> @param order 1 for the lowest order Whitney element (the default), 2 for the second order
+    !>              element on 2x2 blocks of source cells, which uses the same edge data
+    !> @return 0 if successful, the order is unchanged otherwise
+    !> @note call after setting or loading the source grid and before computing or loading the
+    !>       weights, changing the order discards the weights. The destination data are always
+    !>       edge integrals
+    function mnt_regridedges_setOrder(obj, order) &
+                                      bind(C, name='mnt_regridedges_setOrder')
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+        implicit none
+        type(c_ptr), intent(inout)               :: obj !> void**
+        integer(c_int), value                    :: order
+        integer(c_int)                           :: mnt_regridedges_setOrder
+    end function mnt_regridedges_setOrder
+
+    !> Get the order of the source edge element
+    !> @param obj instance of mntRegridEdges_t (opaque handle)
+    !> @param order 1 or 2 (output)
+    !> @return 0 if successful
+    function mnt_regridedges_getOrder(obj, order) &
+                                      bind(C, name='mnt_regridedges_getOrder')
+        use, intrinsic :: iso_c_binding, only: c_int, c_ptr
+        implicit none
+        type(c_ptr), intent(inout)               :: obj !> void**
+        integer(c_int), intent(out)              :: order
+        integer(c_int)                           :: mnt_regridedges_getOrder
+    end function mnt_regridedges_getOrder
+
     !> Initialize the slice iterator
     !> @param obj instance of mntRegridEdges_t (opaque handle)
     !> @param src_fort_filename file name (does not require termination character)

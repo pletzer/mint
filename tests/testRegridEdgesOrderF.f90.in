@@ -1,0 +1,59 @@
+program test
+    ! selecting the order of the source edge element from Fortran
+    use mnt_regridedges_capi_mod
+
+    use, intrinsic :: iso_c_binding, only: c_int, c_double, c_ptr
+
+    implicit none
+    type(c_ptr)                  :: crg
+    integer(c_int)               :: ier, order, num_cells_per_bucket, enablefolding, usexyzlocator, debug
+    real(c_double)               :: periodx
+    character(len=*), parameter  :: src_filename = "${CMAKE_SOURCE_DIR}/data/cs_16.nc$physics"
+    character(len=*), parameter  :: dst_filename = "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics"
+    character(len=*), parameter  :: weights_filename = "weights_order2.nc"
+
+    ier = mnt_regridedges_new(crg)
+    if(ier /= 0) print*,'ERROR after new ier = ', ier
+
+    ier = mnt_regridedges_loadSrcGrid(crg, src_filename, len(src_filename))
+    if(ier /= 0) print*,'ERROR after loadSrcGrid ier = ', ier
+    ier = mnt_regridedges_loadDstGrid(crg, dst_filename, len(dst_filename))
+    if(ier /= 0) print*,'ERROR after loadDstGrid ier = ', ier
+
+    ! the default is the lowest order element
+    ier = mnt_regridedges_getOrder(crg, order)
+    if(ier /= 0 .or. order /= 1) print*,'ERROR default order is ', order
+
+    ier = mnt_regridedges_setOrder(crg, 2)
+    if(ier /= 0) print*,'ERROR after setOrder(2) ier = ', ier
+    ier = mnt_regridedges_getOrder(crg, order)
+    if(ier /= 0 .or. order /= 2) print*,'ERROR order should be 2, got ', order
+
+    ! an invalid order is rejected and leaves the order unchanged
+    ier = mnt_regridedges_setOrder(crg, 3)
+    if(ier == 0) print*,'ERROR setOrder(3) should fail'
+    ier = mnt_regridedges_getOrder(crg, order)
+    if(order /= 2) print*,'ERROR order changed to ', order
+
+    num_cells_per_bucket = 8
+    periodx = 0._c_double
+    enablefolding = 0
+    usexyzlocator = 0
+    ier = mnt_regridedges_buildLocator(crg, num_cells_per_bucket, periodx, enablefolding, usexyzlocator)
+    if(ier /= 0) print*,'ERROR after buildLocator ier = ', ier
+
+    debug = 0
+    ier = mnt_regridedges_computeWeights(crg, debug)
+    if(ier /= 0) print*,'ERROR after computeWeights ier = ', ier
+
+    ier = mnt_regridedges_dumpWeights(crg, weights_filename, len(weights_filename))
+    if(ier /= 0) print*,'ERROR after dumpWeights ier = ', ier
+
+    ! order 2 weights load with order 2
+    ier = mnt_regridedges_loadWeights(crg, weights_filename, len(weights_filename))
+    if(ier /= 0) print*,'ERROR after loadWeights ier = ', ier
+
+    ier = mnt_regridedges_del(crg)
+    if(ier /= 0) print*,'ERROR after del ier = ', ier
+
+end program test

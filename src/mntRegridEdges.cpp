@@ -8,7 +8,6 @@
 #include <mntNcFieldWrite.h>
 #include <mntExtensiveFieldAdaptor.h>
 #include <mntVectorInterp.h>
-#include <mntWeights.h>
 #include <vmtLonLatCellLocator.h>
 #include <vmtXYZCellLocator.h>
 #include "mntFileMeshNameExtractor.h"
@@ -33,6 +32,7 @@ int mnt_regridedges_new(RegridEdges_t** self) {
 
     *self = new RegridEdges_t();
     (*self)->srcLoc = vmtLonLatCellLocator::New();
+    (*self)->srcElement = new WhitneyElementOrder1();
 
     mnt_grid_new(&((*self)->srcGridObj));
     mnt_grid_new(&((*self)->dstGridObj));
@@ -62,6 +62,8 @@ int mnt_regridedges_del(RegridEdges_t** self) {
 
     // destroy the cell locator
     (*self)->srcLoc->Delete();
+
+    delete (*self)->srcElement;
 
     // destroy the source and destination grids
     if ((*self)->srcGridIsOwned) {
@@ -103,7 +105,30 @@ int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid) {
     }
     (*self)->srcGridObj = grid;
     (*self)->srcGridIsOwned = false;
+
+    // the order 2 element is tied to the source grid
+    int ierElement = mnt_whitneyelement_rebuild(&(*self)->srcElement, grid);
+    return (ier != 0)? ier: ierElement;
+}
+
+LIBRARY_API
+int mnt_regridedges_setOrder(RegridEdges_t** self, int order) {
+    int ier = mnt_whitneyelement_setOrder(&(*self)->srcElement, order, (*self)->srcGridObj);
+    if (ier == 0) {
+        // the weights depend on the source element
+        (*self)->weights.clear();
+        (*self)->weightSrcCellIds.clear();
+        (*self)->weightSrcFaceEdgeIds.clear();
+        (*self)->weightDstCellIds.clear();
+        (*self)->weightDstFaceEdgeIds.clear();
+    }
     return ier;
+}
+
+LIBRARY_API
+int mnt_regridedges_getOrder(RegridEdges_t** self, int* order) {
+    *order = (*self)->srcElement->getOrder();
+    return 0;
 }
 
 LIBRARY_API
@@ -529,6 +554,9 @@ int mnt_regridedges_loadSrcGrid(RegridEdges_t** self,
         return 1;
     }
 
+    // the order 2 element is tied to the source grid
+    ier = mnt_whitneyelement_rebuild(&(*self)->srcElement, (*self)->srcGridObj);
+
     // loading does not change who owns the source grid
     return ier;
 }
@@ -627,6 +655,7 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
     vtkIdList* srcCellIds = vtkIdList::New();
     double dstEdgePt0[] = {0., 0., 0.};
     double dstEdgePt1[] = {0., 0., 0.};
+    double basisIntegrals[MNT_MAX_DOFS_PER_CELL];
     vtkPoints* dstPoints = (*self)->dstGridObj->grid->GetPoints();
 
     std::size_t numDstCells = (*self)->dstGridObj->grid->GetNumberOfCells();
@@ -706,19 +735,14 @@ int mnt_regridedges_computeWeights(RegridEdges_t** self, int debug) {
                     mntlog::info(__FILE__, __func__, __LINE__, buffer);
                 }
 
-                vtkCell* srcCell = (*self)->srcGridObj->grid->GetCell(srcCellId);
-                double* srcCellParamCoords = srcCell->GetParametricCoords();
+                // integrals of the source basis functions along this sub-segment
+                (*self)->srcElement->integrateBasis(srcCellId, xia, xib, basisIntegrals);
 
-                for (int srcEdgeIndex = 0; srcEdgeIndex < (*self)->edgeConnectivity.getNumberOfEdges(); 
+                for (int srcEdgeIndex = 0; srcEdgeIndex < (*self)->srcElement->getNumDofs();
                        ++srcEdgeIndex) {
 
-                    int is0, is1;
-                    (*self)->edgeConnectivity.getCellPointIds(srcEdgeIndex, &is0, &is1);
-                    
                     // compute the interpolation weight
-                    double weight = computeWeight(&srcCellParamCoords[is0*3], 
-                                                  &srcCellParamCoords[is1*3], 
-                                                  xia, xib);
+                    double weight = basisIntegrals[srcEdgeIndex];
 
                     // coeff accounts for the duplicity in the case where segments are shared between cells
                     weight *= coeff;
@@ -858,10 +882,15 @@ int mnt_regridedges_applyToCellByCellData(RegridEdges_t** self,
         auto dstEdgeIndex = (*self)->weightDstFaceEdgeIds[i];
         auto weight = (*self)->weights[i];
 
-        std::size_t srcIdx = srcCellId*MNT_NUM_EDGES_PER_QUAD + srcEdgeIndex;
+        // the source data index depends on the source element, the destination
+        // data are always edge integrals
+        std::size_t srcIdx;
+        int srcSign;
+        (*self)->srcElement->getDofDataIndex((*self)->srcGridObj, srcCellId, srcEdgeIndex,
+                                             MNT_CELL_BY_CELL_DATA, &srcIdx, &srcSign);
         std::size_t dstIdx = dstCellId*MNT_NUM_EDGES_PER_QUAD + dstEdgeIndex;
 
-        dst_data[dstIdx] += weight * src_data[srcIdx];
+        dst_data[dstIdx] += srcSign * weight * src_data[srcIdx];
     }
 
     return 0;
@@ -919,7 +948,8 @@ int mnt_regridedges_applyToUniqueEdgeData(RegridEdges_t** self,
 
         std::size_t srcEdgeId, dstEdgeId;
         int srcEdgeSign, dstEdgeSign;
-        ier = mnt_grid_getEdgeId(&((*self)->srcGridObj), srcCellId, srcEdgeIndex, &srcEdgeId, &srcEdgeSign);
+        ier = (*self)->srcElement->getDofDataIndex((*self)->srcGridObj, srcCellId, srcEdgeIndex,
+                                                   MNT_UNIQUE_EDGE_DATA, &srcEdgeId, &srcEdgeSign);
         ier = mnt_grid_getEdgeId(&((*self)->dstGridObj), dstCellId, dstEdgeIndex, &dstEdgeId, &dstEdgeSign);
 
         dst_data[dstEdgeId] += srcEdgeSign * dstEdgeSign * (*self)->weights[i] * src_data[srcEdgeId];
@@ -1067,6 +1097,27 @@ int mnt_regridedges_loadWeights(RegridEdges_t** self,
         msg = "could not open file \"" + filename + "\"!" + std::string(nc_strerror(ier));
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return 1;
+    }
+
+    // check that the weights were computed with the same source element,
+    // files without the attribute were computed with the lowest order element
+    int srcElementOrder = 1;
+    if (nc_inq_att(ncid, NC_GLOBAL, "src_element_order", NULL, NULL) == NC_NOERR) {
+        ier = nc_get_att_int(ncid, NC_GLOBAL, "src_element_order", &srcElementOrder);
+        if (ier != NC_NOERR) {
+            msg = "could not read attribute \"src_element_order\"!" + std::string(nc_strerror(ier));
+            mntlog::error(__FILE__, __func__, __LINE__, msg);
+            nc_close(ncid);
+            return 14;
+        }
+    }
+    if (srcElementOrder != (*self)->srcElement->getOrder()) {
+        msg = "weights in \"" + filename + "\" were computed with source element order " +
+              std::to_string(srcElementOrder) + " but the regridder uses order " +
+              std::to_string((*self)->srcElement->getOrder());
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        nc_close(ncid);
+        return 15;
     }
 
     // get the sizes
@@ -1284,6 +1335,20 @@ int mnt_regridedges_dumpWeights(RegridEdges_t** self,
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         nc_close(ncid);
         return 7;
+    }
+
+    // the source element the weights were computed with. Weights are stored per
+    // (src cell, src degree of freedom), so they can only be applied with the same
+    // element. Files without these attributes were computed with the lowest order element
+    int srcElementOrder = (*self)->srcElement->getOrder();
+    int srcNumDofsPerCell = (*self)->srcElement->getNumDofs();
+    ier = nc_put_att_int(ncid, NC_GLOBAL, "src_element_order", NC_INT, 1, &srcElementOrder);
+    ier |= nc_put_att_int(ncid, NC_GLOBAL, "src_num_dofs_per_cell", NC_INT, 1, &srcNumDofsPerCell);
+    if (ier != NC_NOERR) {
+        msg = "could not write the source element attributes! ier = " + std::to_string(ier);
+        mntlog::error(__FILE__, __func__, __LINE__, msg);
+        nc_close(ncid);
+        return 14;
     }
 
     // close define mode

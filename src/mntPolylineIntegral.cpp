@@ -4,7 +4,6 @@
 #include <mntPolysegmentIter.h>
 #include <vmtLonLatCellLocator.h>
 #include <vmtXYZCellLocator.h>
-#include <mntWeights.h>
 #include <mntExtensiveFieldAdaptor.h>
 #include <iostream>
 
@@ -18,6 +17,7 @@ int mnt_polylineintegral_new(PolylineIntegral_t** self) {
     (*self)->loc = vmtLonLatCellLocator::New();
     (*self)->gridObj = NULL;
     (*self)->vgrid = NULL;
+    (*self)->element = new WhitneyElementOrder1();
 
     return 0;
 }
@@ -27,6 +27,7 @@ int mnt_polylineintegral_del(PolylineIntegral_t** self) {
 
     // destroy everything here
     (*self)->loc->Delete();
+    delete (*self)->element;
 
     delete *self;
 
@@ -44,7 +45,26 @@ int mnt_polylineintegral_setGrid(PolylineIntegral_t** self, Grid_t* grid) {
     mnt_grid_get(&grid, &(*self)->vgrid);
     (*self)->gridObj = grid;
 
+    // the order 2 element is tied to the grid
+    ier = mnt_whitneyelement_rebuild(&(*self)->element, grid);
+
     return ier;
+}
+
+LIBRARY_API
+int mnt_polylineintegral_setOrder(PolylineIntegral_t** self, int order) {
+    int ier = mnt_whitneyelement_setOrder(&(*self)->element, order, (*self)->gridObj);
+    if (ier == 0) {
+        // the weights depend on the element
+        (*self)->weights.clear();
+    }
+    return ier;
+}
+
+LIBRARY_API
+int mnt_polylineintegral_getOrder(PolylineIntegral_t** self, int* order) {
+    *order = (*self)->element->getOrder();
+    return 0;
 }
 
 
@@ -118,10 +138,9 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
         return -2;
     }
 
-    const double* xi0_xi1 = QUAD_POSITIVEXI_EDGE_DIRECTION;
-    if (counterclock > 0) {
-        xi0_xi1 = QUAD_COUNTERCLOCKWISE_EDGE_DIRECTION;
-    }
+    const WhitneyElement* element = (*self)->element;
+    const int numDofs = element->getNumDofs();
+    double basisIntegrals[MNT_MAX_DOFS_PER_CELL];
 
     // iterate over the Polyline segments
     for (int ip0 = 0; ip0 < npoints - 1; ++ip0) {
@@ -156,16 +175,16 @@ int mnt_polylineintegral_computeWeights(PolylineIntegral_t** self,
             // runs along a cell edge)
             double coeff = polyseg.getCoefficient();
 
+            // integrals of the basis functions along this sub-segment
+            element->integrateBasis(cellId, xia, xib, basisIntegrals);
+
             // store the weights for this sub-segment
-            for (int edgeIndex = 0; edgeIndex < MNT_NUM_EDGES_PER_QUAD; ++edgeIndex) {
+            for (int edgeIndex = 0; edgeIndex < numDofs; ++edgeIndex) {
 
-                // starting point of the cell edge in parameter space
-                const double* xi0 = &xi0_xi1[6*edgeIndex];
-
-                // end point of the cell edge in parameter space
-                const double* xi1 = &xi0_xi1[6*edgeIndex + 3];
-
-                double weight = computeWeight(xi0, xi1, xia, xib);
+                double weight = basisIntegrals[edgeIndex];
+                if (counterclock > 0) {
+                    weight *= element->getCounterclockwiseSign(edgeIndex);
+                }
 #ifdef DEBUG
                 msg = "ip0: " + std::to_string(ip0) + " sgmt: " + std::to_string(i) + " cell " + std::to_string(cellId) + " edge: " + std::to_string(edgeIndex) + 
                       " xi beg/end: " + std::to_string(xia[0]) + "," + std::to_string(xia[1]) + ' ' + 
@@ -201,33 +220,40 @@ int mnt_polylineintegral_getIntegralOfCellByCellData(PolylineIntegral_t** self, 
                                                      double* result) {
 
     *result = 0;
+    int ier = 0;
     for (auto it = (*self)->weights.cbegin(); it != (*self)->weights.cend(); ++it) {
 
         // get the cell Id
         vtkIdType cellId = it->first.first;
 
-        // get the edge index
+        // get the degree of freedom index
         int edgeIndex = it->first.second;
 
+        // location of the degree of freedom in the data
+        std::size_t k;
+        int sign;
+        ier = (*self)->element->getDofDataIndex((*self)->gridObj, cellId, edgeIndex,
+                                                MNT_CELL_BY_CELL_DATA, &k, &sign);
+
         // get the weight
-        double wght = it->second;
+        double wght = sign * it->second;
 
         // add the contribution
 #ifdef DEBUG
         std::string msg = "adding weight = " + std::to_string(wght) + " * edge integral = " + 
-                          std::to_string(data[cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex]) + " to the flux (" +
+                          std::to_string(data[k]) + " to the flux (" +
                           std::to_string(*result) + " so far) for cellId = " + 
                           std::to_string(cellId) + " edgeIndex = " + std::to_string(edgeIndex);
         mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
-        *result += wght * data[cellId*MNT_NUM_EDGES_PER_QUAD + edgeIndex];
+        *result += wght * data[k];
     }
 #ifdef DEBUG
     std::string msg = "total flux = " + std::to_string(*result);
     mntlog::info(__FILE__, __func__, __LINE__, msg);
 #endif
 
-    return 0;
+    return ier;
 }
 
 LIBRARY_API
@@ -254,9 +280,11 @@ int mnt_polylineintegral_getIntegralOfUniqueEdgeData(PolylineIntegral_t** self, 
         // get the edge index
         int edgeIndex = it->first.second;
 
+        // location of the degree of freedom in the data
         std::size_t edgeId;
         int edgeSign;
-        ier = mnt_grid_getEdgeId(&((*self)->gridObj), cellId, edgeIndex, &edgeId, &edgeSign);
+        ier = (*self)->element->getDofDataIndex((*self)->gridObj, cellId, edgeIndex,
+                                                MNT_UNIQUE_EDGE_DATA, &edgeId, &edgeSign);
 
         // get the weight
         double wght = it->second;

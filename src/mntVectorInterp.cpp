@@ -14,6 +14,7 @@ int mnt_vectorinterp_new(VectorInterp_t** self) {
     (*self)->locator = NULL;
     (*self)->ownsLocator = false;
     (*self)->calledFindPoints = false;
+    (*self)->element = new WhitneyElementOrder1();
     return 0;
 }
 
@@ -34,6 +35,7 @@ int mnt_vectorinterp_del(VectorInterp_t** self) {
 
     mnt_vectorinterp__releaseLocator(self);
 
+    delete (*self)->element;
     delete *self;
 
     return 0;
@@ -42,6 +44,18 @@ int mnt_vectorinterp_del(VectorInterp_t** self) {
 LIBRARY_API
 int mnt_vectorinterp_setGrid(VectorInterp_t** self, Grid_t* grid) {
     (*self)->grid = grid;
+    // the order 2 element is tied to the grid
+    return mnt_whitneyelement_rebuild(&(*self)->element, grid);
+}
+
+LIBRARY_API
+int mnt_vectorinterp_setOrder(VectorInterp_t** self, int order) {
+    return mnt_whitneyelement_setOrder(&(*self)->element, order, (*self)->grid);
+}
+
+LIBRARY_API
+int mnt_vectorinterp_getOrder(VectorInterp_t** self, int* order) {
+    *order = (*self)->element->getOrder();
     return 0;
 }
 
@@ -151,148 +165,20 @@ int mnt_vectorinterp_findPoints(VectorInterp_t** self, std::size_t numPoints,
     return numFailures;
 }
 
-LIBRARY_API
-int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self, 
-                                                      const double data[],
-                                                      double vectors[]) {
+/**
+ * Interpolate edge (W1) or face (W2) vectors at the target points
+ * @param self instance of VectorInterp_t
+ * @param data cell by cell or unique edge data
+ * @param placement MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA
+ * @param faceVectors false for edge (W1) vectors, true for face (W2) vectors
+ * @param vectors array of size numTargetPoints*3 (output)
+ * @return number of target points that could not be interpolated, < 0 on error
+ */
+static int mnt_vectorinterp__getVectors(VectorInterp_t** self,
+                                        const double data[], int placement,
+                                        bool faceVectors, double vectors[]) {
 
     std::string msg;
-
-    if (!(*self)->calledFindPoints) {
-        msg ="must call findPoints before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -1;
-    }
-    if (!(*self)->grid) {
-        msg ="must set the grid before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -2;
-    }
-
-    if ((*self)->pcoords.size() == 0) {
-        msg ="there is no target point in the domain";
-        mntlog::warn(__FILE__, __func__, __LINE__, msg);
-        return 2;
-    }
-
-    int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
-    double jac;
-
-    for (std::size_t iTargetId = 0;
-                     iTargetId < (*self)->cellIds.size();
-                     ++iTargetId) {
-
-        vtkIdType cellId = (*self)->cellIds[iTargetId];
-
-        if (cellId < 0) {
-            numFailures++;
-            // next target
-            continue;
-        }
-
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
-
-        // contravariant bases (in the cell's own tangent plane -- see
-        // getTangentVectors for why this is normal-based rather than the old
-        // zHat-only formula)
-        gradXsi = cross(drdEta, normal) / jac;
-        gradEta = cross(normal, drdXsi) / jac;
-
-        // parametric coordinates of the target point
-        double xsi = (*self)->pcoords[iTargetId][0];
-        double eta = (*self)->pcoords[iTargetId][1];
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
-
-        // interpolate
-        double data0 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 0];
-        double data1 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 1];
-        double data2 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 2];
-        double data3 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 3];
-        for (std::size_t j = 0; j < 3; ++j) {
-            // fill in the vector
-            vectors[iTargetId*3 + j] = (data0*ate + data2*eta)*gradXsi[j] + 
-                                       (data3*isx + data1*xsi)*gradEta[j];
-        }
-    }
-
-    return numFailures;
-}
-
-LIBRARY_API
-int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self, 
-                                                      const double data[],
-                                                      double vectors[]) {
-
-    std::string msg;
-
-    if (!(*self)->calledFindPoints) {
-        msg ="must call findPoints before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -1;
-    }
-    if (!(*self)->grid) {
-        msg ="must set the grid before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -2;
-    }
-
-    if ((*self)->pcoords.size() == 0) {
-        msg ="there is no target point in the domain";
-        mntlog::warn(__FILE__, __func__, __LINE__, msg);
-        return 2;
-    }
-
-    int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
-    double jac;
-
-    for (std::size_t iTargetId = 0;
-                     iTargetId < (*self)->cellIds.size();
-                     ++iTargetId) {
-
-        vtkIdType cellId = (*self)->cellIds[iTargetId];
-
-        if (cellId < 0) {
-            numFailures++;
-            // next target
-            continue;
-        }
-
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
-
-        // parametric coordinates of the target point
-        double xsi = (*self)->pcoords[iTargetId][0];
-        double eta = (*self)->pcoords[iTargetId][1];
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
-
-        // interpolate
-        double data0 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 0];
-        double data1 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 1];
-        double data2 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 2];
-        double data3 = data[cellId*MNT_NUM_EDGES_PER_QUAD + 3];
-        for (std::size_t j = 0; j < 3; ++j) {
-            // fill in the vector
-            // the negative sign is because d r/ d eta points in the opposite
-            /// direction to the surface
-            vectors[iTargetId*3 + j] = (data3*isx + data1*xsi)*drdXsi[j]/jac 
-                                     - (data0*ate + data2*eta)*drdEta[j]/jac;
-        }
-    }
-
-    return numFailures;
-}
-
-LIBRARY_API
-int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self, 
-                                                      const double data[],
-                                                      double vectors[]) {
-    
-    std::string msg;
-    std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
-    int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
 
     if (!(*self)->calledFindPoints) {
         msg ="must call findPoints before calling this";
@@ -306,8 +192,9 @@ int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
     }
 
     // the data or vectors are indexed by unique edge Ids, which come from the connectivity
-    if ((*self)->grid->faceEdgeConnectivity.size() == 0 ||
-        (*self)->grid->edgeNodeConnectivity.size() == 0) {
+    if (placement != MNT_CELL_BY_CELL_DATA &&
+        ((*self)->grid->faceEdgeConnectivity.size() == 0 ||
+         (*self)->grid->edgeNodeConnectivity.size() == 0)) {
         msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
         mntlog::error(__FILE__, __func__, __LINE__, msg);
         return -3;
@@ -318,6 +205,9 @@ int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
         mntlog::warn(__FILE__, __func__, __LINE__, msg);
         return 2;
     }
+
+    const WhitneyElement* element = (*self)->element;
+    double dofs[MNT_MAX_DOFS_PER_CELL];
 
     int numFailures = 0;
     Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
@@ -337,32 +227,31 @@ int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
 
         mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
 
-        // contravariant bases (in the cell's own tangent plane -- see
-        // getTangentVectors for why this is normal-based rather than the old
-        // zHat-only formula)
-        gradXsi = cross(drdEta, normal) / jac;
-        gradEta = cross(normal, drdXsi) / jac;
-
         // parametric coordinates of the target point
         double xsi = (*self)->pcoords[iTargetId][0];
         double eta = (*self)->pcoords[iTargetId][1];
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
 
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
+        // covariant components of the field in the reference cell
+        element->getCellDofs((*self)->grid, cellId, data, placement, dofs);
+        double a, b;
+        element->getCovariantComponents(cellId, xsi, eta, dofs, &a, &b);
 
-        // interpolate
-        double data0 = data[edgeId0] * edgeSign0;
-        double data1 = data[edgeId1] * edgeSign1;
-        double data2 = data[edgeId2] * edgeSign2;
-        double data3 = data[edgeId3] * edgeSign3;
-        for (std::size_t j = 0; j < 3; ++j) {
-            // fill in the vector
-            vectors[iTargetId*3 + j] = (data0*ate + data2*eta)*gradXsi[j] + 
-                                       (data3*isx + data1*xsi)*gradEta[j];
+        if (faceVectors) {
+            for (std::size_t j = 0; j < 3; ++j) {
+                // the negative sign is because d r/ d eta points in the opposite
+                // direction to the surface
+                vectors[iTargetId*3 + j] = b*drdXsi[j]/jac - a*drdEta[j]/jac;
+            }
+        }
+        else {
+            // contravariant bases (in the cell's own tangent plane -- see
+            // getTangentVectors for why this is normal-based rather than the old
+            // zHat-only formula)
+            gradXsi = cross(drdEta, normal) / jac;
+            gradEta = cross(normal, drdXsi) / jac;
+            for (std::size_t j = 0; j < 3; ++j) {
+                vectors[iTargetId*3 + j] = a*gradXsi[j] + b*gradEta[j];
+            }
         }
     }
 
@@ -370,83 +259,31 @@ int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
 }
 
 LIBRARY_API
-int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self, 
+int mnt_vectorinterp__getEdgeVectorsFromCellByCellData(VectorInterp_t** self,
                                                       const double data[],
                                                       double vectors[]) {
+    return mnt_vectorinterp__getVectors(self, data, MNT_CELL_BY_CELL_DATA, false, vectors);
+}
 
-    std::string msg;
-    std::size_t edgeId0, edgeId1, edgeId2, edgeId3;
-    int edgeSign0, edgeSign1, edgeSign2, edgeSign3;
+LIBRARY_API
+int mnt_vectorinterp__getFaceVectorsFromCellByCellData(VectorInterp_t** self,
+                                                      const double data[],
+                                                      double vectors[]) {
+    return mnt_vectorinterp__getVectors(self, data, MNT_CELL_BY_CELL_DATA, true, vectors);
+}
 
-    if (!(*self)->calledFindPoints) {
-        msg ="must call findPoints before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -1;
-    }
-    if (!(*self)->grid) {
-        msg ="must set the grid before calling this";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -2;
-    }
+LIBRARY_API
+int mnt_vectorinterp__getEdgeVectorsFromUniqueEdgeData(VectorInterp_t** self,
+                                                      const double data[],
+                                                      double vectors[]) {
+    return mnt_vectorinterp__getVectors(self, data, MNT_UNIQUE_EDGE_DATA, false, vectors);
+}
 
-    // the data or vectors are indexed by unique edge Ids, which come from the connectivity
-    if ((*self)->grid->faceEdgeConnectivity.size() == 0 ||
-        (*self)->grid->edgeNodeConnectivity.size() == 0) {
-        msg = "grid has no edge connectivity, maybe it was not loaded from a UGRID file?";
-        mntlog::error(__FILE__, __func__, __LINE__, msg);
-        return -3;
-    }
-
-    if ((*self)->pcoords.size() == 0) {
-        msg ="there is no target point in the domain";
-        mntlog::warn(__FILE__, __func__, __LINE__, msg);
-        return 2;
-    }
-
-    int numFailures = 0;
-    Vec3 drdXsi, drdEta, gradXsi, gradEta, normal;
-    double jac;
-
-    for (std::size_t iTargetId = 0;
-                     iTargetId < (*self)->cellIds.size();
-                     ++iTargetId) {
-
-        vtkIdType cellId = (*self)->cellIds[iTargetId];
-
-        if (cellId < 0) {
-            numFailures++;
-            // next target
-            continue;
-        }
-
-        mnt_vectorinterp__getTangentVectors(self, iTargetId, drdXsi, drdEta, normal, jac);
-
-        // parametric coordinates of the target point
-        double xsi = (*self)->pcoords[iTargetId][0];
-        double eta = (*self)->pcoords[iTargetId][1];
-        double isx = 1.0 - xsi;
-        double ate = 1.0 - eta;
-
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 0, &edgeId0, &edgeSign0);
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 1, &edgeId1, &edgeSign1);
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 2, &edgeId2, &edgeSign2);
-        mnt_grid_getEdgeId(&(*self)->grid, cellId, 3, &edgeId3, &edgeSign3);
-
-        // interpolate
-        double data0 = data[edgeId0] * edgeSign0;
-        double data1 = data[edgeId1] * edgeSign1;
-        double data2 = data[edgeId2] * edgeSign2;
-        double data3 = data[edgeId3] * edgeSign3;
-        for (std::size_t j = 0; j < 3; ++j) {
-            // fill in the vector
-            // the negative sign is because d r/ d eta points in the opposite
-            // direction to the surface
-            vectors[iTargetId*3 + j] = (data3*isx + data1*xsi)*drdXsi[j]/jac 
-                                     - (data0*ate + data2*eta)*drdEta[j]/jac;
-        }
-    }
-
-    return numFailures;
+LIBRARY_API
+int mnt_vectorinterp__getFaceVectorsFromUniqueEdgeData(VectorInterp_t** self,
+                                                      const double data[],
+                                                      double vectors[]) {
+    return mnt_vectorinterp__getVectors(self, data, MNT_UNIQUE_EDGE_DATA, true, vectors);
 }
 
 LIBRARY_API
@@ -477,6 +314,8 @@ int mnt_vectorinterp_getFaceVectors(VectorInterp_t** self,
     return ier;
 }
 
+// note: the edge-midpoint formulas below are specific to the lowest order
+// Whitney element and do not go through (*self)->element
 LIBRARY_API
 int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
                                             const double data[],
@@ -728,6 +567,8 @@ int mnt_vectorinterp_getVectorsOnEdges(VectorInterp_t** self,
 }
 
 
+// note: the edge-midpoint formulas below are specific to the lowest order
+// Whitney element and do not go through (*self)->element
 LIBRARY_API
 int mnt_vectorinterp_getVectorsOnEdgesSpherical(VectorInterp_t** self,
                                             const double data[],

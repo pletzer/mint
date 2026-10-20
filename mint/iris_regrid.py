@@ -19,6 +19,9 @@ class IrisMintRegridder:
                       and (1, 1, 1) for a cubed-sphere grid. 
         :param tgt_flags: flags to pass to the target grid. Example (0, 0, 1) for a regular grid 
                       and (1, 1, 1) for a cubed-sphere grid. 
+        :param kwargs: additional arguments, eg numCellsPerBucket, periodX, enableFolding, debug,
+                       order (1 for the lowest order Whitney element, the default, or 2 for the
+                       second order element on 2x2 blocks of source cells)
         """
 
         self.tgt_mesh = tgt_mesh
@@ -33,6 +36,7 @@ class IrisMintRegridder:
         self.regridder = mint.RegridEdges()
         self.regridder.setSrcGrid(self.src.get_grid())
         self.regridder.setDstGrid(self.tgt.get_grid())
+        self.regridder.setOrder(kwargs.get('order', 1))
         numCellsPerBucket = kwargs.get('numCellsPerBucket', 128)
         periodX = kwargs.get('periodX', 360.)
         enableFolding = kwargs.get('enableFolding', 0)

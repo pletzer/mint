@@ -23,8 +23,12 @@ configure_file(testXYZCellLocator.cpp testXYZCellLocator.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
 configure_file(test_ncattributes.f90.in test_ncattributes.f90)
+configure_file(testRegridEdgesOrderF.f90.in testRegridEdgesOrderF.f90)
 configure_file(testVectorInterp.cpp testVectorInterp.cxx)
 configure_file(testExtensiveFieldAdaptor.cpp testExtensiveFieldAdaptor.cxx)
+configure_file(testWhitneyElement.cpp testWhitneyElement.cxx)
+configure_file(testWhitneyElementMacro2.cpp testWhitneyElementMacro2.cxx)
+configure_file(testWhitneyLineIntegralCubedSphere.cpp testWhitneyLineIntegralCubedSphere.cxx)
 
 
 if (BUILD_FORTRAN)
@@ -122,6 +126,17 @@ if (BUILD_FORTRAN)
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" 
             "-o" "weights.nc")
    set_tests_properties(regridEdgesF PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
+
+   add_executable(testRegridEdgesOrderF ${CMAKE_BINARY_DIR}/tests/testRegridEdgesOrderF.f90)
+   set_target_properties(testRegridEdgesOrderF PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(testRegridEdgesOrderF
+                       mint
+                       ${VTK_LIBRARIES}
+                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME regridEdgesOrderF COMMAND testRegridEdgesOrderF)
+   set_tests_properties(regridEdgesOrderF PROPERTIES
                         FAIL_REGULAR_EXPRESSION "ERROR")
 
    add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)
@@ -292,6 +307,27 @@ target_link_libraries(testPolylineIntegral
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testWhitneyElement testWhitneyElement.cxx)
+target_link_libraries(testWhitneyElement
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testWhitneyElementMacro2 testWhitneyElementMacro2.cxx)
+target_link_libraries(testWhitneyElementMacro2
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
+add_executable(testWhitneyLineIntegralCubedSphere testWhitneyLineIntegralCubedSphere.cxx)
+target_link_libraries(testWhitneyLineIntegralCubedSphere
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
@@ -406,6 +442,9 @@ add_test(NAME polysegmentIter2 COMMAND testPolysegmentIter2)
 add_test(NAME polysegmentIter3 COMMAND testPolysegmentIter3)
 add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
+add_test(NAME whitneyElement COMMAND testWhitneyElement)
+add_test(NAME whitneyElementMacro2 COMMAND testWhitneyElementMacro2)
+add_test(NAME whitneyLineIntegralCubedSphere COMMAND testWhitneyLineIntegralCubedSphere)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME extensiveFieldAdaptor COMMAND testExtensiveFieldAdaptor)
 add_test(NAME cellLocator COMMAND testCellLocator)

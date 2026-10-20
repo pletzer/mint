@@ -8,6 +8,7 @@
 #include <vmtCellLocator.h>
 #include <mntGrid.h>
 #include <mntQuadEdgeIter.h>
+#include <mntWhitneyElement.h>
 #include <mntNcAttributes.h>
 #include <mntNcFieldRead.h>
 #include <mntNcFieldWrite.h>
@@ -52,6 +53,9 @@ struct RegridEdges_t {
 
     /** edge connectivity iterator */
     QuadEdgeIter edgeConnectivity;
+
+    // edge element of the source grid, used to integrate the basis functions (owned)
+    WhitneyElement* srcElement;
 
     /** number of dimensions */
     int ndims;
@@ -121,6 +125,29 @@ int mnt_regridedges_del(RegridEdges_t** self);
  */
 LIBRARY_API
 int mnt_regridedges_setSrcGrid(RegridEdges_t** self, Grid_t* grid);
+
+/**
+ * Set the order of the source edge element
+ * @param self instance of the regridding object
+ * @param order 1 (lowest order Whitney element, the default) or 2 (second order
+ *              element on 2x2 blocks of source grid cells, using the same edge data)
+ * @return error code (0 = OK), the order is unchanged on error
+ * @note call after setting or loading the source grid and before computing or
+ *       loading the weights, changing the order discards the weights. Order 2
+ *       requires a source grid with UGRID connectivity that can be tiled into
+ *       2x2 blocks of cells. The destination data are always edge integrals
+ */
+LIBRARY_API
+int mnt_regridedges_setOrder(RegridEdges_t** self, int order);
+
+/**
+ * Get the order of the source edge element
+ * @param self instance of the regridding object
+ * @param order 1 or 2 (output)
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_regridedges_getOrder(RegridEdges_t** self, int* order);
 
 /**
  * Set the destination grid
@@ -417,6 +444,8 @@ int mnt_regridedges_vectorApply(RegridEdges_t** self,
  * @return error code (0 is OK)
  * @note This does not create the object, user must call mnt_regridedges_new prior to this call
  * @note Supplying the length of the filename string allows one to call this function from Fortran
+ * @note Fails (error 15) if the weights were computed with a different source element order,
+ *       files without a "src_element_order" attribute are assumed to be order 1
  */
 LIBRARY_API
 int mnt_regridedges_loadWeights(RegridEdges_t** self, 

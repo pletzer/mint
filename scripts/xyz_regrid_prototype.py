@@ -150,7 +150,7 @@ def findIntersectionsWithLineXYZ(allCorners, p0, p1, tol=1.e-6, nBisect=60):
     return segments
 
 
-# ---------------------------------------------------------------------------
+# 3. computeWeight, ported unchanged from computeEdgeWeight in mntWhitneyElement.cpp (already
 # 3. computeWeight, ported unchanged from mntWeights.cpp (already
 #    coordinate-agnostic -- pure parametric-space math, verified by reading
 #    the C++ source) -- reused as-is, not reinvented.
