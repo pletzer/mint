@@ -75,6 +75,75 @@ def _dual(jx, jy):
             (-g12[:, None] * jx + g11[:, None] * jy) / det[:, None])
 
 
+def mintCellIds(M, f, i, j):
+    """mint cell Id of cubed-sphere cell (f, i, j), see mintCubedSphereElement."""
+    return (f * M + j) * M + i
+
+
+def mintCubedSphereElement(cs, order):
+    """
+    mint grid with the topology of the cubed sphere cs, cell (f, i, j) ->
+    mintCellIds(M, f, i, j) with its local frame along the panel chart, and
+    mint's edge element of the given order on it. The order 2 element uses the
+    piecewise cell coordinates of its 2x2 blocks (biquadratic=False), its exact
+    geometry in the panel chart where the equiangular grid is uniform.
+    """
+    import mint
+    nid = cs.nodeId
+    f2n = numpy.stack([nid[:, :-1, :-1], nid[:, 1:, :-1], nid[:, 1:, 1:], nid[:, :-1, 1:]], -1)
+    f2n = numpy.ascontiguousarray(f2n.transpose(0, 2, 1, 3).reshape(-1, 4), numpy.uint64)
+    x = cs.nodes
+    xyz = numpy.zeros_like(x)
+    xyz[:, 0] = numpy.degrees(numpy.arctan2(x[:, 1], x[:, 0]))
+    xyz[:, 1] = numpy.degrees(numpy.arcsin(numpy.clip(x[:, 2], -1., 1.)))
+    grid = mint.Grid()
+    grid.setFlags(1, 1)
+    grid.loadFromUgrid2DData(numpy.ascontiguousarray(xyz),
+                             f2n, numpy.ascontiguousarray(cs.edges, numpy.uint64))
+    # the element keeps the grid alive
+    return mint.WhitneyElement(order, grid, biquadratic=False)
+
+
+def mintCellByCellData(Ex, Ey):
+    """
+    Cell by cell edge data for mintCubedSphereElement from the circulations
+    Ex (..., 6, M, M+1) and Ey (..., 6, M+1, M), oriented +xi, +eta like mint's
+    cell edges 0 (south), 1 (east), 2 (north), 3 (west). Returns (..., 6*M*M*4).
+    """
+    Ex, Ey = numpy.asarray(Ex), numpy.asarray(Ey)
+    cbc = numpy.stack([Ex[..., :, :-1], Ey[..., 1:, :], Ex[..., :, 1:], Ey[..., :-1, :]], -1)
+    cbc = numpy.swapaxes(cbc, -3, -2)                  # [f, i, j, edge] -> [f, j, i, edge]
+    return numpy.ascontiguousarray(cbc.reshape(cbc.shape[:-4] + (-1,)))
+
+
+def biquadraticBlockBasis(P, f, i, j, xi, eta):
+    """
+    Covariant basis (dr/dxi, dr/deta) of the biquadratic map through the 9
+    nodes P (6, M+1, M+1, 3) of the 2x2 block of cell (f, i, j), at the cell
+    coordinates (xi, eta). mint tiles each panel into the blocks of cells
+    (2a, 2a + 1) x (2b, 2b + 1), so cell (i, j) is at position
+    (p, q) = (i % 2, j % 2) of its block.
+    """
+    p, q = i % 2, j % 2
+    X, Y = 0.5 * (p + xi), 0.5 * (q + eta)
+
+    def lag(t):
+        return (numpy.stack([(1 - t) * (1 - 2 * t), 4 * t * (1 - t), t * (2 * t - 1)]),
+                numpy.stack([4 * t - 3, 4 - 8 * t, 4 * t - 1]))
+    lx, dlx = lag(X)
+    ly, dly = lag(Y)
+    i0, j0 = i - p, j - q
+    dGdX = numpy.zeros(numpy.shape(f) + (3,))
+    dGdY = numpy.zeros(numpy.shape(f) + (3,))
+    for a in range(3):
+        for b in range(3):
+            node = P[f, i0 + a, j0 + b]
+            dGdX += (dlx[a] * ly[b])[..., None] * node
+            dGdY += (lx[a] * dly[b])[..., None] * node
+    # dX/dxi = dY/deta = 1/2
+    return 0.5 * dGdX, 0.5 * dGdY
+
+
 class Tracer:
 
     def __init__(self, M, fld, arms=ARMS, nGauss=12):
@@ -144,64 +213,21 @@ class Tracer:
         return Sx, Sy
 
     def _buildMintElement(self, order):
-        """
-        mint grid with the topology of the cubed sphere, cell (f, i, j) ->
-        cellId (f*M + j)*M + i with its local frame along the panel chart, and
-        mint's edge element of the given order on it. The cell by cell edge data
-        of each basis field are the circulations Ex, Ey, oriented +xi, +eta like
-        mint's cell edges 0 (south), 1 (east), 2 (north), 3 (west).
-        """
-        import mint
-        cs, M = self.cs, self.M
-        nid = cs.nodeId
-        f2n = numpy.stack([nid[:, :-1, :-1], nid[:, 1:, :-1], nid[:, 1:, 1:], nid[:, :-1, 1:]], -1)
-        f2n = numpy.ascontiguousarray(f2n.transpose(0, 2, 1, 3).reshape(-1, 4), numpy.uint64)
-        x = cs.nodes
-        xyz = numpy.zeros_like(x)
-        xyz[:, 0] = numpy.degrees(numpy.arctan2(x[:, 1], x[:, 0]))
-        xyz[:, 1] = numpy.degrees(numpy.arcsin(numpy.clip(x[:, 2], -1., 1.)))
-        grid = mint.Grid()
-        grid.setFlags(1, 1)
-        grid.loadFromUgrid2DData(numpy.ascontiguousarray(xyz),
-                                 f2n, numpy.ascontiguousarray(cs.edges, numpy.uint64))
-        self.mintElement = mint.WhitneyElement(order, grid, biquadratic=False)
-        cbc = numpy.stack([self.Ex[:, :, :, :-1], self.Ey[:, :, 1:, :],
-                           self.Ex[:, :, :, 1:], self.Ey[:, :, :-1, :]], -1)   # (nbasis, 6, M, M, 4)
-        self.mintData = numpy.ascontiguousarray(cbc.transpose(0, 1, 3, 2, 4).reshape(len(cbc), -1))
+        """mint's edge element on the cubed sphere and the cell by cell data of each basis field."""
+        self.mintElement = mintCubedSphereElement(self.cs, order)
+        self.mintData = mintCellByCellData(self.Ex, self.Ey)
 
     def _mintCovariant(self, st):
         """Covariant components (v_xi, v_eta) of each basis field from mint's element."""
         f, i, j, xi, eta = st
-        cellIds = (f * self.M + j) * self.M + i
+        cellIds = mintCellIds(self.M, f, i, j)
         ab = [self.mintElement.getCovariantComponents(cellIds, xi, eta, d) for d in self.mintData]
         return numpy.array([a for a, b in ab]), numpy.array([b for a, b in ab])
 
     def _biquadraticBasis(self, st):
-        """
-        Covariant basis (dr/dxi, dr/deta) of the biquadratic map through the 9
-        nodes of each particle's 2x2 block. mint tiles each panel into the blocks
-        of cells (2a, 2a + 1) x (2b, 2b + 1), so cell (i, j) is at position
-        (p, q) = (i % 2, j % 2) of its block.
-        """
+        """Covariant basis of the biquadratic map of each particle's 2x2 block."""
         f, i, j, xi, eta = st
-        p, q = i % 2, j % 2
-        X, Y = 0.5 * (p + xi), 0.5 * (q + eta)
-
-        def lag(t):
-            return (numpy.stack([(1 - t) * (1 - 2 * t), 4 * t * (1 - t), t * (2 * t - 1)]),
-                    numpy.stack([4 * t - 3, 4 - 8 * t, 4 * t - 1]))
-        lx, dlx = lag(X)
-        ly, dly = lag(Y)
-        i0, j0 = i - p, j - q
-        dGdX = numpy.zeros((len(f), 3))
-        dGdY = numpy.zeros((len(f), 3))
-        for a in range(3):
-            for b in range(3):
-                node = self.P[f, i0 + a, j0 + b]
-                dGdX += (dlx[a] * ly[b])[:, None] * node
-                dGdY += (lx[a] * dly[b])[:, None] * node
-        # dX/dxi = dY/deta = 1/2
-        return 0.5 * dGdX, 0.5 * dGdY
+        return biquadraticBlockBasis(self.P, f, i, j, xi, eta)
 
     # ------------------------------------------------------------------
     def position(self, st):
