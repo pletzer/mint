@@ -27,6 +27,7 @@ configure_file(testVectorInterp.cpp testVectorInterp.cxx)
 configure_file(testExtensiveFieldAdaptor.cpp testExtensiveFieldAdaptor.cxx)
 configure_file(testWhitneyElement.cpp testWhitneyElement.cxx)
 configure_file(testWhitneyElementMacro2.cpp testWhitneyElementMacro2.cxx)
+configure_file(testWhitneyLineIntegralCubedSphere.cpp testWhitneyLineIntegralCubedSphere.cxx)
 
 
 if (BUILD_FORTRAN)
@@ -308,6 +309,13 @@ target_link_libraries(testWhitneyElementMacro2
                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
 )
 
+add_executable(testWhitneyLineIntegralCubedSphere testWhitneyLineIntegralCubedSphere.cxx)
+target_link_libraries(testWhitneyLineIntegralCubedSphere
+                      mint
+                      ${VTK_LIBRARIES}
+                      ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+)
+
 add_executable(testGrid testGrid.cxx)
 target_link_libraries(testGrid
                       mint
@@ -424,6 +432,7 @@ add_test(NAME findCellsAlongLine COMMAND testFindCellsAlongLine)
 add_test(NAME polylineIntegral COMMAND testPolylineIntegral)
 add_test(NAME whitneyElement COMMAND testWhitneyElement)
 add_test(NAME whitneyElementMacro2 COMMAND testWhitneyElementMacro2)
+add_test(NAME whitneyLineIntegralCubedSphere COMMAND testWhitneyLineIntegralCubedSphere)
 add_test(NAME grid COMMAND testGrid)
 add_test(NAME extensiveFieldAdaptor COMMAND testExtensiveFieldAdaptor)
 add_test(NAME cellLocator COMMAND testCellLocator)

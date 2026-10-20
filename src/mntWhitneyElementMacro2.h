@@ -33,10 +33,27 @@
  * with L_j the quadratic Lagrange polynomials at 0, 1/2, 1 and
  * phi_0 = 3 - 4t, phi_1 = 4t - 1 the duals of the half-interval integrals.
  *
- * A grid cell at position (p, q) in its block has X = (p + xi)/2,
- * Y = (q + eta)/2, so the covariant components returned in the cell's own
- * parametric coordinates are half the macro components. The geometry is the
- * grid's own (piecewise bilinear) cell mapping.
+ * Geometry. By default each block is mapped by the biquadratic (isoparametric)
+ * map through its 9 nodes, (X, Y) -> sum_ab node_ab L_a(X) L_b(Y). A point
+ * (xi, eta) of a grid cell is placed in physical coordinates with the cell's
+ * bilinear map, then its macro coordinates are found by inverting the block's
+ * biquadratic map (Newton iterations), and the covariant components are
+ * returned in the cell's (xi, eta) through the chain rule. This removes the
+ * O(h^2) kink of the four bilinear cell maps inside a block, so that
+ * interpolation (and the line integral of a gradient field, which only depends
+ * on the end points) is O(h^3) on curved grids. Segment integrals then use a
+ * 5-point Gauss-Legendre rule.
+ *
+ * With biquadratic = false in build(), or for blocks whose biquadratic map
+ * cannot be built (blocks touching a pole, where the pole node has a different
+ * longitude in each cell), the macro coordinates are those of the piecewise
+ * bilinear cell maps, X = (p + xi)/2, Y = (q + eta)/2 for the cell at position
+ * (p, q), and the covariant components are half the macro components. Segment
+ * integrals are then exact with a 2-point rule. This limits accuracy to O(h^2)
+ * on curved grids.
+ *
+ * The cell maps are the bilinear maps of the grid's (lon, lat) or (x, y)
+ * vertex coordinates, as used by PolylineIntegral and RegridEdges.
  *
  * The four cells of a block must share their parametric frame (cell (1,0)
  * starts where cell (0,0)'s xi edge ends, etc.) and neighbouring blocks must
@@ -50,11 +67,29 @@ public:
     WhitneyElementMacro2() {}
 
     /**
-     * Tile the grid into 2x2 blocks of cells
+     * Tile the grid into 2x2 blocks of cells and set up the block geometry
      * @param grid grid, must have UGRID face-node connectivity
+     * @param biquadratic true to map each block with the biquadratic map through
+     *                    its 9 nodes, false to use the piecewise bilinear cell maps
      * @return error code (0 = OK), > 0 is the number of cells that could not be tiled
      */
-    int build(Grid_t* grid);
+    int build(Grid_t* grid, bool biquadratic = true);
+
+    /**
+     * @return number of blocks that use the biquadratic map
+     */
+    std::size_t getNumBiquadraticBlocks() const;
+
+    /**
+     * Get the macro coordinates of a point of a grid cell and their derivatives
+     * @param cellId cell Id
+     * @param xi first parametric coordinate in the cell
+     * @param eta second parametric coordinate in the cell
+     * @param xy macro coordinates (X, Y) (output)
+     * @param dxy derivatives dxy[i][j] = d(X, Y)_i / d(xi, eta)_j (output)
+     * @return error code (0 = OK, 1 if the cell is not in any block)
+     */
+    int getMacroCoords(vtkIdType cellId, double xi, double eta, double xy[], double dxy[][2]) const;
 
     int getOrder() const override { return 2; }
 
@@ -119,6 +154,21 @@ private:
 
     // position of each cell in its block, index into the 4 positions above
     std::vector<int> cellPos;
+
+    // whether each block uses the biquadratic map
+    std::vector<char> blockBiquadratic;
+
+    // 9 nodes of each block, numBlocks*9*2, node (a, b) at [(9*blockId + 3*b + a)*2]
+    std::vector<double> blockNodes;
+
+    // 4 vertices of each cell, in the coordinates of its block (longitudes made
+    // continuous within the block), numCells*4*2
+    std::vector<double> cellVerts;
+
+    /**
+     * Evaluate the biquadratic map of a block and its Jacobian
+     */
+    void evalMacroMap(std::size_t blockId, double x, double y, double g[], double jac[][2]) const;
 };
 
 #endif // MNT_WHITNEY_ELEMENT_MACRO2
