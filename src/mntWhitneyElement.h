@@ -1,3 +1,4 @@
+#include "mntLIBRARY_API.h"
 #include <limits> // required by vtkUnstructuredGrid
 #include <vtkType.h>
 #include <mntVecN.h>
@@ -159,9 +160,11 @@ public:
  * @param order 1 for WhitneyElementOrder1, 2 for WhitneyElementMacro2
  * @param grid grid, needed for order 2 (the grid is tiled into 2x2 blocks of cells)
  * @param element the new element, owned by the caller (output). Left unchanged on error
+ * @param biquadratic order 2 only: map each 2x2 block with its biquadratic 9-node map
+ *                    (true) or use the piecewise bilinear cell coordinates (false)
  * @return error code (0 = OK)
  */
-int mnt_whitneyelement_create(int order, Grid_t* grid, WhitneyElement** element);
+int mnt_whitneyelement_create(int order, Grid_t* grid, WhitneyElement** element, bool biquadratic = true);
 
 /**
  * Replace an element by a new element of a given order
@@ -181,5 +184,65 @@ int mnt_whitneyelement_setOrder(WhitneyElement** element, int order, Grid_t* gri
  * @return error code (0 = OK, otherwise the element fell back to order 1)
  */
 int mnt_whitneyelement_rebuild(WhitneyElement** element, Grid_t* grid);
+
+/*
+ * C API, to evaluate an edge element directly (e.g. from Python), outside of
+ * VectorInterp, PolylineIntegral and RegridEdges
+ */
+
+/**
+ * Constructor
+ * @param self the new element (output)
+ * @param order 1 (lowest order Whitney element) or 2 (second order element on 2x2
+ *              blocks of grid cells)
+ * @param grid grid, needed for order 2. The element borrows it, keep it alive
+ * @param biquadratic order 2 only: 1 to map each 2x2 block with its biquadratic
+ *                    9-node map, 0 to use the piecewise bilinear cell coordinates
+ *                    X = (p + xi)/2, Y = (q + eta)/2 (exact when the grid is uniform
+ *                    in the coordinates in which the field is reconstructed)
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_whitneyelement_new(WhitneyElement** self, int order, Grid_t* grid, int biquadratic);
+
+/**
+ * Destructor
+ * @param self the element
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_whitneyelement_del(WhitneyElement** self);
+
+/**
+ * Get the order of the element
+ * @param self the element
+ * @param order 1 or 2 (output)
+ * @return error code (0 = OK)
+ */
+LIBRARY_API
+int mnt_whitneyelement_getOrder(WhitneyElement** self, int* order);
+
+/**
+ * Get the covariant components (a, b) of a field, a dxi + b deta in the
+ * parametric coordinates of the given cells
+ * @param self the element
+ * @param grid the grid the data live on
+ * @param numPoints number of points
+ * @param cellIds cell of each point
+ * @param xis first parametric coordinate of each point in its cell
+ * @param etas second parametric coordinate of each point in its cell
+ * @param data edge integrals, cell by cell (numCells*4, each cell's edges in the
+ *             positive xi/eta direction) or on unique edges
+ * @param placement MNT_CELL_BY_CELL_DATA or MNT_UNIQUE_EDGE_DATA
+ * @param a dxi components (output)
+ * @param b deta components (output)
+ * @return number of points whose cell is invalid or not covered by the element
+ *         (their components are set to zero)
+ */
+LIBRARY_API
+int mnt_whitneyelement_getCovariantComponents(WhitneyElement** self, Grid_t* grid, std::size_t numPoints,
+                                              const long long cellIds[], const double xis[],
+                                              const double etas[], const double data[], int placement,
+                                              double a[], double b[]);
 
 #endif // MNT_WHITNEY_ELEMENT

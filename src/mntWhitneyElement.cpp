@@ -139,7 +139,7 @@ WhitneyElementOrder1::getDofDataIndex(Grid_t* grid, vtkIdType cellId, int dofInd
 }
 
 int
-mnt_whitneyelement_create(int order, Grid_t* grid, WhitneyElement** element) {
+mnt_whitneyelement_create(int order, Grid_t* grid, WhitneyElement** element, bool biquadratic) {
 
     std::string msg;
     if (order == 1) {
@@ -153,7 +153,7 @@ mnt_whitneyelement_create(int order, Grid_t* grid, WhitneyElement** element) {
             return 2;
         }
         WhitneyElementMacro2* macro = new WhitneyElementMacro2();
-        int ier = macro->build(grid);
+        int ier = macro->build(grid, biquadratic);
         if (ier != 0) {
             msg = "could not build the order 2 element on the grid";
             mntlog::error(__FILE__, __func__, __LINE__, msg);
@@ -195,4 +195,53 @@ mnt_whitneyelement_rebuild(WhitneyElement** element, Grid_t* grid) {
         mnt_whitneyelement_setOrder(element, 1, grid);
     }
     return ier;
+}
+
+LIBRARY_API
+int
+mnt_whitneyelement_new(WhitneyElement** self, int order, Grid_t* grid, int biquadratic) {
+    *self = NULL;
+    return mnt_whitneyelement_create(order, grid, self, biquadratic != 0);
+}
+
+LIBRARY_API
+int
+mnt_whitneyelement_del(WhitneyElement** self) {
+    delete *self;
+    *self = NULL;
+    return 0;
+}
+
+LIBRARY_API
+int
+mnt_whitneyelement_getOrder(WhitneyElement** self, int* order) {
+    *order = (*self)->getOrder();
+    return 0;
+}
+
+LIBRARY_API
+int
+mnt_whitneyelement_getCovariantComponents(WhitneyElement** self, Grid_t* grid, std::size_t numPoints,
+                                          const long long cellIds[], const double xis[],
+                                          const double etas[], const double data[], int placement,
+                                          double a[], double b[]) {
+    const WhitneyElement* element = *self;
+    std::size_t numCells = 0;
+    if (grid) {
+        mnt_grid_getNumberOfCells(&grid, &numCells);
+    }
+    double dofs[MNT_MAX_DOFS_PER_CELL];
+    int numFailures = 0;
+    for (std::size_t i = 0; i < numPoints; ++i) {
+        vtkIdType cellId = (vtkIdType) cellIds[i];
+        if (cellId < 0 || (std::size_t) cellId >= numCells ||
+            element->getCellDofs(grid, cellId, data, placement, dofs) != 0) {
+            a[i] = 0.0;
+            b[i] = 0.0;
+            numFailures++;
+            continue;
+        }
+        element->getCovariantComponents(cellId, xis[i], etas[i], dofs, &a[i], &b[i]);
+    }
+    return numFailures;
 }

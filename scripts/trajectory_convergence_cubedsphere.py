@@ -27,7 +27,7 @@ path ever entered a cube-corner cell. Time step dt = CFL * (pi/2)/M / vmax,
 arm E (exact velocity) measures the time-integration + hand-over error.
 
 Usage: python trajectory_convergence_cubedsphere.py [--maxM 128] [--nseeds 400]
-                                                    [--cases sb_generic,nl] [--arms ABCDE] [--tag _nl256]
+                                                    [--cases sb_generic,nl] [--arms ABCDWRE] [--tag _nl256]
 """
 import argparse
 import sys
@@ -48,6 +48,7 @@ from trajectory_integrator import Tracer  # noqa: E402
 ARM_LABELS = {'A': 'A Whitney + exact g^ij', 'B': 'B Whitney + bilinear g^ij',
               'C': 'C RT0 fluxes / sqrt(g)', 'D': 'D nodal star + bilinear',
               'W': 'W Whitney k=2 + exact g^ij',
+              'R': 'R mint k=2 2x2 + exact g^ij',
               'E': 'E exact v (time error)'}
 OMEGA_TILT = numpy.array([numpy.sin(0.7) * numpy.cos(0.3),
                           numpy.sin(0.7) * numpy.sin(0.3), numpy.cos(0.7)])
@@ -162,7 +163,7 @@ def main():
         report(case, res, Ms, arms)
         for k, arm in enumerate(arms):
             e = res[(arm, 'rms')]
-            ax.loglog(Ms, e, marker='os^dpv'[k], color=f'C{k}',
+            ax.loglog(Ms, e, marker='os^dpv<'[k], color=f'C{k}',
                       label=f'{ARM_LABELS[arm]} ({fitAlpha(Ms, e):.2f})')
         ax.loglog(Ms, res[(arms[0], 'rms')][0] * (Ms[0] / numpy.array(Ms, float)) ** 2, 'k:', lw=0.8,
                   label='M^-2')

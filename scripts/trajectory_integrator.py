@@ -25,6 +25,11 @@ Arms (cell-local contravariant velocity):
      edge, tangential profile linear along each edge, no interior bubble
      DOFs), slopes from exact first moments in the cell coordinate, raised
      with the exact metric
+  R  mint's order 2 element (mint.WhitneyElement(2, ...), Nedelec degree 2 on
+     2x2 blocks of cells with Rapetti-Bossavit small-edge DOFs): the same
+     circulations as A, no extra data, raised with the exact metric. Evaluated
+     in the panel chart, where the equiangular grid is uniform, so the block's
+     piecewise cell coordinates (biquadratic=False) are its exact geometry
   E  exact velocity projected onto the exact dual basis (control: time and
      hand-over errors only)
 
@@ -40,7 +45,7 @@ sys.path.insert(0, str(Path(__file__).absolute().parent))
 from nodal_star import CubedSphere, nodalVectors, greatCircleIntegral, facePoint  # noqa: E402
 from cs_chart import _FRAMES, basis as chartBasis  # noqa: E402
 
-ARMS = ('A', 'B', 'C', 'D', 'W', 'E')
+ARMS = ('A', 'B', 'C', 'D', 'W', 'R', 'E')
 SNAP = 1e-9
 
 
@@ -99,6 +104,8 @@ class Tracer:
         self.Sy = numpy.array(Sy) if Sy else None
         self.Fx, self.Fy = numpy.array(Fx), numpy.array(Fy)
         self.V = numpy.array(V) if V else None
+        if 'R' in arms:
+            self._buildMintElement(2)
         self.nSlide = 0
         self.nPanelCross = 0
 
@@ -131,6 +138,39 @@ class Tracer:
                 t = numpy.sum(vel(x) * jb, -1) * da[None, :]
                 Sy[f] += 3. * wk * t * (2. * sk - 1.)
         return Sx, Sy
+
+    def _buildMintElement(self, order):
+        """
+        mint grid with the topology of the cubed sphere, cell (f, i, j) ->
+        cellId (f*M + j)*M + i with its local frame along the panel chart, and
+        mint's edge element of the given order on it. The cell by cell edge data
+        of each basis field are the circulations Ex, Ey, oriented +xi, +eta like
+        mint's cell edges 0 (south), 1 (east), 2 (north), 3 (west).
+        """
+        import mint
+        cs, M = self.cs, self.M
+        nid = cs.nodeId
+        f2n = numpy.stack([nid[:, :-1, :-1], nid[:, 1:, :-1], nid[:, 1:, 1:], nid[:, :-1, 1:]], -1)
+        f2n = numpy.ascontiguousarray(f2n.transpose(0, 2, 1, 3).reshape(-1, 4), numpy.uint64)
+        x = cs.nodes
+        xyz = numpy.zeros_like(x)
+        xyz[:, 0] = numpy.degrees(numpy.arctan2(x[:, 1], x[:, 0]))
+        xyz[:, 1] = numpy.degrees(numpy.arcsin(numpy.clip(x[:, 2], -1., 1.)))
+        grid = mint.Grid()
+        grid.setFlags(1, 1)
+        grid.loadFromUgrid2DData(numpy.ascontiguousarray(xyz),
+                                 f2n, numpy.ascontiguousarray(cs.edges, numpy.uint64))
+        self.mintElement = mint.WhitneyElement(order, grid, biquadratic=False)
+        cbc = numpy.stack([self.Ex[:, :, :, :-1], self.Ey[:, :, 1:, :],
+                           self.Ex[:, :, :, 1:], self.Ey[:, :, :-1, :]], -1)   # (nbasis, 6, M, M, 4)
+        self.mintData = numpy.ascontiguousarray(cbc.transpose(0, 1, 3, 2, 4).reshape(len(cbc), -1))
+
+    def _mintCovariant(self, st):
+        """Covariant components (v_xi, v_eta) of each basis field from mint's element."""
+        f, i, j, xi, eta = st
+        cellIds = (f * self.M + j) * self.M + i
+        ab = [self.mintElement.getCovariantComponents(cellIds, xi, eta, d) for d in self.mintData]
+        return numpy.array([a for a, b in ab]), numpy.array([b for a, b in ab])
 
     # ------------------------------------------------------------------
     def position(self, st):
@@ -173,9 +213,14 @@ class Tracer:
             dx, dy = _dual(jx, jy)
             return numpy.sum(v * dx, -1), numpy.sum(v * dy, -1)
         c = self.fld.coeffs(t)                   # (nbasis,) + t.shape
-        if arm in 'ABW':
-            vxi = numpy.sum(c * ((1 - eta) * self.Ex[:, f, i, j] + eta * self.Ex[:, f, i, j + 1]), 0)
-            veta = numpy.sum(c * ((1 - xi) * self.Ey[:, f, i, j] + xi * self.Ey[:, f, i + 1, j]), 0)
+        if arm in 'ABWR':
+            if arm == 'R':
+                avxi, aveta = self._mintCovariant(st)
+                vxi = numpy.sum(c * avxi, 0)
+                veta = numpy.sum(c * aveta, 0)
+            else:
+                vxi = numpy.sum(c * ((1 - eta) * self.Ex[:, f, i, j] + eta * self.Ex[:, f, i, j + 1]), 0)
+                veta = numpy.sum(c * ((1 - xi) * self.Ey[:, f, i, j] + xi * self.Ey[:, f, i + 1, j]), 0)
             if arm == 'W':
                 vxi = vxi + (2 * xi - 1) * numpy.sum(
                     c * ((1 - eta) * self.Sx[:, f, i, j] + eta * self.Sx[:, f, i, j + 1]), 0)
