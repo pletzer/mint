@@ -23,6 +23,7 @@ configure_file(testXYZCellLocator.cpp testXYZCellLocator.cxx)
 configure_file(test_ncfieldread.f90.in test_ncfieldread.f90)
 configure_file(test_ncdimensions.f90.in test_ncdimensions.f90)
 configure_file(test_ncattributes.f90.in test_ncattributes.f90)
+configure_file(testRegridEdgesOrderF.f90.in testRegridEdgesOrderF.f90)
 configure_file(testVectorInterp.cpp testVectorInterp.cxx)
 configure_file(testExtensiveFieldAdaptor.cpp testExtensiveFieldAdaptor.cxx)
 configure_file(testWhitneyElement.cpp testWhitneyElement.cxx)
@@ -125,6 +126,17 @@ if (BUILD_FORTRAN)
             "-d" "${CMAKE_SOURCE_DIR}/data/cs_4.nc$physics" 
             "-o" "weights.nc")
    set_tests_properties(regridEdgesF PROPERTIES
+                        FAIL_REGULAR_EXPRESSION "ERROR")
+
+   add_executable(testRegridEdgesOrderF ${CMAKE_BINARY_DIR}/tests/testRegridEdgesOrderF.f90)
+   set_target_properties(testRegridEdgesOrderF PROPERTIES LINKER_LANGUAGE Fortran)
+   target_link_libraries(testRegridEdgesOrderF
+                       mint
+                       ${VTK_LIBRARIES}
+                       ${NETCDF_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${CURL_LIBRARIES}
+   )
+   add_test(NAME regridEdgesOrderF COMMAND testRegridEdgesOrderF)
+   set_tests_properties(regridEdgesOrderF PROPERTIES
                         FAIL_REGULAR_EXPRESSION "ERROR")
 
    add_executable(testCmdLineArgParserF testCmdLineArgParserF.f90)

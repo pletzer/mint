@@ -54,6 +54,35 @@ class VectorInterp(object):
         # the C side borrows the grid, keep it alive for as long as it may use it
         self._grid = grid
 
+
+    def setOrder(self, order):
+        """
+        Set the order of the edge element.
+
+        :param order: 1 for the lowest order Whitney element (the default), 2 for the
+                      second order element built on 2x2 blocks of grid cells, which
+                      uses the same edge data
+        :note: call after setGrid. Order 2 needs a grid with UGRID connectivity that can be
+               tiled into 2x2 blocks of cells. Setting a new grid rebuilds the order 2
+               element (falling back to order 1 if the new grid cannot be tiled)
+        """
+        MINTLIB.mnt_vectorinterp_setOrder.argtypes = [POINTER(c_void_p), c_int]
+        ier = MINTLIB.mnt_vectorinterp_setOrder(self.obj, order)
+        if ier:
+            error_handler(FILE, 'setOrder', ier)
+
+    def getOrder(self):
+        """
+        Get the order of the edge element.
+
+        :returns: 1 or 2
+        """
+        MINTLIB.mnt_vectorinterp_getOrder.argtypes = [POINTER(c_void_p), POINTER(c_int)]
+        order = c_int()
+        ier = MINTLIB.mnt_vectorinterp_getOrder(self.obj, byref(order))
+        if ier:
+            error_handler(FILE, 'getOrder', ier)
+        return order.value
     def setLocator(self, locator):
         """
         Attach a locator you built and configured yourself -- a

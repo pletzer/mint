@@ -137,6 +137,37 @@ class RegridEdges(object):
         if ier:
             error_handler(FILE, 'loadDstGrid', ier)
 
+
+    def setOrder(self, order):
+        """
+        Set the order of the edge element.
+
+        :param order: 1 for the lowest order Whitney element (the default), 2 for the
+                      second order element built on 2x2 blocks of grid cells, which
+                      uses the same edge data
+        :note: the order applies to the source grid, the destination data are always edge
+               integrals. Call after setting or loading the source grid and before
+               computing or loading the weights, changing the order discards the weights.
+               Order 2 needs a source grid with UGRID connectivity that can be tiled
+               into 2x2 blocks of cells
+        """
+        MINTLIB.mnt_regridedges_setOrder.argtypes = [POINTER(c_void_p), c_int]
+        ier = MINTLIB.mnt_regridedges_setOrder(self.obj, order)
+        if ier:
+            error_handler(FILE, 'setOrder', ier)
+
+    def getOrder(self):
+        """
+        Get the order of the edge element.
+
+        :returns: 1 or 2
+        """
+        MINTLIB.mnt_regridedges_getOrder.argtypes = [POINTER(c_void_p), POINTER(c_int)]
+        order = c_int()
+        ier = MINTLIB.mnt_regridedges_getOrder(self.obj, byref(order))
+        if ier:
+            error_handler(FILE, 'getOrder', ier)
+        return order.value
     def getNumSrcEdges(self):
         """
         Get the number of unique edges in the source grid.

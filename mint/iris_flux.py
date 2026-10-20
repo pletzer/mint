@@ -15,7 +15,9 @@ class IrisMintFlux:
         :param src_mesh: source iris mesh with coordinates and connectivity
         :param src_flags: flags to pass to the source grid. Example (0, 0, 1) for a regular grid 
                       and (1, 1, 1) for a cubed-sphere grid.
-        :param kwargs: additional arguments, eg numCellsPerBucket, periodX, enableFolding...
+        :param kwargs: additional arguments, eg numCellsPerBucket, periodX, enableFolding, order (1
+                       for the lowest order Whitney element, the default, or 2 for the second order
+                       element on 2x2 blocks of source cells)...
         :param tgt_line: array of points [(x0,y0), (x1, y1), ...] where x0, y0 ... are longitude-latitude pairs
         """
 
@@ -26,6 +28,7 @@ class IrisMintFlux:
         # build the flux calculator
         self.flux_calc = mint.PolylineIntegral()
         self.flux_calc.setGrid(self.src.get_grid())
+        self.flux_calc.setOrder(kwargs.get('order', 1))
 
         numCellsPerBucket = kwargs.get('numCellsPerBucket', 128)
         periodX = kwargs.get('periodX', 360.)
