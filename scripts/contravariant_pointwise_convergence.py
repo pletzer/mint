@@ -17,6 +17,11 @@ Arms (all from exact data on the true great-circle cell edges):
      divided by the exact sqrt(g): no metric inverse needed.
   D  nodal star recovery + bilinear interpolation (nodal_star.py), projected
      onto the exact dual basis.
+  R  mint's order 2 element (Nedelec degree 2 on 2x2 blocks of cells, from
+     the same circulations as A, no extra data), evaluated in the panel chart
+     and raised with the EXACT metric g^ij.
+  S  as R, raised with the DISCRETE metric of the biquadratic (xyz) map through
+     the 9 nodes of the cell's 2x2 block -- the order 2 analogue of B.
 
 The error norm is |(v_h^i - v^i) a_i| (physical length of the error in the
 contravariant components), normalised by the RMS of |v|. RMS over cells,
@@ -41,12 +46,15 @@ from nodal_star import (CubedSphere, nodalVectors, bilinearInterp,  # noqa: E402
                         whitneyInterp, greatCircleIntegral)
 from cs_chart import basis, chartPoint  # noqa: E402
 from trajectory_fields import SolidBody, NairLauritzen  # noqa: E402
+from trajectory_integrator import (mintCubedSphereElement, mintCellByCellData,  # noqa: E402
+                                   mintCellIds, biquadraticBlockBasis)
 
 OFF_CENTRE = ((0.25, 0.25), (0.1, 0.7), (0.9, 0.4), (0.75, 0.05), (0.4, 0.95))
 CENTROID = (0.5, 0.5)
-ARMS = ('A', 'B', 'C', 'D')
+ARMS = ('A', 'B', 'C', 'D', 'R', 'S')
 ARM_LABELS = {'A': 'A Whitney + exact g^ij', 'B': 'B Whitney + bilinear g^ij',
-              'C': 'C RT0 fluxes / sqrt(g)', 'D': 'D nodal star + bilinear'}
+              'C': 'C RT0 fluxes / sqrt(g)', 'D': 'D nodal star + bilinear',
+              'R': 'R mint k=2 2x2 + exact g^ij', 'S': 'S mint k=2 2x2 + biq. g^ij'}
 CLASSES = ('interior', 'panel_edge', 'corner')
 
 OMEGA = numpy.array([numpy.sin(0.7) * numpy.cos(0.3),
@@ -79,8 +87,12 @@ def panelData(cs, f, fld, t):
     return P, Ex, Ey, Fx, Fy
 
 
-def reconstructPanel(cs, f, data, xi, eta):
-    """Arms A, B, C on panel f at cell coordinates (xi, eta). Returns dict of (M, M, 3)."""
+def reconstructPanel(cs, f, data, xi, eta, mintCov=None):
+    """
+    Arms A, B, C on panel f at cell coordinates (xi, eta), and R, S if mintCov,
+    the covariant components (M, M) of mint's order 2 element on the panel, is
+    given. Returns dict of (M, M, 3).
+    """
     P, Ex, Ey, Fx, Fy = data
     a = cs.alphas
     da = numpy.diff(a)
@@ -93,7 +105,7 @@ def reconstructPanel(cs, f, data, xi, eta):
     vxi = (1 - eta) * Ex[:, :-1] + eta * Ex[:, 1:]
     veta = (1 - xi) * Ey[:-1, :] + xi * Ey[1:, :]
 
-    def raiseWith(gx, gy):
+    def raiseWith(gx, gy, vxi=vxi, veta=veta):
         g11 = numpy.sum(gx * gx, -1)
         g12 = numpy.sum(gx * gy, -1)
         g22 = numpy.sum(gy * gy, -1)
@@ -114,7 +126,26 @@ def reconstructPanel(cs, f, data, xi, eta):
     fxi = (1 - xi) * Fx[:-1, :] + xi * Fx[1:, :]
     feta = (1 - eta) * Fy[:, :-1] + eta * Fy[:, 1:]
     out['C'] = (fxi / J)[..., None] * jx + (feta / J)[..., None] * jy
+    if mintCov is not None:
+        ra, rb = mintCov
+        c1, c2 = raiseWith(jx, jy, ra, rb)
+        out['R'] = c1[..., None] * jx + c2[..., None] * jy
+        # discrete biquadratic (xyz, unprojected) Jacobian through the block's 9 nodes
+        M = cs.M
+        I, Jj = numpy.meshgrid(numpy.arange(M), numpy.arange(M), indexing='ij')
+        qx, qy = biquadraticBlockBasis(cs.nodes[cs.nodeId], numpy.full((M, M), f), I, Jj, xi, eta)
+        c1, c2 = raiseWith(qx, qy, ra, rb)
+        out['S'] = c1[..., None] * jx + c2[..., None] * jy
     return out, x
+
+
+def mintCovariant(element, data, M, xi, eta):
+    """Covariant components (6, M, M) of mint's element at cell coordinates (xi, eta)."""
+    F, I, J = numpy.meshgrid(numpy.arange(6), numpy.arange(M), numpy.arange(M), indexing='ij')
+    n = F.size
+    a, b = element.getCovariantComponents(mintCellIds(M, F, I, J).ravel(), numpy.full(n, xi),
+                                          numpy.full(n, eta), data)
+    return a.reshape(F.shape), b.reshape(F.shape)
 
 
 def rms(e, mask=None):
@@ -139,15 +170,21 @@ def run(fname, fld, Ms, maxMnodal):
         if doNodal:
             V = nodalVectors(cs, cs.edgeIntegrals(lambda x: fld.velocity(x, T_SNAPSHOT), nGauss=12))
         datas = [panelData(cs, f, fld, T_SNAPSHOT) for f in range(6)]
+        # mint's order 2 element, cell by cell circulations of all panels
+        element2 = mintCubedSphereElement(cs, 2)
+        mintData = mintCellByCellData(numpy.stack([d[1] for d in datas]), numpy.stack([d[2] for d in datas]))
+        if M == Ms[0]:
+            element1 = mintCubedSphereElement(cs, 1)
         for where, pts in (('centroid', [CENTROID]), ('off', OFF_CENTRE)):
             sq = {arm: [] for arm in ARMS}
             vmag = []
             for (xi, eta) in pts:
-                rec = [reconstructPanel(cs, f, datas[f], xi, eta) for f in range(6)]
+                ra, rb = mintCovariant(element2, mintData, M, xi, eta)
+                rec = [reconstructPanel(cs, f, datas[f], xi, eta, (ra[f], rb[f])) for f in range(6)]
                 x = numpy.stack([r[1] for r in rec])
                 exact = fld.velocity(x, T_SNAPSHOT)
                 vmag.append(numpy.sum(exact ** 2, -1))
-                for arm in 'ABC':
+                for arm in 'ABCRS':
                     sq[arm].append(numpy.stack([r[0][arm] for r in rec]) - exact)
                 if doNodal:
                     sq['D'].append(bilinearInterp(cs, V, xi, eta) - exact)
@@ -156,6 +193,13 @@ def run(fname, fld, Ms, maxMnodal):
                     wi = whitneyInterp(cs, cs.edgeIntegrals(lambda y: fld.velocity(y)), xi, eta)
                     Aall = numpy.stack([r[0]['A'] for r in rec])
                     assert numpy.allclose(wi, Aall, atol=1e-12), numpy.abs(wi - Aall).max()
+                if M == Ms[0]:
+                    # cross-check mint's element plumbing: its order 1 element gives arm A's
+                    # covariant components
+                    a1, b1 = mintCovariant(element1, mintData, M, xi, eta)
+                    Ex, Ey = numpy.stack([d[1] for d in datas]), numpy.stack([d[2] for d in datas])
+                    assert numpy.allclose(a1, (1 - eta) * Ex[..., :-1] + eta * Ex[..., 1:], atol=1e-13)
+                    assert numpy.allclose(b1, (1 - xi) * Ey[..., :-1, :] + xi * Ey[..., 1:, :], atol=1e-13)
             vref = numpy.sqrt(numpy.mean(vmag))
             for arm in ARMS:
                 if not sq[arm]:
@@ -202,7 +246,7 @@ def main():
                     if not e:
                         continue
                     m = Ms[:len(e)]
-                    ax.loglog(m, e, ls, marker='os^d'[k], color=f'C{k}',
+                    ax.loglog(m, e, ls, marker='os^dpv'[k], color=f'C{k}',
                               label=f'{ARM_LABELS[arm]}, {c} ({fitAlpha(m, e):.2f})')
             ax.set_title(f'{fname}: {"off-centroid points" if where == "off" else "cell centroid"}')
             ax.set_xlabel('M (cells per panel edge)')

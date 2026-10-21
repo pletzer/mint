@@ -25,6 +25,15 @@ Arms (cell-local contravariant velocity):
      edge, tangential profile linear along each edge, no interior bubble
      DOFs), slopes from exact first moments in the cell coordinate, raised
      with the exact metric
+  R  mint's order 2 element (mint.WhitneyElement(2, ...), Nedelec degree 2 on
+     2x2 blocks of cells with Rapetti-Bossavit small-edge DOFs): the same
+     circulations as A, no extra data, raised with the exact metric. Evaluated
+     in the panel chart, where the equiangular grid is uniform, so the block's
+     piecewise cell coordinates (biquadratic=False) are its exact geometry
+  S  as R, raised with the biquadratic-block metric: the covariant basis is
+     the derivative of the biquadratic map through the 9 nodes (xyz) of the
+     cell's 2x2 block, at the block coordinates X = (p + xi)/2,
+     Y = (q + eta)/2 -- the order 2 analogue of B's bilinear-corner metric
   E  exact velocity projected onto the exact dual basis (control: time and
      hand-over errors only)
 
@@ -40,7 +49,7 @@ sys.path.insert(0, str(Path(__file__).absolute().parent))
 from nodal_star import CubedSphere, nodalVectors, greatCircleIntegral, facePoint  # noqa: E402
 from cs_chart import _FRAMES, basis as chartBasis  # noqa: E402
 
-ARMS = ('A', 'B', 'C', 'D', 'W', 'E')
+ARMS = ('A', 'B', 'C', 'D', 'W', 'R', 'S', 'E')
 SNAP = 1e-9
 
 
@@ -64,6 +73,75 @@ def _dual(jx, jy):
     det = g11 * g22 - g12 ** 2
     return ((g22[:, None] * jx - g12[:, None] * jy) / det[:, None],
             (-g12[:, None] * jx + g11[:, None] * jy) / det[:, None])
+
+
+def mintCellIds(M, f, i, j):
+    """mint cell Id of cubed-sphere cell (f, i, j), see mintCubedSphereElement."""
+    return (f * M + j) * M + i
+
+
+def mintCubedSphereElement(cs, order):
+    """
+    mint grid with the topology of the cubed sphere cs, cell (f, i, j) ->
+    mintCellIds(M, f, i, j) with its local frame along the panel chart, and
+    mint's edge element of the given order on it. The order 2 element uses the
+    piecewise cell coordinates of its 2x2 blocks (biquadratic=False), its exact
+    geometry in the panel chart where the equiangular grid is uniform.
+    """
+    import mint
+    nid = cs.nodeId
+    f2n = numpy.stack([nid[:, :-1, :-1], nid[:, 1:, :-1], nid[:, 1:, 1:], nid[:, :-1, 1:]], -1)
+    f2n = numpy.ascontiguousarray(f2n.transpose(0, 2, 1, 3).reshape(-1, 4), numpy.uint64)
+    x = cs.nodes
+    xyz = numpy.zeros_like(x)
+    xyz[:, 0] = numpy.degrees(numpy.arctan2(x[:, 1], x[:, 0]))
+    xyz[:, 1] = numpy.degrees(numpy.arcsin(numpy.clip(x[:, 2], -1., 1.)))
+    grid = mint.Grid()
+    grid.setFlags(1, 1)
+    grid.loadFromUgrid2DData(numpy.ascontiguousarray(xyz),
+                             f2n, numpy.ascontiguousarray(cs.edges, numpy.uint64))
+    # the element keeps the grid alive
+    return mint.WhitneyElement(order, grid, biquadratic=False)
+
+
+def mintCellByCellData(Ex, Ey):
+    """
+    Cell by cell edge data for mintCubedSphereElement from the circulations
+    Ex (..., 6, M, M+1) and Ey (..., 6, M+1, M), oriented +xi, +eta like mint's
+    cell edges 0 (south), 1 (east), 2 (north), 3 (west). Returns (..., 6*M*M*4).
+    """
+    Ex, Ey = numpy.asarray(Ex), numpy.asarray(Ey)
+    cbc = numpy.stack([Ex[..., :, :-1], Ey[..., 1:, :], Ex[..., :, 1:], Ey[..., :-1, :]], -1)
+    cbc = numpy.swapaxes(cbc, -3, -2)                  # [f, i, j, edge] -> [f, j, i, edge]
+    return numpy.ascontiguousarray(cbc.reshape(cbc.shape[:-4] + (-1,)))
+
+
+def biquadraticBlockBasis(P, f, i, j, xi, eta):
+    """
+    Covariant basis (dr/dxi, dr/deta) of the biquadratic map through the 9
+    nodes P (6, M+1, M+1, 3) of the 2x2 block of cell (f, i, j), at the cell
+    coordinates (xi, eta). mint tiles each panel into the blocks of cells
+    (2a, 2a + 1) x (2b, 2b + 1), so cell (i, j) is at position
+    (p, q) = (i % 2, j % 2) of its block.
+    """
+    p, q = i % 2, j % 2
+    X, Y = 0.5 * (p + xi), 0.5 * (q + eta)
+
+    def lag(t):
+        return (numpy.stack([(1 - t) * (1 - 2 * t), 4 * t * (1 - t), t * (2 * t - 1)]),
+                numpy.stack([4 * t - 3, 4 - 8 * t, 4 * t - 1]))
+    lx, dlx = lag(X)
+    ly, dly = lag(Y)
+    i0, j0 = i - p, j - q
+    dGdX = numpy.zeros(numpy.shape(f) + (3,))
+    dGdY = numpy.zeros(numpy.shape(f) + (3,))
+    for a in range(3):
+        for b in range(3):
+            node = P[f, i0 + a, j0 + b]
+            dGdX += (dlx[a] * ly[b])[..., None] * node
+            dGdY += (lx[a] * dly[b])[..., None] * node
+    # dX/dxi = dY/deta = 1/2
+    return 0.5 * dGdX, 0.5 * dGdY
 
 
 class Tracer:
@@ -99,6 +177,8 @@ class Tracer:
         self.Sy = numpy.array(Sy) if Sy else None
         self.Fx, self.Fy = numpy.array(Fx), numpy.array(Fy)
         self.V = numpy.array(V) if V else None
+        if 'R' in arms or 'S' in arms:
+            self._buildMintElement(2)
         self.nSlide = 0
         self.nPanelCross = 0
 
@@ -131,6 +211,23 @@ class Tracer:
                 t = numpy.sum(vel(x) * jb, -1) * da[None, :]
                 Sy[f] += 3. * wk * t * (2. * sk - 1.)
         return Sx, Sy
+
+    def _buildMintElement(self, order):
+        """mint's edge element on the cubed sphere and the cell by cell data of each basis field."""
+        self.mintElement = mintCubedSphereElement(self.cs, order)
+        self.mintData = mintCellByCellData(self.Ex, self.Ey)
+
+    def _mintCovariant(self, st):
+        """Covariant components (v_xi, v_eta) of each basis field from mint's element."""
+        f, i, j, xi, eta = st
+        cellIds = mintCellIds(self.M, f, i, j)
+        ab = [self.mintElement.getCovariantComponents(cellIds, xi, eta, d) for d in self.mintData]
+        return numpy.array([a for a, b in ab]), numpy.array([b for a, b in ab])
+
+    def _biquadraticBasis(self, st):
+        """Covariant basis of the biquadratic map of each particle's 2x2 block."""
+        f, i, j, xi, eta = st
+        return biquadraticBlockBasis(self.P, f, i, j, xi, eta)
 
     # ------------------------------------------------------------------
     def position(self, st):
@@ -173,14 +270,21 @@ class Tracer:
             dx, dy = _dual(jx, jy)
             return numpy.sum(v * dx, -1), numpy.sum(v * dy, -1)
         c = self.fld.coeffs(t)                   # (nbasis,) + t.shape
-        if arm in 'ABW':
-            vxi = numpy.sum(c * ((1 - eta) * self.Ex[:, f, i, j] + eta * self.Ex[:, f, i, j + 1]), 0)
-            veta = numpy.sum(c * ((1 - xi) * self.Ey[:, f, i, j] + xi * self.Ey[:, f, i + 1, j]), 0)
+        if arm in 'ABWRS':
+            if arm in 'RS':
+                avxi, aveta = self._mintCovariant(st)
+                vxi = numpy.sum(c * avxi, 0)
+                veta = numpy.sum(c * aveta, 0)
+            else:
+                vxi = numpy.sum(c * ((1 - eta) * self.Ex[:, f, i, j] + eta * self.Ex[:, f, i, j + 1]), 0)
+                veta = numpy.sum(c * ((1 - xi) * self.Ey[:, f, i, j] + xi * self.Ey[:, f, i + 1, j]), 0)
             if arm == 'W':
                 vxi = vxi + (2 * xi - 1) * numpy.sum(
                     c * ((1 - eta) * self.Sx[:, f, i, j] + eta * self.Sx[:, f, i, j + 1]), 0)
                 veta = veta + (2 * eta - 1) * numpy.sum(
                     c * ((1 - xi) * self.Sy[:, f, i, j] + xi * self.Sy[:, f, i + 1, j]), 0)
+            if arm == 'S':
+                jx, jy = self._biquadraticBasis(st)
             if arm == 'B':
                 P = self.P
                 p00, p10, p01, p11 = P[f, i, j], P[f, i + 1, j], P[f, i, j + 1], P[f, i + 1, j + 1]

@@ -136,3 +136,68 @@ def test_iris_order():
     assert flx.flux_calc.getOrder() == 2
     flx = mint.IrisMintFlux(u.mesh, src_flags=(1, 1, 1), tgt_line=[(0., 0.), (90., 30.)])
     assert flx.flux_calc.getOrder() == 1
+
+
+def structuredGrid(nx, ny):
+    """flat nx x ny UGRID grid with nodes at the integer points (i, j)"""
+    node = lambda i, j: j*(nx + 1) + i
+    xyz = numpy.array([(i, j, 0.) for j in range(ny + 1) for i in range(nx + 1)], numpy.float64)
+    f2n = numpy.array([(node(i, j), node(i + 1, j), node(i + 1, j + 1), node(i, j + 1))
+                       for j in range(ny) for i in range(nx)], numpy.uint64)
+    e2n = numpy.array([(node(i, j), node(i + 1, j)) for j in range(ny + 1) for i in range(nx)] +
+                      [(node(i, j), node(i, j + 1)) for j in range(ny) for i in range(nx + 1)],
+                      numpy.uint64)
+    grid = Grid()
+    grid.setFlags(0, 0, degrees=False)
+    grid.loadFromUgrid2DData(xyz, f2n, e2n)
+    return grid, xyz, f2n
+
+
+def test_whitney_element():
+    """
+    Covariant components from the element: the gradient of a quadratic potential
+    is reproduced exactly by order 2, not by order 1
+    """
+    nx, ny = 6, 4
+    grid, xyz, f2n = structuredGrid(nx, ny)
+
+    def phi(s, t):
+        return s*s + 0.5*s*t - t*t
+
+    # cell by cell edge integrals, edges in the positive xi/eta direction
+    pts = xyz[f2n.astype(int)]                      # (ncells, 4, 3)
+    data = numpy.zeros((nx*ny, NUM_EDGES_PER_QUAD))
+    for ie, (i0, i1) in enumerate(EDGE_VERTS):
+        data[:, ie] = phi(pts[:, i1, 0], pts[:, i1, 1]) - phi(pts[:, i0, 0], pts[:, i0, 1])
+    data = data.ravel()
+
+    rng = numpy.random.default_rng(7)
+    cellIds = rng.integers(0, nx*ny, 50)
+    xi, eta = rng.random(50), rng.random(50)
+    s = pts[cellIds, 0, 0] + xi
+    t = pts[cellIds, 0, 1] + eta
+    dphids, dphidt = 2*s + 0.5*t, 0.5*s - 2*t
+
+    e1 = mint.WhitneyElement(1, grid)
+    assert e1.getOrder() == 1
+    a, b = e1.getCovariantComponents(cellIds, xi, eta, data)
+    # lowest order: a = (1 - eta) d0 + eta d2, b = (1 - xi) d3 + xi d1
+    d = data.reshape(-1, 4)[cellIds]
+    assert numpy.allclose(a, (1 - eta)*d[:, 0] + eta*d[:, 2], atol=1e-14)
+    assert numpy.allclose(b, (1 - xi)*d[:, 3] + xi*d[:, 1], atol=1e-14)
+    assert numpy.abs(a - dphids).max() > 0.1
+
+    for biquadratic in (True, False):
+        e2 = mint.WhitneyElement(2, grid, biquadratic=biquadratic)
+        assert e2.getOrder() == 2
+        a, b = e2.getCovariantComponents(cellIds, xi, eta, data)
+        assert numpy.abs(a - dphids).max() < 1e-12
+        assert numpy.abs(b - dphidt).max() < 1e-12
+
+    # invalid cells are reported
+    with pytest.raises(RuntimeError):
+        e2.getCovariantComponents([nx*ny], [0.5], [0.5], data)
+    # order 2 needs a grid that can be tiled into 2x2 blocks
+    oddGrid = structuredGrid(5, 4)[0]
+    with pytest.raises(RuntimeError):
+        mint.WhitneyElement(2, oddGrid)

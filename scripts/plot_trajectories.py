@@ -12,7 +12,7 @@ Writes
   trajectories_<case>_M<M>.html  interactive 3D (plotly): sphere, cubed-sphere
                                  cells, one toggleable trace group per arm
 
-Usage: python plot_trajectories.py [--case nl|sb_generic] [--M 16] [--arms ACDWE]
+Usage: python plot_trajectories.py [--case nl|sb_generic] [--M 16] [--arms ACDWRSE]
 """
 import argparse
 import sys
@@ -32,7 +32,7 @@ from trajectory_convergence_cubedsphere import caseSetup, randomSeeds, CFL, ARM_
 NRANDOM = 8
 NWORST = 4
 NOUT = 240
-COLORS = {'A': '#1f77b4', 'B': '#9467bd', 'C': '#ff7f0e', 'D': '#2ca02c', 'W': '#d62728', 'E': 'black'}
+COLORS = {'A': '#1f77b4', 'B': '#9467bd', 'C': '#ff7f0e', 'D': '#2ca02c', 'W': '#d62728', 'R': '#8c564b', 'S': '#e377c2', 'E': 'black'}
 
 
 def integratePaths(tr, arm, x0, T, dt):
@@ -106,9 +106,9 @@ def zoomPanel(ax, paths, arms, x0, k, cells, panels, exact, endZoom=False, legen
         allp = numpy.concatenate([paths[a][:, k] for a in arms])
         pad = 4
     else:
-        # frame the start and the end points of the O(h^2) arms (D, W) only;
+        # frame the start and the end points of the O(h^2) arms (D, W, R, S) only;
         # k=1 / RT0 end points may fall outside -- their squares then sit off-panel
-        frame = [a for a in arms if a in 'DWE'] or list(arms)
+        frame = [a for a in arms if a in 'DWRSE'] or list(arms)
         allp = numpy.stack([x0[k]] + [paths[a][-1, k] for a in frame])
     U, V = numpy.degrees(allp @ e1), numpy.degrees(allp @ e2)
     if localised:
@@ -120,11 +120,13 @@ def zoomPanel(ax, paths, arms, x0, k, cells, panels, exact, endZoom=False, legen
         ax.set_xlim(uc - half, uc + half)
         ax.set_ylim(vc - half, vc + half)
     ax.set_aspect('equal')
-    lo, la = lonlat(c)
-    what = 'path' if localised else 'start/end region (framed on D, W ends)'
-    ax.set_title(f'{what}, centred at ({lo:.0f}E, {la:.0f}N)\n'
+    lo, la = (int(round(float(v))) for v in lonlat(c))
+    centre = f'{abs(lo)}°{"W" if lo < 0 else "E"}, {abs(la)}°{"S" if la < 0 else "N"}'
+    what = 'path' if localised else 'start/end region (framed on D, W, R, S ends)'
+    ax.set_title(f'{what}, centred at {centre}\n'
                  f'dots every T/{NOUT}, squares = end', fontsize=9)
-    ax.set_xlabel('degrees (projected)')
+    ax.set_xlabel('east offset from the centre (deg)')
+    ax.set_ylabel('north offset from the centre (deg)')
     if legend:
         ax.legend(fontsize=7)
 

@@ -30,7 +30,7 @@ FUNC_SPACE_W1 = 1
 FUNC_SPACE_W2 = 2
 
 __all__ = ('regrid_edges', 'grid', 'polyline_integral', 'cell_locator',
-           'vector_interp', 'multi_array_iter', 'message_handler', 'utils',
+           'vector_interp', 'whitney_element', 'multi_array_iter', 'message_handler', 'utils',
            'iris_regrid', 'iris_utils', 'iris_flux',
            MINTLIB, CELL_BY_CELL_DATA, UNIQUE_EDGE_DATA,
            FUNC_SPACE_W1, FUNC_SPACE_W2,
@@ -42,6 +42,7 @@ from .grid import Grid
 from .polyline_integral import PolylineIntegral
 from .cell_locator import LonLatCellLocator, XYZCellLocator
 from .vector_interp import VectorInterp
+from .whitney_element import WhitneyElement
 from .multi_array_iter import MultiArrayIter
 from .extensive_field_adaptor import ExtensiveFieldAdaptor
 from .nc_field_read import NcFieldRead
