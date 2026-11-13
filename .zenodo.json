@@ -1,0 +1,28 @@
+{
+  "title": "MINT - Mimetic INTerpolation on the Sphere",
+  "description": "MINT is a C++ library with Python and Fortran bindings for mimetic (flux- and circulation-conserving) interpolation and regridding of edge- and face-centred vector fields on the sphere, including computation of line and flux integrals on unstructured, lat-lon and cubed-sphere grids.",
+  "upload_type": "software",
+  "creators": [
+    {
+      "name": "Pletzer, Alexander",
+      "orcid": "0000-0002-4417-4083"
+    }
+  ],
+  "license": "0BSD",
+  "keywords": [
+    "mimetic interpolation",
+    "regridding",
+    "conservative interpolation",
+    "vector fields",
+    "cubed-sphere",
+    "unstructured grids",
+    "climate and weather modelling"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/pletzer/mint",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
